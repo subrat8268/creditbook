@@ -1,24 +1,74 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import Loader from "@/src/components/feedback/Loader";
+import { useFontsLoader } from "@/src/hooks/useFontsLoader";
+import { ThemeProvider } from "@/src/utils/ThemeProvider";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SplashScreen, Stack } from "expo-router";
+import { useEffect, useState } from "react";
+import { StatusBar } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import "../global.css";
+import { useAuthStore } from "../src/store/authStore";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const {
+    user,
+    profile,
+    fetchProfile,
+    loading: profileLoading,
+  } = useAuthStore();
+  const [loading, setLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  const fontsLoaded = useFontsLoader();
+
+  useEffect(() => {
+    const checkWelcome = async () => {
+      const seen = await AsyncStorage.getItem("hasSeenWelcome");
+      setShowWelcome(!seen);
+      setLoading(false);
+    };
+    checkWelcome();
+  }, []);
+
+  useEffect(() => {
+    if (user && !profile) {
+      fetchProfile();
+    }
+  }, [user, profile, fetchProfile]);
+
+  useEffect(() => {
+    if (fontsLoaded && !loading && (!user || !profileLoading)) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, loading, user, profileLoading]);
+
+  // Show loader until fonts, welcome check, and profile (if user exists) are ready
+  if (!fontsLoaded || loading || (user && profile === undefined))
+    return <Loader />;
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <Stack screenOptions={{ headerShown: false }}>
+            {/* New user -> Welcome Page */}
+            {!user && showWelcome && <Stack.Screen name="index" />}
+
+            {/* Returning user but not logged in → Login */}
+            {!user && !showWelcome && <Stack.Screen name="(auth)/login" />}
+
+            {/* Logged in but no profile → Create Profile */}
+            {user && !profile && <Stack.Screen name="index" />}
+
+            {/* Logged in → Dashboard */}
+            {user && profile && <Stack.Screen name="(main)/dashboard" />}
+          </Stack>
+          <StatusBar barStyle="dark-content" />
+        </GestureHandlerRootView>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }

@@ -1,0 +1,40 @@
+import { User as SupabaseUser } from "@supabase/supabase-js";
+
+export type User = SupabaseUser;
+
+export interface Profile {
+  id: string;
+  user_id: string;
+  name: string | null;
+  phone: string | null;
+  role: string | null;
+  created_at: string;
+
+  //Business details
+  business_name?: string | null;
+  business_address?: string | null;
+  gstin?: string | null;
+  upi_id?: string | null;
+
+  //Images
+  avatar_url?: string | null;
+  business_logo_url?: string | null;
+
+  // Subscription details
+  subscription_plan: string | null;
+  subscription_expiry: string | null;
+  isSubscribed?: boolean;
+  daysRemaining?: number;
+}
+
+export interface AuthState {
+  user: User | null;
+  session: any | null;
+  setUser: (user: User | null) => void;
+  logout: () => Promise<void>;
+}
+
+export interface LoginValues {
+  email: string;
+  password: string;
+}
