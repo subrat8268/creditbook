@@ -1,24 +1,29 @@
-import { Text, TouchableOpacity, ScrollView, TextInput } from "react-native";
-import ScreenWrapper from "@/src/components/ScreenWrapper";
-import { useAuthStore } from "@/src/store/authStore";
+import { uploadImage } from "@/src/api/upload";
 import ImagePickerField from "@/src/components/ImagePickerField";
+import ScreenWrapper from "@/src/components/ScreenWrapper";
 import SubscriptionCard from "@/src/components/SubscriptionCard";
-import { uploadImage } from "@/src/utils/upload";
 import { supabase } from "@/src/services/supabase";
+import { useAuthStore } from "@/src/store/authStore";
+import { Profile } from "@/src/types/auth";
+import {
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function ProfileScreen() {
   const { profile, setProfile, logout } = useAuthStore();
 
   const updateField = async (field: string, value: any) => {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("profiles")
       .update({ [field]: value })
-      .eq("id", profile!.id)
-      .select()
-      .single();
+      .eq("id", profile!.id);
 
     if (!error) {
-      setProfile({ ...profile, [field]: value });
+      setProfile({ ...profile!, [field]: value } as Profile);
     }
   };
 
@@ -40,14 +45,14 @@ export default function ProfileScreen() {
         {/* Avatar */}
         <ImagePickerField
           label="Your Photo"
-          value={profile.avatar_url}
+          value={profile.avatar_url ?? null}
           onPick={(uri) => handleImage(uri, "avatar_url")}
         />
 
         {/* Business Logo */}
         <ImagePickerField
           label="Business Logo"
-          value={profile.business_logo_url}
+          value={profile.business_logo_url ?? null}
           onPick={(uri) => handleImage(uri, "business_logo_url")}
         />
 
@@ -62,13 +67,13 @@ export default function ProfileScreen() {
         />
 
         <Text className="font-semibold text-gray-900 mb-1">
-          Billing Address
+          Business Address
         </Text>
         <TextInput
           className="p-3 bg-gray-100 rounded-xl mb-4"
           multiline
-          value={profile.billing_address ?? ""}
-          onChangeText={(t) => updateField("billing_address", t)}
+          value={profile.business_address ?? ""}
+          onChangeText={(t) => updateField("business_address", t)}
         />
 
         <Text className="font-semibold text-gray-900 mb-1">GSTIN</Text>
@@ -85,6 +90,54 @@ export default function ProfileScreen() {
           className="p-3 bg-gray-100 rounded-xl mb-8"
           value={profile.upi_id ?? ""}
           onChangeText={(t) => updateField("upi_id", t)}
+        />
+
+        {/* Bank Account Details */}
+        <View className="mb-2">
+          <Text className="text-lg font-bold text-gray-900">
+            Bank Account Details
+          </Text>
+          <Text className="text-xs text-gray-500 mt-0.5">
+            Displayed on invoices. All fields are mandatory.
+          </Text>
+        </View>
+
+        <Text className="font-semibold text-gray-900 mb-1 mt-3">Bank Name</Text>
+        <TextInput
+          className="p-3 bg-gray-100 rounded-xl mb-4"
+          placeholder="e.g. State Bank of India"
+          placeholderTextColor="#9ca3af"
+          value={profile.bank_name ?? ""}
+          onEndEditing={(e) => updateField("bank_name", e.nativeEvent.text)}
+          onChangeText={(t) => setProfile({ ...profile!, bank_name: t })}
+        />
+
+        <Text className="font-semibold text-gray-900 mb-1">Account Number</Text>
+        <TextInput
+          className="p-3 bg-gray-100 rounded-xl mb-4"
+          placeholder="e.g. 00112233445566"
+          placeholderTextColor="#9ca3af"
+          keyboardType="numeric"
+          value={profile.account_number ?? ""}
+          onEndEditing={(e) =>
+            updateField("account_number", e.nativeEvent.text)
+          }
+          onChangeText={(t) => setProfile({ ...profile!, account_number: t })}
+        />
+
+        <Text className="font-semibold text-gray-900 mb-1">IFSC Code</Text>
+        <TextInput
+          className="p-3 bg-gray-100 rounded-xl mb-8"
+          placeholder="e.g. SBIN0001234"
+          placeholderTextColor="#9ca3af"
+          autoCapitalize="characters"
+          value={profile.ifsc_code ?? ""}
+          onEndEditing={(e) =>
+            updateField("ifsc_code", e.nativeEvent.text.toUpperCase())
+          }
+          onChangeText={(t) =>
+            setProfile({ ...profile!, ifsc_code: t.toUpperCase() })
+          }
         />
 
         {/* Logout */}

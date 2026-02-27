@@ -1,6 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+    ActivityIndicator,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 interface OrderBillSummaryProps {
   itemsTotal: number;
@@ -110,7 +116,8 @@ export default function OrderBillSummary({
 
         {previousBalance > 0 && (
           <Text className="text-xs text-gray-400 text-right">
-            Today ₹{todayTotal.toLocaleString("en-IN")} + Prev ₹{previousBalance.toLocaleString("en-IN")}
+            Today ₹{todayTotal.toLocaleString("en-IN")} + Prev ₹
+            {previousBalance.toLocaleString("en-IN")}
           </Text>
         )}
       </View>
@@ -139,4 +146,3 @@ export default function OrderBillSummary({
     </View>
   );
 }
-

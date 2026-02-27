@@ -1,8 +1,28 @@
 # CreditBook App - Business Requirements Document (BRD)
 
 > **Last Updated**: February 27, 2026  
-> **Version**: 1.2  
+> **Version**: 1.3  
 > **Status**: Active Development
+
+## 📋 Recent Updates (v1.3 - February 2026)
+
+### ✨ Bank Details Collection UI on Profile Screen (MODIFICATION)
+
+**Feature type**: MODIFICATION — `bank_name`, `account_number`, and `ifsc_code` fields already existed in the database schema and `Profile` TypeScript interface, but there was no UI to collect them. The Profile screen now has a dedicated **Bank Account Details** section.
+
+**What changed**:
+
+- **New section in Profile screen** — "Bank Account Details" with subtitle: _"Displayed on invoices. All fields are mandatory."_
+- **Bank Name** field — free text input, saved on blur (`onEndEditing`)
+- **Account Number** field — numeric keyboard, saved on blur
+- **IFSC Code** field — auto-uppercased on input, saved on blur
+- **Live local update** — `onChangeText` updates Zustand store instantly for responsive UI; Supabase write only fires on `onEndEditing` (avoids saving partial account numbers)
+
+**Files Changed**:
+
+- `src/screens/ProfileScreen.tsx` — added `View` import, new Bank Account Details section with 3 fields
+
+---
 
 ## 📋 Recent Updates (v1.2 - February 2026)
 
@@ -11,24 +31,27 @@
 **Feature type**: NEW — Previous balance was only fetched at PDF generation time. It is now shown live inside the order form the moment a customer is selected.
 
 **Why this matters**: Indian sellers always need to see a customer's outstanding dues before handing over more goods. Example:
+
 - Customer owes **₹49,800** from last week
 - New delivery today worth **₹16,450** with ₹200 loading charge
 - Form now instantly shows: `₹49,800 + ₹16,450 + ₹200 = Grand Total ₹66,450`
 
 **What changed**:
+
 - **Previous balance fetched on customer select** — as soon as a customer is chosen, `getCustomerPreviousBalance()` is called and the result is displayed with a live spinner
 - **Previous balance shown on customer chip** — amber-coloured text below the customer name in the order form
 - **Full breakdown in Order Summary panel**:
   - Today's Items: ₹X
-  - Loading Charge: ₹Y *(only shown if > 0)*
-  - Today's Total: ₹(X+Y) *(only shown if previous balance > 0)*
-  - Previous Balance: ₹Z *(amber, always shown)*
-  - **Grand Total = ₹(X+Y+Z)** *(bold)*
+  - Loading Charge: ₹Y _(only shown if > 0)_
+  - Today's Total: ₹(X+Y) _(only shown if previous balance > 0)_
+  - Previous Balance: ₹Z _(amber, always shown)_
+  - **Grand Total = ₹(X+Y+Z)** _(bold)_
   - Sub-caption: `Today ₹X+Y + Prev ₹Z`
 - **No double API call** — `handleSendBill` reuses the already-fetched state instead of calling the API again
 - **`isFetchingBalance` spinner** — shows `ActivityIndicator` while fetching, preventing stale values
 
 **Files Changed**:
+
 - `src/screens/CreateOrderScreen.tsx` — `previousBalance` state, `handleSelectCustomer` callback, `grandTotal`/`todayTotal` computed values, customer chip badge, updated Summary props
 - `src/components/orders/OrderBillSummary.tsx` — replaced single total row with full itemised breakdown; new props: `itemsTotal`, `previousBalance`, `grandTotal`, `isFetchingBalance`
 
@@ -1235,10 +1258,12 @@ After setting up the database, test the new features:
 | ------- | ------------ | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1.0     | Feb 27, 2026 | AI Assistant | Initial BRD creation based on codebase analysis                                                                                                                                     |
 | 1.1     | Feb 27, 2026 | AI Assistant | Added comprehensive Indian billing features: sequential bill numbering, previous balance tracking, loading charge, bank details on invoices, enhanced PDF generation, SQL functions |
+| 1.2     | Feb 27, 2026 | AI Assistant | NEW: Live previous balance in order form — fetched on customer select, full Grand Total breakdown (Items + Loading + Prev Balance), no duplicate API calls                          |
+| 1.3     | Feb 27, 2026 | AI Assistant | MOD: Bank details collection UI on Profile screen (Bank Name, Account Number, IFSC Code) — fields existed in schema/types, now have form inputs with blur-save UX                   |
 
 ---
 
 **Document Status**: Active Development  
-**Last Major Update**: Indian Billing Features (v1.1)  
+**Last Major Update**: Bank Details Collection UI on Profile Screen (v1.3)  
 **Next Review Date**: March 15, 2026  
 **Approval Required**: Product Owner, Tech Lead, Stakeholders
