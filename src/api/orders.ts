@@ -23,6 +23,7 @@ export interface Order {
   balance_due: number;
   previous_balance: number;
   loading_charge: number;
+  tax_percent: number;
   status: "Paid" | "Pending" | "Partially Paid";
   created_at: string;
 }
@@ -109,6 +110,7 @@ export async function fetchOrders(
     balance_due: Number(o.total_amount) - Number(o.amount_paid),
     previous_balance: Number(o.previous_balance || 0),
     loading_charge: Number(o.loading_charge || 0),
+    tax_percent: Number(o.tax_percent || 0),
   })) as Order[];
 }
 
@@ -121,7 +123,7 @@ export async function fetchOrderDetail(
     .select(
       `
       id, vendor_id, customer_id, bill_number, total_amount, amount_paid, 
-      previous_balance, loading_charge, status, created_at,
+      previous_balance, loading_charge, tax_percent, status, created_at,
       customers ( id, name, phone, address ),
       order_items ( id, product_id, product_name, variant_name, price, quantity, created_at )
     `,
@@ -138,6 +140,7 @@ export async function fetchOrderDetail(
     balance_due: Number(data.total_amount) - Number(data.amount_paid),
     previous_balance: Number(data.previous_balance || 0),
     loading_charge: Number(data.loading_charge || 0),
+    tax_percent: Number(data.tax_percent || 0),
     customer: Array.isArray(data.customers)
       ? (data.customers[0] ?? null)
       : (data.customers ?? null),
@@ -226,18 +229,22 @@ export async function recordPayment(
 /**
  * Get next sequential bill number for a vendor
  */
-export async function getNextBillNumber(vendorId: string): Promise<string> {
+export async function getNextBillNumber(
+  vendorId: string,
+  prefix = "INV",
+): Promise<string> {
   const { data, error } = await supabase.rpc("get_next_bill_number", {
     vendor_uuid: vendorId,
+    prefix,
   });
 
   if (error) {
     console.error("Error getting next bill number:", error);
     // Fallback to timestamp-based if function doesn't exist
-    return `INV-${Date.now().toString().slice(-6)}`;
+    return `${prefix}-${Date.now().toString().slice(-6)}`;
   }
 
-  return data || "INV-001";
+  return data || `${prefix}-001`;
 }
 
 /**
@@ -290,20 +297,23 @@ export async function createOrder(
   amountPaid: number,
   paymentMode?: PaymentMode,
   loadingCharge: number = 0,
+  taxPercent: number = 0,
+  billNumberPrefix: string = "INV",
 ): Promise<OrderDetail> {
   // 1. Get bill number and previous balance
-  const billNumber = await getNextBillNumber(vendorId);
+  const billNumber = await getNextBillNumber(vendorId, billNumberPrefix);
   const previousBalance = await getCustomerPreviousBalance(
     customerId,
     vendorId,
   );
 
-  // 2. Calculate totals
+  // 2. Calculate totals (tax applied to items only, not loading charge)
   const itemsTotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
-  const totalAmount = itemsTotal + loadingCharge;
+  const taxAmount = Math.round(((itemsTotal * taxPercent) / 100) * 100) / 100;
+  const totalAmount = itemsTotal + taxAmount + loadingCharge;
 
   const status =
     amountPaid >= totalAmount
@@ -324,6 +334,7 @@ export async function createOrder(
         amount_paid: amountPaid,
         previous_balance: previousBalance,
         loading_charge: loadingCharge,
+        tax_percent: taxPercent,
         status,
       },
     ])

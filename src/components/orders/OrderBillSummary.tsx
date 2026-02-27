@@ -11,27 +11,34 @@ import {
 interface OrderBillSummaryProps {
   itemsTotal: number;
   loadingCharge: number;
+  taxPercent: number;
+  taxAmount: number;
   previousBalance: number;
   grandTotal: number;
   isFetchingBalance?: boolean;
   onSave: () => void;
   onSendBill: () => void;
   onLoadingChargeChange: (value: number) => void;
+  onTaxChange: (value: number) => void;
 }
 
 export default function OrderBillSummary({
   itemsTotal,
   loadingCharge,
+  taxPercent,
+  taxAmount,
   previousBalance,
   grandTotal,
   isFetchingBalance = false,
   onSave,
   onSendBill,
   onLoadingChargeChange,
+  onTaxChange,
 }: OrderBillSummaryProps) {
   const [loadingChargeInput, setLoadingChargeInput] = useState(
     loadingCharge.toString(),
   );
+  const [taxInput, setTaxInput] = useState(taxPercent.toString());
 
   const handleLoadingChargeChange = (text: string) => {
     setLoadingChargeInput(text);
@@ -39,22 +46,42 @@ export default function OrderBillSummary({
     onLoadingChargeChange(value);
   };
 
-  const todayTotal = itemsTotal + loadingCharge;
+  const handleTaxChange = (text: string) => {
+    setTaxInput(text);
+    const value = Math.min(parseFloat(text) || 0, 100);
+    onTaxChange(value);
+  };
+
+  const todayTotal = itemsTotal + taxAmount + loadingCharge;
 
   return (
     <View className="absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-white px-4 pt-3 pb-4">
-      {/* Loading Charge Input */}
-      <View className="flex-row items-center gap-3 mb-3">
-        <Text className="text-sm font-inter-medium text-gray-600 flex-1">
-          Loading Charge
-        </Text>
-        <TextInput
-          className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-28 text-right"
-          placeholder="₹0"
-          keyboardType="numeric"
-          value={loadingChargeInput}
-          onChangeText={handleLoadingChargeChange}
-        />
+      {/* Loading Charge + Tax inputs */}
+      <View className="flex-row gap-3 mb-3">
+        <View className="flex-1 flex-row items-center">
+          <Text className="text-sm font-inter-medium text-gray-600 flex-1">
+            Loading ₹
+          </Text>
+          <TextInput
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-24 text-right"
+            placeholder="0"
+            keyboardType="numeric"
+            value={loadingChargeInput}
+            onChangeText={handleLoadingChargeChange}
+          />
+        </View>
+        <View className="flex-1 flex-row items-center">
+          <Text className="text-sm font-inter-medium text-gray-600 flex-1">
+            GST %
+          </Text>
+          <TextInput
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-24 text-right"
+            placeholder="0"
+            keyboardType="numeric"
+            value={taxInput}
+            onChangeText={handleTaxChange}
+          />
+        </View>
       </View>
 
       {/* Bill breakdown */}
@@ -66,6 +93,16 @@ export default function OrderBillSummary({
             ₹{itemsTotal.toLocaleString("en-IN")}
           </Text>
         </View>
+
+        {/* Tax row — only if taxPercent > 0 */}
+        {taxAmount > 0 && (
+          <View className="flex-row justify-between">
+            <Text className="text-sm text-gray-500">GST ({taxPercent}%)</Text>
+            <Text className="text-sm text-gray-700">
+              ₹{taxAmount.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+            </Text>
+          </View>
+        )}
 
         {/* Loading charge row — only if > 0 */}
         {loadingCharge > 0 && (

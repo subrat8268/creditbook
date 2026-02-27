@@ -1,35 +1,52 @@
--- CreditBook App Database Schema
--- Run this in your Supabase SQL Editor
+-- =============================================================================
+-- CreditBook App - Full Database Schema
+-- Version: 1.4
+-- Last Updated: February 27, 2026
+-- 
+-- Run this entire file in your Supabase SQL Editor to set up or reset the DB.
+-- For incremental migrations on an existing DB, see the ALTER TABLE statements
+-- at the very bottom of this file.
+-- =============================================================================
 
--- Profiles table (extends auth.users)
+
+-- =============================================================================
+-- TABLES
+-- =============================================================================
+
+-- Profiles table (extends Supabase auth.users 1-to-1)
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE NOT NULL,
   name TEXT,
   phone TEXT,
   role TEXT,
-  
+
   -- Business details
   business_name TEXT,
   business_address TEXT,
   gstin TEXT,
   upi_id TEXT,
-  
-  -- Bank details (mandatory for Indian billing)
+
+  -- Bank details (mandatory for Indian billing — displayed on every invoice)
   bank_name TEXT NOT NULL DEFAULT '',
   account_number TEXT NOT NULL DEFAULT '',
   ifsc_code TEXT NOT NULL DEFAULT '',
-  
+
+  -- Bill settings
+  bill_number_prefix TEXT DEFAULT 'INV',   -- e.g. INV, BILL, CB → INV-001, BILL-001
+
   -- Images
   avatar_url TEXT,
   business_logo_url TEXT,
-  
+
   -- Subscription details
   subscription_plan TEXT DEFAULT 'free',
   subscription_expiry TIMESTAMP WITH TIME ZONE,
-  
+
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- -----------------------------------------------------------------------------
 
 -- Customers table
 CREATE TABLE IF NOT EXISTS customers (
@@ -41,6 +58,8 @@ CREATE TABLE IF NOT EXISTS customers (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- -----------------------------------------------------------------------------
+
 -- Products table
 CREATE TABLE IF NOT EXISTS products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -50,6 +69,8 @@ CREATE TABLE IF NOT EXISTS products (
   image_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- -----------------------------------------------------------------------------
 
 -- Product variants table
 CREATE TABLE IF NOT EXISTS product_variants (
@@ -61,32 +82,37 @@ CREATE TABLE IF NOT EXISTS product_variants (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Orders table (with Indian billing enhancements)
+-- -----------------------------------------------------------------------------
+
+-- Orders table (with all Indian billing enhancements)
 CREATE TABLE IF NOT EXISTS orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   vendor_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   customer_id UUID REFERENCES customers(id) ON DELETE CASCADE NOT NULL,
-  
-  -- Bill numbering (sequential per vendor)
+
+  -- Sequential bill number (unique per vendor, supports custom prefix)
   bill_number TEXT NOT NULL,
-  
+
   -- Financial details
-  total_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
+  total_amount NUMERIC(10,2) NOT NULL DEFAULT 0,   -- itemsTotal + tax + loadingCharge
   amount_paid NUMERIC(10,2) NOT NULL DEFAULT 0,
   balance_due NUMERIC(10,2) GENERATED ALWAYS AS (total_amount - amount_paid) STORED,
-  
+
   -- Indian billing specific fields
-  previous_balance NUMERIC(10,2) NOT NULL DEFAULT 0,
-  loading_charge NUMERIC(10,2) NOT NULL DEFAULT 0,
-  
+  previous_balance NUMERIC(10,2) NOT NULL DEFAULT 0,  -- customer's outstanding at order time
+  loading_charge NUMERIC(10,2) NOT NULL DEFAULT 0,    -- transport/delivery (not taxed)
+  tax_percent NUMERIC(5,2) NOT NULL DEFAULT 0,        -- GST % applied to items only
+
   -- Status
   status TEXT NOT NULL CHECK (status IN ('Paid', 'Pending', 'Partially Paid')),
-  
+
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  
-  -- Ensure unique bill numbers per vendor
+
+  -- Bill numbers must be unique per vendor
   UNIQUE(vendor_id, bill_number)
 );
+
+-- -----------------------------------------------------------------------------
 
 -- Order items table
 CREATE TABLE IF NOT EXISTS order_items (
@@ -102,6 +128,8 @@ CREATE TABLE IF NOT EXISTS order_items (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- -----------------------------------------------------------------------------
+
 -- Payments table
 CREATE TABLE IF NOT EXISTS payments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -113,137 +141,156 @@ CREATE TABLE IF NOT EXISTS payments (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_customers_vendor ON customers(vendor_id);
-CREATE INDEX IF NOT EXISTS idx_customers_phone ON customers(phone);
-CREATE INDEX IF NOT EXISTS idx_products_vendor ON products(vendor_id);
+
+-- =============================================================================
+-- INDEXES
+-- =============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_customers_vendor     ON customers(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_customers_phone      ON customers(phone);
+CREATE INDEX IF NOT EXISTS idx_products_vendor      ON products(vendor_id);
 CREATE INDEX IF NOT EXISTS idx_product_variants_product ON product_variants(product_id);
-CREATE INDEX IF NOT EXISTS idx_orders_vendor ON orders(vendor_id);
-CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders(customer_id);
-CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
-CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
-CREATE INDEX IF NOT EXISTS idx_payments_order ON payments(order_id);
+CREATE INDEX IF NOT EXISTS idx_orders_vendor        ON orders(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_orders_customer      ON orders(customer_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status        ON orders(status);
+CREATE INDEX IF NOT EXISTS idx_orders_created_at    ON orders(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_order_items_order    ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_payments_order       ON payments(order_id);
 
--- Row Level Security (RLS) Policies
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- ROW LEVEL SECURITY (RLS)
+-- =============================================================================
+
+ALTER TABLE profiles       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE customers      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE products       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE product_variants ENABLE ROW LEVEL SECURITY;
-ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
-ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_items    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payments       ENABLE ROW LEVEL SECURITY;
 
--- Profiles policies
-CREATE POLICY "Users can view own profile" ON profiles
-  FOR SELECT USING (auth.uid() = user_id);
+-- ------------ profiles -------------------------------------------------------
+DROP POLICY IF EXISTS "Users can view own profile"   ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
 
-CREATE POLICY "Users can update own profile" ON profiles
-  FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own profile"   ON profiles FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Customers policies
-CREATE POLICY "Vendors can view own customers" ON customers
-  FOR SELECT USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+-- ------------ customers ------------------------------------------------------
+DROP POLICY IF EXISTS "Vendors can view own customers"   ON customers;
+DROP POLICY IF EXISTS "Vendors can insert own customers" ON customers;
+DROP POLICY IF EXISTS "Vendors can update own customers" ON customers;
+DROP POLICY IF EXISTS "Vendors can delete own customers" ON customers;
 
-CREATE POLICY "Vendors can insert own customers" ON customers
-  FOR INSERT WITH CHECK (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can view own customers"   ON customers FOR SELECT USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can insert own customers" ON customers FOR INSERT WITH CHECK (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can update own customers" ON customers FOR UPDATE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can delete own customers" ON customers FOR DELETE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
 
-CREATE POLICY "Vendors can update own customers" ON customers
-  FOR UPDATE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+-- ------------ products -------------------------------------------------------
+DROP POLICY IF EXISTS "Vendors can view own products"   ON products;
+DROP POLICY IF EXISTS "Vendors can insert own products" ON products;
+DROP POLICY IF EXISTS "Vendors can update own products" ON products;
+DROP POLICY IF EXISTS "Vendors can delete own products" ON products;
 
-CREATE POLICY "Vendors can delete own customers" ON customers
-  FOR DELETE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can view own products"   ON products FOR SELECT USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can insert own products" ON products FOR INSERT WITH CHECK (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can update own products" ON products FOR UPDATE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can delete own products" ON products FOR DELETE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
 
--- Products policies
-CREATE POLICY "Vendors can view own products" ON products
-  FOR SELECT USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+-- ------------ product_variants -----------------------------------------------
+DROP POLICY IF EXISTS "Vendors can view own variants"   ON product_variants;
+DROP POLICY IF EXISTS "Vendors can insert own variants" ON product_variants;
+DROP POLICY IF EXISTS "Vendors can update own variants" ON product_variants;
+DROP POLICY IF EXISTS "Vendors can delete own variants" ON product_variants;
 
-CREATE POLICY "Vendors can insert own products" ON products
-  FOR INSERT WITH CHECK (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can view own variants"   ON product_variants FOR SELECT USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can insert own variants" ON product_variants FOR INSERT WITH CHECK (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can update own variants" ON product_variants FOR UPDATE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can delete own variants" ON product_variants FOR DELETE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
 
-CREATE POLICY "Vendors can update own products" ON products
-  FOR UPDATE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+-- ------------ orders ---------------------------------------------------------
+DROP POLICY IF EXISTS "Vendors can view own orders"   ON orders;
+DROP POLICY IF EXISTS "Vendors can insert own orders" ON orders;
+DROP POLICY IF EXISTS "Vendors can update own orders" ON orders;
+DROP POLICY IF EXISTS "Vendors can delete own orders" ON orders;
 
-CREATE POLICY "Vendors can delete own products" ON products
-  FOR DELETE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can view own orders"   ON orders FOR SELECT USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can insert own orders" ON orders FOR INSERT WITH CHECK (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can update own orders" ON orders FOR UPDATE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can delete own orders" ON orders FOR DELETE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
 
--- Product variants policies
-CREATE POLICY "Vendors can view own product variants" ON product_variants
-  FOR SELECT USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+-- ------------ order_items ----------------------------------------------------
+DROP POLICY IF EXISTS "Vendors can view own order items"   ON order_items;
+DROP POLICY IF EXISTS "Vendors can insert own order items" ON order_items;
+DROP POLICY IF EXISTS "Vendors can update own order items" ON order_items;
+DROP POLICY IF EXISTS "Vendors can delete own order items" ON order_items;
 
-CREATE POLICY "Vendors can insert own product variants" ON product_variants
-  FOR INSERT WITH CHECK (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can view own order items"   ON order_items FOR SELECT USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can insert own order items" ON order_items FOR INSERT WITH CHECK (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can update own order items" ON order_items FOR UPDATE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can delete own order items" ON order_items FOR DELETE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
 
-CREATE POLICY "Vendors can update own product variants" ON product_variants
-  FOR UPDATE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+-- ------------ payments -------------------------------------------------------
+DROP POLICY IF EXISTS "Vendors can view own payments"   ON payments;
+DROP POLICY IF EXISTS "Vendors can insert own payments" ON payments;
+DROP POLICY IF EXISTS "Vendors can update own payments" ON payments;
+DROP POLICY IF EXISTS "Vendors can delete own payments" ON payments;
 
-CREATE POLICY "Vendors can delete own product variants" ON product_variants
-  FOR DELETE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can view own payments"   ON payments FOR SELECT USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can insert own payments" ON payments FOR INSERT WITH CHECK (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can update own payments" ON payments FOR UPDATE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+CREATE POLICY "Vendors can delete own payments" ON payments FOR DELETE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
 
--- Orders policies
-CREATE POLICY "Vendors can view own orders" ON orders
-  FOR SELECT USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
 
-CREATE POLICY "Vendors can insert own orders" ON orders
-  FOR INSERT WITH CHECK (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+-- =============================================================================
+-- SQL FUNCTIONS
+-- =============================================================================
 
-CREATE POLICY "Vendors can update own orders" ON orders
-  FOR UPDATE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
-
-CREATE POLICY "Vendors can delete own orders" ON orders
-  FOR DELETE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
-
--- Order items policies
-CREATE POLICY "Vendors can view own order items" ON order_items
-  FOR SELECT USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
-
-CREATE POLICY "Vendors can insert own order items" ON order_items
-  FOR INSERT WITH CHECK (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
-
-CREATE POLICY "Vendors can update own order items" ON order_items
-  FOR UPDATE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
-
-CREATE POLICY "Vendors can delete own order items" ON order_items
-  FOR DELETE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
-
--- Payments policies
-CREATE POLICY "Vendors can view own payments" ON payments
-  FOR SELECT USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
-
-CREATE POLICY "Vendors can insert own payments" ON payments
-  FOR INSERT WITH CHECK (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
-
-CREATE POLICY "Vendors can update own payments" ON payments
-  FOR UPDATE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
-
-CREATE POLICY "Vendors can delete own payments" ON payments
-  FOR DELETE USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
-
--- Function to get next bill number for a vendor
-CREATE OR REPLACE FUNCTION get_next_bill_number(vendor_uuid UUID)
+-- -----------------------------------------------------------------------------
+-- get_next_bill_number
+--   Returns the next sequential bill number for a vendor using a given prefix.
+--   Examples: INV-001, INV-002 / BILL-001 / CB-001
+--   Different prefixes count independently (INV-003 and BILL-001 can coexist).
+-- -----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION get_next_bill_number(
+  vendor_uuid UUID,
+  prefix TEXT DEFAULT 'INV'
+)
 RETURNS TEXT AS $$
 DECLARE
   next_num INTEGER;
   bill_num TEXT;
+  prefix_offset INTEGER;
 BEGIN
-  -- Get the highest bill number for this vendor
+  -- prefix_offset: skip "PREFIX-" to reach the numeric part (1-based SUBSTRING)
+  prefix_offset := LENGTH(prefix) + 2;
+
+  -- Find the highest existing number for this vendor + prefix combination
   SELECT COALESCE(
-    MAX(CAST(SUBSTRING(bill_number FROM 5) AS INTEGER)),
+    MAX(CAST(SUBSTRING(bill_number FROM prefix_offset) AS INTEGER)),
     0
   ) INTO next_num
   FROM orders
   WHERE vendor_id = vendor_uuid
-  AND bill_number ~ '^INV-[0-9]+$';
-  
-  -- Increment and format
+    AND bill_number ~ ('^' || prefix || '-[0-9]+$');
+
+  -- Increment and zero-pad to at least 3 digits (INV-001, INV-042, INV-1000)
   next_num := next_num + 1;
-  bill_num := 'INV-' || LPAD(next_num::TEXT, 3, '0');
-  
+  bill_num  := prefix || '-' || LPAD(next_num::TEXT, 3, '0');
+
   RETURN bill_num;
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to calculate customer's previous balance
+-- -----------------------------------------------------------------------------
+-- get_customer_previous_balance
+--   Returns the total outstanding balance across ALL orders for a customer.
+--   Used when creating a new order to show the seller what the customer owes.
+-- -----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION get_customer_previous_balance(
   customer_uuid UUID,
   vendor_uuid UUID
@@ -252,13 +299,35 @@ RETURNS NUMERIC AS $$
 DECLARE
   prev_balance NUMERIC;
 BEGIN
-  -- Sum of all unpaid amounts from previous orders
   SELECT COALESCE(SUM(total_amount - amount_paid), 0)
   INTO prev_balance
   FROM orders
   WHERE customer_id = customer_uuid
-  AND vendor_id = vendor_uuid;
-  
+    AND vendor_id   = vendor_uuid;
+
   RETURN prev_balance;
 END;
 $$ LANGUAGE plpgsql;
+
+
+-- =============================================================================
+-- INCREMENTAL MIGRATIONS
+-- Run these ALTER TABLE statements if the DB already exists and you are 
+-- applying v1.1 → v1.4 enhancements without a full reset.
+-- =============================================================================
+
+-- v1.1 — Indian billing fields on orders
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS bill_number TEXT;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS previous_balance NUMERIC(10,2) NOT NULL DEFAULT 0;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS loading_charge NUMERIC(10,2) NOT NULL DEFAULT 0;
+
+-- v1.1 — Bank details on profiles
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS bank_name TEXT NOT NULL DEFAULT '';
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS account_number TEXT NOT NULL DEFAULT '';
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS ifsc_code TEXT NOT NULL DEFAULT '';
+
+-- v1.4 — Tax/GST support on orders
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS tax_percent NUMERIC(5,2) NOT NULL DEFAULT 0;
+
+-- v1.4 — Custom bill number prefix on profiles
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS bill_number_prefix TEXT DEFAULT 'INV';

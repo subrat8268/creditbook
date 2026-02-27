@@ -85,6 +85,8 @@ export function useCreateOrder(vendorId: string) {
       amountPaid: number;
       paymentMode?: PaymentMode;
       loadingCharge?: number;
+      taxPercent?: number;
+      billNumberPrefix?: string;
     }
   >({
     mutationFn: ({
@@ -93,6 +95,8 @@ export function useCreateOrder(vendorId: string) {
       amountPaid,
       paymentMode,
       loadingCharge,
+      taxPercent,
+      billNumberPrefix,
     }) =>
       createOrder(
         vendorId,
@@ -101,6 +105,8 @@ export function useCreateOrder(vendorId: string) {
         amountPaid,
         paymentMode,
         loadingCharge,
+        taxPercent,
+        billNumberPrefix,
       ),
 
     onSuccess: (newOrder) => {

@@ -92,8 +92,40 @@ export default function ProfileScreen() {
           onChangeText={(t) => updateField("upi_id", t)}
         />
 
-        {/* Bank Account Details */}
+        {/* Bill Settings */}
         <View className="mb-2">
+          <Text className="text-lg font-bold text-gray-900">Bill Settings</Text>
+          <Text className="text-xs text-gray-500 mt-0.5">
+            Customize how your invoice numbers look (e.g. INV, BILL, CB).
+          </Text>
+        </View>
+
+        <Text className="font-semibold text-gray-900 mb-1 mt-3">
+          Bill Number Prefix
+        </Text>
+        <TextInput
+          className="p-3 bg-gray-100 rounded-xl mb-8"
+          placeholder="e.g. INV, BILL, CB"
+          placeholderTextColor="#9ca3af"
+          autoCapitalize="characters"
+          maxLength={10}
+          value={profile.bill_number_prefix ?? "INV"}
+          onEndEditing={(e) =>
+            updateField(
+              "bill_number_prefix",
+              e.nativeEvent.text.toUpperCase() || "INV",
+            )
+          }
+          onChangeText={(t) =>
+            setProfile({
+              ...profile!,
+              bill_number_prefix: t.toUpperCase(),
+            })
+          }
+        />
+
+        {/* Bank Account Details */}
+        <View className="mb-2 mt-2">
           <Text className="text-lg font-bold text-gray-900">
             Bank Account Details
           </Text>

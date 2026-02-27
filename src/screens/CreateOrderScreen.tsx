@@ -43,6 +43,7 @@ export default function CreateOrderScreen() {
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loadingCharge, setLoadingCharge] = useState<number>(0);
+  const [taxPercent, setTaxPercent] = useState<number>(0);
   const [previousBalance, setPreviousBalance] = useState<number>(0);
   const [isFetchingBalance, setIsFetchingBalance] = useState(false);
 
@@ -70,10 +71,16 @@ export default function CreateOrderScreen() {
     [cart],
   );
 
-  // Today's order amount (items + loading)
+  // Tax applied to items only (not loading charge)
+  const taxAmount = useMemo(
+    () => Math.round(((itemsTotal * taxPercent) / 100) * 100) / 100,
+    [itemsTotal, taxPercent],
+  );
+
+  // Today's order amount (items + tax + loading)
   const todayTotal = useMemo(
-    () => itemsTotal + loadingCharge,
-    [itemsTotal, loadingCharge],
+    () => itemsTotal + taxAmount + loadingCharge,
+    [itemsTotal, taxAmount, loadingCharge],
   );
 
   // Grand total shown to seller = previous balance + today's order
@@ -81,6 +88,25 @@ export default function CreateOrderScreen() {
     () => todayTotal + previousBalance,
     [todayTotal, previousBalance],
   );
+
+  // ── Payment reminder via WhatsApp ──────────────────────────
+  const handleSendReminder = async () => {
+    if (!selectedCustomer) return;
+    const phone = selectedCustomer.phone.replace(/[^0-9]/g, "");
+    const amount = previousBalance.toLocaleString("en-IN");
+    const message =
+      `Dear ${selectedCustomer.name}, you have an outstanding balance of ₹${amount}. ` +
+      `Kindly settle at the earliest. — ${profile?.business_name || "Your Store"}`;
+    const waUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`;
+    try {
+      await Linking.openURL(waUrl);
+    } catch {
+      Alert.alert(
+        "Error",
+        "Unable to open WhatsApp. Please ensure it is installed.",
+      );
+    }
+  };
 
   const addToCart = (
     productId: string,
@@ -134,6 +160,8 @@ export default function CreateOrderScreen() {
         })),
         amountPaid: 0,
         loadingCharge: loadingCharge,
+        taxPercent: taxPercent,
+        billNumberPrefix: profile?.bill_number_prefix || "INV",
       });
       Alert.alert("Success", "Order saved!");
       router.back();
@@ -181,6 +209,18 @@ export default function CreateOrderScreen() {
         return Alert.alert("Error", "Select a customer and add products");
       }
 
+      // Validate mandatory bank details
+      if (
+        !profile?.bank_name ||
+        !profile?.account_number ||
+        !profile?.ifsc_code
+      ) {
+        return Alert.alert(
+          "Bank Details Missing",
+          "Please fill in your Bank Name, Account Number, and IFSC Code in Profile → Bank Account Details before generating bills.",
+        );
+      }
+
       const items: BillItem[] = cart.map((c) => ({
         name: c.name,
         variantName: c.variantName,
@@ -207,7 +247,7 @@ export default function CreateOrderScreen() {
           invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
           upiId: profile?.upi_id || "",
           discountAmount: 0,
-          taxPercent: 0,
+          taxPercent: taxPercent,
           notes: "Thank you for your business!",
           previousBalance: previousBalance,
           loadingCharge: loadingCharge,
@@ -258,6 +298,21 @@ export default function CreateOrderScreen() {
         )}
       </TouchableOpacity>
 
+      {/* Payment reminder button — shown only when previous balance > 0 */}
+      {selectedCustomer && previousBalance > 0 && !isFetchingBalance && (
+        <TouchableOpacity
+          className="flex-row items-center gap-2 px-4 py-2.5 mb-3 bg-amber-50 border border-amber-300 rounded-xl"
+          onPress={handleSendReminder}
+        >
+          <Text className="text-amber-700 font-inter-medium text-sm flex-1">
+            🔔 Send payment reminder to {selectedCustomer.name}
+          </Text>
+          <Text className="text-amber-700 text-xs font-inter-semibold">
+            ₹{previousBalance.toLocaleString("en-IN")} due
+          </Text>
+        </TouchableOpacity>
+      )}
+
       {/* Product */}
       <TouchableOpacity
         className="p-4 border rounded-xl mb-4 bg-white"
@@ -293,11 +348,14 @@ export default function CreateOrderScreen() {
       <OrderSummary
         itemsTotal={itemsTotal}
         loadingCharge={loadingCharge}
+        taxPercent={taxPercent}
+        taxAmount={taxAmount}
         previousBalance={previousBalance}
         grandTotal={grandTotal}
         onSave={handleSaveOrder}
         onSendBill={handleSendBill}
         onLoadingChargeChange={setLoadingCharge}
+        onTaxChange={setTaxPercent}
         isFetchingBalance={isFetchingBalance}
       />
 

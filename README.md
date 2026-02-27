@@ -1,8 +1,42 @@
 # CreditBook App - Business Requirements Document (BRD)
 
 > **Last Updated**: February 27, 2026  
-> **Version**: 1.3  
+> **Version**: 1.4  
 > **Status**: Active Development
+
+## 📋 Recent Updates (v1.4 - February 2026)
+
+### ✨ Four Billing Enhancements (NEW + MODIFICATION)
+
+**Features**:
+
+1. **Bank Details Validation before bill generation** — `handleSendBill` in `CreateOrderScreen` now checks that `bank_name`, `account_number`, and `ifsc_code` are all filled. If any are missing, an `Alert` tells the user exactly where to fix it (Profile → Bank Account Details) instead of generating an incomplete bill.
+
+2. **Customizable Bill Number Prefix** (NEW) — Vendors can now set their preferred prefix (INV, BILL, CB, etc.) in Profile → Bill Settings. Prefix is stored in `profiles.bill_number_prefix`. The SQL `get_next_bill_number` function now accepts a `prefix TEXT DEFAULT 'INV'` parameter and matches/increments only bills with that prefix. Bills from different prefixes are counted independently.
+
+3. **Tax/GST % on items** (NEW) — A **GST %** input appears alongside the Loading Charge input in the Order Summary panel. Tax is calculated on `itemsTotal` only (loading charge is excluded, matching Indian billing norms). The breakdown shows: `Today's Items → GST (X%) → Loading → Today's Total → Prev Balance → Grand Total`. Both the PDF and the saved order record the correct `total_amount` including tax.
+
+4. **Customer payment reminders via WhatsApp** (NEW) — When a customer with outstanding balance is selected in the order form, an amber reminder button appears: _"🔔 Send payment reminder to [Name] — ₹X due"_. Tapping it opens WhatsApp with a pre-filled message including the due amount and business name.
+
+**Files Changed**:
+
+- `src/types/auth.ts` — Added `bill_number_prefix?: string | null` to `Profile`
+- `schema.sql` — Added `bill_number_prefix` to profiles, `tax_percent` to orders, updated `get_next_bill_number(prefix)` function
+- `src/api/orders.ts` — Added `tax_percent` to `Order` interface; updated `getNextBillNumber(prefix)`, `createOrder(taxPercent, billNumberPrefix)` with tax in total amount
+- `src/hooks/useOrders.ts` — Added `taxPercent` and `billNumberPrefix` to `useCreateOrder` mutation variables
+- `src/components/orders/OrderBillSummary.tsx` — Loading charge + GST % inputs side-by-side; GST row in breakdown
+- `src/screens/CreateOrderScreen.tsx` — `taxPercent`/`taxAmount` state; bank validation in `handleSendBill`; `handleSendReminder`; reminder button UI; passes `taxPercent`+`billNumberPrefix` to mutation
+- `src/screens/ProfileScreen.tsx` — Added Bill Settings section with prefix input
+
+**DB Migration required** — Run in Supabase SQL Editor:
+
+```sql
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS bill_number_prefix TEXT DEFAULT 'INV';
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS tax_percent NUMERIC(5,2) NOT NULL DEFAULT 0;
+-- Then run the updated get_next_bill_number function from schema.sql
+```
+
+---
 
 ## 📋 Recent Updates (v1.3 - February 2026)
 
@@ -1260,10 +1294,11 @@ After setting up the database, test the new features:
 | 1.1     | Feb 27, 2026 | AI Assistant | Added comprehensive Indian billing features: sequential bill numbering, previous balance tracking, loading charge, bank details on invoices, enhanced PDF generation, SQL functions |
 | 1.2     | Feb 27, 2026 | AI Assistant | NEW: Live previous balance in order form — fetched on customer select, full Grand Total breakdown (Items + Loading + Prev Balance), no duplicate API calls                          |
 | 1.3     | Feb 27, 2026 | AI Assistant | MOD: Bank details collection UI on Profile screen (Bank Name, Account Number, IFSC Code) — fields existed in schema/types, now have form inputs with blur-save UX                   |
+| 1.4     | Feb 27, 2026 | AI Assistant | NEW: Bank detail validation before bill send; customizable bill prefix (Profile setting + SQL); Tax/GST % on items in order form; WhatsApp payment reminder button                  |
 
 ---
 
 **Document Status**: Active Development  
-**Last Major Update**: Bank Details Collection UI on Profile Screen (v1.3)  
+**Last Major Update**: Billing Enhancements — Validation, Prefix, Tax, Reminders (v1.4)  
 **Next Review Date**: March 15, 2026  
 **Approval Required**: Product Owner, Tech Lead, Stakeholders

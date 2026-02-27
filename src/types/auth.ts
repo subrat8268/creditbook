@@ -21,6 +21,9 @@ export interface Profile {
   account_number?: string | null;
   ifsc_code?: string | null;
 
+  // Bill settings
+  bill_number_prefix?: string | null;
+
   //Images
   avatar_url?: string | null;
   business_logo_url?: string | null;
