@@ -17,9 +17,12 @@ export interface Order {
   id: string;
   vendor_id: string;
   customer_id: string;
+  bill_number: string;
   total_amount: number;
   amount_paid: number;
   balance_due: number;
+  previous_balance: number;
+  loading_charge: number;
   status: "Paid" | "Pending" | "Partially Paid";
   created_at: string;
 }
@@ -55,7 +58,7 @@ export async function fetchOrders(
   vendorId: string,
   search?: string,
   statusFilter?: string,
-  sortBy?: "newest" | "oldest" | "high" | "low"
+  sortBy?: "newest" | "oldest" | "high" | "low",
 ): Promise<Order[]> {
   let query = supabase
     .from("orders")
@@ -71,7 +74,7 @@ export async function fetchOrders(
   if (search && search.trim() !== "") {
     const searchTerm = `%${search.trim()}%`;
     query = query.or(
-      `id.ilike.${searchTerm},customer_name.ilike.${searchTerm},customer_phone.ilike.${searchTerm}`
+      `id.ilike.${searchTerm},customer_name.ilike.${searchTerm},customer_phone.ilike.${searchTerm}`,
     );
   }
 
@@ -93,7 +96,7 @@ export async function fetchOrders(
   // Apply pagination
   query = query.range(
     pageParam * PAGE_SIZE,
-    pageParam * PAGE_SIZE + PAGE_SIZE - 1
+    pageParam * PAGE_SIZE + PAGE_SIZE - 1,
   );
 
   const { data, error } = await query;
@@ -104,21 +107,24 @@ export async function fetchOrders(
     total_amount: Number(o.total_amount),
     amount_paid: Number(o.amount_paid),
     balance_due: Number(o.total_amount) - Number(o.amount_paid),
+    previous_balance: Number(o.previous_balance || 0),
+    loading_charge: Number(o.loading_charge || 0),
   })) as Order[];
 }
 
 // Single order with customer info
 export async function fetchOrderDetail(
-  orderId: string
+  orderId: string,
 ): Promise<OrderDetail | null> {
   const { data, error } = await supabase
     .from("orders")
     .select(
       `
-      id, vendor_id, customer_id, total_amount, amount_paid, status, created_at,
+      id, vendor_id, customer_id, bill_number, total_amount, amount_paid, 
+      previous_balance, loading_charge, status, created_at,
       customers ( id, name, phone, address ),
       order_items ( id, product_id, product_name, variant_name, price, quantity, created_at )
-    `
+    `,
     )
     .eq("id", orderId)
     .maybeSingle();
@@ -130,6 +136,8 @@ export async function fetchOrderDetail(
     total_amount: Number(data.total_amount),
     amount_paid: Number(data.amount_paid),
     balance_due: Number(data.total_amount) - Number(data.amount_paid),
+    previous_balance: Number(data.previous_balance || 0),
+    loading_charge: Number(data.loading_charge || 0),
     customer: Array.isArray(data.customers)
       ? (data.customers[0] ?? null)
       : (data.customers ?? null),
@@ -164,7 +172,7 @@ export async function recordPayment(
   vendorId: string,
   amount: number,
   paymentMode: PaymentMode,
-  markFull: boolean
+  markFull: boolean,
 ): Promise<void> {
   // 1. Get current order
   const { data: order, error: orderErr } = await supabase
@@ -216,6 +224,57 @@ export async function recordPayment(
 }
 
 /**
+ * Get next sequential bill number for a vendor
+ */
+export async function getNextBillNumber(vendorId: string): Promise<string> {
+  const { data, error } = await supabase.rpc("get_next_bill_number", {
+    vendor_uuid: vendorId,
+  });
+
+  if (error) {
+    console.error("Error getting next bill number:", error);
+    // Fallback to timestamp-based if function doesn't exist
+    return `INV-${Date.now().toString().slice(-6)}`;
+  }
+
+  return data || "INV-001";
+}
+
+/**
+ * Calculate customer's previous outstanding balance
+ * (sum of all unpaid amounts from their orders)
+ */
+export async function getCustomerPreviousBalance(
+  customerId: string,
+  vendorId: string,
+): Promise<number> {
+  const { data, error } = await supabase.rpc("get_customer_previous_balance", {
+    customer_uuid: customerId,
+    vendor_uuid: vendorId,
+  });
+
+  if (error) {
+    console.error("Error getting customer previous balance:", error);
+    // Fallback to manual calculation
+    const { data: orders } = await supabase
+      .from("orders")
+      .select("total_amount, amount_paid")
+      .eq("customer_id", customerId)
+      .eq("vendor_id", vendorId);
+
+    if (!orders) return 0;
+
+    return orders.reduce(
+      (sum, order) =>
+        sum + (Number(order.total_amount) - Number(order.amount_paid)),
+      0,
+    );
+  }
+
+  return Number(data || 0);
+}
+
+/**
  * Create a new order with items
  */
 export async function createOrder(
@@ -229,13 +288,22 @@ export async function createOrder(
     quantity: number;
   }[],
   amountPaid: number,
-  paymentMode?: PaymentMode
+  paymentMode?: PaymentMode,
+  loadingCharge: number = 0,
 ): Promise<OrderDetail> {
-  // 1. Calculate totals
-  const totalAmount = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
+  // 1. Get bill number and previous balance
+  const billNumber = await getNextBillNumber(vendorId);
+  const previousBalance = await getCustomerPreviousBalance(
+    customerId,
+    vendorId,
   );
+
+  // 2. Calculate totals
+  const itemsTotal = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+  const totalAmount = itemsTotal + loadingCharge;
 
   const status =
     amountPaid >= totalAmount
@@ -244,15 +312,18 @@ export async function createOrder(
         ? "Partially Paid"
         : "Pending";
 
-  // 2. Insert order
+  // 3. Insert order
   const { data: orderData, error: orderErr } = await supabase
     .from("orders")
     .insert([
       {
         vendor_id: vendorId,
         customer_id: customerId,
+        bill_number: billNumber,
         total_amount: totalAmount,
         amount_paid: amountPaid,
+        previous_balance: previousBalance,
+        loading_charge: loadingCharge,
         status,
       },
     ])
@@ -262,7 +333,7 @@ export async function createOrder(
   if (orderErr) throw orderErr;
   if (!orderData) throw new Error("Failed to create order");
 
-  // 3. Insert order_items
+  // 4. Insert order_items
   const orderItems = items.map((item) => ({
     order_id: orderData.id,
     vendor_id: vendorId,
@@ -279,7 +350,7 @@ export async function createOrder(
 
   if (itemsErr) throw itemsErr;
 
-  // 4. Record payment if amountPaid > 0
+  // 5. Record payment if amountPaid > 0
   if (amountPaid > 0 && paymentMode) {
     const { error: paymentErr } = await supabase.from("payments").insert([
       {

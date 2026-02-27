@@ -16,6 +16,11 @@ export interface Profile {
   gstin?: string | null;
   upi_id?: string | null;
 
+  // Bank details (mandatory for Indian billing)
+  bank_name?: string | null;
+  account_number?: string | null;
+  ifsc_code?: string | null;
+
   //Images
   avatar_url?: string | null;
   business_logo_url?: string | null;

@@ -88,7 +88,7 @@ export const DashboardScreen = () => {
           <QuickAction
             label="My Profile"
             icon={<Ionicons name="card-outline" size={28} color="green" />}
-            onPress={() => router.push("/(main)/profile/index")}
+            onPress={() => router.push("/(main)/profile")}
           />
         </View>
       </ScrollView>

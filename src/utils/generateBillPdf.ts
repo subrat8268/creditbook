@@ -15,6 +15,9 @@ export type StoreInfo = {
   phone?: string;
   gstin?: string;
   logoUrl?: string | null;
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
 };
 
 export type InvoiceOptions = {
@@ -25,6 +28,8 @@ export type InvoiceOptions = {
   discountAmount?: number;
   taxPercent?: number;
   showLogo?: boolean;
+  previousBalance?: number;
+  loadingCharge?: number;
 };
 
 export async function generateBillPdf(
@@ -32,7 +37,7 @@ export async function generateBillPdf(
   store: StoreInfo,
   totalAmount: number,
   customerName: string,
-  options: InvoiceOptions = {}
+  options: InvoiceOptions = {},
 ): Promise<string> {
   try {
     const {
@@ -43,6 +48,8 @@ export async function generateBillPdf(
       discountAmount = options.discountAmount || 0,
       taxPercent = options.taxPercent || 0,
       showLogo = options.showLogo ?? true,
+      previousBalance = options.previousBalance || 0,
+      loadingCharge = options.loadingCharge || 0,
     } = options;
 
     // build rows
@@ -65,7 +72,11 @@ export async function generateBillPdf(
     const discount = Number(discountAmount || 0);
     const taxedBase = Math.max(0, subtotal - discount);
     const taxAmount = taxPercent ? (taxedBase * taxPercent) / 100 : 0;
-    const grandTotal = Math.round((taxedBase + taxAmount) * 100) / 100;
+    const loadingChargeValue = Number(loadingCharge || 0);
+    const orderTotal =
+      Math.round((taxedBase + taxAmount + loadingChargeValue) * 100) / 100;
+    const prevBalance = Number(previousBalance || 0);
+    const grandTotal = orderTotal + prevBalance;
 
     // UPI QR image URL via Google Chart API (public)
     const upiQrUrl = upiId
@@ -116,6 +127,7 @@ export async function generateBillPdf(
 
           <div class="section">
             <div class="small"><strong>Bill To:</strong> ${escapeHtml(customerName)}</div>
+            ${prevBalance > 0 ? `<div class="small" style="color:#d97706; font-weight:600; margin-top:4px">Previous Balance: ₹${formatNumber(prevBalance)}</div>` : ""}
           </div>
 
           <div class="section">
@@ -139,29 +151,66 @@ export async function generateBillPdf(
               <td style="text-align:left">Subtotal</td>
               <td style="text-align:right">₹${formatNumber(subtotal)}</td>
             </tr>
-            <tr>
+            ${
+              discount > 0
+                ? `<tr>
               <td style="text-align:left">Discount</td>
-              <td style="text-align:right">₹${formatNumber(discount)}</td>
-            </tr>
-            <tr>
+              <td style="text-align:right">-₹${formatNumber(discount)}</td>
+            </tr>`
+                : ""
+            }
+            ${
+              taxPercent > 0
+                ? `<tr>
               <td style="text-align:left">Tax (${formatNumber(taxPercent)}%)</td>
               <td style="text-align:right">₹${formatNumber(taxAmount)}</td>
-            </tr>
+            </tr>`
+                : ""
+            }
+            ${
+              loadingChargeValue > 0
+                ? `<tr>
+              <td style="text-align:left">Loading Charge</td>
+              <td style="text-align:right">₹${formatNumber(loadingChargeValue)}</td>
+            </tr>`
+                : ""
+            }
             <tr>
-              <td style="text-align:left"><strong>Grand Total</strong></td>
-              <td style="text-align:right"><strong>₹${formatNumber(grandTotal)}</strong></td>
+              <td style="text-align:left"><strong>Order Total</strong></td>
+              <td style="text-align:right"><strong>₹${formatNumber(orderTotal)}</strong></td>
             </tr>
+            ${
+              prevBalance > 0
+                ? `<tr>
+              <td style="text-align:left; color:#d97706">Previous Balance</td>
+              <td style="text-align:right; color:#d97706">₹${formatNumber(prevBalance)}</td>
+            </tr>
+            <tr style="border-top: 2px solid #333">
+              <td style="text-align:left; font-size:16px"><strong>Grand Total</strong></td>
+              <td style="text-align:right; font-size:16px"><strong>₹${formatNumber(grandTotal)}</strong></td>
+            </tr>`
+                : ""
+            }
           </table>
 
           <div class="footer">
             <div>
-              <div class="small">Notes: ${escapeHtml(notes)}</div>
-              <div class="small">Thank you for your business!</div>
+              ${notes ? `<div class="small">Notes: ${escapeHtml(notes)}</div>` : ""}
+              ${
+                store.bankName
+                  ? `<div class="small" style="margin-top:8px"><strong>Bank Details:</strong></div>
+              <div class="small">Bank: ${escapeHtml(store.bankName)}</div>
+              <div class="small">A/c: ${escapeHtml(store.accountNumber || "")}</div>
+              <div class="small">IFSC: ${escapeHtml(store.ifscCode || "")}</div>`
+                  : ""
+              }
+              <div class="small" style="margin-top:12px; color:#888">Made with ❤️ by CreditBook</div>
             </div>
 
             <div style="text-align:center">
               ${upiQrUrl ? `<img src="${upiQrUrl}" class="qr" />` : ""}
-              <div class="small">Scan to pay ${upiId ? `(${escapeHtml(upiId)})` : ""}</div>
+              ${upiId ? `<div class="small">Scan to pay (${escapeHtml(upiId)})</div>` : ""}
+              <div class="small" style="margin-top:8px">Thank you for your business!</div>
             </div>
           </div>
         </body>
@@ -188,7 +237,7 @@ function escapeHtml(s: string) {
     (c) =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
         c
-      ] as string
+      ] as string,
   );
 }
 function formatNumber(n: number) {

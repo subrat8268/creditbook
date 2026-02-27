@@ -1,18 +1,18 @@
 import {
-  InfiniteData,
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
+    InfiniteData,
+    useInfiniteQuery,
+    useMutation,
+    useQuery,
+    useQueryClient,
 } from "@tanstack/react-query";
 import {
-  createOrder,
-  fetchOrderDetail,
-  fetchOrders,
-  Order,
-  OrderDetail,
-  PAGE_SIZE,
-  PaymentMode,
+    createOrder,
+    fetchOrderDetail,
+    fetchOrders,
+    Order,
+    OrderDetail,
+    PAGE_SIZE,
+    PaymentMode,
 } from "../api/orders";
 import { useDebounce } from "./useDebounce";
 
@@ -26,7 +26,7 @@ export function useOrders(
   vendorId?: string,
   search?: string,
   statusFilter?: string,
-  sortBy?: "newest" | "oldest" | "high" | "low"
+  sortBy?: "newest" | "oldest" | "high" | "low",
 ) {
   const debounceSearch = useDebounce(search ?? "", 300);
 
@@ -40,7 +40,7 @@ export function useOrders(
         vendorId!,
         debounceSearch,
         statusFilter,
-        sortBy
+        sortBy,
       ),
     getNextPageParam: (lastPage, allPages) =>
       lastPage.length === PAGE_SIZE ? allPages.length : undefined,
@@ -84,10 +84,24 @@ export function useCreateOrder(vendorId: string) {
       }[];
       amountPaid: number;
       paymentMode?: PaymentMode;
+      loadingCharge?: number;
     }
   >({
-    mutationFn: ({ customerId, items, amountPaid, paymentMode }) =>
-      createOrder(vendorId, customerId, items, amountPaid, paymentMode),
+    mutationFn: ({
+      customerId,
+      items,
+      amountPaid,
+      paymentMode,
+      loadingCharge,
+    }) =>
+      createOrder(
+        vendorId,
+        customerId,
+        items,
+        amountPaid,
+        paymentMode,
+        loadingCharge,
+      ),
 
     onSuccess: (newOrder) => {
       queryClient.setQueryData(orderKeys.detail(newOrder.id), newOrder);
@@ -102,7 +116,7 @@ export function useCreateOrder(vendorId: string) {
             pages: [[newOrder, ...oldData.pages[0]], ...oldData.pages.slice(1)],
             pageParams: oldData.pageParams,
           };
-        }
+        },
       );
       queryClient.invalidateQueries({ queryKey: ["dashboard", vendorId] });
     },

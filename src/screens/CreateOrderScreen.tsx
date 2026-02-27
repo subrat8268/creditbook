@@ -3,8 +3,9 @@ import Loader from "@/src/components/feedback/Loader";
 import OrderSummary from "@/src/components/orders/OrderBillSummary";
 import OrderItemCard from "@/src/components/orders/OrderItemCard";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Alert, FlatList, Linking, Text, TouchableOpacity } from "react-native";
+import { getCustomerPreviousBalance } from "../api/orders";
 import CustomerPicker from "../components/picker/CustomerPicker";
 import ProductPicker from "../components/picker/ProductPicker";
 import VariantPicker from "../components/picker/VariantPicker";
@@ -32,7 +33,7 @@ export default function CreateOrderScreen() {
   const router = useRouter();
 
   const [selectedCustomer, setSelectedCustomer] = useState<any>(
-    customerParams ? JSON.parse(customerParams) : null
+    customerParams ? JSON.parse(customerParams) : null,
   );
 
   const [isCustomerPickerVisible, setCustomerPickerVisible] = useState(false);
@@ -41,10 +42,44 @@ export default function CreateOrderScreen() {
 
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [loadingCharge, setLoadingCharge] = useState<number>(0);
+  const [previousBalance, setPreviousBalance] = useState<number>(0);
+  const [isFetchingBalance, setIsFetchingBalance] = useState(false);
 
-  const totalAmount = useMemo(
+  // Fetch previous balance whenever a customer is selected
+  const handleSelectCustomer = useCallback(
+    async (customer: any) => {
+      setSelectedCustomer(customer);
+      setCustomerPickerVisible(false);
+      if (!customer || !vendorId) return;
+      try {
+        setIsFetchingBalance(true);
+        const balance = await getCustomerPreviousBalance(customer.id, vendorId);
+        setPreviousBalance(balance);
+      } catch (e) {
+        setPreviousBalance(0);
+      } finally {
+        setIsFetchingBalance(false);
+      }
+    },
+    [vendorId],
+  );
+
+  const itemsTotal = useMemo(
     () => cart.reduce((sum, i) => sum + i.price * i.quantity, 0),
-    [cart]
+    [cart],
+  );
+
+  // Today's order amount (items + loading)
+  const todayTotal = useMemo(
+    () => itemsTotal + loadingCharge,
+    [itemsTotal, loadingCharge],
+  );
+
+  // Grand total shown to seller = previous balance + today's order
+  const grandTotal = useMemo(
+    () => todayTotal + previousBalance,
+    [todayTotal, previousBalance],
   );
 
   const addToCart = (
@@ -52,7 +87,7 @@ export default function CreateOrderScreen() {
     name: string,
     price: number,
     variantId?: string,
-    variantName?: string
+    variantName?: string,
   ) => {
     const key = `${productId}-${variantId ?? "base"}-${Date.now()}`;
 
@@ -98,6 +133,7 @@ export default function CreateOrderScreen() {
           quantity: c.quantity,
         })),
         amountPaid: 0,
+        loadingCharge: loadingCharge,
       });
       Alert.alert("Success", "Order saved!");
       router.back();
@@ -106,8 +142,6 @@ export default function CreateOrderScreen() {
       Alert.alert("Error", err.message || "Failed to save order");
     }
   };
-
-  // const handleSendBill = async () => {
   //   try {
   //     if (!selectedCustomer || cart.length === 0) {
   //       return Alert.alert("Error", "Select a customer and add products");
@@ -154,31 +188,34 @@ export default function CreateOrderScreen() {
         price: c.price,
       }));
 
-      // 1. generate PDF locally
+      // Use already-fetched previousBalance state (no duplicate API call)
       const localPdfPath = await generateBillPdf(
         items,
         {
-          name: "Your Store",
-          address: "Your Address",
-          phone: "0000000000",
-          gstin: "YOURGSTIN",
-          logoUrl: "r://yourcdn.com/logo.png",
+          name: profile?.business_name || "Your Store",
+          address: profile?.business_address || "",
+          phone: profile?.phone || "",
+          gstin: profile?.gstin || "",
+          logoUrl: profile?.business_logo_url || null,
+          bankName: profile?.bank_name || "",
+          accountNumber: profile?.account_number || "",
+          ifscCode: profile?.ifsc_code || "",
         },
-        totalAmount,
+        todayTotal,
         selectedCustomer.name,
         {
-          invoiceNumber: `INV-${Date.now()}`,
-          upiId: "yourupi@bank", // optional
+          invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
+          upiId: profile?.upi_id || "",
           discountAmount: 0,
-          taxPercent: 18,
-          notes: "Thanks for shopping!",
-        }
+          taxPercent: 0,
+          notes: "Thank you for your business!",
+          previousBalance: previousBalance,
+          loadingCharge: loadingCharge,
+        },
       );
 
-      // 2. upload to Supabase bills bucket
       const publicUrl = await uploadPdfToSupabase(localPdfPath);
 
-      // 3. create WhatsApp url with link and open
       const phone = selectedCustomer.phone.replace(/[^0-9]/g, "");
       const message = `Hello ${selectedCustomer.name}, here is your bill: ${publicUrl}`;
       const waUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`;
@@ -188,7 +225,7 @@ export default function CreateOrderScreen() {
       } catch {
         Alert.alert(
           "Error",
-          "Unable to open WhatsApp. Please ensure WhatsApp is installed."
+          "Unable to open WhatsApp. Please ensure WhatsApp is installed.",
         );
       }
     } catch (err: any) {
@@ -209,6 +246,16 @@ export default function CreateOrderScreen() {
         <Text className="font-inter-medium text-gray-700">
           {selectedCustomer ? selectedCustomer.name : "Select Customer"}
         </Text>
+        {selectedCustomer && previousBalance > 0 && (
+          <Text className="text-xs text-amber-600 font-inter-medium mt-1">
+            {isFetchingBalance
+              ? "Fetching balance…"
+              : `Previous Balance: ₹${previousBalance.toLocaleString("en-IN")}`}
+          </Text>
+        )}
+        {selectedCustomer && isFetchingBalance && previousBalance === 0 && (
+          <Text className="text-xs text-gray-400 mt-1">Fetching balance…</Text>
+        )}
       </TouchableOpacity>
 
       {/* Product */}
@@ -239,14 +286,19 @@ export default function CreateOrderScreen() {
             No products added yet
           </Text>
         }
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{ paddingBottom: 280 }}
       />
 
       {/* Summary */}
       <OrderSummary
-        total={totalAmount}
+        itemsTotal={itemsTotal}
+        loadingCharge={loadingCharge}
+        previousBalance={previousBalance}
+        grandTotal={grandTotal}
         onSave={handleSaveOrder}
         onSendBill={handleSendBill}
+        onLoadingChargeChange={setLoadingCharge}
+        isFetchingBalance={isFetchingBalance}
       />
 
       {/* Customer Picker */}
@@ -254,10 +306,7 @@ export default function CreateOrderScreen() {
         visible={isCustomerPickerVisible}
         onClose={() => setCustomerPickerVisible(false)}
         selectedCustomer={selectedCustomer}
-        setSelectedCustomer={(c: any) => {
-          setSelectedCustomer(c);
-          setCustomerPickerVisible(false); // close after selection
-        }}
+        setSelectedCustomer={handleSelectCustomer}
         vendorId={vendorId!}
       />
 
@@ -286,7 +335,7 @@ export default function CreateOrderScreen() {
               selectedProduct.name,
               price,
               variantId ?? undefined,
-              variantName
+              variantName,
             );
             setTimeout(() => {
               setVariantPickerVisible(false);
