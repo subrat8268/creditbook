@@ -1,7 +1,7 @@
 # CreditBook App - Complete Project Documentation
 
-> **Last Updated**: March 1, 2026
-> **Version**: 1.8
+> **Last Updated**: March 2, 2026
+> **Version**: 2.4
 > **Status**: Active Development
 > **Target Market**: Indian SMBs (Retailers, Wholesalers, Distributors)
 
@@ -59,7 +59,7 @@ CreditBook is a mobile-first **digital ledger and billing application** designed
 
 - **Digital Khata**: Track lifetime credit history per customer.
 - **Outstanding Dashboard**: Aggregate view of total recoverable debt.
-- **Fast Import**: (Planned) Import from phone contacts.
+- **Fast Import**: ✅ Import from phone contacts via `expo-contacts` — multi-select picker with search, bulk add, and duplicate-skipping (v2.4).
 
 #### 🧾 Order & Billing System
 
@@ -120,15 +120,19 @@ This section contains the deep technical details required for an AI or developer
 
 ### 4.1 Tech Stack
 
-| Layer             | Technology            | Rationale                                       |
-| :---------------- | :-------------------- | :---------------------------------------------- |
-| **App Framework** | **React Native 19.1** | Cross-platform (iOS/Android), high performance. |
-| **Routing**       | **Expo Router 6.0**   | File-based routing, deep linking support.       |
-| **Styling**       | **NativeWind 4.2**    | Tailwind CSS utility classes for rapid UI dev.  |
-| **Backend / DB**  | **Supabase**          | PostgreSQL, Auth, Realtime, Edge Functions.     |
-| **State Mgmt**    | **Zustand**           | Lightweight global state (Auth, User Profile).  |
-| **Server State**  | **TanStack Query**    | Caching, optimistic updates, infinite scroll.   |
-| **PDF Engine**    | **expo-print**        | Robust HTML-to-PDF generation.                  |
+| Layer             | Technology                  | Rationale                                                 |
+| :---------------- | :-------------------------- | :-------------------------------------------------------- |
+| **App Framework** | **React Native 19.1**       | Cross-platform (iOS/Android), high performance.           |
+| **Routing**       | **Expo Router 6.0**         | File-based routing, deep linking support.                 |
+| **Styling**       | **NativeWind 4.2**          | Tailwind CSS utility classes for rapid UI dev.            |
+| **Backend / DB**  | **Supabase**                | PostgreSQL, Auth, Realtime, Edge Functions.               |
+| **State Mgmt**    | **Zustand**                 | Lightweight global state (Auth, User Profile).            |
+| **Server State**  | **TanStack Query**          | Caching, optimistic updates, infinite scroll.             |
+| **PDF Engine**    | **expo-print**              | Robust HTML-to-PDF generation.                            |
+| **i18n**          | **i18next + react-i18next** | EN/HI language toggle with AsyncStorage persistence. v2.2 |
+| **Crash Reports** | **@sentry/react-native**    | Error tracking + crash reporting (free tier). v2.1        |
+| **Contacts**      | **expo-contacts**           | Import customers from phone contacts. v2.4                |
+| **File System**   | **expo-file-system/legacy** | CSV export — write to device cache, share sheet. v2.3     |
 
 ### 4.2 Project Structure
 
@@ -136,42 +140,58 @@ This section contains the deep technical details required for an AI or developer
 /
 ├── app/                  # Expo Router Pages
 │   ├── (auth)/           # Login, Register, Recover (Unprotected)
+│   │   └── onboarding/   # 3-step onboarding flow               ← v2.0
 │   ├── (main)/           # Main App (Protected)
 │   │   ├── customers/    # Customer List & Detail Pages
 │   │   ├── orders/       # Order Management & Creation
 │   │   ├── products/     # Inventory Management
-│   │   ├── suppliers/    # Supplier/Distributor Pages         ← v1.7
+│   │   ├── suppliers/    # Supplier/Distributor Pages            ← v1.7
 │   │   │   ├── index.tsx          # Supplier list
 │   │   │   ├── [supplierId].tsx   # Supplier detail
 │   │   │   └── _layout.tsx        # Stack navigator
+│   │   ├── export/       # CSV/Excel export screen (hidden tab)  ← v2.3
+│   │   │   └── index.tsx
 │   │   ├── profile/      # User Settings & Business Profile
 │   │   └── dashboard/    # Analytics & Overview
-│   └── _layout.tsx       # Root Layout (Auth Check)
+│   └── _layout.tsx       # Root Layout (Auth Check + i18n + Sentry)
 ├── src/
 │   ├── api/
 │   │   ├── suppliers.ts  # fetchSuppliers, addSupplier, recordDelivery, recordPaymentMade
 │   │   ├── dashboard.ts  # getDashboardData (customersOweMe, iOweSuppliers, netPosition) ← v1.8
+│   │   ├── export.ts     # 4 export queries: orders, payments, customers, suppliers ← v2.3
 │   │   └── ...           # customers, orders, products, profiles, auth, upload
 │   ├── components/
 │   │   ├── suppliers/    # SupplierCard, SupplierList, NewSupplierModal,
 │   │   │                 # RecordDeliveryModal, RecordPaymentMadeModal  ← v1.7
-│   │   └── ...           # customers/, orders/, products/, ui/, feedback/
+│   │   ├── customers/    # CustomerCard, CustomerList, NewCustomerModal,
+│   │   │                 # ContactsPickerModal (expo-contacts)  ← v2.4
+│   │   └── ...           # orders/, products/, ui/, feedback/, onboarding/
 │   ├── hooks/
 │   │   ├── useSuppliers.ts  # TanStack Query hooks for all supplier operations ← v1.7
 │   │   └── ...           # useCustomer, useOrders, useDashboard, useProducts …
+│   ├── i18n/                                                     ← v2.2
+│   │   ├── en.ts         # English translations (10 namespaces)
+│   │   ├── hi.ts         # Hindi translations (10 namespaces)
+│   │   └── index.ts      # i18next config + language init
 │   ├── screens/
 │   │   ├── SuppliersScreen.tsx    ← v1.7
+│   │   ├── ExportScreen.tsx       # Date-range filter + 4 export buttons ← v2.3
 │   │   └── ...           # Dashboard, Customers, Orders, Products, Profile
+│   ├── services/
+│   │   └── sentry.ts     # initSentry() + Sentry.wrap()          ← v2.1
 │   ├── store/
 │   │   ├── suppliersStore.ts      ← v1.7
-│   │   └── ...           # authStore, orderStore, customersStore
+│   │   ├── languageStore.ts       # Language toggle, AsyncStorage persist ← v2.2
+│   │   └── ...           # authStore, orderStore, customersStore, dashboardStore
 │   ├── types/
 │   │   ├── supplier.ts   # Supplier, SupplierDetail, SupplierDelivery  ← v1.7
-│   │   └── ...           # auth.ts (dashboard_mode added v1.8), customer.ts
-│   └── utils/            # generateBillPdf, helper, phone, schemas, theme, ThemeProvider
+│   │   └── ...           # auth.ts (dashboard_mode + onboarding_complete), customer.ts
+│   └── utils/
+│       ├── exportCsv.ts  # toCsv<T>() + shareCsv() via expo-file-system/legacy ← v2.3
+│       └── ...           # generateBillPdf, helper, phone, schemas, theme, ThemeProvider
 ├── supabase/             # Migration Files & Config
 ├── schema.sql            # Master Database Schema (Source of Truth)
-└── app.json              # Expo Configuration
+└── app.json              # Expo Configuration (Sentry plugin added v2.1)
 ```
 
 ### 4.3 Database Schema (SQL)
@@ -358,27 +378,74 @@ Specific adaptations for the Indian market implemented in the app:
 
 - [x] **Phase 1: Foundation (Completed)**
   - Auth, Profiles, Core Schema, Basic Ordering, PDF Generation.
-- [x] **Phase 2: Indian Billing (v1.4–v1.6 Completed)**
+- [x] **Phase 2: Indian Billing (v1.1–v1.6 Completed)**
   - Sequential Bill IDs, Previous Balance, Loading Charge, Bank Details, WhatsApp Reminders.
   - Overdue Customer Flagging (Dashboard count + Customer list badge + Detail warning banner).
 - [x] **Phase 3: Supplier / Distributor Mode (v1.7 Completed)**
   - Full supplier management: add suppliers, record deliveries, track payments made.
   - Balance owed calculation, delivery history, bank detail storage.
-- [x] **Phase 4: Net Position Dashboard (Current v1.8)**
+- [x] **Phase 4: Net Position Dashboard (v1.8 Completed)**
   - "Customers Owe Me" (green) + "I Owe Suppliers" (red) + "Net Position" (amber if negative) cards.
   - Dashboard Mode switch in Profile: Seller / Distributor / Both — controls visible cards.
-- [ ] **Phase 5: Engagement (Next)**
-  - WhatsApp API integration (automated sending).
-  - Inventory stock alerts.
-  - Multi-language support (Hindi/Hinglish).
+- [~] **Phase 5: Engagement — In Progress (v2.0–v2.4)**
+  - [x] 3-step onboarding flow (phone, business setup, ready screen). v2.0
+  - [x] Sentry crash reporting integration. v2.1
+  - [x] Hindi UI language toggle (EN/HI, AsyncStorage persistence). v2.2
+  - [x] CSV / Excel data export (4 report types, date range filter, share sheet). v2.3
+  - [x] Import customers from phone contacts (multi-select, bulk add). v2.4
+  - [ ] WhatsApp Business API (auto-send bill on creation).
+  - [ ] Push notifications for overdue payments.
+  - [ ] Inventory stock tracking + low stock alerts.
+  - [ ] Phone OTP login (replace email/password).
 - [ ] **Phase 6: Growth**
   - Staff accounts (Role-based access).
   - Online Storefront for customers.
   - Cloud Backup & Restore UI.
+  - Premium subscription tier (₹149–₹199/mo).
 
 ---
 
 ## 9. Recent Updates & Changelog
+
+### v2.4 — Import Customers from Phone Contacts (Current)
+
+- **NEW**: **ContactsPickerModal** — `expo-contacts` bottom-sheet; requests `READ_CONTACTS` permission, loads contacts filtered to valid phone numbers, multi-select + search + select-all/deselect-all, bulk import with per-contact error skipping.
+- **NEW**: Second FAB (people icon) on Customers screen above the existing add FAB opens the contacts picker.
+- **MOD**: `NewCustomerModal` — optional `initialValues` prop + `enableReinitialize` for contact pre-fill.
+- **i18n**: 13 new keys in `customers` namespace (EN + HI): `importContacts`, `selectContacts`, `importSelected`, `noContactsFound`, `permissionDenied`, `importSuccess`, `importSummary`, etc.
+- **FILES**: `src/components/customers/ContactsPickerModal.tsx` (new), `src/components/customers/NewCustomerModal.tsx`, `src/screens/CustomersScreen.tsx`.
+
+### v2.3 — CSV / Excel Data Export
+
+- **NEW**: **ExportScreen** — optional from/to date filter + 4 export buttons with per-button loading state.
+- **NEW**: `src/api/export.ts` — 4 Supabase queries: Orders (customer + item count), Payments Received (bill ref), Customer Balances, Supplier Purchases.
+- **NEW**: `src/utils/exportCsv.ts` — `toCsv<T>()` CSV builder + `shareCsv()` using `expo-file-system/legacy` + `expo-sharing`.
+- **NEW**: Route at `app/(main)/export/index.tsx` (hidden tab). Entry point: "Export Data" button in Profile screen.
+- **i18n**: Full EN + HI translations for `export` namespace.
+- **FILES**: `src/api/export.ts`, `src/utils/exportCsv.ts`, `src/screens/ExportScreen.tsx`, `app/(main)/export/index.tsx`, `src/screens/ProfileScreen.tsx`.
+
+### v2.2 — Hindi UI Language Toggle
+
+- **NEW**: Full i18n system — `i18next` + `react-i18next` + `expo-localization` installed.
+- **NEW**: `src/i18n/en.ts` + `src/i18n/hi.ts` — 10 namespaces covering all screens.
+- **NEW**: `src/store/languageStore.ts` — Zustand store with AsyncStorage persistence.
+- **NEW**: 2-chip English / हिन्दी toggle in Profile screen under Dashboard Mode section.
+- **MOD**: Root layout bootstraps language before first render; all 6 main screens use `useTranslation()`.
+- **FILES**: `src/i18n/`, `src/store/languageStore.ts`, all screen files.
+
+### v2.1 — Sentry Crash Reporting
+
+- **NEW**: `@sentry/react-native` installed and configured.
+- **NEW**: `src/services/sentry.ts` — `initSentry()` called before root component mounts.
+- **NEW**: `Sentry.wrap(RootLayout)` error boundary in root layout.
+- **CONFIG**: Sentry plugin added to `app.json`. DSN from `EXPO_PUBLIC_SENTRY_DSN` env var.
+- **FILES**: `src/services/sentry.ts`, `app/_layout.tsx`, `app.json`.
+
+### v2.0 — Onboarding Flow
+
+- **NEW**: 3-step onboarding: phone entry → business setup (name, GSTIN, UPI, prefix) → ready screen with setup summary + bank-details nudge.
+- **NEW**: `profiles.onboarding_complete` boolean column — root layout routes new users to `/(auth)/onboarding`, existing users skip it.
+- **FILES**: `app/(auth)/onboarding/index.tsx`, `app/(auth)/onboarding/business.tsx`, `app/(auth)/onboarding/ready.tsx`, `app/(auth)/onboarding/_layout.tsx`.
 
 ### v1.8 - Net Position Dashboard (Current)
 
@@ -441,14 +508,19 @@ Specific adaptations for the Indian market implemented in the app:
 
 **Document History**
 
-| Version | Date         | Author       | Notes                                              |
-| :------ | :----------- | :----------- | :------------------------------------------------- |
-| **1.8** | Mar 1, 2026  | AI Assistant | Net Position Dashboard + Dashboard Mode switch     |
-| **1.7** | Mar 1, 2026  | AI Assistant | Supplier/Distributor Mode: full CRUD + balances    |
-| **1.6** | Mar 1, 2026  | AI Assistant | Overdue Flag: Dashboard, List badge, Detail banner |
-| **1.5** | Feb 27, 2026 | AI Assistant | Full Technical Architecture & Schema Docs          |
-| **1.4** | Feb 27, 2026 | AI Assistant | Added Validation, Prefix, GST, Reminders           |
-| **1.3** | Feb 27, 2026 | AI Assistant | Profile Bank UI modification                       |
-| **1.2** | Feb 27, 2026 | AI Assistant | Live Previous Balance feature                      |
-| **1.1** | Feb 27, 2026 | AI Assistant | Initial Indian Billing Suite                       |
-| **1.0** | Feb 27, 2026 | AI Assistant | Initial BRD                                        |
+| Version | Date         | Author       | Notes                                                                       |
+| :------ | :----------- | :----------- | :-------------------------------------------------------------------------- |
+| **2.4** | Mar 2, 2026  | AI Assistant | Import customers from phone contacts (expo-contacts, multi-select picker)   |
+| **2.3** | Mar 2, 2026  | AI Assistant | CSV/Excel data export — 4 report types, date range filter, share sheet      |
+| **2.2** | Mar 2, 2026  | AI Assistant | Hindi UI language toggle (i18next, 10 namespaces, AsyncStorage persistence) |
+| **2.1** | Mar 2, 2026  | AI Assistant | Sentry crash reporting integration                                          |
+| **2.0** | Mar 2, 2026  | AI Assistant | 3-step onboarding flow                                                      |
+| **1.8** | Mar 1, 2026  | AI Assistant | Net Position Dashboard + Dashboard Mode switch                              |
+| **1.7** | Mar 1, 2026  | AI Assistant | Supplier/Distributor Mode: full CRUD + balances                             |
+| **1.6** | Mar 1, 2026  | AI Assistant | Overdue Flag: Dashboard, List badge, Detail banner                          |
+| **1.5** | Feb 27, 2026 | AI Assistant | Full Technical Architecture & Schema Docs                                   |
+| **1.4** | Feb 27, 2026 | AI Assistant | Added Validation, Prefix, GST, Reminders                                    |
+| **1.3** | Feb 27, 2026 | AI Assistant | Profile Bank UI modification                                                |
+| **1.2** | Feb 27, 2026 | AI Assistant | Live Previous Balance feature                                               |
+| **1.1** | Feb 27, 2026 | AI Assistant | Initial Indian Billing Suite                                                |
+| **1.0** | Feb 27, 2026 | AI Assistant | Initial BRD                                                                 |
