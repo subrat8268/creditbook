@@ -1,5 +1,6 @@
 import Loader from "@/src/components/feedback/Loader";
 import { useFontsLoader } from "@/src/hooks/useFontsLoader";
+import { initSentry, Sentry } from "@/src/services/sentry";
 import { ThemeProvider } from "@/src/utils/ThemeProvider";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -10,9 +11,12 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "../global.css";
 import { useAuthStore } from "../src/store/authStore";
 
+// Initialise Sentry as early as possible — before any component mounts
+initSentry();
+
 const queryClient = new QueryClient();
 
-export default function RootLayout() {
+function RootLayout() {
   const {
     user,
     profile,
@@ -79,3 +83,5 @@ export default function RootLayout() {
     </QueryClientProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);
