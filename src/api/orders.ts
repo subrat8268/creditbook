@@ -40,7 +40,7 @@ export interface OrderDetail extends Order {
   items: OrderItem[];
 }
 
-export type PaymentMode = "Cash" | "Online";
+export type PaymentMode = "Cash" | "UPI" | "NEFT" | "Draft" | "Cheque";
 
 export interface Payment {
   id: string;

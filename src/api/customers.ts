@@ -6,7 +6,7 @@ export const PAGE_SIZE = 10;
 export async function fetchCustomers(
   pageParam: number,
   vendorId: string,
-  search?: string
+  search?: string,
 ) {
   let query = supabase
     .from("customers")
@@ -21,12 +21,29 @@ export async function fetchCustomers(
 
   const { data, error } = await query;
   if (error) throw error;
-  return data as Customer[];
+  const customers = (data ?? []) as Customer[];
+
+  // Determine overdue: balance_due > 0 AND last order > 30 days ago
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const { data: overdueOrders } = await supabase
+    .from("orders")
+    .select("customer_id")
+    .eq("vendor_id", vendorId)
+    .gt("balance_due", 0)
+    .lt("created_at", thirtyDaysAgo.toISOString());
+
+  const overdueIds = new Set(
+    (overdueOrders ?? []).map((o: any) => o.customer_id),
+  );
+
+  return customers.map((c) => ({ ...c, isOverdue: overdueIds.has(c.id) }));
 }
 
 export async function addCustomer(
   vendorId: string,
-  values: Omit<Customer, "id" | "vendor_id" | "created_at">
+  values: Omit<Customer, "id" | "vendor_id" | "created_at">,
 ) {
   const { data, error } = await supabase
     .from("customers")
@@ -38,7 +55,7 @@ export async function addCustomer(
 }
 
 export async function fetchCustomerDetail(
-  customerId: string
+  customerId: string,
 ): Promise<CustomerDetail | null> {
   // Fetch customer profile
   const { data: customer, error: custErr } = await supabase
@@ -68,9 +85,21 @@ export async function fetchCustomerDetail(
   const outstandingBalance =
     orders?.reduce((sum, o) => sum + Number(o.balance_due), 0) ?? 0;
 
+  // Overdue: outstanding balance AND most recent order is >30 days old
+  const lastOrderDate = orders?.[0]?.created_at ?? null;
+  const daysSinceLastOrder = lastOrderDate
+    ? Math.floor(
+        (Date.now() - new Date(lastOrderDate).getTime()) /
+          (1000 * 60 * 60 * 24),
+      )
+    : 0;
+  const isOverdue = outstandingBalance > 0 && daysSinceLastOrder > 30;
+
   return {
     ...customer,
     outstandingBalance,
+    isOverdue,
+    daysSinceLastOrder,
     orders:
       orders.map((o) => ({
         id: o.id,

@@ -1,7 +1,7 @@
 -- =============================================================================
 -- CreditBook App - Full Database Schema
--- Version: 1.4
--- Last Updated: February 27, 2026
+-- Version: 1.6
+-- Last Updated: March 1, 2026
 -- 
 -- Run this entire file in your Supabase SQL Editor to set up or reset the DB.
 -- For incremental migrations on an existing DB, see the ALTER TABLE statements
@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS payments (
   vendor_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   order_id UUID REFERENCES orders(id) ON DELETE CASCADE NOT NULL,
   amount NUMERIC(10,2) NOT NULL,
-  payment_mode TEXT NOT NULL CHECK (payment_mode IN ('Cash', 'Online')),
+  payment_mode TEXT NOT NULL CHECK (payment_mode IN ('Cash', 'UPI', 'NEFT', 'Draft', 'Cheque')),
   payment_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -331,3 +331,96 @@ ALTER TABLE orders ADD COLUMN IF NOT EXISTS tax_percent NUMERIC(5,2) NOT NULL DE
 
 -- v1.4 — Custom bill number prefix on profiles
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS bill_number_prefix TEXT DEFAULT 'INV';
+
+-- v1.5 — Expand payment_mode to Cash, UPI, NEFT, Draft, Cheque
+ALTER TABLE payments DROP CONSTRAINT IF EXISTS payments_payment_mode_check;
+UPDATE payments SET payment_mode = 'UPI' WHERE payment_mode = 'Online';
+ALTER TABLE payments ADD CONSTRAINT payments_payment_mode_check
+  CHECK (payment_mode IN ('Cash', 'UPI', 'NEFT', 'Draft', 'Cheque'));
+
+-- =============================================================================
+-- v1.7 — SUPPLIER / DISTRIBUTOR SYSTEM
+-- New tables: suppliers, supplier_deliveries, supplier_delivery_items,
+--             payments_made (payments from vendor to supplier)
+-- =============================================================================
+
+-- Suppliers master table
+CREATE TABLE IF NOT EXISTS suppliers (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  vendor_id        UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  name             TEXT NOT NULL,
+  phone            TEXT,
+  address          TEXT,
+  basket_mark      TEXT,
+  bank_name        TEXT,
+  account_number   TEXT,
+  ifsc_code        TEXT,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Supplier deliveries (goods received from supplier)
+CREATE TABLE IF NOT EXISTS supplier_deliveries (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  vendor_id        UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  supplier_id      UUID NOT NULL REFERENCES suppliers(id) ON DELETE CASCADE,
+  delivery_date    DATE NOT NULL DEFAULT CURRENT_DATE,
+  loading_charge   NUMERIC(10,2) NOT NULL DEFAULT 0,
+  advance_paid     NUMERIC(10,2) NOT NULL DEFAULT 0,
+  total_amount     NUMERIC(10,2) NOT NULL DEFAULT 0,
+  notes            TEXT,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Individual line items in a delivery
+CREATE TABLE IF NOT EXISTS supplier_delivery_items (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  delivery_id      UUID NOT NULL REFERENCES supplier_deliveries(id) ON DELETE CASCADE,
+  vendor_id        UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  item_name        TEXT NOT NULL,
+  quantity         NUMERIC(10,3) NOT NULL DEFAULT 0,
+  rate             NUMERIC(10,2) NOT NULL DEFAULT 0,
+  subtotal         NUMERIC(10,2) GENERATED ALWAYS AS (quantity * rate) STORED,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Payments made by vendor to supplier
+CREATE TABLE IF NOT EXISTS payments_made (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  vendor_id        UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  supplier_id      UUID NOT NULL REFERENCES suppliers(id) ON DELETE CASCADE,
+  delivery_id      UUID REFERENCES supplier_deliveries(id) ON DELETE SET NULL,
+  amount           NUMERIC(10,2) NOT NULL CHECK (amount > 0),
+  payment_mode     TEXT NOT NULL DEFAULT 'Cash'
+                     CHECK (payment_mode IN ('Cash', 'UPI', 'NEFT', 'Draft', 'Cheque')),
+  notes            TEXT,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- -----------------------------------------------------------------------------
+-- Row Level Security for supplier tables
+-- -----------------------------------------------------------------------------
+
+ALTER TABLE suppliers            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE supplier_deliveries  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE supplier_delivery_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payments_made        ENABLE ROW LEVEL SECURITY;
+
+-- suppliers
+DROP POLICY IF EXISTS "Vendors manage own suppliers" ON suppliers;
+CREATE POLICY "Vendors manage own suppliers" ON suppliers
+  FOR ALL USING (vendor_id = auth.uid()) WITH CHECK (vendor_id = auth.uid());
+
+-- supplier_deliveries
+DROP POLICY IF EXISTS "Vendors manage own deliveries" ON supplier_deliveries;
+CREATE POLICY "Vendors manage own deliveries" ON supplier_deliveries
+  FOR ALL USING (vendor_id = auth.uid()) WITH CHECK (vendor_id = auth.uid());
+
+-- supplier_delivery_items
+DROP POLICY IF EXISTS "Vendors manage own delivery items" ON supplier_delivery_items;
+CREATE POLICY "Vendors manage own delivery items" ON supplier_delivery_items
+  FOR ALL USING (vendor_id = auth.uid()) WITH CHECK (vendor_id = auth.uid());
+
+-- payments_made
+DROP POLICY IF EXISTS "Vendors manage own payments made" ON payments_made;
+CREATE POLICY "Vendors manage own payments made" ON payments_made
+  FOR ALL USING (vendor_id = auth.uid()) WITH CHECK (vendor_id = auth.uid());

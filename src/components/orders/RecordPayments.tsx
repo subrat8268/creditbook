@@ -3,12 +3,12 @@ import { useOrderStore } from "@/src/store/orderStore";
 import { formatRupeeInput } from "@/src/utils/helper";
 import { useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 interface RecordPaymentProps {
@@ -25,7 +25,9 @@ export default function RecordPayment({
   onPaymentSuccess,
 }: RecordPaymentProps) {
   const [amount, setAmount] = useState("");
-  const [mode, setMode] = useState<"Cash" | "Online">("Cash");
+  const [mode, setMode] = useState<
+    "Cash" | "UPI" | "NEFT" | "Draft" | "Cheque"
+  >("Cash");
 
   const { recordPayment, isRecording } = usePayments(orderId, vendorId);
   const { addUpdatingOrderId, removeUpdatingOrderId, updatingOrderIds } =
@@ -49,7 +51,7 @@ export default function RecordPayment({
       if (payAmount > balanceDue) {
         Alert.alert(
           "Error",
-          "Partial payment cannot exceed remaining balance."
+          "Partial payment cannot exceed remaining balance.",
         );
         return;
       }
@@ -73,14 +75,16 @@ export default function RecordPayment({
       <Text className="text-lg font-inter-semibold mb-3">Record Payment</Text>
 
       {/* Payment Mode */}
-      <View className="flex-row gap-3 mb-3">
-        {["Cash", "Online"].map((m) => (
+      <View className="flex-row flex-wrap gap-2 mb-3">
+        {["Cash", "UPI", "NEFT", "Draft", "Cheque"].map((m) => (
           <TouchableOpacity
             key={m}
             className={`px-4 py-2 rounded-lg border ${
               mode === m ? "bg-primary border-primary" : "border-neutral-300"
             }`}
-            onPress={() => setMode(m as "Cash" | "Online")}
+            onPress={() =>
+              setMode(m as "Cash" | "UPI" | "NEFT" | "Draft" | "Cheque")
+            }
             disabled={isRecording || isUpdating}
           >
             <Text

@@ -68,6 +68,12 @@ export const DashboardScreen = () => {
               <Ionicons name="alert-circle-outline" size={20} color="white" />
             }
           />
+          <Card
+            title="Overdue Customers"
+            value={`${data?.overdueCustomers} Customers`}
+            icon={<Ionicons name="time-outline" size={20} color="#dc2626" />}
+            className="bg-red-50 border border-red-200"
+          />
         </View>
 
         {/* Quick Actions */}

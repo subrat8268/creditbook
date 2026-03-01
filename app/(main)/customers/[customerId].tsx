@@ -3,20 +3,41 @@ import Loader from "@/src/components/feedback/Loader";
 import FloatingActionButton from "@/src/components/FloatingActionButton";
 import ScreenWrapper from "@/src/components/ScreenWrapper";
 import { useCustomerDetail } from "@/src/hooks/useCustomer";
+import { useAuthStore } from "@/src/store/authStore";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { FlatList, Text, View } from "react-native";
+import { FlatList, Linking, Text, TouchableOpacity, View } from "react-native";
 
 export default function CustomerDetailScreen() {
   const router = useRouter();
   const { customerId } = useLocalSearchParams<{ customerId: string }>();
   const { data: customer, isLoading, isError } = useCustomerDetail(customerId);
+  const profile = useAuthStore((s) => s.profile);
+
+  const sendWhatsAppReminder = () => {
+    if (!customer) return;
+    const businessName = profile?.business_name || "our store";
+    const balance = customer.outstandingBalance.toLocaleString("en-IN");
+    const message = `Dear ${customer.name}, your outstanding balance with ${businessName} is ₹${balance}. Please arrange payment. Thank you.`;
+    const url = `https://wa.me/91${customer.phone}?text=${encodeURIComponent(message)}`;
+    Linking.openURL(url);
+  };
 
   if (isLoading) return <Loader />;
   if (isError || !customer) return <EmptyState message="Customer not found" />;
 
   const renderHeader = () => (
     <View>
+      {/* Overdue Warning Banner */}
+      {customer.isOverdue && (
+        <View className="flex-row items-center gap-2 bg-red-50 border border-red-300 rounded-lg px-4 py-3 mb-4">
+          <Ionicons name="warning-outline" size={18} color="#dc2626" />
+          <Text className="text-red-700 font-inter-medium text-sm flex-1">
+            Last billed {customer.daysSinceLastOrder} days ago — payment overdue
+          </Text>
+        </View>
+      )}
+
       {/* Customer Info */}
       <View className="flex rounded-lg p-4 border-neutral-300 border gap-3 mb-4">
         <View className="flex-row items-center gap-4">
@@ -54,6 +75,19 @@ export default function CustomerDetailScreen() {
         <Text className="text-3xl text-primary font-inter-bold">
           ₹ {customer?.outstandingBalance.toLocaleString()}
         </Text>
+
+        {/* Send Reminder Button */}
+        {customer.outstandingBalance > 0 && (
+          <TouchableOpacity
+            onPress={sendWhatsAppReminder}
+            className="flex-row items-center justify-center gap-2 bg-green-500 rounded-lg py-3 mt-2"
+          >
+            <Ionicons name="logo-whatsapp" size={18} color="white" />
+            <Text className="text-white font-inter-semibold text-sm">
+              Send Reminder
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Order History Header */}

@@ -5,7 +5,7 @@ import { orderKeys } from "./useOrders";
 
 interface RecordPaymentProps {
   amount: number;
-  mode: "Cash" | "Online";
+  mode: "Cash" | "UPI" | "NEFT" | "Draft" | "Cheque";
   markFull: boolean;
 }
 

@@ -1,13 +1,13 @@
-import { Customer } from "@/src/api/customers";
 import { FlatList, RefreshControl } from "react-native";
+import { Supplier } from "../../types/supplier";
 import EmptyState from "../feedback/EmptyState";
 import ErrorState from "../feedback/ErrorState";
-import Loader from "../feedback/Loader"; // assume these generic feedback components exist
-import CustomerCard from "./CustomerCard";
+import Loader from "../feedback/Loader";
+import SupplierCard from "./SupplierCard";
 
-export default function CustomerList({
-  customers,
-  onPressCustomer,
+export default function SupplierList({
+  suppliers,
+  onPressSupplier,
   isLoading,
   error,
   onRefresh,
@@ -15,8 +15,8 @@ export default function CustomerList({
   onEndReached,
   isFetchingNextPage,
 }: {
-  customers: Customer[];
-  onPressCustomer: (customerId: string) => void;
+  suppliers: Supplier[];
+  onPressSupplier: (supplierId: string) => void;
   isLoading: boolean;
   error?: Error | null;
   onRefresh: () => void;
@@ -24,34 +24,32 @@ export default function CustomerList({
   onEndReached: () => void;
   isFetchingNextPage: boolean;
 }) {
-  if (isLoading) return <Loader message="Fetching customers" />;
-  if (error) return <ErrorState message="Failed to fetch customers" />;
+  if (isLoading) return <Loader message="Fetching suppliers" />;
+  if (error) return <ErrorState message="Failed to fetch suppliers" />;
 
   return (
     <FlatList
-      data={customers}
+      data={suppliers}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
-        <CustomerCard
-          name={item.name}
-          phone={item.phone}
-          isOverdue={item.isOverdue}
-          onPress={() => onPressCustomer(item.id)}
+        <SupplierCard
+          supplier={item}
+          onPress={() => onPressSupplier(item.id)}
         />
       )}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-      ListEmptyComponent={<EmptyState message="No customers found" />}
+      ListEmptyComponent={<EmptyState message="No suppliers added yet" />}
       ListFooterComponent={
         isFetchingNextPage ? (
-          <Loader message="Loading more customers..." />
+          <Loader message="Loading more suppliers..." />
         ) : null
       }
       onEndReached={onEndReached}
       onEndReachedThreshold={0.3}
       initialNumToRender={10}
-      contentContainerStyle={{ paddingBottom: 80 }}
+      contentContainerStyle={{ paddingBottom: 100 }}
       windowSize={10}
       removeClippedSubviews
     />

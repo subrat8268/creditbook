@@ -49,6 +49,18 @@ export default function TabLayout() {
         }}
       />
 
+      {/* Suppliers Tab */}
+      <Tabs.Screen
+        name="suppliers"
+        options={{
+          title: "Suppliers",
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="storefront-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
       {/* Products Tab */}
       <Tabs.Screen
         name="products"

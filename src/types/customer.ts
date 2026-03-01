@@ -5,6 +5,7 @@ export interface Customer {
   vendor_id: string;
   address?: string;
   created_at: string;
+  isOverdue?: boolean;
 }
 
 export interface CustomerDetail {
@@ -14,6 +15,8 @@ export interface CustomerDetail {
   email?: string;
   address?: string;
   outstandingBalance: number;
+  isOverdue: boolean;
+  daysSinceLastOrder: number;
   orders: {
     id: string;
     created_at: string;

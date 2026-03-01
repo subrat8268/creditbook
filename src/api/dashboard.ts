@@ -5,10 +5,11 @@ export interface DashboardData {
   outstandingAmount: number;
   unpaidOrders: number;
   partialOrders: number;
+  overdueCustomers: number;
 }
 
 export async function getDashboardData(
-  vendorId: string
+  vendorId: string,
 ): Promise<DashboardData> {
   // Payments
   const { data: payments, error: payErr } = await supabase
@@ -35,6 +36,7 @@ export async function getDashboardData(
       outstandingAmount: 0,
       unpaidOrders: 0,
       partialOrders: 0,
+      overdueCustomers: 0,
     };
 
   // 3️⃣ Define status groups
@@ -42,15 +44,36 @@ export async function getDashboardData(
   const partialStatuses = ["partially paid", "partial"];
 
   const unpaidOrders = orders.filter((o) =>
-    unpaidStatuses.includes((o.status ?? "").trim().toLowerCase())
+    unpaidStatuses.includes((o.status ?? "").trim().toLowerCase()),
   ).length;
   const partialOrders = orders.filter((o) =>
-    partialStatuses.includes((o.status ?? "").trim().toLowerCase())
+    partialStatuses.includes((o.status ?? "").trim().toLowerCase()),
   ).length;
 
   const outstandingAmount = orders
     .filter((o) => unpaidStatuses.includes((o.status ?? "").toLowerCase()))
     .reduce((sum, o) => sum + Number(o.balance_due ?? 0), 0);
 
-  return { totalRevenue, outstandingAmount, unpaidOrders, partialOrders };
+  // Overdue: unique customers with balance_due > 0 and last order > 30 days old
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const { data: overdueOrders } = await supabase
+    .from("orders")
+    .select("customer_id")
+    .eq("vendor_id", vendorId)
+    .gt("balance_due", 0)
+    .lt("created_at", thirtyDaysAgo.toISOString());
+
+  const overdueCustomers = new Set(
+    (overdueOrders ?? []).map((o: any) => o.customer_id),
+  ).size;
+
+  return {
+    totalRevenue,
+    outstandingAmount,
+    unpaidOrders,
+    partialOrders,
+    overdueCustomers,
+  };
 }
