@@ -191,6 +191,32 @@ const en = {
     next: "Next",
     skip: "Skip",
   },
+
+  // Export
+  export: {
+    title: "Export Data",
+    subtitle: "Download CSV files for your accountant or CA at tax time.",
+    profileDesc: "Orders, payments & balances as CSV",
+    dateRange: "Date Range (optional)",
+    from: "From",
+    to: "To",
+    dateHint: "Leave blank to export all records",
+    selectReport: "Choose a report",
+    filtered: "date filtered",
+    orders: "Orders / Bills",
+    ordersDesc: "All bills with customer, totals, tax, status",
+    payments: "Payments Received",
+    paymentsDesc: "All payments with mode, bill reference",
+    customers: "Customer Balances",
+    customersDesc: "All customers with outstanding balance",
+    suppliers: "Supplier Purchases",
+    suppliersDesc: "All deliveries received from suppliers",
+    noData: "No Records Found",
+    noDataDesc: "No data found for the selected range.",
+    invalidDate: "Invalid Date",
+    invalidDateDesc: "Use YYYY-MM-DD format (e.g. 2026-01-01).",
+    footer: "CSV files open in Excel, Google Sheets, or any spreadsheet app.",
+  },
 } as const;
 
 export default en;

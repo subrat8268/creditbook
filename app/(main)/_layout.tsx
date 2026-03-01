@@ -94,6 +94,15 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      {/* Export — hidden from tab bar, accessible via router.push */}
+      <Tabs.Screen
+        name="export"
+        options={{
+          title: "Export Data",
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

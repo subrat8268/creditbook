@@ -190,6 +190,32 @@ const hi = {
     next: "आगे",
     skip: "छोड़ें",
   },
+
+  // Export
+  export: {
+    title: "डेटा एक्सपोर्ट",
+    subtitle: "टैक्स सीजन में CA के लिए CSV फ़ाइलें डाउनलोड करें।",
+    profileDesc: "ऑर्डर, भुगतान और बकाया CSV में",
+    dateRange: "तारीख रेंज (वैकल्पिक)",
+    from: "से",
+    to: "तक",
+    dateHint: "सभी रिकॉर्ड एक्सपोर्ट करने के लिए खाली छोड़ें",
+    selectReport: "रिपोर्ट चुनें",
+    filtered: "तारीख फ़िल्टर",
+    orders: "बिल / ऑर्डर",
+    ordersDesc: "ग्राहक, कुल रकम, टैक्स, स्थिति सहित सभी बिल",
+    payments: "प्राप्त भुगतान",
+    paymentsDesc: "मोड, बिल संदर्भ सहित सभी भुगतान",
+    customers: "ग्राहक बकाया",
+    customersDesc: "सभी ग्राहकों का बकाया बैलेंस",
+    suppliers: "सप्लायर खरीद",
+    suppliersDesc: "सप्लायरों से प्राप्त सभी डिलीवरी",
+    noData: "कोई रिकॉर्ड नहीं मिला",
+    noDataDesc: "चुनी गई तारीख के लिए कोई डेटा नहीं मिला।",
+    invalidDate: "गलत तारीख",
+    invalidDateDesc: "YYYY-MM-DD फ़ॉर्मेट उपयोग करें (जैसे 2026-01-01)।",
+    footer: "CSV फ़ाइलें Excel, Google Sheets में खुलती हैं।",
+  },
 } as const;
 
 export default hi;

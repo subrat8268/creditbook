@@ -6,6 +6,8 @@ import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { useLanguageStore } from "@/src/store/languageStore";
 import { Profile } from "@/src/types/auth";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   ScrollView,
@@ -19,6 +21,7 @@ export default function ProfileScreen() {
   const { profile, setProfile, logout } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
   const { t } = useTranslation();
+  const router = useRouter();
 
   const updateField = async (field: string, value: any) => {
     const { error } = await supabase
@@ -264,6 +267,25 @@ export default function ProfileScreen() {
             );
           })}
         </View>
+
+        {/* Export Data */}
+        <TouchableOpacity
+          className="bg-green-50 border border-green-200 py-3 px-4 rounded-xl mb-3 flex-row items-center justify-between"
+          onPress={() => router.push("/(main)/export" as any)}
+        >
+          <View className="flex-row items-center gap-3">
+            <Ionicons name="download-outline" size={20} color="#16a34a" />
+            <View>
+              <Text className="font-semibold text-green-800">
+                {t("export.title")}
+              </Text>
+              <Text className="text-xs text-green-700">
+                {t("export.profileDesc")}
+              </Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#16a34a" />
+        </TouchableOpacity>
 
         {/* Logout */}
         <TouchableOpacity
