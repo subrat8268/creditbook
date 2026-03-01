@@ -6,6 +6,10 @@ export interface DashboardData {
   unpaidOrders: number;
   partialOrders: number;
   overdueCustomers: number;
+  // Net Position
+  customersOweMe: number;
+  iOweSuppliers: number;
+  netPosition: number;
 }
 
 export async function getDashboardData(
@@ -69,11 +73,40 @@ export async function getDashboardData(
     (overdueOrders ?? []).map((o: any) => o.customer_id),
   ).size;
 
+  // Net Position — customers owe me
+  const customersOweMe = orders
+    .filter((o) => Number(o.balance_due ?? 0) > 0)
+    .reduce((sum, o) => sum + Number(o.balance_due ?? 0), 0);
+
+  // Net Position — I owe suppliers
+  const [{ data: deliveries }, { data: paymentsMade }] = await Promise.all([
+    supabase
+      .from("supplier_deliveries")
+      .select("total_amount")
+      .eq("vendor_id", vendorId),
+    supabase.from("payments_made").select("amount").eq("vendor_id", vendorId),
+  ]);
+
+  const totalDeliveries = (deliveries ?? []).reduce(
+    (s, d) => s + Number(d.total_amount),
+    0,
+  );
+  const totalPaidToSuppliers = (paymentsMade ?? []).reduce(
+    (s, p) => s + Number(p.amount),
+    0,
+  );
+  const iOweSuppliers = Math.max(0, totalDeliveries - totalPaidToSuppliers);
+
+  const netPosition = customersOweMe - iOweSuppliers;
+
   return {
     totalRevenue,
     outstandingAmount,
     unpaidOrders,
     partialOrders,
     overdueCustomers,
+    customersOweMe,
+    iOweSuppliers,
+    netPosition,
   };
 }

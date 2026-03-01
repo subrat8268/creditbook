@@ -24,6 +24,9 @@ export interface Profile {
   // Bill settings
   bill_number_prefix?: string | null;
 
+  // Dashboard mode: controls which financial view is shown
+  dashboard_mode?: "seller" | "distributor" | "both" | null;
+
   //Images
   avatar_url?: string | null;
   business_logo_url?: string | null;

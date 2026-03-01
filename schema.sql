@@ -338,6 +338,10 @@ UPDATE payments SET payment_mode = 'UPI' WHERE payment_mode = 'Online';
 ALTER TABLE payments ADD CONSTRAINT payments_payment_mode_check
   CHECK (payment_mode IN ('Cash', 'UPI', 'NEFT', 'Draft', 'Cheque'));
 
+-- v1.8 — Dashboard mode preference on profiles
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS dashboard_mode TEXT DEFAULT 'both'
+  CHECK (dashboard_mode IN ('seller', 'distributor', 'both'));
+
 -- =============================================================================
 -- v1.7 — SUPPLIER / DISTRIBUTOR SYSTEM
 -- New tables: suppliers, supplier_deliveries, supplier_delivery_items,

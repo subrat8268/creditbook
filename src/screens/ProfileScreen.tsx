@@ -172,6 +172,46 @@ export default function ProfileScreen() {
           }
         />
 
+        {/* Dashboard Mode */}
+        <View className="mb-2 mt-2">
+          <Text className="text-lg font-bold text-gray-900">
+            Dashboard Mode
+          </Text>
+          <Text className="text-xs text-gray-500 mt-0.5">
+            Choose which financial view to show on your dashboard.
+          </Text>
+        </View>
+
+        <View className="flex-row gap-2 mb-8 mt-3">
+          {(["seller", "distributor", "both"] as const).map((m) => {
+            const labels: Record<string, string> = {
+              seller: "Seller",
+              distributor: "Distributor",
+              both: "Both",
+            };
+            const isActive = (profile.dashboard_mode ?? "both") === m;
+            return (
+              <TouchableOpacity
+                key={m}
+                onPress={() => updateField("dashboard_mode", m)}
+                className={`flex-1 py-3 rounded-xl border items-center ${
+                  isActive
+                    ? "bg-primary border-primary"
+                    : "bg-gray-100 border-gray-200"
+                }`}
+              >
+                <Text
+                  className={`font-semibold text-sm ${
+                    isActive ? "text-white" : "text-gray-600"
+                  }`}
+                >
+                  {labels[m]}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
         {/* Logout */}
         <TouchableOpacity
           className="bg-red-100 border border-red-300 py-3 rounded-xl"

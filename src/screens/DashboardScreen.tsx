@@ -37,10 +37,67 @@ export const DashboardScreen = () => {
   if (isError || !data)
     return <EmptyState message="Failed to load dashboard data" />;
 
+  const mode = profile.dashboard_mode ?? "both";
+  const showSeller = mode === "seller" || mode === "both";
+  const showDistributor = mode === "distributor" || mode === "both";
+  const showNet = mode === "both";
+
   return (
     <Screen>
       <ScrollView showsVerticalScrollIndicator={false}>
         <Text className="text-lg font-semibold mb-4">Financial Overview</Text>
+
+        {/* Net Position Cards */}
+        {(showSeller || showDistributor) && (
+          <View className="flex gap-y-3 mb-6">
+            {showSeller && (
+              <Card
+                title="Customers Owe Me"
+                value={`₹ ${data.customersOweMe.toLocaleString("en-IN")}`}
+                icon={
+                  <Ionicons
+                    name="trending-up-outline"
+                    size={20}
+                    color="white"
+                  />
+                }
+                className="bg-green-50 border border-green-200"
+              />
+            )}
+            {showDistributor && (
+              <Card
+                title="I Owe Suppliers"
+                value={`₹ ${data.iOweSuppliers.toLocaleString("en-IN")}`}
+                icon={
+                  <Ionicons
+                    name="trending-down-outline"
+                    size={20}
+                    color="white"
+                  />
+                }
+                className="bg-red-50 border border-red-200"
+              />
+            )}
+            {showNet && (
+              <Card
+                title="Net Position"
+                value={`₹ ${data.netPosition.toLocaleString("en-IN")}`}
+                icon={
+                  <Ionicons
+                    name="swap-vertical-outline"
+                    size={20}
+                    color="white"
+                  />
+                }
+                className={
+                  data.netPosition >= 0
+                    ? "bg-green-100 border border-green-300"
+                    : "bg-amber-50 border border-amber-300"
+                }
+              />
+            )}
+          </View>
+        )}
 
         {/* Financial Cards */}
         <View className="flex gap-y-4 mb-6">

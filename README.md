@@ -371,7 +371,7 @@ Specific adaptations for the Indian market implemented in the app:
 
 | Version | Date         | Author       | Notes                                              |
 | :------ | :----------- | :----------- | :------------------------------------------------- |
-| **1.7** | Mar 2, 2026  | AI Assistant | Supplier/Distributor Mode: full CRUD + balances     |
+| **1.7** | Mar 2, 2026  | AI Assistant | Supplier/Distributor Mode: full CRUD + balances    |
 | **1.6** | Mar 1, 2026  | AI Assistant | Overdue Flag: Dashboard, List badge, Detail banner |
 | **1.5** | Feb 27, 2026 | AI Assistant | Full Technical Architecture & Schema Docs          |
 | **1.4** | Feb 27, 2026 | AI Assistant | Added Validation, Prefix, GST, Reminders           |
