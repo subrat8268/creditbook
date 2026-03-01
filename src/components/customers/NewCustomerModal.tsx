@@ -15,6 +15,7 @@ interface NewCustomerModalProps {
   }) => Promise<void>;
   loading?: boolean;
   errorMessage?: string;
+  initialValues?: { name?: string; phone?: string; address?: string };
 }
 
 export default function NewCustomerModal({
@@ -23,11 +24,19 @@ export default function NewCustomerModal({
   onSubmit,
   loading = false,
   errorMessage,
+  initialValues,
 }: NewCustomerModalProps) {
+  const formInitialValues = {
+    name: initialValues?.name ?? "",
+    phone: initialValues?.phone ?? "",
+    address: initialValues?.address ?? "",
+  };
+
   return (
     <AppModal title="Add New Customer" onClose={onClose} visible={visible}>
       <Formik
-        initialValues={{ name: "", phone: "", address: "" }}
+        initialValues={formInitialValues}
+        enableReinitialize
         validationSchema={CustomerSchema}
         onSubmit={async (values, { resetForm, setSubmitting }) => {
           try {

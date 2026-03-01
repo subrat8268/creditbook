@@ -67,6 +67,18 @@ const hi = {
     whatsappReminder: "WhatsApp रिमाइंडर",
     deleteCustomer: "ग्राहक हटाएं",
     confirmDelete: "क्या आप इस ग्राहक को हटाना चाहते हैं?",
+    importContacts: "कॉन्टैक्ट्स से जोड़ें",
+    importContactsDesc: "अपने फोन के कॉन्टैक्ट्स से ग्राहक जोड़ें",
+    selectContacts: "कॉन्टैक्ट्स चुनें",
+    importSelected: "{{count}} कॉन्टैक्ट इम्पोर्ट करें",
+    contactsFound: "कॉन्टैक्ट मिले",
+    selectAll: "सब चुनें",
+    deselectAll: "सब हटाएं",
+    noContactsFound: "कोई वैध कॉन्टैक्ट नहीं मिला",
+    permissionDenied:
+      "कॉन्टैक्ट्स की अनुमति नहीं है। सेटिंग्स में जाकर अनुमति दें।",
+    importSuccess: "इम्पोर्ट पूर्ण",
+    importSummary: "{{imported}} ग्राहक जोड़े गए, {{skipped}} छोड़े गए।",
   },
 
   // Orders

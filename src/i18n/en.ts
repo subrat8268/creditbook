@@ -67,6 +67,18 @@ const en = {
     whatsappReminder: "WhatsApp Reminder",
     deleteCustomer: "Delete Customer",
     confirmDelete: "Are you sure you want to delete this customer?",
+    importContacts: "Import from Contacts",
+    importContactsDesc: "Add customers from your phone contacts",
+    selectContacts: "Select contacts to import",
+    importSelected: "Import {{count}} contact(s)",
+    contactsFound: "contacts found",
+    selectAll: "Select all",
+    deselectAll: "Deselect all",
+    noContactsFound: "No valid contacts found",
+    permissionDenied:
+      "Contacts permission denied. Please allow access in Settings to import contacts.",
+    importSuccess: "Import Complete",
+    importSummary: "{{imported}} customer(s) added, {{skipped}} skipped.",
   },
 
   // Orders
