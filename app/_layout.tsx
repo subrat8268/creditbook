@@ -63,8 +63,15 @@ export default function RootLayout() {
             {/* Logged in but no profile → Create Profile */}
             {user && !profile && <Stack.Screen name="index" />}
 
-            {/* Logged in → Dashboard */}
-            {user && profile && <Stack.Screen name="(main)/dashboard" />}
+            {/* Logged in, onboarding not done → Onboarding */}
+            {user && profile && profile.onboarding_complete === false && (
+              <Stack.Screen name="(auth)/onboarding" />
+            )}
+
+            {/* Logged in, onboarding done → Dashboard */}
+            {user && profile && profile.onboarding_complete !== false && (
+              <Stack.Screen name="(main)/dashboard" />
+            )}
           </Stack>
           <StatusBar barStyle="dark-content" />
         </GestureHandlerRootView>

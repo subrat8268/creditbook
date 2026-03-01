@@ -342,6 +342,10 @@ ALTER TABLE payments ADD CONSTRAINT payments_payment_mode_check
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS dashboard_mode TEXT DEFAULT 'both'
   CHECK (dashboard_mode IN ('seller', 'distributor', 'both'));
 
+-- v2.0 — Onboarding flow: new users start with false; existing rows set to true
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN NOT NULL DEFAULT false;
+UPDATE profiles SET onboarding_complete = true WHERE created_at < NOW();
+
 -- =============================================================================
 -- v1.7 — SUPPLIER / DISTRIBUTOR SYSTEM
 -- New tables: suppliers, supplier_deliveries, supplier_delivery_items,

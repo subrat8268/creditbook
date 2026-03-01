@@ -27,6 +27,9 @@ export interface Profile {
   // Dashboard mode: controls which financial view is shown
   dashboard_mode?: "seller" | "distributor" | "both" | null;
 
+  // Onboarding: false until user completes the 3-step setup flow
+  onboarding_complete?: boolean | null;
+
   //Images
   avatar_url?: string | null;
   business_logo_url?: string | null;
