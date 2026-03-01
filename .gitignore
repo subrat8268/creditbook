@@ -41,3 +41,8 @@ app-example
 # generated native folders
 /ios
 /android
+
+# BRDs
+CreditBook_TRD_v3.md
+CreditBook_PRD_v3.md
+CreditBook_Master_Roadmap_v3.md

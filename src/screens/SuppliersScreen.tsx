@@ -59,7 +59,7 @@ export default function SuppliersScreen() {
 
   const handlePressSupplier = (supplierId: string) => {
     router.push({
-      pathname: "/suppliers/[supplierId]",
+      pathname: `/supplier/${supplierId}`,
       params: { supplierId },
     });
   };

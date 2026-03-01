@@ -1,7 +1,7 @@
 # CreditBook App - Complete Project Documentation
 
 > **Last Updated**: March 1, 2026
-> **Version**: 1.6
+> **Version**: 1.8
 > **Status**: Active Development
 > **Target Market**: Indian SMBs (Retailers, Wholesalers, Distributors)
 
@@ -72,9 +72,23 @@ CreditBook is a mobile-first **digital ledger and billing application** designed
 
 #### 💸 Payment Tracking
 
-- **Partial Payments**: Record split payments (Cash/Online/UPI).
+- **Partial Payments**: Record split payments (Cash / UPI / NEFT / Draft / Cheque).
 - **Live Balance**: Order form shows "Previous Balance" from history instantly.
 - **Reminders**: One-tap WhatsApp payment reminders with pre-filled details.
+
+#### 🏭 Supplier / Distributor Management
+
+- **Supplier Directory**: Add suppliers with name, phone, address, basket mark, and bank details.
+- **Record Deliveries**: Log deliveries with dynamic item rows (name × qty × rate), loading charge, and advance paid.
+- **Payments Made**: Record payments to suppliers; tracks outstanding balance per supplier.
+- **Balance Owed**: `SUM(deliveries.total_amount) − SUM(payments_made.amount)` per supplier, sorted highest first.
+
+#### 📊 Net Position Dashboard
+
+- **Customers Owe Me** (green card): Sum of all `balance_due > 0` across customer orders.
+- **I Owe Suppliers** (red card): Total supplier balance owed across all suppliers.
+- **Net Position** (green if positive, amber if negative): `customersOweMe − iOweSuppliers`.
+- **Dashboard Mode Switch**: Vendors choose Seller / Distributor / Both in Profile to control which cards appear.
 
 ---
 
@@ -126,17 +140,35 @@ This section contains the deep technical details required for an AI or developer
 │   │   ├── customers/    # Customer List & Detail Pages
 │   │   ├── orders/       # Order Management & Creation
 │   │   ├── products/     # Inventory Management
+│   │   ├── suppliers/    # Supplier/Distributor Pages         ← v1.7
+│   │   │   ├── index.tsx          # Supplier list
+│   │   │   ├── [supplierId].tsx   # Supplier detail
+│   │   │   └── _layout.tsx        # Stack navigator
 │   │   ├── profile/      # User Settings & Business Profile
 │   │   └── dashboard/    # Analytics & Overview
 │   └── _layout.tsx       # Root Layout (Auth Check)
 ├── src/
-│   ├── api/              # Supabase API Clients (Table-specific)
-│   ├── components/       # Reusable UI Components
-│   ├── database/         # Local DB / Sync Logic (Future)
-│   ├── hooks/            # Custom React Hooks (useAuth, useOrders)
-│   ├── store/            # Zustand Stores (authStore, orderStore)
-│   ├── types/            # TypeScript Interfaces
-│   └── utils/            # Helper Functions (PDF, Formatters)
+│   ├── api/
+│   │   ├── suppliers.ts  # fetchSuppliers, addSupplier, recordDelivery, recordPaymentMade
+│   │   ├── dashboard.ts  # getDashboardData (customersOweMe, iOweSuppliers, netPosition) ← v1.8
+│   │   └── ...           # customers, orders, products, profiles, auth, upload
+│   ├── components/
+│   │   ├── suppliers/    # SupplierCard, SupplierList, NewSupplierModal,
+│   │   │                 # RecordDeliveryModal, RecordPaymentMadeModal  ← v1.7
+│   │   └── ...           # customers/, orders/, products/, ui/, feedback/
+│   ├── hooks/
+│   │   ├── useSuppliers.ts  # TanStack Query hooks for all supplier operations ← v1.7
+│   │   └── ...           # useCustomer, useOrders, useDashboard, useProducts …
+│   ├── screens/
+│   │   ├── SuppliersScreen.tsx    ← v1.7
+│   │   └── ...           # Dashboard, Customers, Orders, Products, Profile
+│   ├── store/
+│   │   ├── suppliersStore.ts      ← v1.7
+│   │   └── ...           # authStore, orderStore, customersStore
+│   ├── types/
+│   │   ├── supplier.ts   # Supplier, SupplierDetail, SupplierDelivery  ← v1.7
+│   │   └── ...           # auth.ts (dashboard_mode added v1.8), customer.ts
+│   └── utils/            # generateBillPdf, helper, phone, schemas, theme, ThemeProvider
 ├── supabase/             # Migration Files & Config
 ├── schema.sql            # Master Database Schema (Source of Truth)
 └── app.json              # Expo Configuration
@@ -153,6 +185,7 @@ The database is designed with **Row Level Security (RLS)** to ensure complete da
 - One-to-one link with `auth.users`.
 - Stores `business_name`, `gstin`, `bill_number_prefix`.
 - **Bank Details**: `bank_name`, `account_number`, `ifsc_code` (for invoice footer).
+- **`dashboard_mode`** (`seller` | `distributor` | `both`, default `both`) — controls which net-position cards appear on the dashboard. ← v1.8
 
 **2. `customers`**
 
@@ -171,6 +204,27 @@ The database is designed with **Row Level Security (RLS)** to ensure complete da
 
 - Links `orders` to `products`.
 - Stores snapshot of `price` and `product_name` (preserving history if product changes).
+
+**5. `suppliers`** ← v1.7
+
+- `vendor_id` (FK), `name`, `phone`, `address`, `basket_mark`.
+- Bank details: `bank_name`, `account_number`, `ifsc_code`.
+
+**6. `supplier_deliveries`** ← v1.7
+
+- `vendor_id`, `supplier_id` (FK), `delivery_date`, `loading_charge`, `advance_paid`, `total_amount`, `notes`.
+- `total_amount` = itemsTotal + loading_charge (computed and stored at record time).
+
+**7. `supplier_delivery_items`** ← v1.7
+
+- `delivery_id` (FK), `vendor_id`, `item_name`, `quantity`, `rate`.
+- **`subtotal`** is a generated column: `quantity * rate` (STORED).
+
+**8. `payments_made`** ← v1.7
+
+- Records payments from vendor → supplier.
+- `vendor_id`, `supplier_id` (FK), `delivery_id` (FK nullable), `amount`, `payment_mode` (same 5-mode CHECK as `payments`), `notes`.
+- **Balance**: `balanceOwed = SUM(supplier_deliveries.total_amount) − SUM(payments_made.amount)` per supplier.
 
 #### **Critical SQL Functions (RPC)**
 
@@ -249,14 +303,20 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
 
 Specific adaptations for the Indian market implemented in the app:
 
-| Feature              | Description                                          | Technical Implementation                                               |
-| :------------------- | :--------------------------------------------------- | :--------------------------------------------------------------------- |
-| **Sequential Bills** | Auto-incrementing numbers (e.g., INV-001, BILL-042). | PostgreSQL Function `get_next_bill_number` with custom Prefix support. |
-| **Khata Balance**    | Show previous debt on current bill.                  | Auto-calculated `previous_balance` field snapshot on every new order.  |
-| **Loading Charge**   | Transport/Hamali charges (Non-taxable).              | Separate `loading_charge` column effectively excluded from GST calc.   |
-| **GST Support**      | Apply tax percentage to items.                       | `tax_percent` field applied to `itemsTotal` only.                      |
-| **Bank Details**     | Print bank info on footer for NEFT/RTGS.             | `profiles` table fields (`account_number`, `ifsc`, `bank_name`).       |
-| **UPI QR**           | Scan-to-pay on PDF.                                  | Google Charts API embedded in PDF HTML.                                |
+| Feature                    | Description                                                    | Technical Implementation                                                                              |
+| :------------------------- | :------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------- |
+| **Sequential Bills**       | Auto-incrementing numbers (e.g., INV-001, BILL-042).           | PostgreSQL RPC `get_next_bill_number` with custom prefix support.                                     |
+| **Khata Balance**          | Show previous debt on current bill.                            | Auto-calculated `previous_balance` field snapshot on every new order.                                 |
+| **Loading Charge**         | Transport/Hamali charges (Non-taxable).                        | Separate `loading_charge` column excluded from GST calculation.                                       |
+| **GST Support**            | Apply tax percentage to items.                                 | `tax_percent` field applied to `itemsTotal` only.                                                     |
+| **Bank Details**           | Print bank info on footer for NEFT/RTGS.                       | `profiles` table fields (`account_number`, `ifsc_code`, `bank_name`).                                 |
+| **UPI QR**                 | Scan-to-pay on PDF.                                            | Google Charts API embedded in PDF HTML template.                                                      |
+| **Payment Modes**          | Cash / UPI / NEFT / Draft / Cheque.                            | `payment_mode CHECK` constraint on both `payments` and `payments_made` tables.                        |
+| **Overdue Flagging**       | Customers with dues unpaid for 30+ days highlighted red.       | `isOverdue = balance_due > 0 AND last_order_date < NOW() - 30 days`. Badge + banner + dashboard card. |
+| **WhatsApp Reminders**     | One-tap reminder with pre-filled balance message.              | `Linking.openURL('whatsapp://send?text=...')` constructed per customer.                               |
+| **Supplier Tracking**      | Record goods received; track what you owe distributors.        | 4 new tables: `suppliers`, `supplier_deliveries`, `supplier_delivery_items`, `payments_made`.         |
+| **Net Position Dashboard** | Single-glance: owed to me vs. owed to suppliers.               | `customersOweMe − iOweSuppliers`; green/amber/red cards driven by `dashboard_mode`.                   |
+| **Dashboard Mode**         | Seller / Distributor / Both — filters visible dashboard cards. | `dashboard_mode` on `profiles`; 3-chip toggle in Profile screen.                                      |
 
 ---
 
@@ -301,14 +361,17 @@ Specific adaptations for the Indian market implemented in the app:
 - [x] **Phase 2: Indian Billing (v1.4–v1.6 Completed)**
   - Sequential Bill IDs, Previous Balance, Loading Charge, Bank Details, WhatsApp Reminders.
   - Overdue Customer Flagging (Dashboard count + Customer list badge + Detail warning banner).
-- [x] **Phase 3: Supplier / Distributor Mode (Current v1.7)**
+- [x] **Phase 3: Supplier / Distributor Mode (v1.7 Completed)**
   - Full supplier management: add suppliers, record deliveries, track payments made.
   - Balance owed calculation, delivery history, bank detail storage.
-- [ ] **Phase 4: Engagement (Next)**
+- [x] **Phase 4: Net Position Dashboard (Current v1.8)**
+  - "Customers Owe Me" (green) + "I Owe Suppliers" (red) + "Net Position" (amber if negative) cards.
+  - Dashboard Mode switch in Profile: Seller / Distributor / Both — controls visible cards.
+- [ ] **Phase 5: Engagement (Next)**
   - WhatsApp API integration (automated sending).
   - Inventory stock alerts.
   - Multi-language support (Hindi/Hinglish).
-- [ ] **Phase 4: Growth**
+- [ ] **Phase 6: Growth**
   - Staff accounts (Role-based access).
   - Online Storefront for customers.
   - Cloud Backup & Restore UI.
@@ -317,7 +380,16 @@ Specific adaptations for the Indian market implemented in the app:
 
 ## 9. Recent Updates & Changelog
 
-### v1.7 - Supplier / Distributor Mode (Current)
+### v1.8 - Net Position Dashboard (Current)
+
+- **NEW**: **Customers Owe Me card** (green) — Sum of all customer `balance_due > 0` across all orders.
+- **NEW**: **I Owe Suppliers card** (red) — `SUM(supplier_deliveries.total_amount) − SUM(payments_made.amount)` across all suppliers.
+- **NEW**: **Net Position card** (green if ≥ 0, amber if negative) — `customersOweMe − iOweSuppliers`. Shown only when mode is `both`.
+- **NEW**: **Dashboard Mode switch** in Profile — 3-chip toggle (Seller / Distributor / Both). Seller hides supplier cards; Distributor hides customer cards; Both shows all three net-position cards.
+- **DB**: `dashboard_mode TEXT DEFAULT 'both' CHECK IN ('seller','distributor','both')` added to `profiles`.
+- **FILES**: `src/api/dashboard.ts`, `src/screens/DashboardScreen.tsx`, `src/screens/ProfileScreen.tsx`, `src/types/auth.ts`.
+
+### v1.7 - Supplier / Distributor Mode
 
 - **NEW**: **Suppliers Tab** — New bottom-nav tab (storefront icon) for managing distributors/suppliers.
 - **NEW**: **Add Supplier** — Name, phone, address, basket mark, bank details (bank name, A/c no., IFSC).
@@ -371,7 +443,8 @@ Specific adaptations for the Indian market implemented in the app:
 
 | Version | Date         | Author       | Notes                                              |
 | :------ | :----------- | :----------- | :------------------------------------------------- |
-| **1.7** | Mar 2, 2026  | AI Assistant | Supplier/Distributor Mode: full CRUD + balances    |
+| **1.8** | Mar 1, 2026  | AI Assistant | Net Position Dashboard + Dashboard Mode switch     |
+| **1.7** | Mar 1, 2026  | AI Assistant | Supplier/Distributor Mode: full CRUD + balances    |
 | **1.6** | Mar 1, 2026  | AI Assistant | Overdue Flag: Dashboard, List badge, Detail banner |
 | **1.5** | Feb 27, 2026 | AI Assistant | Full Technical Architecture & Schema Docs          |
 | **1.4** | Feb 27, 2026 | AI Assistant | Added Validation, Prefix, GST, Reminders           |
