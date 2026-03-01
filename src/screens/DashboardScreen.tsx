@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
 import NewCustomerModal from "../components/customers/NewCustomerModal";
 import EmptyState from "../components/feedback/EmptyState";
@@ -15,6 +16,7 @@ import { useAuthStore } from "../store/authStore";
 export const DashboardScreen = () => {
   const { profile } = useAuthStore();
   const router = useRouter();
+  const { t } = useTranslation();
   const { data, isLoading, isError } = useDashboard(profile?.id);
 
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
@@ -45,14 +47,16 @@ export const DashboardScreen = () => {
   return (
     <Screen>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Text className="text-lg font-semibold mb-4">Financial Overview</Text>
+        <Text className="text-lg font-semibold mb-4">
+          {t("dashboard.title")}
+        </Text>
 
         {/* Net Position Cards */}
         {(showSeller || showDistributor) && (
           <View className="flex gap-y-3 mb-6">
             {showSeller && (
               <Card
-                title="Customers Owe Me"
+                title={t("dashboard.customersOweMe")}
                 value={`₹ ${data.customersOweMe.toLocaleString("en-IN")}`}
                 icon={
                   <Ionicons
@@ -66,7 +70,7 @@ export const DashboardScreen = () => {
             )}
             {showDistributor && (
               <Card
-                title="I Owe Suppliers"
+                title={t("dashboard.iOweSuppliers")}
                 value={`₹ ${data.iOweSuppliers.toLocaleString("en-IN")}`}
                 icon={
                   <Ionicons
@@ -80,7 +84,7 @@ export const DashboardScreen = () => {
             )}
             {showNet && (
               <Card
-                title="Net Position"
+                title={t("dashboard.netPosition")}
                 value={`₹ ${data.netPosition.toLocaleString("en-IN")}`}
                 icon={
                   <Ionicons
@@ -126,7 +130,7 @@ export const DashboardScreen = () => {
             }
           />
           <Card
-            title="Overdue Customers"
+            title={t("dashboard.overdueCustomers")}
             value={`${data?.overdueCustomers} Customers`}
             icon={<Ionicons name="time-outline" size={20} color="#dc2626" />}
             className="bg-red-50 border border-red-200"
@@ -134,15 +138,17 @@ export const DashboardScreen = () => {
         </View>
 
         {/* Quick Actions */}
-        <Text className="text-lg font-semibold mb-4">Quick Actions</Text>
+        <Text className="text-lg font-semibold mb-4">
+          {t("dashboard.quickActions")}
+        </Text>
         <View className="flex gap-y-4">
           <QuickAction
-            label="New Order"
+            label={t("dashboard.newBill")}
             icon={<Ionicons name="cart-outline" size={28} color="green" />}
             onPress={() => router.push("/orders/createOrderScreen")}
           />
           <QuickAction
-            label="Add Customer"
+            label={t("dashboard.addCustomer")}
             icon={
               <Ionicons name="person-add-outline" size={28} color="green" />
             }

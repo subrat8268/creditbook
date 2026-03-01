@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import FloatingActionButton from "../components/FloatingActionButton";
 import ScreenWrapper from "../components/ScreenWrapper";
@@ -15,6 +16,7 @@ import { useSuppliersStore } from "../store/suppliersStore";
 export default function SuppliersScreen() {
   const { profile } = useAuthStore();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,7 +72,7 @@ export default function SuppliersScreen() {
         <SearchBar
           value={search}
           onChangeText={setSearch}
-          placeholder="Search suppliers by name or phone"
+          placeholder={t("suppliers.search")}
         />
       </View>
 

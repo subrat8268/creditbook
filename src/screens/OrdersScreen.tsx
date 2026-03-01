@@ -6,12 +6,13 @@ import { useOrders } from "@/src/hooks/useOrders";
 import { useAuthStore } from "@/src/store/authStore";
 import { Ionicons } from "@expo/vector-icons";
 import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetView,
+    BottomSheetBackdrop,
+    BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { Check } from "lucide-react-native";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity } from "react-native";
 import { FilterBar } from "../components/orders/FilterBar";
 import { useOrderFilters } from "../hooks/useOrderFilters";
@@ -19,6 +20,7 @@ import { useOrderFilters } from "../hooks/useOrderFilters";
 export default function OrdersScreen() {
   const { profile } = useAuthStore();
   const router = useRouter();
+  const { t } = useTranslation();
   const filters = useOrderFilters();
 
   const {

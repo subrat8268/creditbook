@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import CustomerList from "../components/customers/CustomerList";
 import NewCustomerModal from "../components/customers/NewCustomerModal";
@@ -15,6 +16,7 @@ import { useCustomersStore } from "../store/customersStore";
 export default function CustomersScreen() {
   const { profile } = useAuthStore();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -73,7 +75,7 @@ export default function CustomersScreen() {
         <SearchBar
           value={search}
           onChangeText={setSearch}
-          placeholder="Search customers by name or phone"
+          placeholder={t("customers.search")}
         />
       </View>
 

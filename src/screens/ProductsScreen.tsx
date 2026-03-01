@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FlatList, Text, View } from "react-native";
 import * as Yup from "yup";
 
@@ -12,10 +13,10 @@ import ProductActionsModal from "../components/products/ProductActionsModal";
 import ProductCard from "../components/products/ProductCard";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import {
-  useAddProduct,
-  useDeleteProduct,
-  useProducts,
-  useUpdateProduct,
+    useAddProduct,
+    useDeleteProduct,
+    useProducts,
+    useUpdateProduct,
 } from "../hooks/useProducts";
 import { useAuthStore } from "../store/authStore";
 
@@ -46,7 +47,7 @@ const productSchema = Yup.object().shape({
         .required("Variant price is required")
         .min(0, "Must be at least 0"),
       imageUrl: Yup.string().nullable(),
-    })
+    }),
   ),
   image_url: Yup.string().nullable(),
 });
@@ -54,6 +55,7 @@ const productSchema = Yup.object().shape({
 export default function ProductsScreen() {
   const { profile } = useAuthStore();
   const vendorId = profile?.id;
+  const { t } = useTranslation();
 
   const [search, setSearch] = useState("");
   const [isActionsOpen, setIsActionsOpen] = useState(false);
@@ -99,7 +101,7 @@ export default function ProductsScreen() {
             price: Number(variant.price),
             imageUrl: variantImageUrl || null,
           };
-        })
+        }),
       );
 
       await addProductMutation.mutateAsync({
@@ -141,7 +143,7 @@ export default function ProductsScreen() {
             price: Number(variant.price),
             imageUrl: variantImageUrl || null,
           };
-        })
+        }),
       );
 
       await updateProductMutation.mutateAsync({
@@ -208,7 +210,7 @@ export default function ProductsScreen() {
         <SearchBar
           value={search}
           onChangeText={setSearch}
-          placeholder="Search products"
+          placeholder={t("products.search")}
         />
       </View>
       <FlatList

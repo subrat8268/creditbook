@@ -9,7 +9,9 @@ import { useEffect, useState } from "react";
 import { StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "../global.css";
+import "../src/i18n"; // initialise i18n (side-effect import)
 import { useAuthStore } from "../src/store/authStore";
+import { useLanguageStore } from "../src/store/languageStore";
 
 // Initialise Sentry as early as possible — before any component mounts
 initSentry();
@@ -23,18 +25,22 @@ function RootLayout() {
     fetchProfile,
     loading: profileLoading,
   } = useAuthStore();
+  const loadLanguage = useLanguageStore((s) => s.loadLanguage);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
 
   const fontsLoaded = useFontsLoader();
 
   useEffect(() => {
-    const checkWelcome = async () => {
-      const seen = await AsyncStorage.getItem("hasSeenWelcome");
+    const init = async () => {
+      const [seen] = await Promise.all([
+        AsyncStorage.getItem("hasSeenWelcome"),
+        loadLanguage(), // restore persisted language before first render
+      ]);
       setShowWelcome(!seen);
       setLoading(false);
     };
-    checkWelcome();
+    init();
   }, []);
 
   useEffect(() => {
