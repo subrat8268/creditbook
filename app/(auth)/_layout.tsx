@@ -1,7 +1,9 @@
 import { Stack } from "expo-router";
 import { View } from "react-native";
 
-const CustomHeader = () =>  <View className="bg-white flex-1 border-b border-default" />
+const CustomHeader = () => (
+  <View className="bg-white flex-1 border-b border-default" />
+);
 
 export default function AuthLayout() {
   return (
@@ -21,6 +23,12 @@ export default function AuthLayout() {
           name="login"
           options={{
             title: "Login",
+          }}
+        />
+        <Stack.Screen
+          name="signup"
+          options={{
+            title: "Create Account",
           }}
         />
         <Stack.Screen

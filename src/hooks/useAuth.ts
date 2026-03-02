@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import { loginApi, logoutApi } from "../api/auth";
+import { loginApi, logoutApi, resetPasswordApi, signUpApi } from "../api/auth";
 import { supabase } from "../services/supabase";
 import { useAuthStore } from "../store/authStore";
 import { LoginValues } from "../types/auth";
@@ -28,7 +28,7 @@ export function useAuth() {
       (_event, session) => {
         setUser(session?.user ?? null);
         if (!session) setProfile(null);
-      }
+      },
     );
 
     return () => {
@@ -59,6 +59,37 @@ export function useLogin() {
     },
     onError: (error: any) => {
       console.error("Login failed:", error.message);
+    },
+  });
+}
+
+// 🔹 SIGN UP MUTATION
+export function useSignUp() {
+  const { setUser, fetchProfile } = useAuthStore();
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: (values: { email: string; password: string }) =>
+      signUpApi(values),
+    onSuccess: async (user) => {
+      setUser(user);
+      await AsyncStorage.setItem("hasSeenWelcome", "true");
+      // fetchProfile picks up the new profile row; _layout.tsx then routes to onboarding
+      await fetchProfile();
+      router.replace("/(auth)/onboarding");
+    },
+    onError: (error: any) => {
+      console.error("Sign-up failed:", error.message);
+    },
+  });
+}
+
+// 🔹 RESET PASSWORD MUTATION
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: (email: string) => resetPasswordApi(email),
+    onError: (error: any) => {
+      console.error("Reset password failed:", error.message);
     },
   });
 }

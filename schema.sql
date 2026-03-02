@@ -1,7 +1,7 @@
 -- =============================================================================
 -- CreditBook App - Full Database Schema
--- Version: 1.6
--- Last Updated: March 1, 2026
+-- Version: 1.7 (app v2.4)
+-- Last Updated: March 2, 2026
 -- 
 -- Run this entire file in your Supabase SQL Editor to set up or reset the DB.
 -- For incremental migrations on an existing DB, see the ALTER TABLE statements
@@ -159,7 +159,32 @@ CREATE INDEX IF NOT EXISTS idx_payments_order       ON payments(order_id);
 
 
 -- =============================================================================
+-- AUTO-CREATE PROFILE ON SIGN-UP TRIGGER
+-- Creates a profiles row automatically whenever a new user is created in
+-- auth.users. This makes signup work even when email confirmation is enabled.
+-- =============================================================================
+
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.profiles (user_id, onboarding_complete)
+  VALUES (NEW.id, false)
+  ON CONFLICT (user_id) DO NOTHING;  -- idempotent: skip if app-level insert ran first
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- =============================================================================
 -- ROW LEVEL SECURITY (RLS)
+-- =============================================================================
 -- =============================================================================
 
 ALTER TABLE profiles       ENABLE ROW LEVEL SECURITY;
@@ -345,6 +370,9 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS dashboard_mode TEXT DEFAULT 'both'
 -- v2.0 — Onboarding flow: new users start with false; existing rows set to true
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN NOT NULL DEFAULT false;
 UPDATE profiles SET onboarding_complete = true WHERE created_at < NOW();
+
+-- v2.4 — Auto-create profile trigger for self-signup
+-- Run the handle_new_user function + trigger block above if not already applied.
 
 -- =============================================================================
 -- v1.7 — SUPPLIER / DISTRIBUTOR SYSTEM

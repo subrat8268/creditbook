@@ -1,4 +1,5 @@
 import Loader from "@/src/components/feedback/Loader";
+import { useAuth } from "@/src/hooks/useAuth";
 import { useFontsLoader } from "@/src/hooks/useFontsLoader";
 import { initSentry, Sentry } from "@/src/services/sentry";
 import { ThemeProvider } from "@/src/utils/ThemeProvider";
@@ -19,6 +20,10 @@ initSentry();
 const queryClient = new QueryClient();
 
 function RootLayout() {
+  // useAuth sets up supabase.auth.onAuthStateChange + restores the persisted
+  // session on startup — this keeps auth.uid() valid for all RLS policies.
+  useAuth();
+
   const {
     user,
     profile,

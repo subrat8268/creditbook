@@ -1,5 +1,5 @@
-import { useLogin } from "@/src/hooks/useAuth";
-import { LoginSchema } from "@/src/utils/schemas";
+import { useSignUp } from "@/src/hooks/useAuth";
+import { SignUpSchema } from "@/src/utils/schemas";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Formik } from "formik";
@@ -15,21 +15,22 @@ import {
 import Button from "../../src/components/ui/Button";
 import Input from "../../src/components/ui/Input";
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const router = useRouter();
-  const loginMutation = useLogin();
+  const signUpMutation = useSignUp();
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1 }}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0} // Optional: Adjust offset for your header
+      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
     >
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled" // Allows taps on buttons while keyboard is open
+        keyboardShouldPersistTaps="handled"
       >
         <View className="px-6 py-4 flex-1 justify-start bg-white">
+          {/* Logo */}
           <Image
             source={require("../../assets/images/greenlogo.png")}
             className="w-60 mt-3 mb-5 self-center"
@@ -37,26 +38,25 @@ export default function LoginPage() {
           />
 
           <Text className="text-h1 font-bold text-neutral-900 mb-1">
-            Welcome Back!
+            Create Account
           </Text>
           <Text className="text-neutral-600 text-body mb-6">
-            Enter your registered details to access your account.
+            Sign up to start managing your bills and customers.
           </Text>
 
           <Formik
-            initialValues={{ email: "", password: "" }}
-            validationSchema={LoginSchema}
-            onSubmit={(values) => loginMutation.mutate(values)}
+            initialValues={{ email: "", password: "", confirmPassword: "" }}
+            validationSchema={SignUpSchema}
+            onSubmit={(values) =>
+              signUpMutation.mutate({
+                email: values.email,
+                password: values.password,
+              })
+            }
           >
-            {({
-              handleChange,
-              handleSubmit,
-              values,
-              errors,
-              touched,
-              isSubmitting,
-            }) => (
+            {({ handleChange, handleSubmit, values, errors, touched }) => (
               <>
+                {/* Email */}
                 <Text className="text-body font-semibold text-neutral-900 mb-2">
                   Email
                 </Text>
@@ -65,20 +65,19 @@ export default function LoginPage() {
                   value={values.email}
                   onChangeText={handleChange("email")}
                   error={touched.email ? errors.email : undefined}
+                  keyboardType="email-address"
                   icon={
                     <Ionicons name="mail-outline" size={20} color="#6B7280" />
                   }
                   iconPosition="left"
                 />
-                <Text className="text-sm text-neutral-600 mb-4">
-                  We’ll use this to verify your identity.
-                </Text>
 
-                <Text className="text-body font-semibold text-neutral-900 mb-2">
+                {/* Password */}
+                <Text className="text-body font-semibold text-neutral-900 mb-2 mt-2">
                   Password
                 </Text>
                 <Input
-                  placeholder="Enter your password" // Changed placeholder to be more relevant
+                  placeholder="Minimum 6 characters"
                   value={values.password}
                   onChangeText={handleChange("password")}
                   secureTextEntry
@@ -93,38 +92,54 @@ export default function LoginPage() {
                   iconPosition="left"
                 />
 
-                <TouchableOpacity
-                  onPress={() => router.push("/(auth)/resetPassword")}
-                  className="mb-6"
-                >
-                  <Text className="text-primary text-sm font-medium">
-                    Forgot Password?
-                  </Text>
-                </TouchableOpacity>
-
-                <Button
-                  title="Login Securely"
-                  onPress={handleSubmit}
-                  loading={loginMutation.isPending}
+                {/* Confirm Password */}
+                <Text className="text-body font-semibold text-neutral-900 mb-2 mt-2">
+                  Confirm Password
+                </Text>
+                <Input
+                  placeholder="Re-enter your password"
+                  value={values.confirmPassword}
+                  onChangeText={handleChange("confirmPassword")}
+                  secureTextEntry
+                  error={
+                    touched.confirmPassword ? errors.confirmPassword : undefined
+                  }
+                  icon={
+                    <Ionicons
+                      name="shield-checkmark-outline"
+                      size={20}
+                      color="#6B7280"
+                    />
+                  }
+                  iconPosition="left"
                 />
 
-                {/* Error Message */}
-                {loginMutation.isError && (
-                  <View className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mt-3">
+                {/* Server error */}
+                {signUpMutation.isError && (
+                  <View className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-2 mt-1">
                     <Text className="text-red-600 text-sm text-center">
-                      {(loginMutation.error as any)?.message || "Login failed"}
+                      {(signUpMutation.error as any)?.message ||
+                        "Sign up failed. Please try again."}
                     </Text>
                   </View>
                 )}
 
-                {/* Sign Up link */}
+                {/* Sign Up Button */}
+                <Button
+                  title="Create Account"
+                  onPress={handleSubmit}
+                  loading={signUpMutation.isPending}
+                  className="mt-4"
+                />
+
+                {/* Already have an account */}
                 <TouchableOpacity
-                  onPress={() => router.push("/(auth)/signup")}
+                  onPress={() => router.replace("/(auth)/login")}
                   className="mt-5 mb-4"
                 >
                   <Text className="text-center text-neutral-500 text-sm">
-                    Don't have an account?{" "}
-                    <Text className="text-primary font-semibold">Sign Up</Text>
+                    Already have an account?{" "}
+                    <Text className="text-primary font-semibold">Sign In</Text>
                   </Text>
                 </TouchableOpacity>
               </>
