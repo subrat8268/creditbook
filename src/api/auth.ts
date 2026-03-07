@@ -8,7 +8,8 @@ export async function loginApi(values: LoginValues) {
 }
 
 export async function signUpApi(values: { email: string; password: string }) {
-  // 1. Create the auth user
+  // Create the auth user — the handle_new_user DB trigger automatically
+  // creates the matching profiles row (SECURITY DEFINER, bypasses RLS).
   const { data, error } = await supabase.auth.signUp({
     email: values.email,
     password: values.password,
@@ -16,17 +17,14 @@ export async function signUpApi(values: { email: string; password: string }) {
   if (error) throw new Error(error.message);
   if (!data.user) throw new Error("Sign-up failed — no user returned.");
 
-  // 2. Insert a matching profile row so the onboarding flow can update it
-  const { error: profileError } = await supabase.from("profiles").insert([
-    {
-      user_id: data.user.id,
-      onboarding_complete: false,
-    },
-  ]);
-  // Ignore duplicate-key errors (e.g. if a trigger already created the row)
-  if (profileError && !profileError.message.includes("duplicate")) {
-    throw new Error(profileError.message);
-  }
+  // Fallback: if the trigger didn't run (migration not applied yet),
+  // include name: '' to satisfy any NOT NULL constraint on the live DB.
+  await supabase
+    .from("profiles")
+    .upsert(
+      { user_id: data.user.id, name: "" },
+      { onConflict: "user_id", ignoreDuplicates: true },
+    );
 
   return data.user;
 }

@@ -1,10 +1,10 @@
 import { Text, View } from "react-native";
 
 interface Props {
-  current: 1 | 2 | 3;
+  current: 1 | 2 | 3 | 4;
 }
 
-const STEPS = ["Phone", "Business", "Ready"];
+const STEPS = ["Role", "Phone", "Business", "Ready"];
 
 export default function OnboardingProgress({ current }: Props) {
   return (
@@ -35,9 +35,9 @@ export default function OnboardingProgress({ current }: Props) {
               {label}
             </Text>
             {/* Connector */}
-            {step < 3 && (
+            {step < 4 && (
               <View
-                className={`mx-2 h-0.5 w-8 rounded-full
+                className={`mx-2 h-0.5 w-6 rounded-full
                   ${done ? "bg-primary" : "bg-neutral-200"}`}
               />
             )}

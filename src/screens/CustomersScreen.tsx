@@ -2,17 +2,20 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, View } from "react-native";
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import ContactsPickerModal from "../components/customers/ContactsPickerModal";
-import CustomerList from "../components/customers/CustomerList";
+import CustomerList, {
+    CustomerFilter,
+} from "../components/customers/CustomerList";
 import NewCustomerModal from "../components/customers/NewCustomerModal";
-import FloatingActionButton from "../components/FloatingActionButton";
-import ScreenWrapper from "../components/ScreenWrapper";
 import SearchBar from "../components/SearchBar";
 import { useAddCustomer, useCustomers } from "../hooks/useCustomer";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { useAuthStore } from "../store/authStore";
 import { useCustomersStore } from "../store/customersStore";
+
+const FILTERS: CustomerFilter[] = ["All", "Overdue", "Paid", "Pending"];
 
 export default function CustomersScreen() {
   const { profile } = useAuthStore();
@@ -20,6 +23,7 @@ export default function CustomersScreen() {
   const { t } = useTranslation();
 
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<CustomerFilter>("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isContactsModalOpen, setIsContactsModalOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -95,15 +99,50 @@ export default function CustomersScreen() {
   };
 
   return (
-    <ScreenWrapper>
-      <View className="mb-4">
+    <SafeAreaView edges={["left", "right"]} className="flex-1 bg-white">
+      {/* ── Search + filter bar ── */}
+      <View className="px-5 pt-3.5 pb-1 bg-white">
         <SearchBar
           value={search}
           onChangeText={setSearch}
           placeholder={t("customers.search")}
         />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className="mt-3.5 mb-0.5"
+          contentContainerStyle={{ gap: 8, paddingBottom: 2 }}
+        >
+          {FILTERS.map((f) => {
+            const active = filter === f;
+            return (
+              <TouchableOpacity
+                key={f}
+                onPress={() => setFilter(f)}
+                activeOpacity={0.75}
+                className={`px-5 py-[9px] rounded-[24px] border ${
+                  active
+                    ? "bg-primary border-primary"
+                    : "bg-search border-[#E5E5EA]"
+                }`}
+              >
+                <Text
+                  className={`text-sm font-medium ${
+                    active ? "text-white font-bold" : "text-[#636366]"
+                  }`}
+                >
+                  {f}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
 
+      {/* ── Divider ── */}
+      <View className="h-px bg-[#F0F0F5] mt-1" />
+
+      {/* ── Customer list (full-width) ── */}
       <CustomerList
         customers={customers}
         isLoading={isLoading}
@@ -113,19 +152,24 @@ export default function CustomersScreen() {
         onEndReached={handleEndReached}
         isFetchingNextPage={isFetchingNextPage}
         onPressCustomer={handlePressCustomer}
+        filter={filter}
       />
 
-      <FloatingActionButton
-        className="absolute bottom-20 right-6 bg-white border border-default rounded-full p-4 shadow-md"
-        icon={<Ionicons name="people" size={24} color="#2563EB" />}
-        onPress={() => setIsContactsModalOpen(true)}
-      />
-
-      <FloatingActionButton
-        className="absolute bottom-6 right-6 bg-primary rounded-full p-4 shadow-lg"
-        icon={<Ionicons name="add" size={24} color="white" />}
+      {/* ── Primary FAB ── */}
+      <TouchableOpacity
+        className="absolute right-5 bottom-6 w-[58px] h-[58px] rounded-full bg-primary items-center justify-center"
+        style={{
+          shadowColor: "#5B3FFF",
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.35,
+          shadowRadius: 10,
+          elevation: 8,
+        }}
         onPress={() => setIsModalOpen(true)}
-      />
+        activeOpacity={0.85}
+      >
+        <Ionicons name="add" size={30} color="#FFFFFF" />
+      </TouchableOpacity>
 
       <NewCustomerModal
         visible={isModalOpen}
@@ -140,6 +184,6 @@ export default function CustomersScreen() {
         onClose={() => setIsContactsModalOpen(false)}
         onImport={handleBulkImport}
       />
-    </ScreenWrapper>
+    </SafeAreaView>
   );
 }

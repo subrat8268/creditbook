@@ -2,10 +2,10 @@ import { uploadImage } from "@/src/api/upload";
 import ImagePickerField from "@/src/components/ImagePickerField";
 import ScreenWrapper from "@/src/components/ScreenWrapper";
 import SubscriptionCard from "@/src/components/SubscriptionCard";
+import Loader from "@/src/components/feedback/Loader";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { useLanguageStore } from "@/src/store/languageStore";
-import { Profile } from "@/src/types/auth";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -18,19 +18,21 @@ import {
 } from "react-native";
 
 export default function ProfileScreen() {
-  const { profile, setProfile, logout } = useAuthStore();
+  const { user, profile, setProfile, logout } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
   const { t } = useTranslation();
   const router = useRouter();
 
   const updateField = async (field: string, value: any) => {
+    if (!user) return;
     const { error } = await supabase
       .from("profiles")
       .update({ [field]: value })
-      .eq("id", profile!.id);
+      .eq("user_id", user.id);
 
     if (!error) {
-      setProfile({ ...profile!, [field]: value } as Profile);
+      const current = useAuthStore.getState().profile;
+      if (current) setProfile({ ...current, [field]: value });
     }
   };
 
@@ -39,7 +41,7 @@ export default function ProfileScreen() {
     updateField(field, uploadedUrl);
   };
 
-  if (!profile) return null;
+  if (!profile) return <Loader />;
 
   return (
     <ScreenWrapper>
@@ -202,13 +204,13 @@ export default function ProfileScreen() {
         </View>
 
         <View className="flex-row gap-2 mb-8 mt-3">
-          {(["seller", "distributor", "both"] as const).map((m) => {
+          {(["vendor", "receiver"] as const).map((m) => {
             const labels: Record<string, string> = {
-              seller: t("profile.seller"),
-              distributor: t("profile.distributor"),
-              both: t("profile.both"),
+              vendor: "Vendor",
+              receiver: "Receiver",
             };
-            const isActive = (profile.dashboard_mode ?? "both") === m;
+            const isActive =
+              (profile.dashboard_mode ?? profile.role ?? "vendor") === m;
             return (
               <TouchableOpacity
                 key={m}

@@ -64,6 +64,25 @@ export function useLogin() {
 }
 
 // 🔹 SIGN UP MUTATION
+function friendlySignUpError(message: string): string {
+  const msg = message.toLowerCase();
+  if (msg.includes("rate limit") || msg.includes("email rate"))
+    return "Too many sign-up attempts. Please wait a few minutes and try again, or disable email confirmation in your Supabase dashboard.";
+  if (
+    msg.includes("already registered") ||
+    msg.includes("already exists") ||
+    msg.includes("duplicate")
+  )
+    return "An account with this email already exists. Try signing in instead.";
+  if (msg.includes("database error"))
+    return "A server error occurred. Please try again in a moment.";
+  if (msg.includes("invalid email"))
+    return "Please enter a valid email address.";
+  if (msg.includes("password") && msg.includes("weak"))
+    return "Password is too weak. Use at least 6 characters.";
+  return message;
+}
+
 export function useSignUp() {
   const { setUser, fetchProfile } = useAuthStore();
   const router = useRouter();
@@ -74,12 +93,24 @@ export function useSignUp() {
     onSuccess: async (user) => {
       setUser(user);
       await AsyncStorage.setItem("hasSeenWelcome", "true");
-      // fetchProfile picks up the new profile row; _layout.tsx then routes to onboarding
-      await fetchProfile();
-      router.replace("/(auth)/onboarding");
+      // The DB trigger creates the profile row right after auth.users INSERT.
+      // Retry fetchProfile a few times in case the trigger hasn't committed yet.
+      let retries = 3;
+      while (retries > 0) {
+        await fetchProfile();
+        const { profile } = useAuthStore.getState();
+        if (profile) break;
+        await new Promise((r) => setTimeout(r, 600));
+        retries--;
+      }
+      // Go directly to role selection (Step 1 of onboarding)
+      router.replace("/(auth)/onboarding/role" as any);
     },
     onError: (error: any) => {
-      console.error("Sign-up failed:", error.message);
+      // Re-throw with a friendly message so the UI can display it
+      const friendly = friendlySignUpError(error?.message ?? "Sign up failed.");
+      error.message = friendly;
+      console.error("Sign-up failed:", friendly);
     },
   });
 }

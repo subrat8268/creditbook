@@ -48,11 +48,13 @@ function RootLayout() {
     init();
   }, []);
 
+  // setUser now calls fetchProfile internally, so no separate effect needed.
+  // We still watch for edge cases where user appears without triggering setUser.
   useEffect(() => {
-    if (user && !profile) {
+    if (user && !profile && !profileLoading) {
       fetchProfile();
     }
-  }, [user, profile, fetchProfile]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (fontsLoaded && !loading && (!user || !profileLoading)) {
@@ -60,31 +62,25 @@ function RootLayout() {
     }
   }, [fontsLoaded, loading, user, profileLoading]);
 
-  // Show loader until fonts, welcome check, and profile (if user exists) are ready
-  if (!fontsLoaded || loading || (user && profile === undefined))
-    return <Loader />;
+  // Show loader until fonts, welcome check, AND profile fetch are all done
+  if (!fontsLoaded || loading || (user && profileLoading)) return <Loader />;
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <Stack screenOptions={{ headerShown: false }}>
-            {/* New user -> Welcome Page */}
+            {/* Not logged in: show welcome or login */}
             {!user && showWelcome && <Stack.Screen name="index" />}
-
-            {/* Returning user but not logged in → Login */}
             {!user && !showWelcome && <Stack.Screen name="(auth)/login" />}
 
-            {/* Logged in but no profile → Create Profile */}
-            {user && !profile && <Stack.Screen name="index" />}
-
-            {/* Logged in, onboarding not done → Onboarding */}
-            {user && profile && profile.onboarding_complete === false && (
+            {/* Logged in: onboarding not completed (false / null / undefined) */}
+            {user && profile && !profile.onboarding_complete && (
               <Stack.Screen name="(auth)/onboarding" />
             )}
 
-            {/* Logged in, onboarding done → Dashboard */}
-            {user && profile && profile.onboarding_complete !== false && (
+            {/* Logged in: onboarding done → main app */}
+            {user && profile && profile.onboarding_complete === true && (
               <Stack.Screen name="(main)/dashboard" />
             )}
           </Stack>

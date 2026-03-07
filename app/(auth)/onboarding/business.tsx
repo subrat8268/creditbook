@@ -1,10 +1,9 @@
-// Step 2 of 3 — Business setup
+// Step 3 of 4 — Business setup
 import OnboardingProgress from "@/src/components/onboarding/OnboardingProgress";
 import Button from "@/src/components/ui/Button";
 import Input from "@/src/components/ui/Input";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
-import { Profile } from "@/src/types/auth";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -18,7 +17,7 @@ import {
 
 export default function OnboardingBusiness() {
   const router = useRouter();
-  const { profile, setProfile } = useAuthStore();
+  const { user, profile, setProfile } = useAuthStore();
 
   const [businessName, setBusinessName] = useState(
     profile?.business_name ?? "",
@@ -36,6 +35,7 @@ export default function OnboardingBusiness() {
       setNameError("Business name is required.");
       return;
     }
+    if (!user) return;
     setNameError(null);
     setLoading(true);
     try {
@@ -48,9 +48,10 @@ export default function OnboardingBusiness() {
       const { error: dbErr } = await supabase
         .from("profiles")
         .update(updates)
-        .eq("id", profile!.id);
+        .eq("user_id", user.id);
       if (dbErr) throw dbErr;
-      setProfile({ ...profile!, ...updates } as Profile);
+      const current = useAuthStore.getState().profile;
+      if (current) setProfile({ ...current, ...updates });
       router.push("/(auth)/onboarding/ready" as any);
     } catch (e: any) {
       setNameError(e.message ?? "Something went wrong.");
@@ -80,7 +81,7 @@ export default function OnboardingBusiness() {
           </TouchableOpacity>
 
           {/* Progress */}
-          <OnboardingProgress current={2} />
+          <OnboardingProgress current={3} />
 
           {/* Heading */}
           <Text className="text-2xl font-inter-bold text-neutral-900 mt-6 mb-1">

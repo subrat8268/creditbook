@@ -5,6 +5,15 @@ import ErrorState from "../feedback/ErrorState";
 import Loader from "../feedback/Loader"; // assume these generic feedback components exist
 import CustomerCard from "./CustomerCard";
 
+export type CustomerFilter = "All" | "Overdue" | "Paid" | "Pending";
+
+function getStatus(c: Customer): CustomerFilter {
+  const bal = c.outstandingBalance ?? 0;
+  if (bal > 0 && c.isOverdue) return "Overdue";
+  if (bal > 0 && !c.isOverdue) return "Pending";
+  return "Paid";
+}
+
 export default function CustomerList({
   customers,
   onPressCustomer,
@@ -14,6 +23,7 @@ export default function CustomerList({
   refreshing,
   onEndReached,
   isFetchingNextPage,
+  filter = "All",
 }: {
   customers: Customer[];
   onPressCustomer: (customerId: string) => void;
@@ -23,19 +33,27 @@ export default function CustomerList({
   refreshing: boolean;
   onEndReached: () => void;
   isFetchingNextPage: boolean;
+  filter?: CustomerFilter;
 }) {
   if (isLoading) return <Loader message="Fetching customers" />;
   if (error) return <ErrorState message="Failed to fetch customers" />;
 
+  const filtered =
+    filter === "All"
+      ? customers
+      : customers.filter((c) => getStatus(c) === filter);
+
   return (
     <FlatList
-      data={customers}
+      data={filtered}
       keyExtractor={(item) => item.id}
+      style={{ flex: 1 }}
       renderItem={({ item }) => (
         <CustomerCard
           name={item.name}
           phone={item.phone}
           isOverdue={item.isOverdue}
+          outstandingBalance={item.outstandingBalance}
           onPress={() => onPressCustomer(item.id)}
         />
       )}
@@ -51,7 +69,7 @@ export default function CustomerList({
       onEndReached={onEndReached}
       onEndReachedThreshold={0.3}
       initialNumToRender={10}
-      contentContainerStyle={{ paddingBottom: 80 }}
+      contentContainerStyle={{ paddingBottom: 100 }}
       windowSize={10}
       removeClippedSubviews
     />

@@ -1,22 +1,24 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, StatusBar, View } from "react-native";
 import NewCustomerModal from "../components/customers/NewCustomerModal";
+import DashboardActionBar from "../components/dashboard/DashboardActionBar";
+import DashboardHeader from "../components/dashboard/DashboardHeader";
+import DashboardHeroCard from "../components/dashboard/DashboardHeroCard";
+import DashboardRecentActivity from "../components/dashboard/DashboardRecentActivity";
+import DashboardStatCards from "../components/dashboard/DashboardStatCards";
 import EmptyState from "../components/feedback/EmptyState";
 import Loader from "../components/feedback/Loader";
-import QuickAction from "../components/QuickAction";
-import Screen from "../components/ScreenWrapper";
-import Card from "../components/ui/Card";
 import { useAddCustomer } from "../hooks/useCustomer";
 import { useDashboard } from "../hooks/useDashboard";
 import { useAuthStore } from "../store/authStore";
+import { dashboardPalette as C } from "../utils/dashboardUi";
 
+// ─────────────── Main Screen ────────────
 export const DashboardScreen = () => {
   const { profile } = useAuthStore();
   const router = useRouter();
-  const { t } = useTranslation();
   const { data, isLoading, isError } = useDashboard(profile?.id);
 
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
@@ -39,130 +41,81 @@ export const DashboardScreen = () => {
   if (isError || !data)
     return <EmptyState message="Failed to load dashboard data" />;
 
-  const mode = profile.dashboard_mode ?? "both";
-  const showSeller = mode === "seller" || mode === "both";
-  const showDistributor = mode === "distributor" || mode === "both";
-  const showNet = mode === "both";
+  const mode = profile.dashboard_mode ?? profile.role ?? "vendor";
+  const isVendorMode = [
+    "vendor",
+    "seller",
+    "wholesaler",
+    "retailer",
+    "both",
+  ].includes(mode);
+
+  const heroAmount = isVendorMode ? data.customersOweMe : data.iOweSuppliers;
+  const heroLabel = isVendorMode ? "YOU WILL RECEIVE" : "YOU OWE";
+
+  const businessName = profile.business_name ?? profile.name ?? "My Business";
+  const roleLabel =
+    mode === "wholesaler"
+      ? "CreditBook Wholesaler"
+      : mode === "retailer"
+        ? "CreditBook Retailer"
+        : mode === "user"
+          ? "CreditBook User"
+          : "CreditBook Seller";
 
   return (
-    <Screen>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <Text className="text-lg font-semibold mb-4">
-          {t("dashboard.title")}
-        </Text>
+    <View style={{ flex: 1, backgroundColor: C.bg }}>
+      <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
 
-        {/* Net Position Cards */}
-        {(showSeller || showDistributor) && (
-          <View className="flex gap-y-3 mb-6">
-            {showSeller && (
-              <Card
-                title={t("dashboard.customersOweMe")}
-                value={`₹ ${data.customersOweMe.toLocaleString("en-IN")}`}
-                icon={
-                  <Ionicons
-                    name="trending-up-outline"
-                    size={20}
-                    color="white"
-                  />
-                }
-                className="bg-green-50 border border-green-200"
-              />
-            )}
-            {showDistributor && (
-              <Card
-                title={t("dashboard.iOweSuppliers")}
-                value={`₹ ${data.iOweSuppliers.toLocaleString("en-IN")}`}
-                icon={
-                  <Ionicons
-                    name="trending-down-outline"
-                    size={20}
-                    color="white"
-                  />
-                }
-                className="bg-red-50 border border-red-200"
-              />
-            )}
-            {showNet && (
-              <Card
-                title={t("dashboard.netPosition")}
-                value={`₹ ${data.netPosition.toLocaleString("en-IN")}`}
-                icon={
-                  <Ionicons
-                    name="swap-vertical-outline"
-                    size={20}
-                    color="white"
-                  />
-                }
-                className={
-                  data.netPosition >= 0
-                    ? "bg-green-100 border border-green-300"
-                    : "bg-amber-50 border border-amber-300"
-                }
-              />
-            )}
-          </View>
-        )}
+      <DashboardHeader
+        businessName={businessName}
+        roleLabel={roleLabel}
+        onPressSettings={() => router.push("/(main)/profile")}
+      />
 
-        {/* Financial Cards */}
-        <View className="flex gap-y-4 mb-6">
-          <Card
-            title="Total Revenue"
-            value={`₹ ${data?.totalRevenue.toLocaleString()}`}
-            icon={<Ionicons name="business-outline" size={20} color="white" />}
-          />
-          <Card
-            title="Outstanding Amount"
-            value={`₹ ${data?.outstandingAmount.toLocaleString()}`}
-            icon={<Ionicons name="cash-outline" size={20} color="white" />}
-          />
-          <Card
-            title="Unpaid Orders"
-            value={`${data?.unpaidOrders} Orders`}
-            icon={
-              <Ionicons name="alert-circle-outline" size={20} color="white" />
-            }
-          />
-          <Card
-            title="Partial Orders"
-            value={`${data?.partialOrders} Orders`}
-            icon={
-              <Ionicons name="alert-circle-outline" size={20} color="white" />
-            }
-          />
-          <Card
-            title={t("dashboard.overdueCustomers")}
-            value={`${data?.overdueCustomers} Customers`}
-            icon={<Ionicons name="time-outline" size={20} color="#dc2626" />}
-            className="bg-red-50 border border-red-200"
-          />
-        </View>
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <DashboardHeroCard label={heroLabel} amount={heroAmount} />
 
-        {/* Quick Actions */}
-        <Text className="text-lg font-semibold mb-4">
-          {t("dashboard.quickActions")}
-        </Text>
-        <View className="flex gap-y-4">
-          <QuickAction
-            label={t("dashboard.newBill")}
-            icon={<Ionicons name="cart-outline" size={28} color="green" />}
-            onPress={() => router.push("/orders/createOrderScreen")}
-          />
-          <QuickAction
-            label={t("dashboard.addCustomer")}
-            icon={
-              <Ionicons name="person-add-outline" size={28} color="green" />
-            }
-            onPress={() => setIsCustomerModalOpen(true)}
-          />
-          <QuickAction
-            label="My Profile"
-            icon={<Ionicons name="card-outline" size={28} color="green" />}
-            onPress={() => router.push("/(main)/profile")}
-          />
-        </View>
+        <DashboardActionBar
+          onViewReport={() => router.push("/(main)/export" as any)}
+        />
+
+        <DashboardStatCards
+          activeBuyers={data.activeBuyers}
+          overdueCustomers={data.overdueCustomers}
+        />
+
+        <DashboardRecentActivity
+          items={data.recentActivity}
+          onViewAll={() => router.push("/(main)/orders" as any)}
+        />
       </ScrollView>
 
-      {/* Customer Modal */}
+      <Pressable
+        style={{
+          position: "absolute",
+          bottom: 96,
+          right: 24,
+          width: 58,
+          height: 58,
+          borderRadius: 29,
+          backgroundColor: C.blue,
+          alignItems: "center",
+          justifyContent: "center",
+          shadowColor: C.blue,
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.4,
+          shadowRadius: 12,
+          elevation: 8,
+        }}
+        onPress={() => router.push("/orders/createOrderScreen")}
+      >
+        <Ionicons name="add" size={28} color="#fff" />
+      </Pressable>
+
       <NewCustomerModal
         visible={isCustomerModalOpen}
         onClose={() => setIsCustomerModalOpen(false)}
@@ -170,6 +123,6 @@ export const DashboardScreen = () => {
         loading={addCustomerMutation.isPending}
         errorMessage={addCustomerMutation.error?.message}
       />
-    </Screen>
+    </View>
   );
 };

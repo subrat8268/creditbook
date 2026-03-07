@@ -38,7 +38,27 @@ export async function fetchCustomers(
     (overdueOrders ?? []).map((o: any) => o.customer_id),
   );
 
-  return customers.map((c) => ({ ...c, isOverdue: overdueIds.has(c.id) }));
+  // Fetch sum of balance_due per customer
+  const { data: balanceRows } = await supabase
+    .from("orders")
+    .select("customer_id, balance_due")
+    .eq("vendor_id", vendorId)
+    .in(
+      "customer_id",
+      customers.map((c) => c.id),
+    );
+
+  const balanceByCustomer: Record<string, number> = {};
+  for (const row of balanceRows ?? []) {
+    balanceByCustomer[row.customer_id] =
+      (balanceByCustomer[row.customer_id] ?? 0) + Number(row.balance_due);
+  }
+
+  return customers.map((c) => ({
+    ...c,
+    isOverdue: overdueIds.has(c.id),
+    outstandingBalance: balanceByCustomer[c.id] ?? 0,
+  }));
 }
 
 export async function addCustomer(
@@ -70,23 +90,29 @@ export async function fetchCustomerDetail(
   }
   if (!customer) return null;
 
-  // Fetch orders for customer
+  // Fetch orders for customer (ascending to compute balance forward)
   const { data: orders, error: orderErr } = await supabase
     .from("orders")
-    .select("id, created_at, total_amount, amount_paid, balance_due, status")
+    .select(
+      "id, created_at, total_amount, amount_paid, balance_due, status, bill_number",
+    )
     .eq("customer_id", customerId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: true });
 
   if (orderErr) {
     console.error("Error fetching orders:", orderErr.message);
     return null;
   }
 
-  const outstandingBalance =
-    orders?.reduce((sum, o) => sum + Number(o.balance_due), 0) ?? 0;
+  const orderList = orders ?? [];
+  const outstandingBalance = orderList.reduce(
+    (sum, o) => sum + Number(o.balance_due),
+    0,
+  );
 
   // Overdue: outstanding balance AND most recent order is >30 days old
-  const lastOrderDate = orders?.[0]?.created_at ?? null;
+  const lastOrder = orderList[orderList.length - 1];
+  const lastOrderDate = lastOrder?.created_at ?? null;
   const daysSinceLastOrder = lastOrderDate
     ? Math.floor(
         (Date.now() - new Date(lastOrderDate).getTime()) /
@@ -95,17 +121,75 @@ export async function fetchCustomerDetail(
     : 0;
   const isOverdue = outstandingBalance > 0 && daysSinceLastOrder > 30;
 
+  // Fetch all payments for these orders in one batch
+  const orderIds = orderList.map((o) => o.id);
+  const { data: payments } = orderIds.length
+    ? await supabase
+        .from("payments")
+        .select("id, order_id, amount, payment_date, payment_mode")
+        .in("order_id", orderIds)
+        .order("payment_date", { ascending: true })
+    : { data: [] };
+
+  // Build unified transaction list with running balance (forward pass)
+  const billEvents = orderList.map((o) => ({
+    id: o.id,
+    type: "bill" as const,
+    created_at: o.created_at,
+    amount: Number(o.total_amount),
+    runningBalance: 0,
+    billNumber: o.bill_number as string | undefined,
+    status: o.status as "Paid" | "Pending" | "Partially Paid",
+  }));
+
+  const paymentEvents = (payments ?? []).map((p) => ({
+    id: p.id,
+    type: "payment" as const,
+    created_at: p.payment_date,
+    amount: Number(p.amount),
+    runningBalance: 0,
+    paymentMode: p.payment_mode as string,
+  }));
+
+  // Sort ascending by time for forward pass
+  const allEvents = [...billEvents, ...paymentEvents].sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+  );
+
+  // Compute running balance (balance owed after each event)
+  let running = 0;
+  for (const ev of allEvents) {
+    if (ev.type === "bill") running += ev.amount;
+    else running -= ev.amount;
+    ev.runningBalance = Math.max(running, 0);
+  }
+
+  // Reverse for newest-first display
+  allEvents.reverse();
+
+  // Find oldest pending/partially-paid order for payment recording
+  const pendingOrder = orderList.find(
+    (o) => o.status !== "Paid" && Number(o.balance_due) > 0,
+  );
+
   return {
     ...customer,
     outstandingBalance,
     isOverdue,
     daysSinceLastOrder,
-    orders:
-      orders.map((o) => ({
+    lastActiveAt: lastOrderDate,
+    pendingOrderId: pendingOrder?.id ?? null,
+    pendingOrderBalance: pendingOrder ? Number(pendingOrder.balance_due) : 0,
+    orders: orderList
+      .slice()
+      .reverse()
+      .map((o) => ({
         id: o.id,
         created_at: o.created_at,
-        amount: o.total_amount,
-        status: o.status,
-      })) ?? [],
+        amount: Number(o.total_amount),
+        status: o.status as "Paid" | "Pending" | "Partially Paid",
+      })),
+    transactions: allEvents,
   };
 }

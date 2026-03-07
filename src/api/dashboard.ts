@@ -1,5 +1,14 @@
 import { supabase } from "@/src/services/supabase";
 
+export interface RecentActivityItem {
+  id: string;
+  type: "payment" | "bill";
+  title: string;
+  date: string;
+  amount: number;
+  status: "Paid" | "Pending" | "Overdue" | "Partially Paid";
+}
+
 export interface DashboardData {
   totalRevenue: number;
   outstandingAmount: number;
@@ -10,6 +19,9 @@ export interface DashboardData {
   customersOweMe: number;
   iOweSuppliers: number;
   netPosition: number;
+  // New
+  activeBuyers: number;
+  recentActivity: RecentActivityItem[];
 }
 
 export async function getDashboardData(
@@ -26,10 +38,10 @@ export async function getDashboardData(
   const totalRevenue =
     payments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0;
 
-  // Orders
+  // Orders (include customer_id for active buyers count)
   const { data: orders, error: orderErr } = await supabase
     .from("orders")
-    .select("balance_due, status")
+    .select("customer_id, balance_due, status")
     .eq("vendor_id", vendorId);
 
   if (orderErr) throw new Error(orderErr.message);
@@ -41,9 +53,13 @@ export async function getDashboardData(
       unpaidOrders: 0,
       partialOrders: 0,
       overdueCustomers: 0,
+      customersOweMe: 0,
+      iOweSuppliers: 0,
+      netPosition: 0,
+      activeBuyers: 0,
+      recentActivity: [],
     };
 
-  // 3️⃣ Define status groups
   const unpaidStatuses = ["pending", "unpaid"];
   const partialStatuses = ["partially paid", "partial"];
 
@@ -58,7 +74,10 @@ export async function getDashboardData(
     .filter((o) => unpaidStatuses.includes((o.status ?? "").toLowerCase()))
     .reduce((sum, o) => sum + Number(o.balance_due ?? 0), 0);
 
-  // Overdue: unique customers with balance_due > 0 and last order > 30 days old
+  // Active buyers = unique customers with at least one order
+  const activeBuyers = new Set(orders.map((o: any) => o.customer_id)).size;
+
+  // Overdue
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -96,8 +115,54 @@ export async function getDashboardData(
     0,
   );
   const iOweSuppliers = Math.max(0, totalDeliveries - totalPaidToSuppliers);
-
   const netPosition = customersOweMe - iOweSuppliers;
+
+  // Recent activity — last 5 orders with customer name
+  const { data: recentOrders } = await supabase
+    .from("orders")
+    .select(
+      "id, bill_number, total_amount, amount_paid, balance_due, status, created_at, customers(name)",
+    )
+    .eq("vendor_id", vendorId)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  const recentActivity: RecentActivityItem[] = (recentOrders ?? []).map(
+    (o: any) => {
+      const customerName: string = o.customers?.name ?? "Unknown";
+      const isPaid =
+        (o.status ?? "").toLowerCase() === "paid" ||
+        Number(o.balance_due) === 0;
+      const isPartial = (o.status ?? "").toLowerCase().includes("partial");
+      const thirtyDaysAgoTs = new Date();
+      thirtyDaysAgoTs.setDate(thirtyDaysAgoTs.getDate() - 30);
+      const isOverdue =
+        !isPaid &&
+        Number(o.balance_due) > 0 &&
+        new Date(o.created_at) < thirtyDaysAgoTs;
+
+      const resolvedStatus: RecentActivityItem["status"] = isPaid
+        ? "Paid"
+        : isOverdue
+          ? "Overdue"
+          : isPartial
+            ? "Partially Paid"
+            : "Pending";
+
+      return {
+        id: o.id,
+        type: isPaid ? "payment" : "bill",
+        title: isPaid
+          ? `Payment from ${customerName}`
+          : o.bill_number
+            ? `Bill #${o.bill_number}`
+            : `Bill for ${customerName}`,
+        date: o.created_at,
+        amount: isPaid ? Number(o.amount_paid) : Number(o.total_amount),
+        status: resolvedStatus,
+      };
+    },
+  );
 
   return {
     totalRevenue,
@@ -108,5 +173,7 @@ export async function getDashboardData(
     customersOweMe,
     iOweSuppliers,
     netPosition,
+    activeBuyers,
+    recentActivity,
   };
 }

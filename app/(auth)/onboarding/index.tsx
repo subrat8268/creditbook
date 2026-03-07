@@ -1,13 +1,12 @@
-// Step 1 of 3 — Phone number
+// Step 2 of 4 — Phone number
 import OnboardingProgress from "@/src/components/onboarding/OnboardingProgress";
 import Button from "@/src/components/ui/Button";
 import Input from "@/src/components/ui/Input";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
-import { Profile } from "@/src/types/auth";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Image,
     KeyboardAvoidingView,
@@ -19,10 +18,17 @@ import {
 
 export default function OnboardingPhone() {
   const router = useRouter();
-  const { profile, setProfile } = useAuthStore();
+  const { user, profile, setProfile, loading: profileLoading } = useAuthStore();
   const [phone, setPhone] = useState(profile?.phone ?? "");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Guard: only redirect to role screen once profile is fully loaded
+  useEffect(() => {
+    if (!profileLoading && profile !== null && !profile.role) {
+      router.replace("/(auth)/onboarding/role" as any);
+    }
+  }, [profile, profileLoading, router]);
 
   const handleContinue = async () => {
     const cleaned = phone.trim().replace(/\D/g, "");
@@ -30,15 +36,17 @@ export default function OnboardingPhone() {
       setError("Enter a valid 10-digit mobile number.");
       return;
     }
+    if (!user) return;
     setError(null);
     setLoading(true);
     try {
       const { error: dbErr } = await supabase
         .from("profiles")
         .update({ phone: cleaned })
-        .eq("id", profile!.id);
+        .eq("user_id", user.id);
       if (dbErr) throw dbErr;
-      setProfile({ ...profile!, phone: cleaned } as Profile);
+      const current = useAuthStore.getState().profile;
+      if (current) setProfile({ ...current, phone: cleaned });
       router.push("/(auth)/onboarding/business" as any);
     } catch (e: any) {
       setError(e.message ?? "Something went wrong.");
@@ -65,7 +73,7 @@ export default function OnboardingPhone() {
           />
 
           {/* Progress */}
-          <OnboardingProgress current={1} />
+          <OnboardingProgress current={2} />
 
           {/* Heading */}
           <Text className="text-2xl font-inter-bold text-neutral-900 mt-6 mb-1">

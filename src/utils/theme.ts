@@ -1,53 +1,111 @@
+// ─── Core Palette ────────────────────────────────────────────────────────────
+// Single source of truth for the CreditBook fintech color system.
+// All components and screens must reference tokens from here.
 export const colors = {
   white: "#FFFFFF",
   black: "#000000",
+
+  // Brand — Purple-first, gradient-capable
   primary: {
-    light: "#89d875",
-    DEFAULT: "#398526",
-    dark: "#235217",
+    DEFAULT: "#5B3FFF", // Brand purple — CTAs, active nav, FAB
+    gradient: "#4F9CFF", // Gradient end (purple → blue hero cards)
+    light: "#EEEAFF", // Tinted surface / chip background
+    dark: "#3D28CC", // Pressed / dark variant
   },
-  secondary: {
-    light: "#f3d155",
-    DEFAULT: "#9C7C0BFF",
-    dark: "#5e4b07",
-  },
-  info: {
-    light: "#8bbdea",
-    DEFAULT: "#2784D5",
-    dark: "#174f7f",
-  },
-  warning: {
-    light: "#ffd359",
-    DEFAULT: "#C99500",
-    dark: "#745500",
+
+  // Semantic — Emotion-aware financial signals
+  success: {
+    DEFAULT: "#2ECC71", // Credit In / Paid — relief, resolution
+    light: "#DCFCE7", // Paid chip background
+    text: "#166534", // Paid chip label
+    dark: "#1A9950", // Pressed / dark
   },
   danger: {
-    light: "#f3a5aa",
-    DEFAULT: "#E85760",
-    dark: "#a91721",
+    DEFAULT: "#E74C3C", // Dues / Credit Out — urgency, delete
+    light: "#FEE2E2", // Overdue chip background / danger surface
+    text: "#991B1B", // Overdue chip label
+    dark: "#B33226", // Pressed / dark
   },
-  success: {
-    light: "#34ff93",
-    DEFAULT: "#007F3C",
-    dark: "#004f25",
+  warning: {
+    DEFAULT: "#F39C12", // Pending / Reminder — attention, not alarm
+    light: "#FEF3C7", // Pending chip background
+    text: "#92400E", // Pending chip label
+    dark: "#C27D0E", // Pressed / dark
   },
+  info: {
+    DEFAULT: "#4F9CFF", // Informational / partial state
+    light: "#EAF0FB", // Partial chip background
+    text: "#0369A1", // Partial chip label
+    dark: "#2563EB", // Pressed / dark
+  },
+
+  // Neutrals — Soft, low-fatigue grays
+  neutral: {
+    bg: "#F6F7FB", // App background — low-stress canvas
+    surface: "#FFFFFF", // Card / modal surface
+    100: "#F6F7FB",
+    200: "#E5E5EA", // Dividers / borders
+    300: "#C7C7CC",
+    400: "#AEAEB2", // Muted labels, captions
+    500: "#8E8E93", // Secondary text
+    600: "#636366", // Body text
+    700: "#48484A",
+    900: "#1C1C1E", // Primary text (near-black)
+  },
+
+  // UI tokens
   icon: {
-    bg: "#3A872633",
+    bg: "#5B3FFF22", // Translucent brand purple icon backing
   },
   border: {
-    tabborder: "#E5E7EBFF",
-  },
-  neutral: {
-    100: "#f5f8fa",
-    200: "#ecf2f6",
-    300: "#DEE1E6FF",
-    400: "#dbe5ee",
-    500: "#D3E0EA",
-    600: "#565D6DFF",
-    700: "#5081a7",
-    900: "#111b22",
+    tabborder: "#E5E5EA",
   },
 };
+
+// ─── Dashboard Palette ───────────────────────────────────────────────────────
+// Derived from `colors` — used by all dashboard components and screens.
+// Import `dashboardPalette` from here (or via re-export in dashboardUi.ts).
+export const dashboardPalette = {
+  // Surfaces
+  bg: colors.neutral.bg,
+  white: colors.white,
+  heroDecor: "#F5ECD8", // Warm cream blob on hero card
+
+  // Hero card text
+  heroLabel: colors.neutral[500],
+  heroAmount: colors.warning.DEFAULT,
+  heroSub: colors.neutral[500],
+
+  // Brand accent (replaces old blue)
+  blue: colors.primary.DEFAULT,
+  blueLight: colors.primary.light,
+
+  // Danger
+  red: colors.danger.DEFAULT,
+  redLight: colors.danger.light,
+
+  // Typography
+  heading: colors.neutral[900],
+  body: colors.neutral[600],
+  muted: colors.neutral[400],
+  divider: colors.neutral[200],
+
+  // Status chip — Paid
+  paidBg: colors.success.light,
+  paidText: colors.success.text,
+
+  // Status chip — Pending
+  pendingBg: colors.warning.light,
+  pendingText: colors.warning.text,
+
+  // Status chip — Overdue
+  overdueBg: colors.danger.light,
+  overdueText: colors.danger.text,
+
+  // Status chip — Partially Paid
+  partialBg: colors.info.light,
+  partialText: colors.info.text,
+} as const;
 
 export const spacing = {
   xs: 2, // s0

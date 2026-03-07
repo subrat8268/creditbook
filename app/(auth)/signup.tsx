@@ -116,8 +116,14 @@ export default function SignUpPage() {
 
                 {/* Server error */}
                 {signUpMutation.isError && (
-                  <View className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-2 mt-1">
-                    <Text className="text-red-600 text-sm text-center">
+                  <View className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-2 mt-1 flex-row items-start gap-2">
+                    <Ionicons
+                      name="alert-circle-outline"
+                      size={16}
+                      color="#dc2626"
+                      style={{ marginTop: 1 }}
+                    />
+                    <Text className="text-red-600 text-sm flex-1">
                       {(signUpMutation.error as any)?.message ||
                         "Sign up failed. Please try again."}
                     </Text>

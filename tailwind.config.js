@@ -8,13 +8,13 @@ module.exports = {
     extend: {
       colors: {
         primary: theme.colors.primary.DEFAULT,
-        secondary: theme.colors.secondary.DEFAULT,
+        secondary: theme.colors.info.DEFAULT,
         info: theme.colors.info.DEFAULT,
         warning: theme.colors.warning.DEFAULT,
         danger: theme.colors.danger.DEFAULT,
         success: theme.colors.success.DEFAULT,
         icon: theme.colors.icon.bg,
-        search: theme.colors.neutral[200],
+        search: theme.colors.neutral[100],
         textPrimary: theme.colors.neutral[600],
       },
       borderColor: {

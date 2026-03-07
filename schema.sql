@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS profiles (
   name TEXT,
   phone TEXT,
   role TEXT,
+  dashboard_mode TEXT,           -- 'vendor' | 'receiver'
+  onboarding_complete BOOLEAN NOT NULL DEFAULT FALSE,
 
   -- Business details
   business_name TEXT,
@@ -159,6 +161,12 @@ CREATE INDEX IF NOT EXISTS idx_payments_order       ON payments(order_id);
 
 
 -- =============================================================================
+-- MIGRATION HELPERS (run these if upgrading an existing database)
+-- =============================================================================
+-- ALTER TABLE profiles ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN NOT NULL DEFAULT FALSE;
+-- ALTER TABLE profiles ADD COLUMN IF NOT EXISTS dashboard_mode TEXT;
+
+-- =============================================================================
 -- AUTO-CREATE PROFILE ON SIGN-UP TRIGGER
 -- Creates a profiles row automatically whenever a new user is created in
 -- auth.users. This makes signup work even when email confirmation is enabled.
@@ -170,10 +178,13 @@ LANGUAGE plpgsql
 SECURITY DEFINER SET search_path = public
 AS $$
 BEGIN
-  INSERT INTO public.profiles (user_id, onboarding_complete)
-  VALUES (NEW.id, false)
-  ON CONFLICT (user_id) DO NOTHING;  -- idempotent: skip if app-level insert ran first
+  INSERT INTO public.profiles (user_id, name, onboarding_complete)
+  VALUES (NEW.id, '', FALSE)
+  ON CONFLICT (user_id) DO NOTHING;
   RETURN NEW;
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN NEW;
 END;
 $$;
 

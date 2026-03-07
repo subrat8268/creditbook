@@ -1,9 +1,8 @@
-// Step 3 of 3 — Ready!
+// Step 4 of 4 — Ready!
 import OnboardingProgress from "@/src/components/onboarding/OnboardingProgress";
 import Button from "@/src/components/ui/Button";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
-import { Profile } from "@/src/types/auth";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -11,20 +10,20 @@ import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function OnboardingReady() {
   const router = useRouter();
-  const { profile, setProfile } = useAuthStore();
+  const { user, profile, setProfile } = useAuthStore();
   const [loading, setLoading] = useState<"bill" | "dashboard" | null>(null);
 
   const completeOnboarding = async (next: "bill" | "dashboard") => {
+    if (!user) return;
     setLoading(next);
     try {
       const { error: dbErr } = await supabase
         .from("profiles")
         .update({ onboarding_complete: true })
-        .eq("id", profile!.id);
+        .eq("user_id", user.id);
       if (dbErr) throw dbErr;
-      // Update store — root layout re-renders and navigates to (main)/dashboard
-      setProfile({ ...profile!, onboarding_complete: true } as Profile);
-      // Navigate to specific route
+      const current = useAuthStore.getState().profile;
+      if (current) setProfile({ ...current, onboarding_complete: true });
       if (next === "bill") {
         router.replace("/(main)/orders/create");
       } else {
@@ -79,7 +78,7 @@ export default function OnboardingReady() {
         </TouchableOpacity>
 
         {/* Progress */}
-        <OnboardingProgress current={3} />
+        <OnboardingProgress current={4} />
 
         {/* Celebration heading */}
         <View className="items-center mt-8 mb-6">
