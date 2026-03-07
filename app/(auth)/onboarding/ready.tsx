@@ -1,12 +1,36 @@
-// Step 4 of 4 — Ready!
 import OnboardingProgress from "@/src/components/onboarding/OnboardingProgress";
 import Button from "@/src/components/ui/Button";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, ScrollView, Text, TouchableOpacity, View } from "react-native";
+
+function ShimmerChip() {
+  const opacity = useRef(new Animated.Value(0.4)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.4, duration: 700, useNativeDriver: true }),
+      ])
+    ).start();
+  }, [opacity]);
+
+  return (
+    <Animated.View
+      style={{
+        opacity,
+        height: 32,
+        width: 200,
+        borderRadius: 999,
+        backgroundColor: "#E5E7EB",
+      }}
+    />
+  );
+}
 
 export default function OnboardingReady() {
   const router = useRouter();
@@ -91,6 +115,41 @@ export default function OnboardingReady() {
           <Text className="text-neutral-500 font-inter text-center mt-2">
             CreditBook is ready. Here is what you have configured:
           </Text>
+
+          {/* Business identity chip */}
+          <View className="mt-5">
+            {!profile ? (
+              <ShimmerChip />
+            ) : (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: "#F0FDF4",
+                  borderWidth: 1,
+                  borderColor: "#BBF7D0",
+                  borderRadius: 999,
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  gap: 6,
+                }}
+              >
+                <Ionicons name="storefront-outline" size={15} color="#16A34A" />
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: "600",
+                    color: "#15803D",
+                  }}
+                  numberOfLines={1}
+                >
+                  {profile.business_name ?? "Your Business"}
+                  {" • "}
+                  {profile.bill_number_prefix ?? "INV"}-
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
 
         {/* Setup summary */}
