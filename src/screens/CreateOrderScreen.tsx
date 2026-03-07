@@ -3,9 +3,17 @@ import Loader from "@/src/components/feedback/Loader";
 import OrderSummary from "@/src/components/orders/OrderBillSummary";
 import OrderItemCard from "@/src/components/orders/OrderItemCard";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
-import { Alert, FlatList, Linking, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Pencil } from "lucide-react-native";
+import { useCallback, useMemo, useState } from "react";
+import {
+    Alert,
+    FlatList,
+    Linking,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { getCustomerPreviousBalance } from "../api/orders";
 import CustomerPicker from "../components/picker/CustomerPicker";
 import ProductPicker from "../components/picker/ProductPicker";
@@ -25,7 +33,16 @@ interface CartItem {
   key: string;
 }
 
-const AVATAR_COLORS = ["#EF4444","#F97316","#EAB308","#22C55E","#14B8A6","#3B82F6","#8B5CF6","#EC4899"];
+const AVATAR_COLORS = [
+  "#EF4444",
+  "#F97316",
+  "#EAB308",
+  "#22C55E",
+  "#14B8A6",
+  "#3B82F6",
+  "#8B5CF6",
+  "#EC4899",
+];
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
@@ -298,8 +315,15 @@ export default function CreateOrderScreen() {
       >
         {/* Avatar */}
         {selectedCustomer ? (
-          <View style={[styles.avatar, { backgroundColor: getAvatarColor(selectedCustomer.name) }]}>
-            <Text style={styles.avatarText}>{getInitials(selectedCustomer.name)}</Text>
+          <View
+            style={[
+              styles.avatar,
+              { backgroundColor: getAvatarColor(selectedCustomer.name) },
+            ]}
+          >
+            <Text style={styles.avatarText}>
+              {getInitials(selectedCustomer.name)}
+            </Text>
           </View>
         ) : (
           <View style={[styles.avatar, { backgroundColor: "#E5E7EB" }]}>

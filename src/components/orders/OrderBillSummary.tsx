@@ -143,10 +143,10 @@ export default function OrderBillSummary({
 
         {/* Grand Total */}
         <View className="flex-row justify-between items-center">
-          <Text style={{ fontSize: 15, fontWeight: '700', color: '#1C1C1E' }}>
+          <Text style={{ fontSize: 15, fontWeight: "700", color: "#1C1C1E" }}>
             Grand Total
           </Text>
-          <Text style={{ fontSize: 20, fontWeight: '700', color: '#1C1C1E' }}>
+          <Text style={{ fontSize: 20, fontWeight: "700", color: "#1C1C1E" }}>
             ₹{grandTotal.toLocaleString("en-IN")}
           </Text>
         </View>
