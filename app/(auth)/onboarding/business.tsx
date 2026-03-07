@@ -10,6 +10,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
+    StyleSheet,
     Text,
     TouchableOpacity,
     View,
@@ -24,6 +25,11 @@ export default function OnboardingBusiness() {
   );
   const [gstin, setGstin] = useState(profile?.gstin ?? "");
   const [upiId, setUpiId] = useState(profile?.upi_id ?? "");
+  const [bankName, setBankName] = useState(profile?.bank_name ?? "");
+  const [accountNumber, setAccountNumber] = useState(
+    profile?.account_number ?? "",
+  );
+  const [ifscCode, setIfscCode] = useState(profile?.ifsc_code ?? "");
   const [billPrefix, setBillPrefix] = useState(
     profile?.bill_number_prefix ?? "INV",
   );
@@ -43,6 +49,9 @@ export default function OnboardingBusiness() {
         business_name: businessName.trim(),
         gstin: gstin.trim() || null,
         upi_id: upiId.trim() || null,
+        bank_name: bankName.trim() || null,
+        account_number: accountNumber.trim() || null,
+        ifsc_code: ifscCode.trim().toUpperCase() || null,
         bill_number_prefix: billPrefix.trim().toUpperCase() || "INV",
       };
       const { error: dbErr } = await supabase
@@ -119,17 +128,63 @@ export default function OnboardingBusiness() {
           />
 
           {/* UPI ID */}
-          <Text className="font-inter-semibold text-neutral-800 mb-2 mt-5">
-            UPI ID{" "}
-            <Text className="text-neutral-400 font-inter text-sm">
-              (for QR on bills — optional)
-            </Text>
-          </Text>
+          <View className="flex-row items-center mb-2 mt-5">
+            <Text className="font-inter-semibold text-neutral-800">UPI ID</Text>
+            <View style={styles.optionalBadge}>
+              <Text style={styles.optionalText}>optional</Text>
+            </View>
+          </View>
           <Input
             placeholder="e.g. sharma@upi"
             value={upiId}
             onChangeText={setUpiId}
             keyboardType="email-address"
+          />
+
+          {/* Bank Name */}
+          <View className="flex-row items-center mb-2 mt-5">
+            <Text className="font-inter-semibold text-neutral-800">
+              Bank Name
+            </Text>
+            <View style={styles.optionalBadge}>
+              <Text style={styles.optionalText}>optional</Text>
+            </View>
+          </View>
+          <Input
+            placeholder="e.g. State Bank of India"
+            value={bankName}
+            onChangeText={setBankName}
+          />
+
+          {/* Account Number */}
+          <View className="flex-row items-center mb-2 mt-5">
+            <Text className="font-inter-semibold text-neutral-800">
+              Account Number
+            </Text>
+            <View style={styles.optionalBadge}>
+              <Text style={styles.optionalText}>optional</Text>
+            </View>
+          </View>
+          <Input
+            placeholder="e.g. 00112233445566"
+            value={accountNumber}
+            onChangeText={setAccountNumber}
+            keyboardType="numeric"
+          />
+
+          {/* IFSC Code */}
+          <View className="flex-row items-center mb-2 mt-5">
+            <Text className="font-inter-semibold text-neutral-800">
+              IFSC Code
+            </Text>
+            <View style={styles.optionalBadge}>
+              <Text style={styles.optionalText}>optional</Text>
+            </View>
+          </View>
+          <Input
+            placeholder="e.g. SBIN0001234"
+            value={ifscCode}
+            onChangeText={(t) => setIfscCode(t.toUpperCase())}
           />
 
           {/* Bill Prefix */}
@@ -158,3 +213,17 @@ export default function OnboardingBusiness() {
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  optionalBadge: {
+    marginLeft: 8,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  optionalText: {
+    fontSize: 11,
+    color: "#6B7280",
+  },
+});
