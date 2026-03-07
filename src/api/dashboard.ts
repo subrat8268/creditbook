@@ -4,6 +4,7 @@ export interface RecentActivityItem {
   id: string;
   type: "payment" | "bill";
   title: string;
+  name: string;
   date: string;
   amount: number;
   status: "Paid" | "Pending" | "Overdue" | "Partially Paid";
@@ -152,6 +153,7 @@ export async function getDashboardData(
       return {
         id: o.id,
         type: isPaid ? "payment" : "bill",
+        name: customerName,
         title: isPaid
           ? `Payment from ${customerName}`
           : o.bill_number

@@ -4,13 +4,36 @@ import {
     formatDashboardDate,
     formatINR,
 } from "@/src/utils/dashboardUi";
-import { Ionicons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
 import StatusBadge from "./StatusBadge";
+
+const AVATAR_COLORS = [
+  "#EF4444",
+  "#F97316",
+  "#EAB308",
+  "#22C55E",
+  "#14B8A6",
+  "#3B82F6",
+  "#8B5CF6",
+  "#EC4899",
+];
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
+function getAvatarColor(name: string): string {
+  const sum = name.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return AVATAR_COLORS[sum % 8];
+}
 
 type Props = { item: RecentActivityItem };
 
 export default function ActivityRow({ item }: Props) {
+  const initials = getInitials(item.name || "?");
+  const avatarColor = getAvatarColor(item.name || "?");
   const isPaid = item.status === "Paid";
 
   return (
@@ -30,21 +53,26 @@ export default function ActivityRow({ item }: Props) {
         elevation: 2,
       }}
     >
+      {/* Initials avatar */}
       <View
         style={{
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          backgroundColor: isPaid ? "#D1FAE5" : "#FEE2E2",
+          width: 36,
+          height: 36,
+          borderRadius: 18,
+          backgroundColor: avatarColor,
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <Ionicons
-          name={isPaid ? "arrow-down" : "receipt-outline"}
-          size={20}
-          color={isPaid ? "#059669" : "#DC2626"}
-        />
+        <Text
+          style={{
+            color: "#FFFFFF",
+            fontWeight: "bold",
+            fontSize: 13,
+          }}
+        >
+          {initials}
+        </Text>
       </View>
 
       <View style={{ flex: 1 }}>
