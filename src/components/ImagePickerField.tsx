@@ -1,15 +1,23 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
 
 export default function ImagePickerField({
   label,
   value,
   onPick,
+  name,
 }: {
   label: string;
   value: string | null;
   onPick: (uri: string) => void;
+  name?: string;
 }) {
   const pick = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -28,16 +36,23 @@ export default function ImagePickerField({
     }
   };
 
+  const showInitials = !value && !!name;
+
   return (
     <View className="mb-4">
       <Text className="text-gray-700 font-medium mb-2">{label}</Text>
 
       <Pressable
         onPress={pick}
-        className="w-24 h-24 rounded-xl bg-gray-100 items-center justify-center overflow-hidden"
+        style={[
+          styles.container,
+          showInitials ? styles.initialsContainer : styles.cameraContainer,
+        ]}
       >
         {value ? (
-          <Image source={{ uri: value }} className="w-full h-full" />
+          <Image source={{ uri: value }} style={StyleSheet.absoluteFill} />
+        ) : showInitials ? (
+          <Text style={styles.initialsText}>{getInitials(name!)}</Text>
         ) : (
           <Ionicons name="camera-outline" size={30} color="#6B7280" />
         )}
@@ -45,3 +60,25 @@ export default function ImagePickerField({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  initialsContainer: {
+    backgroundColor: "#22C55E",
+  },
+  cameraContainer: {
+    backgroundColor: "#F3F4F6",
+  },
+  initialsText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 22,
+  },
+});

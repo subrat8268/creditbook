@@ -58,6 +58,7 @@ export default function ProfileScreen() {
           label={t("profile.yourPhoto")}
           value={profile.avatar_url ?? null}
           onPick={(uri) => handleImage(uri, "avatar_url")}
+          name={profile.name ?? undefined}
         />
 
         {/* Business Logo */}
