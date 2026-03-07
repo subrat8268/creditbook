@@ -4,7 +4,6 @@ import OrderList from "@/src/components/orders/OrderList";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useOrders } from "@/src/hooks/useOrders";
 import { useAuthStore } from "@/src/store/authStore";
-import { Ionicons } from "@expo/vector-icons";
 import BottomSheet, {
     BottomSheetBackdrop,
     BottomSheetView,
@@ -81,11 +80,7 @@ export default function OrdersScreen() {
           onPressOrder={handlePressOrder}
         />
 
-        <FloatingActionButton
-          className="absolute bottom-6 right-6 bg-primary rounded-full p-4 shadow-lg"
-          icon={<Ionicons name="add" size={24} color="white" />}
-          onPress={() => router.push("/orders/create")}
-        />
+        <FloatingActionButton onPress={() => router.push("/orders/create")} />
       </ScreenWrapper>
 
       {/* Filter BottomSheet */}

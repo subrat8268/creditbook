@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,6 +8,7 @@ import CustomerList, {
     CustomerFilter,
 } from "../components/customers/CustomerList";
 import NewCustomerModal from "../components/customers/NewCustomerModal";
+import FloatingActionButton from "../components/FloatingActionButton";
 import SearchBar from "../components/SearchBar";
 import { useAddCustomer, useCustomers } from "../hooks/useCustomer";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
@@ -156,20 +156,7 @@ export default function CustomersScreen() {
       />
 
       {/* ── Primary FAB ── */}
-      <TouchableOpacity
-        className="absolute right-5 bottom-6 w-[58px] h-[58px] rounded-full bg-primary items-center justify-center"
-        style={{
-          shadowColor: "#5B3FFF",
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: 0.35,
-          shadowRadius: 10,
-          elevation: 8,
-        }}
-        onPress={() => setIsModalOpen(true)}
-        activeOpacity={0.85}
-      >
-        <Ionicons name="add" size={30} color="#FFFFFF" />
-      </TouchableOpacity>
+      <FloatingActionButton onPress={() => setIsModalOpen(true)} />
 
       <NewCustomerModal
         visible={isModalOpen}

@@ -239,8 +239,6 @@ export default function ProductsScreen() {
       />
 
       <FloatingActionButton
-        className="absolute bottom-6 right-6 bg-primary rounded-full p-4 shadow-lg"
-        icon={<Ionicons name="add" size={24} color="white" />}
         onPress={() => {
           setEditingProduct(null);
           setIsBottomSheetOpen(true);

@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -87,11 +86,7 @@ export default function SuppliersScreen() {
         onPressSupplier={handlePressSupplier}
       />
 
-      <FloatingActionButton
-        className="absolute bottom-6 right-6 bg-primary rounded-full p-4 shadow-lg"
-        icon={<Ionicons name="add" size={24} color="white" />}
-        onPress={() => setIsModalOpen(true)}
-      />
+      <FloatingActionButton onPress={() => setIsModalOpen(true)} />
 
       <NewSupplierModal
         visible={isModalOpen}
