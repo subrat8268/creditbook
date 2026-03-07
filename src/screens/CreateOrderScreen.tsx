@@ -4,7 +4,8 @@ import OrderSummary from "@/src/components/orders/OrderBillSummary";
 import OrderItemCard from "@/src/components/orders/OrderItemCard";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { Alert, FlatList, Linking, Text, TouchableOpacity } from "react-native";
+import { Alert, FlatList, Linking, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Pencil } from "lucide-react-native";
 import { getCustomerPreviousBalance } from "../api/orders";
 import CustomerPicker from "../components/picker/CustomerPicker";
 import ProductPicker from "../components/picker/ProductPicker";
@@ -22,6 +23,17 @@ interface CartItem {
   price: number;
   quantity: number;
   key: string;
+}
+
+const AVATAR_COLORS = ["#EF4444","#F97316","#EAB308","#22C55E","#14B8A6","#3B82F6","#8B5CF6","#EC4899"];
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+function getAvatarColor(name: string) {
+  const sum = name.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  return AVATAR_COLORS[sum % 8];
 }
 
 export default function CreateOrderScreen() {
@@ -280,22 +292,28 @@ export default function CreateOrderScreen() {
     <ScreenWrapper>
       {/* Customer */}
       <TouchableOpacity
-        className="p-4 border rounded-xl mb-4 bg-white"
+        style={styles.customerRow}
         onPress={() => setCustomerPickerVisible(true)}
+        activeOpacity={0.75}
       >
-        <Text className="font-inter-medium text-gray-700">
+        {/* Avatar */}
+        {selectedCustomer ? (
+          <View style={[styles.avatar, { backgroundColor: getAvatarColor(selectedCustomer.name) }]}>
+            <Text style={styles.avatarText}>{getInitials(selectedCustomer.name)}</Text>
+          </View>
+        ) : (
+          <View style={[styles.avatar, { backgroundColor: "#E5E7EB" }]}>
+            <Text style={[styles.avatarText, { color: "#9CA3AF" }]}>?</Text>
+          </View>
+        )}
+
+        {/* Name */}
+        <Text style={styles.customerName} numberOfLines={1}>
           {selectedCustomer ? selectedCustomer.name : "Select Customer"}
         </Text>
-        {selectedCustomer && previousBalance > 0 && (
-          <Text className="text-xs text-amber-600 font-inter-medium mt-1">
-            {isFetchingBalance
-              ? "Fetching balance…"
-              : `Previous Balance: ₹${previousBalance.toLocaleString("en-IN")}`}
-          </Text>
-        )}
-        {selectedCustomer && isFetchingBalance && previousBalance === 0 && (
-          <Text className="text-xs text-gray-400 mt-1">Fetching balance…</Text>
-        )}
+
+        {/* Edit icon */}
+        <Pencil size={16} color="#9CA3AF" strokeWidth={2} />
       </TouchableOpacity>
 
       {/* Payment reminder button — shown only when previous balance > 0 */}
@@ -409,3 +427,36 @@ export default function CreateOrderScreen() {
     </ScreenWrapper>
   );
 }
+
+const styles = StyleSheet.create({
+  customerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    marginBottom: 16,
+    backgroundColor: "#FFFFFF",
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  avatarText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 13,
+  },
+  customerName: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#1C1C1E",
+  },
+});
