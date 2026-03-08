@@ -11,9 +11,16 @@ interface CardProps {
 
 const Card = ({ title, value, icon, className }: CardProps) => {
   return (
-    <View className={clsx("bg-neutral-100 rounded-lg p-4 flex-row justify-between items-center shadow-sm", className)}>
+    <View
+      className={clsx(
+        "bg-search rounded-lg p-4 flex-row justify-between items-center shadow-sm",
+        className,
+      )}
+    >
       <View>
-        <Text className="text-gray-500 mb-1">{title}</Text>
+        <Text className="mb-1" style={{ color: "#8E8E93" }}>
+          {title}
+        </Text>
         <Text className="text-2xl font-semibold">{value}</Text>
       </View>
       {icon && <View className="bg-icon p-3 rounded-full">{icon}</View>}

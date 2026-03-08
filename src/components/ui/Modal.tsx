@@ -28,8 +28,8 @@ export default function AppModal({
       avoidKeyboard
       statusBarTranslucent={Platform.OS === "android" ? true : false}
       backdropOpacity={0.5}
-      animationIn="fadeIn"
-      animationOut="fadeOut"
+      animationIn="slideInUp"
+      animationOut="slideOutDown"
       useNativeDriver
     >
       <KeyboardAvoidingView
@@ -37,7 +37,7 @@ export default function AppModal({
         keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 20}
         style={{ flex: 1, justifyContent: "flex-end" }}
       >
-        <View className="bg-white rounded-lg p-6">
+        <View className="bg-white rounded-xl p-6">
           {/* Header */}
           <View className="flex-row justify-between items-center mb-4">
             {title && (

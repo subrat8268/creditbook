@@ -7,14 +7,14 @@ type StatusDotProps = {
   status: Status;
 };
 
-export default function StatusDot({ status }: StatusDotProps) {
-  const colors: Record<Status, string> = {
-    Paid: "bg-green-500",
-    Pending: "bg-yellow-500",
-    "Partially Paid": "bg-red-500",
-  };
+const DOT_COLOR: Record<Status, string> = {
+  Paid: "#22C55E",
+  Pending: "#F39C12",
+  "Partially Paid": "#E74C3C",
+};
 
-  const color = colors[status];
+export default function StatusDot({ status }: StatusDotProps) {
+  const dotColor = DOT_COLOR[status];
 
   // Animations
   const scale = useRef(new Animated.Value(1)).current;
@@ -41,7 +41,7 @@ export default function StatusDot({ status }: StatusDotProps) {
           duration: 1000,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     );
 
     loop.start();
@@ -54,15 +54,19 @@ export default function StatusDot({ status }: StatusDotProps) {
       {/* Pulsing background only if not Paid */}
       {status !== "Paid" && (
         <Animated.View
-          className={`absolute w-3 h-3 rounded-full ${color}`}
+          className="absolute w-3 h-3 rounded-full"
           style={{
+            backgroundColor: dotColor,
             transform: [{ scale }],
             opacity,
           }}
         />
       )}
       {/* Static dot */}
-      <View className={`w-2.5 h-2.5 rounded-full ${color}`} />
+      <View
+        className="w-2.5 h-2.5 rounded-full"
+        style={{ backgroundColor: dotColor }}
+      />
     </View>
   );
 }
