@@ -108,6 +108,7 @@ export const useRecordDelivery = (vendorId: string, supplierId: string) => {
         queryKey: ["suppliers", vendorId],
         exact: false,
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", vendorId] });
     },
     onError: (err) => {
       console.error("Failed to record delivery:", err);
@@ -136,6 +137,7 @@ export const useRecordPaymentMade = (vendorId: string, supplierId: string) => {
         queryKey: ["suppliers", vendorId],
         exact: false,
       });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", vendorId] });
     },
     onError: (err) => {
       console.error("Failed to record payment:", err);

@@ -435,6 +435,23 @@ Same content, same interaction, different shape. No design reason for the differ
 
 ---
 
+### ✅ P-22 — TanStack Query Cache Invalidation — Complete Financial Mutation Audit — FIXED March 8, 2026
+
+**Files:** `src/components/customers/RecordCustomerPaymentModal.tsx`, `src/hooks/usePayments.ts`, `src/hooks/useOrders.ts`, `src/hooks/useSuppliers.ts`  
+**Category:** Stale data / financial mismatch after mutations
+
+| Mutation | Gap | Fix |
+|---|---|---|
+| `RecordCustomerPaymentModal` (raw) | Missing `["customers", profile.id]` | Added `invalidateQueries({ queryKey: ["customers", profile.id], exact: false })` |
+| `usePayments.recordPayment` | Missing `["customers", vendorId]` | Added `invalidateQueries({ queryKey: ["customers", vendorId], exact: false })` |
+| `useCreateOrder` | Missing `["customers", vendorId]` + `["customerDetail", customerId]` | Added both; `customerId` from `variables.customerId`; `onSuccess` now accepts `(newOrder, variables)` |
+| `useRecordDelivery` | Missing `["dashboard", vendorId]` | Added — critical for "I Owe Suppliers" live update |
+| `useRecordPaymentMade` | Missing `["dashboard", vendorId]` | Added — same |
+
+All other hooks (`useAddCustomer`, `useAddSupplier`, `useProducts.*`) confirmed correct — no dashboard invalidation needed for non-financial list mutations.
+
+---
+
 ### ✅ M-12 — `balance_due` Recalculated in JS — FIXED (March 8, 2026)
 
 **File:** `src/api/orders.ts` → `fetchOrders()`  
@@ -656,3 +673,4 @@ Supplier modal: `border-neutral-300` — Tailwind bare class (`#D4D4D4`) ≠ the
 | ~~18~~   | ~~P-19~~ ✅                                                                                                                                                       | ~~CustomerDetail: "Send Reminder" label, MODE_LABEL map, zero-balance green hero~~ **DONE**               | Fixed March 8, 2026 — `MODE_LABEL` normalises "online"→"UPI"; hero colors/label derived from `outstandingBalance === 0`                   |
 | ~~19~~   | ~~P-20~~ ✅                                                                                                                                                       | ~~OrderBillSummary: Grand Total font size 28px, Previous Balance red~~ **DONE**                           | Fixed March 8, 2026 — `fontSize: 20→28`; Previous Balance `amber-600` → `#E74C3C`; formula verified clean                                 |
 | ~~20~~   | ~~P-21~~ ✅                                                                                                                                                       | ~~ProfileScreen: filled avatar, Seller/Distributor/Both toggle, sign out + ExportScreen back~~ **DONE**   | Fixed March 8, 2026 — initials avatar; mode values fixed; `handleSignOut` w/ supabase.auth.signOut(); ExportScreen ArrowLeft back         |
+| ~~21~~   | ~~P-22~~ ✅                                                                                                                                                       | ~~TanStack Query: complete cache invalidation audit across 4 financial mutation files~~ **DONE**           | Fixed March 8, 2026 — 5 missing invalidations added; dashboard now updates immediately on every financial mutation                       |

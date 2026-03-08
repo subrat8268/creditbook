@@ -43,6 +43,7 @@ export function usePayments(orderId: string, vendorId?: string) {
       queryClient.invalidateQueries({ queryKey: orderKeys.list(vendorId) });
       queryClient.invalidateQueries({ queryKey: orderKeys.detail(orderId) });
       queryClient.invalidateQueries({ queryKey: ["payments", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["customers", vendorId], exact: false });
       queryClient.invalidateQueries({ queryKey: ["dashboard", vendorId] });
     },
 

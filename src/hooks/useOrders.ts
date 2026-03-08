@@ -109,7 +109,7 @@ export function useCreateOrder(vendorId: string) {
         billNumberPrefix,
       ),
 
-    onSuccess: (newOrder) => {
+    onSuccess: (newOrder, variables) => {
       queryClient.setQueryData(orderKeys.detail(newOrder.id), newOrder);
       queryClient.setQueryData<InfiniteData<Order[]>>(
         orderKeys.list(vendorId),
@@ -124,6 +124,8 @@ export function useCreateOrder(vendorId: string) {
           };
         },
       );
+      queryClient.invalidateQueries({ queryKey: ["customers", vendorId], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["customerDetail", variables.customerId] });
       queryClient.invalidateQueries({ queryKey: ["dashboard", vendorId] });
     },
   });

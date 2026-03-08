@@ -73,6 +73,10 @@ export default function RecordCustomerPaymentModal({
       queryClient.invalidateQueries({
         queryKey: ["customerDetail", customerId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["customers", profile.id],
+        exact: false,
+      });
       queryClient.invalidateQueries({ queryKey: ["dashboard", profile.id] });
       setAmount("");
       setMode("Cash");
