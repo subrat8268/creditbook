@@ -1,6 +1,6 @@
 import { ProductVariant } from "@/src/api/products";
-import { Ionicons } from "@expo/vector-icons";
 import { FieldArray, Formik } from "formik";
+import { Trash2 } from "lucide-react-native";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { ProductSchema } from "../../utils/schemas";
 import Button from "../ui/Button";
@@ -118,18 +118,14 @@ export default function NewProductModal({
                           placeholder="Price"
                           value={variant.price ? variant.price.toString() : ""}
                           onChangeText={handleChange(
-                            `variants[${index}].price`
+                            `variants[${index}].price`,
                           )}
                           onBlur={handleBlur(`variants[${index}].price`)}
                           keyboardType="decimal-pad"
                           className="w-24 border border-default font-inter placeholder:text-textPrimary rounded-lg px-3 py-2"
                         />
                         <TouchableOpacity onPress={() => remove(index)}>
-                          <Ionicons
-                            name="trash-outline"
-                            size={24}
-                            color="red"
-                          />
+                          <Trash2 size={24} color="red" strokeWidth={2} />
                         </TouchableOpacity>
                       </View>
                     ))}

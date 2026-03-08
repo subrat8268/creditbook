@@ -14,6 +14,7 @@ export default function SupplierList({
   refreshing,
   onEndReached,
   isFetchingNextPage,
+  onAddSupplier,
 }: {
   suppliers: Supplier[];
   onPressSupplier: (supplierId: string) => void;
@@ -23,6 +24,7 @@ export default function SupplierList({
   refreshing: boolean;
   onEndReached: () => void;
   isFetchingNextPage: boolean;
+  onAddSupplier?: () => void;
 }) {
   if (isLoading) return <Loader message="Fetching suppliers" />;
   if (error) return <ErrorState message="Failed to fetch suppliers" />;
@@ -40,7 +42,14 @@ export default function SupplierList({
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-      ListEmptyComponent={<EmptyState message="No suppliers added yet" />}
+      ListEmptyComponent={
+        <EmptyState
+          title="No suppliers yet"
+          description="Add a supplier to track deliveries and payments."
+          cta={onAddSupplier ? "Add Supplier" : undefined}
+          onCta={onAddSupplier}
+        />
+      }
       ListFooterComponent={
         isFetchingNextPage ? (
           <Loader message="Loading more suppliers..." />

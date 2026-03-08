@@ -1,6 +1,6 @@
 import { ProductVariant } from "@/src/api/products";
-import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import { EllipsisVertical, Package } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
 interface ProductCardProps {
@@ -35,7 +35,7 @@ export default function ProductCard({
             />
           ) : (
             <View className="w-12 h-12 rounded-lg bg-neutral-200 mr-3 items-center justify-center">
-              <Ionicons name="cube-outline" size={24} color="#666" />
+              <Package size={24} color="#666" strokeWidth={1.5} />
             </View>
           )}
           <View className="flex-1">
@@ -48,7 +48,7 @@ export default function ProductCard({
           </View>
         </View>
         <TouchableOpacity onPress={onOptionsPress}>
-          <Ionicons name="ellipsis-vertical" size={20} color="#999" />
+          <EllipsisVertical size={20} color="#999" strokeWidth={2} />
         </TouchableOpacity>
       </View>
       <View className="w-full">

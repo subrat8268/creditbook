@@ -10,8 +10,8 @@ import {
     useSupplierDetail,
 } from "@/src/hooks/useSuppliers";
 import { useAuthStore } from "@/src/store/authStore";
-import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
+import { Banknote, Building2 } from "lucide-react-native";
 import { useState } from "react";
 import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
 
@@ -39,7 +39,7 @@ export default function SupplierDetailScreen() {
       <View className="rounded-lg p-4 border border-neutral-300 gap-3 mb-4">
         <View className="flex-row items-center gap-4">
           <View className="w-14 h-14 rounded-full bg-amber-100 items-center justify-center">
-            <Ionicons name="business-outline" size={28} color="#d97706" />
+            <Building2 size={28} color="#d97706" strokeWidth={1.8} />
           </View>
           <View className="flex-1">
             <Text className="text-2xl text-neutral-900 font-inter-bold">
@@ -99,7 +99,7 @@ export default function SupplierDetailScreen() {
             onPress={() => setPaymentModalOpen(true)}
             className="flex-row items-center justify-center gap-2 bg-primary rounded-lg py-3 mt-1"
           >
-            <Ionicons name="cash-outline" size={18} color="white" />
+            <Banknote size={18} color="white" strokeWidth={2} />
             <Text className="text-white font-inter-semibold text-sm">
               Record Payment
             </Text>

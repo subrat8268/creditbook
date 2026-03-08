@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Minus, Plus } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
 interface OrderItemCardProps {
@@ -44,7 +44,7 @@ export default function OrderItemCard({
           }}
           className="bg-gray-200 p-2 rounded-full"
         >
-          <Ionicons name="remove" size={18} color="#374151" />
+          <Minus size={18} color="#374151" strokeWidth={2.5} />
         </TouchableOpacity>
 
         <Text className="mx-3 text-base font-inter-medium">{quantity}</Text>
@@ -53,7 +53,7 @@ export default function OrderItemCard({
           onPress={() => onUpdateQuantity(quantity + 1)}
           className="bg-gray-200 p-2 rounded-full"
         >
-          <Ionicons name="add" size={18} color="#374151" />
+          <Plus size={18} color="#374151" strokeWidth={2.5} />
         </TouchableOpacity>
       </View>
 

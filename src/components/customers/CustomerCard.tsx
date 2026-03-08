@@ -14,14 +14,14 @@ type Props = {
 // --- Helpers ---
 
 const AVATAR_COLORS = [
-  "#5B3FFF",
-  "#E74C3C",
-  "#F39C12",
-  "#2ECC71",
-  "#3498DB",
-  "#9B59B6",
-  "#E67E22",
-  "#1ABC9C",
+  "#EF4444",
+  "#F97316",
+  "#EAB308",
+  "#22C55E",
+  "#14B8A6",
+  "#3B82F6",
+  "#8B5CF6",
+  "#EC4899",
 ];
 
 function getAvatarColor(name: string): string {
@@ -60,7 +60,7 @@ const STATUS_STYLES: Record<
   Overdue: { text: "#E74C3C", border: "#E74C3C", bg: "#FFF0EE" },
   Pending: { text: "#F39C12", border: "#F39C12", bg: "#FFF8EE" },
   Paid: { text: "#2ECC71", border: "#2ECC71", bg: "#EDFAF4" },
-  Advance: { text: "#5B3FFF", border: "#5B3FFF", bg: "#EEEBFF" },
+  Advance: { text: "#0369A1", border: "#4F9CFF", bg: "#EAF0FB" },
 };
 
 const AMOUNT_COLOR: Record<CustomerStatus, string> = {

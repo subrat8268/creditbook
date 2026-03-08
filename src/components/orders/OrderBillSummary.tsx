@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { MessageSquare } from "lucide-react-native";
 import { useState } from "react";
 import {
     ActivityIndicator,
@@ -174,7 +174,7 @@ export default function OrderBillSummary({
           onPress={onSendBill}
           className="flex-1 bg-green-600 py-3 rounded-xl flex-row justify-center items-center"
         >
-          <Ionicons name="logo-whatsapp" size={20} color="#fff" />
+          <MessageSquare size={20} color="#fff" strokeWidth={2} />
           <Text className="text-white text-center font-inter-semibold text-base ml-2">
             Send Bill
           </Text>

@@ -1,8 +1,11 @@
-import { useState } from "react";
+import BottomSheet, {
+    BottomSheetBackdrop,
+    BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
-    Modal,
     Text,
     TextInput,
     TouchableOpacity,
@@ -34,6 +37,26 @@ export default function RecordPaymentMadeModal({
   const [mode, setMode] = useState("Cash");
   const [notes, setNotes] = useState("");
 
+  const sheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ["62%"], []);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
+  useEffect(() => {
+    if (visible) sheetRef.current?.expand();
+    else sheetRef.current?.close();
+  }, [visible]);
+
   const reset = () => {
     setAmount("");
     setMode("Cash");
@@ -55,92 +78,98 @@ export default function RecordPaymentMadeModal({
   };
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent
-      onRequestClose={onClose}
+    <BottomSheet
+      ref={sheetRef}
+      index={-1}
+      snapPoints={snapPoints}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
+      onClose={onClose}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      handleIndicatorStyle={{ backgroundColor: "#D1D5DB", width: 40 }}
+      backgroundStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
     >
-      <View className="flex-1 justify-end bg-black/40">
-        <View className="bg-white rounded-t-2xl px-4 pt-4 pb-10">
-          {/* Handle */}
-          <View className="w-10 h-1 bg-neutral-300 rounded-full self-center mb-4" />
+      <BottomSheetScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingBottom: 40,
+          paddingTop: 8,
+        }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text className="text-lg font-inter-semibold mb-1">
+          Record Payment to Supplier
+        </Text>
+        <Text className="text-neutral-500 font-inter text-sm mb-4">
+          Balance owed: \u20B9{balanceOwed.toLocaleString("en-IN")}
+        </Text>
 
-          <Text className="text-lg font-inter-semibold mb-1">
-            Record Payment to Supplier
-          </Text>
-          <Text className="text-neutral-500 font-inter text-sm mb-4">
-            Balance owed: ₹{balanceOwed.toLocaleString("en-IN")}
-          </Text>
+        {/* Amount */}
+        <View className="border border-neutral-300 rounded-lg flex-row items-center px-3 mb-3">
+          <Text className="text-neutral-600 font-inter mr-1">\u20B9</Text>
+          <TextInput
+            className="flex-1 py-2.5 font-inter"
+            placeholder={`Enter amount (max \u20B9${balanceOwed.toLocaleString("en-IN")})`}
+            value={amount}
+            onChangeText={setAmount}
+            keyboardType="numeric"
+          />
+        </View>
 
-          {/* Amount */}
-          <View className="border border-neutral-300 rounded-lg flex-row items-center px-3 mb-3">
-            <Text className="text-neutral-600 font-inter mr-1">₹</Text>
-            <TextInput
-              className="flex-1 py-2.5 font-inter"
-              placeholder={`Enter amount (max ₹${balanceOwed.toLocaleString("en-IN")})`}
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="numeric"
-            />
-          </View>
-
-          {/* Payment Mode */}
-          <View className="flex-row flex-wrap gap-2 mb-3">
-            {PAYMENT_MODES.map((m) => (
-              <TouchableOpacity
-                key={m}
-                onPress={() => setMode(m)}
-                className={`px-3 py-2 rounded-lg border ${
-                  mode === m
-                    ? "bg-primary border-primary"
-                    : "border-neutral-300"
+        {/* Payment Mode */}
+        <View className="flex-row flex-wrap gap-2 mb-3">
+          {PAYMENT_MODES.map((m) => (
+            <TouchableOpacity
+              key={m}
+              onPress={() => setMode(m)}
+              className={`px-3 py-2 rounded-lg border ${
+                mode === m ? "bg-primary border-primary" : "border-neutral-300"
+              }`}
+            >
+              <Text
+                className={`font-inter-medium text-sm ${
+                  mode === m ? "text-white" : "text-neutral-700"
                 }`}
               >
-                <Text
-                  className={`font-inter-medium text-sm ${
-                    mode === m ? "text-white" : "text-neutral-700"
-                  }`}
-                >
-                  {m}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Notes */}
-          <TextInput
-            className="border border-neutral-300 rounded-lg px-3 py-2.5 font-inter mb-4"
-            placeholder="Notes (optional)"
-            value={notes}
-            onChangeText={setNotes}
-          />
-
-          <View className="flex-row gap-3">
-            <TouchableOpacity
-              onPress={onClose}
-              className="flex-1 py-3 rounded-lg border border-neutral-300"
-            >
-              <Text className="text-center font-inter-medium text-neutral-700">
-                Cancel
+                {m}
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleSubmit}
-              disabled={loading}
-              className="flex-2 flex-grow py-3 rounded-lg bg-primary"
-            >
-              {loading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text className="text-center font-inter-semibold text-white">
-                  Record Payment
-                </Text>
-              )}
-            </TouchableOpacity>
-          </View>
+          ))}
         </View>
-      </View>
-    </Modal>
+
+        {/* Notes */}
+        <TextInput
+          className="border border-neutral-300 rounded-lg px-3 py-2.5 font-inter mb-4"
+          placeholder="Notes (optional)"
+          value={notes}
+          onChangeText={setNotes}
+        />
+
+        <View className="flex-row gap-3">
+          <TouchableOpacity
+            onPress={onClose}
+            className="flex-1 py-3 rounded-lg border border-neutral-300"
+          >
+            <Text className="text-center font-inter-medium text-neutral-700">
+              Cancel
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleSubmit}
+            disabled={loading}
+            className="flex-2 flex-grow py-3 rounded-lg bg-primary"
+          >
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text className="text-center font-inter-semibold text-white">
+                Record Payment
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </BottomSheetScrollView>
+    </BottomSheet>
   );
 }

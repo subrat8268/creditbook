@@ -1,6 +1,6 @@
 import { RecentActivityItem } from "@/src/api/dashboard";
 import { dashboardPalette as C } from "@/src/utils/dashboardUi";
-import { Ionicons } from "@expo/vector-icons";
+import { Receipt } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 import ActivityRow from "./ActivityRow";
 
@@ -39,7 +39,7 @@ export default function DashboardRecentActivity({ items, onViewAll }: Props) {
             alignItems: "center",
           }}
         >
-          <Ionicons name="receipt-outline" size={36} color={C.muted} />
+          <Receipt size={36} color={C.muted} strokeWidth={1.5} />
           <Text style={{ color: C.muted, marginTop: 10, fontSize: 14 }}>
             No recent activity
           </Text>

@@ -1,5 +1,5 @@
 import { dashboardPalette as C } from "@/src/utils/dashboardUi";
-import { Ionicons } from "@expo/vector-icons";
+import { Bell, Settings } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
@@ -67,7 +67,7 @@ export default function DashboardHeader({
         }}
         onPress={onPressNotifications}
       >
-        <Ionicons name="notifications-outline" size={20} color={C.heading} />
+        <Bell size={20} color={C.heading} strokeWidth={1.8} />
       </TouchableOpacity>
       <TouchableOpacity
         style={{
@@ -85,7 +85,7 @@ export default function DashboardHeader({
         }}
         onPress={onPressSettings}
       >
-        <Ionicons name="settings-outline" size={20} color={C.heading} />
+        <Settings size={20} color={C.heading} strokeWidth={1.8} />
       </TouchableOpacity>
     </View>
   );

@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Building2, ChevronRight } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 import { Supplier } from "../../types/supplier";
 
@@ -17,7 +17,7 @@ export default function SupplierCard({ supplier, onPress }: Props) {
     >
       <View className="flex-row items-center flex-1">
         <View className="w-10 h-10 rounded-full bg-amber-100 mr-3 items-center justify-center">
-          <Ionicons name="business-outline" size={20} color="#d97706" />
+          <Building2 size={20} color="#d97706" strokeWidth={1.8} />
         </View>
         <View className="flex-1">
           <Text className="font-inter-semibold text-neutral-900">
@@ -53,7 +53,7 @@ export default function SupplierCard({ supplier, onPress }: Props) {
             </Text>
           </View>
         )}
-        <Ionicons name="chevron-forward" size={16} color="#999" />
+        <ChevronRight size={16} color="#999" strokeWidth={2} />
       </View>
     </TouchableOpacity>
   );

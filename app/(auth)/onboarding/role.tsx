@@ -1,15 +1,15 @@
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { ArrowLeft, Check, Store, User, Users } from "lucide-react-native";
+import { ComponentType, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 type Role = "wholesaler" | "retailer" | "user";
 
 interface RoleCard {
   role: Role;
-  icon: keyof typeof Ionicons.glyphMap;
+  Icon: ComponentType<{ size: number; color: string; strokeWidth?: number }>;
   title: string;
   subtitle: string;
   accentColor: string;
@@ -20,7 +20,7 @@ interface RoleCard {
 const ROLES: RoleCard[] = [
   {
     role: "retailer",
-    icon: "storefront-outline",
+    Icon: Store,
     title: "Retailer / Shopkeeper",
     subtitle: "I sell goods directly to customers in my shop or online.",
     accentColor: "#16a34a",
@@ -29,7 +29,7 @@ const ROLES: RoleCard[] = [
   },
   {
     role: "wholesaler",
-    icon: "people-outline",
+    Icon: Users,
     title: "Wholesaler / Distributor",
     subtitle: "I buy in bulk from suppliers and sell to other retailers.",
     accentColor: "#2563eb",
@@ -38,7 +38,7 @@ const ROLES: RoleCard[] = [
   },
   {
     role: "user",
-    icon: "person-outline",
+    Icon: User,
     title: "Customer / End User",
     subtitle: "I buy goods for personal use and want to track my purchases.",
     accentColor: "#d97706",
@@ -114,7 +114,7 @@ export default function OnboardingRole() {
           onPress={() => router.back()}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
-          <Ionicons name="arrow-back" size={22} color="#111827" />
+          <ArrowLeft size={22} color="#111827" strokeWidth={2} />
         </TouchableOpacity>
         <Text
           style={{
@@ -202,10 +202,10 @@ export default function OnboardingRole() {
                         justifyContent: "center",
                       }}
                     >
-                      <Ionicons
-                        name={item.icon}
+                      <item.Icon
                         size={56}
                         color={item.accentColor + "99"}
+                        strokeWidth={1.2}
                       />
                     </View>
                   )}
@@ -231,10 +231,10 @@ export default function OnboardingRole() {
                           justifyContent: "center",
                         }}
                       >
-                        <Ionicons
-                          name={item.icon}
+                        <item.Icon
                           size={20}
                           color={item.accentColor}
+                          strokeWidth={1.8}
                         />
                       </View>
 
@@ -265,11 +265,7 @@ export default function OnboardingRole() {
                         }}
                       >
                         {isActive && (
-                          <Ionicons
-                            name="checkmark"
-                            size={14}
-                            color="#ffffff"
-                          />
+                          <Check size={14} color="#ffffff" strokeWidth={3} />
                         )}
                       </View>
                     </View>

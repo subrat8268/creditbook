@@ -1,14 +1,14 @@
 import { Payment } from "@/src/api/orders";
 import EmptyState from "@/src/components/feedback/EmptyState";
 import { formatDate } from "@/src/utils/helper";
-import { Feather } from "@expo/vector-icons";
+import { CheckCircle2 } from "lucide-react-native";
 import { FlatList, Text, View } from "react-native";
 
 function PaymentItem({ item }: { item: Payment }) {
   return (
     <View className="flex-row justify-between items-end mb-4">
       <View className="flex-row items-start gap-4">
-        <Feather name="check-circle" size={24} color="#3A8726FF" />
+        <CheckCircle2 size={24} color="#3A8726FF" strokeWidth={2} />
         <View>
           <Text className="text-neutral-600 text-sm font-inter">
             {formatDate(item.payment_date)}

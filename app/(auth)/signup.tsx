@@ -1,8 +1,8 @@
 import { useSignUp } from "@/src/hooks/useAuth";
 import { SignUpSchema } from "@/src/utils/schemas";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Formik } from "formik";
+import { AlertCircle, Lock, Mail, ShieldCheck } from "lucide-react-native";
 import {
     Image,
     KeyboardAvoidingView,
@@ -66,9 +66,7 @@ export default function SignUpPage() {
                   onChangeText={handleChange("email")}
                   error={touched.email ? errors.email : undefined}
                   keyboardType="email-address"
-                  icon={
-                    <Ionicons name="mail-outline" size={20} color="#6B7280" />
-                  }
+                  icon={<Mail size={20} color="#6B7280" strokeWidth={1.8} />}
                   iconPosition="left"
                 />
 
@@ -82,13 +80,7 @@ export default function SignUpPage() {
                   onChangeText={handleChange("password")}
                   secureTextEntry
                   error={touched.password ? errors.password : undefined}
-                  icon={
-                    <Ionicons
-                      name="lock-closed-outline"
-                      size={20}
-                      color="#6B7280"
-                    />
-                  }
+                  icon={<Lock size={20} color="#6B7280" strokeWidth={1.8} />}
                   iconPosition="left"
                 />
 
@@ -105,11 +97,7 @@ export default function SignUpPage() {
                     touched.confirmPassword ? errors.confirmPassword : undefined
                   }
                   icon={
-                    <Ionicons
-                      name="shield-checkmark-outline"
-                      size={20}
-                      color="#6B7280"
-                    />
+                    <ShieldCheck size={20} color="#6B7280" strokeWidth={1.8} />
                   }
                   iconPosition="left"
                 />
@@ -117,10 +105,10 @@ export default function SignUpPage() {
                 {/* Server error */}
                 {signUpMutation.isError && (
                   <View className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-2 mt-1 flex-row items-start gap-2">
-                    <Ionicons
-                      name="alert-circle-outline"
+                    <AlertCircle
                       size={16}
                       color="#dc2626"
+                      strokeWidth={2}
                       style={{ marginTop: 1 }}
                     />
                     <Text className="text-red-600 text-sm flex-1">

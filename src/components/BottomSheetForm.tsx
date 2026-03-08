@@ -1,18 +1,18 @@
-import { Ionicons } from "@expo/vector-icons";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import * as ImagePicker from "expo-image-picker";
 import { FieldArray, Formik } from "formik";
+import { PlusCircle, Trash2, X } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  Text,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import Button from "./ui/Button";
@@ -82,13 +82,13 @@ export default function BottomSheetForm<T extends Record<string, any>>({
         setShowVariants(false);
       }
     },
-    [onClose]
+    [onClose],
   );
 
   // Common Image Picker (Camera or Gallery)
   const handlePickImage = async (
     setFieldValue: (field: string, value: any) => void,
-    fieldPath: string
+    fieldPath: string,
   ) => {
     Alert.alert("Select Image", "Choose image source", [
       {
@@ -156,7 +156,7 @@ export default function BottomSheetForm<T extends Record<string, any>>({
         <View className="flex-row items-center justify-between px-6 py-3">
           <Text className="text-xl font-semibold text-[#12121C]">{title}</Text>
           <Pressable onPress={onClose} disabled={isSubmitting}>
-            <Ionicons name="close" size={22} color="#6B6B80" />
+            <X size={22} color="#6B6B80" strokeWidth={2} />
           </Pressable>
         </View>
 
@@ -281,7 +281,7 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                         if (!values.variants || values.variants.length === 0) {
                           setFieldValue("variants", [
                             Object.fromEntries(
-                              variantFields.map((vf) => [vf.name, ""])
+                              variantFields.map((vf) => [vf.name, ""]),
                             ),
                           ]);
                         }
@@ -333,10 +333,10 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                                         onPress={() => remove(index)}
                                         disabled={isSubmitting}
                                       >
-                                        <Ionicons
-                                          name="trash-outline"
+                                        <Trash2
                                           size={18}
                                           color="#EF4444"
+                                          strokeWidth={2}
                                         />
                                       </Pressable>
                                     )}
@@ -356,7 +356,7 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                                             onPress={() =>
                                               handlePickImage(
                                                 setFieldValue,
-                                                fieldPath
+                                                fieldPath,
                                               )
                                             }
                                             disabled={isSubmitting}
@@ -414,7 +414,7 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                                     );
                                   })}
                                 </View>
-                              )
+                              ),
                             )}
 
                             <Button
@@ -422,17 +422,17 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                               onPress={() =>
                                 push(
                                   Object.fromEntries(
-                                    variantFields.map((vf) => [vf.name, ""])
-                                  )
+                                    variantFields.map((vf) => [vf.name, ""]),
+                                  ),
                                 )
                               }
                               disabled={isSubmitting}
                               className="border border-dashed border-[#16A34A] rounded-xl py-2 mt-1 flex-row items-center justify-center"
                               icon={
-                                <Ionicons
-                                  name="add-circle-outline"
+                                <PlusCircle
                                   size={20}
                                   color="#16A34A"
+                                  strokeWidth={2}
                                 />
                               }
                             />

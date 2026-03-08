@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Search } from "lucide-react-native";
 import { TextInput, View } from "react-native";
 
 type Props = {
@@ -10,7 +10,7 @@ type Props = {
 export default function SearchBar({ value, onChangeText, placeholder }: Props) {
   return (
     <View className="flex-row items-center bg-search rounded-full px-4 py-2.5">
-      <Ionicons name="search-outline" size={18} color="#8E8E93" />
+      <Search size={18} color="#8E8E93" strokeWidth={2} />
       <TextInput
         value={value}
         onChangeText={onChangeText}

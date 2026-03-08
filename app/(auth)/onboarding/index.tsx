@@ -4,8 +4,8 @@ import Button from "@/src/components/ui/Button";
 import Input from "@/src/components/ui/Input";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { Phone } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
     Image,
@@ -95,7 +95,7 @@ export default function OnboardingPhone() {
               setError(null);
             }}
             keyboardType="numeric"
-            icon={<Ionicons name="call-outline" size={20} color="#6B7280" />}
+            icon={<Phone size={20} color="#6B7280" strokeWidth={1.8} />}
             iconPosition="left"
             error={error ?? undefined}
           />

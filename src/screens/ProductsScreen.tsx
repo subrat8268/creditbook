@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Package } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Text, View } from "react-native";
@@ -231,7 +231,7 @@ export default function ProductsScreen() {
         ListEmptyComponent={
           !isLoading && !error ? (
             <View className="items-center mt-10">
-              <Ionicons name="cube-outline" size={40} color="#9CA3AF" />
+              <Package size={40} color="#9CA3AF" strokeWidth={1.2} />
               <Text className="text-neutral-500 mt-2">No products found</Text>
             </View>
           ) : null

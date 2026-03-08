@@ -1,5 +1,5 @@
 import { dashboardPalette as C, formatINR } from "@/src/utils/dashboardUi";
-import { Ionicons } from "@expo/vector-icons";
+import { RefreshCw } from "lucide-react-native";
 import { Text, View } from "react-native";
 
 type Props = {
@@ -76,7 +76,7 @@ export default function DashboardHeroCard({
         {formatINR(amount)}
       </Text>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-        <Ionicons name="refresh-circle-outline" size={14} color={C.heroSub} />
+        <RefreshCw size={12} color={C.heroSub} strokeWidth={2} />
         <Text style={{ fontSize: 12, color: C.heroSub }}>{updatedText}</Text>
       </View>
     </View>

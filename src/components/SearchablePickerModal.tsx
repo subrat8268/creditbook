@@ -1,12 +1,12 @@
-import { Ionicons } from "@expo/vector-icons";
+import { X } from "lucide-react-native";
 import {
-  ActivityIndicator,
-  FlatList,
-  Modal,
-  SafeAreaView,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    Modal,
+    SafeAreaView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import SearchBar from "./SearchBar";
 
@@ -51,7 +51,7 @@ export default function SearchablePickerModal<T extends Item>({
         <View className="flex-row items-center justify-between p-4 border-b border-gray-200 bg-white">
           <Text className="text-xl font-inter-bold">{title}</Text>
           <TouchableOpacity onPress={onClose}>
-            <Ionicons name="close" size={28} color="#374151" />
+            <X size={26} color="#374151" strokeWidth={2} />
           </TouchableOpacity>
         </View>
 

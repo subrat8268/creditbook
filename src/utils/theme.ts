@@ -5,12 +5,12 @@ export const colors = {
   white: "#FFFFFF",
   black: "#000000",
 
-  // Brand — Purple-first, gradient-capable
+  // Brand — Green-first, growth-oriented
   primary: {
-    DEFAULT: "#5B3FFF", // Brand purple — CTAs, active nav, FAB
-    gradient: "#4F9CFF", // Gradient end (purple → blue hero cards)
-    light: "#EEEAFF", // Tinted surface / chip background
-    dark: "#3D28CC", // Pressed / dark variant
+    DEFAULT: "#22C55E", // Brand green — CTAs, active nav, FAB
+    gradient: "#4F9CFF", // Gradient end (green → blue hero cards)
+    light: "#DCFCE7", // Tinted surface / chip background
+    dark: "#16A34A", // Pressed / dark variant
   },
 
   // Semantic — Emotion-aware financial signals
@@ -55,7 +55,7 @@ export const colors = {
 
   // UI tokens
   icon: {
-    bg: "#5B3FFF22", // Translucent brand purple icon backing
+    bg: "#22C55E22", // Translucent brand green icon backing
   },
   border: {
     tabborder: "#E5E5EA",

@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { PlusCircle, Trash2 } from "lucide-react-native";
 import { useState } from "react";
 import {
     ActivityIndicator,
@@ -168,7 +168,7 @@ export default function RecordDeliveryModal({
                 </Text>
                 {items.length > 1 && (
                   <TouchableOpacity onPress={() => removeItem(idx)}>
-                    <Ionicons name="trash-outline" size={18} color="#e11d48" />
+                    <Trash2 size={18} color="#e11d48" strokeWidth={2} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -222,7 +222,7 @@ export default function RecordDeliveryModal({
             onPress={addItem}
             className="flex-row items-center gap-2 py-2 mb-4"
           >
-            <Ionicons name="add-circle-outline" size={20} color="#2563EB" />
+            <PlusCircle size={20} color="#2563EB" strokeWidth={2} />
             <Text className="text-primary font-inter-medium">Add Item</Text>
           </TouchableOpacity>
 

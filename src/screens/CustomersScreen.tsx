@@ -153,6 +153,7 @@ export default function CustomersScreen() {
         isFetchingNextPage={isFetchingNextPage}
         onPressCustomer={handlePressCustomer}
         filter={filter}
+        onAddCustomer={() => setIsModalOpen(true)}
       />
 
       {/* ── Primary FAB ── */}

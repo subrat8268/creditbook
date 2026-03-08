@@ -1,11 +1,11 @@
-import { Ionicons } from "@expo/vector-icons";
+import { X } from "lucide-react-native";
 import React from "react";
 import {
-  KeyboardAvoidingView,
-  Platform,
-  Text,
-  TouchableOpacity,
-  View,
+    KeyboardAvoidingView,
+    Platform,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Modal from "react-native-modal";
 interface AppModalProps {
@@ -44,7 +44,7 @@ export default function AppModal({
               <Text className="text-lg font-inter-semibold">{title}</Text>
             )}
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color="#374151" />
+              <X size={22} color="#374151" strokeWidth={2} />
             </TouchableOpacity>
           </View>
           {children}

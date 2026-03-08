@@ -2,8 +2,18 @@ import OnboardingProgress from "@/src/components/onboarding/OnboardingProgress";
 import Button from "@/src/components/ui/Button";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import {
+    BadgeCheck,
+    Building2,
+    CheckCircle2,
+    Circle,
+    Info,
+    Phone,
+    QrCode,
+    Receipt,
+    Store,
+} from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
     Animated,
@@ -76,25 +86,25 @@ export default function OnboardingReady() {
 
   const checks = [
     {
-      icon: "call-outline" as const,
+      Icon: Phone,
       label: "Phone number",
       value: profile?.phone ? `+91 ${profile.phone}` : "—",
       ok: !!profile?.phone,
     },
     {
-      icon: "business-outline" as const,
+      Icon: Building2,
       label: "Business name",
       value: profile?.business_name ?? "—",
       ok: !!profile?.business_name,
     },
     {
-      icon: "receipt-outline" as const,
+      Icon: Receipt,
       label: "Bill prefix",
       value: profile?.bill_number_prefix ?? "INV",
       ok: true,
     },
     {
-      icon: "qr-code-outline" as const,
+      Icon: QrCode,
       label: "UPI ID",
       value: profile?.upi_id ?? "Not set",
       ok: !!profile?.upi_id,
@@ -121,7 +131,7 @@ export default function OnboardingReady() {
         {/* Celebration heading */}
         <View className="items-center mt-8 mb-6">
           <View className="w-20 h-20 rounded-full bg-green-100 items-center justify-center mb-4">
-            <Ionicons name="checkmark-circle" size={48} color="#16a34a" />
+            <BadgeCheck size={48} color="#16a34a" strokeWidth={1.8} />
           </View>
           <Text className="text-3xl font-inter-bold text-neutral-900 text-center">
             You are all set!
@@ -148,7 +158,7 @@ export default function OnboardingReady() {
                   gap: 6,
                 }}
               >
-                <Ionicons name="storefront-outline" size={15} color="#16A34A" />
+                <Store size={15} color="#16A34A" strokeWidth={2} />
                 <Text
                   style={{
                     fontSize: 14,
@@ -171,7 +181,7 @@ export default function OnboardingReady() {
           {checks.map((item) => (
             <View key={item.label} className="flex-row items-center gap-3">
               <View className="w-9 h-9 rounded-full bg-white border border-neutral-200 items-center justify-center">
-                <Ionicons name={item.icon} size={18} color="#374151" />
+                <item.Icon size={18} color="#374151" strokeWidth={1.8} />
               </View>
               <View className="flex-1">
                 <Text className="text-xs text-neutral-400 font-inter">
@@ -181,22 +191,18 @@ export default function OnboardingReady() {
                   {item.value}
                 </Text>
               </View>
-              <Ionicons
-                name={item.ok ? "checkmark-circle" : "ellipse-outline"}
-                size={18}
-                color={item.ok ? "#16a34a" : "#d1d5db"}
-              />
+              {item.ok ? (
+                <CheckCircle2 size={18} color="#16a34a" strokeWidth={2} />
+              ) : (
+                <Circle size={18} color="#d1d5db" strokeWidth={1.5} />
+              )}
             </View>
           ))}
         </View>
 
         {/* Bank details nudge */}
         <View className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8 flex-row gap-3 items-start">
-          <Ionicons
-            name="information-circle-outline"
-            size={20}
-            color="#d97706"
-          />
+          <Info size={20} color="#d97706" strokeWidth={2} />
           <Text className="text-sm text-amber-700 font-inter flex-1">
             <Text className="font-inter-semibold">Add bank details</Text> in
             Profile to show IFSC & account number on PDF bills — required for

@@ -1,4 +1,5 @@
 import Loader from "@/src/components/feedback/Loader";
+import { ToastProvider } from "@/src/components/feedback/Toast";
 import { useAuth } from "@/src/hooks/useAuth";
 import { useFontsLoader } from "@/src/hooks/useFontsLoader";
 import { initSentry, Sentry } from "@/src/services/sentry";
@@ -69,22 +70,24 @@ function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <GestureHandlerRootView style={{ flex: 1 }}>
-          <Stack screenOptions={{ headerShown: false }}>
-            {/* Not logged in: show welcome or login */}
-            {!user && showWelcome && <Stack.Screen name="index" />}
-            {!user && !showWelcome && <Stack.Screen name="(auth)/login" />}
+          <ToastProvider>
+            <Stack screenOptions={{ headerShown: false }}>
+              {/* Not logged in: show welcome or login */}
+              {!user && showWelcome && <Stack.Screen name="index" />}
+              {!user && !showWelcome && <Stack.Screen name="(auth)/login" />}
 
-            {/* Logged in: onboarding not completed (false / null / undefined) */}
-            {user && profile && !profile.onboarding_complete && (
-              <Stack.Screen name="(auth)/onboarding" />
-            )}
+              {/* Logged in: onboarding not completed (false / null / undefined) */}
+              {user && profile && !profile.onboarding_complete && (
+                <Stack.Screen name="(auth)/onboarding" />
+              )}
 
-            {/* Logged in: onboarding done → main app */}
-            {user && profile && profile.onboarding_complete === true && (
-              <Stack.Screen name="(main)/dashboard" />
-            )}
-          </Stack>
-          <StatusBar barStyle="dark-content" />
+              {/* Logged in: onboarding done → main app */}
+              {user && profile && profile.onboarding_complete === true && (
+                <Stack.Screen name="(main)/dashboard" />
+              )}
+            </Stack>
+            <StatusBar barStyle="dark-content" />
+          </ToastProvider>
         </GestureHandlerRootView>
       </ThemeProvider>
     </QueryClientProvider>

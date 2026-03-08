@@ -28,8 +28,20 @@ export default function OrderList({
   const { updatingOrderIds } = useOrderStore();
 
   if (isLoading) return <Loader />;
-  if (error) return <EmptyState message="Failed to load orders" />;
-  if (!orders.length) return <EmptyState message="No orders found" />;
+  if (error)
+    return (
+      <EmptyState
+        title="Could not load bills"
+        description="Pull down to refresh and try again."
+      />
+    );
+  if (!orders.length)
+    return (
+      <EmptyState
+        title="No bills yet"
+        description="Create your first bill to get started."
+      />
+    );
 
   return (
     <FlatList

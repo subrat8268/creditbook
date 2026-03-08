@@ -1,8 +1,8 @@
 import { useResetPassword } from "@/src/hooks/useAuth";
 import { ResetPasswordSchema } from "@/src/utils/schemas";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Formik } from "formik";
+import { LockOpen, Mail, MailOpen } from "lucide-react-native";
 import {
     Image,
     KeyboardAvoidingView,
@@ -24,7 +24,7 @@ export default function ResetPasswordPage() {
     return (
       <View className="flex-1 bg-white justify-center items-center px-6">
         <View className="w-20 h-20 rounded-full bg-green-100 items-center justify-center mb-6">
-          <Ionicons name="mail-open-outline" size={40} color="#16a34a" />
+          <MailOpen size={40} color="#16a34a" strokeWidth={1.5} />
         </View>
         <Text className="text-2xl font-bold text-neutral-900 text-center mb-2">
           Check Your Inbox!
@@ -62,7 +62,7 @@ export default function ResetPasswordPage() {
 
           {/* Lock icon */}
           <View className="w-16 h-16 rounded-full bg-green-100 items-center justify-center self-center mb-5">
-            <Ionicons name="lock-open-outline" size={32} color="#16a34a" />
+            <LockOpen size={32} color="#16a34a" strokeWidth={1.5} />
           </View>
 
           <Text className="text-h1 font-bold text-neutral-900 mb-1">
@@ -88,9 +88,7 @@ export default function ResetPasswordPage() {
                   onChangeText={handleChange("email")}
                   error={touched.email ? errors.email : undefined}
                   keyboardType="email-address"
-                  icon={
-                    <Ionicons name="mail-outline" size={20} color="#6B7280" />
-                  }
+                  icon={<Mail size={20} color="#6B7280" strokeWidth={1.8} />}
                   iconPosition="left"
                 />
 

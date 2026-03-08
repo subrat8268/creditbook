@@ -84,6 +84,7 @@ export default function SuppliersScreen() {
         onEndReached={handleEndReached}
         isFetchingNextPage={isFetchingNextPage}
         onPressSupplier={handlePressSupplier}
+        onAddSupplier={() => setIsModalOpen(true)}
       />
 
       <FloatingActionButton onPress={() => setIsModalOpen(true)} />

@@ -4,11 +4,23 @@ import Loader from "@/src/components/feedback/Loader";
 import { useCustomerDetail } from "@/src/hooks/useCustomer";
 import { useAuthStore } from "@/src/store/authStore";
 import { Transaction } from "@/src/types/customer";
-import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Print from "expo-print";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowUp,
+  Banknote,
+  Download,
+  FileText,
+  Filter,
+  MessageCircle,
+  Phone,
+  Plus,
+  Receipt,
+} from "lucide-react-native";
 import { useMemo, useState } from "react";
 import {
   Alert,
@@ -141,11 +153,11 @@ function TransactionRow({ tx }: { tx: Transaction }) {
           className="w-[38px] h-[38px] rounded-full items-center justify-center mr-3"
           style={{ backgroundColor: iconBg }}
         >
-          <Ionicons
-            name={isPayment ? "arrow-down-outline" : "arrow-up-outline"}
-            size={18}
-            color={iconColor}
-          />
+          {isPayment ? (
+            <ArrowDown size={18} color={iconColor} strokeWidth={2} />
+          ) : (
+            <ArrowUp size={18} color={iconColor} strokeWidth={2} />
+          )}
         </View>
         <View className="flex-1">
           <Text className="text-sm font-bold text-[#1C1C1E]">{title}</Text>
@@ -268,7 +280,7 @@ export default function CustomerDetailScreen() {
       {/* ── Header ── */}
       <View className="flex-row items-center px-4 py-3 bg-white border-b border-[#F0F0F5]">
         <TouchableOpacity onPress={() => router.back()} className="p-1 mr-2">
-          <Ionicons name="arrow-back" size={24} color="#1C1C1E" />
+          <ArrowLeft size={24} color="#1C1C1E" strokeWidth={2} />
         </TouchableOpacity>
         <View className="flex-1">
           <Text
@@ -288,13 +300,13 @@ export default function CustomerDetailScreen() {
             className="w-[38px] h-[38px] rounded-full bg-search items-center justify-center"
             onPress={downloadStatement}
           >
-            <Ionicons name="document-text-outline" size={20} color="#5B3FFF" />
+            <FileText size={20} color="#22C55E" strokeWidth={2} />
           </TouchableOpacity>
           <TouchableOpacity
             className="w-[38px] h-[38px] rounded-full bg-search items-center justify-center"
             onPress={callCustomer}
           >
-            <Ionicons name="call-outline" size={20} color="#2ECC71" />
+            <Phone size={20} color="#2ECC71" strokeWidth={2} />
           </TouchableOpacity>
         </View>
       </View>
@@ -394,7 +406,7 @@ export default function CustomerDetailScreen() {
               className="w-11 h-11 rounded-full items-center justify-center"
               style={{ backgroundColor: "#FFF0EE" }}
             >
-              <Ionicons name="add" size={22} color="#E74C3C" />
+              <Plus size={22} color="#E74C3C" strokeWidth={2.5} />
             </View>
             <Text className="text-[13px] font-semibold text-[#1C1C1E]">
               New Bill
@@ -426,7 +438,7 @@ export default function CustomerDetailScreen() {
               className="w-11 h-11 rounded-full items-center justify-center"
               style={{ backgroundColor: "#EDFAF4" }}
             >
-              <Ionicons name="cash-outline" size={22} color="#2ECC71" />
+              <Banknote size={22} color="#2ECC71" strokeWidth={2} />
             </View>
             <Text className="text-[13px] font-semibold text-[#1C1C1E]">
               Received
@@ -447,13 +459,9 @@ export default function CustomerDetailScreen() {
           >
             <View
               className="w-11 h-11 rounded-full items-center justify-center"
-              style={{ backgroundColor: "#EEE9FF" }}
+              style={{ backgroundColor: "#DCFCE7" }}
             >
-              <Ionicons
-                name="chatbubble-ellipses-outline"
-                size={22}
-                color="#5B3FFF"
-              />
+              <MessageCircle size={22} color="#22C55E" strokeWidth={2} />
             </View>
             <Text className="text-[13px] font-semibold text-[#1C1C1E]">
               Remind
@@ -469,7 +477,7 @@ export default function CustomerDetailScreen() {
             </Text>
             <TouchableOpacity className="flex-row items-center gap-1">
               <Text className="text-sm font-semibold text-danger">Filter</Text>
-              <Ionicons name="filter-outline" size={14} color="#E74C3C" />
+              <Filter size={14} color="#E74C3C" strokeWidth={2} />
             </TouchableOpacity>
           </View>
 
@@ -498,7 +506,7 @@ export default function CustomerDetailScreen() {
           {/* Rows */}
           {listItems.length === 0 ? (
             <View className="items-center py-10 gap-[10px]">
-              <Ionicons name="receipt-outline" size={40} color="#C7C7CC" />
+              <Receipt size={40} color="#C7C7CC" strokeWidth={1.2} />
               <Text className="text-sm text-[#8E8E93]">
                 No transactions yet
               </Text>
@@ -536,7 +544,7 @@ export default function CustomerDetailScreen() {
           disabled={exporting}
           activeOpacity={0.85}
         >
-          <Ionicons name="download-outline" size={18} color="#fff" />
+          <Download size={18} color="#fff" strokeWidth={2} />
           <Text className="text-[15px] font-bold text-white">
             {exporting ? "Generating…" : "Download Statement"}
           </Text>

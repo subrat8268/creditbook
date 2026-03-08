@@ -1,7 +1,7 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { Plus } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable, ScrollView, StatusBar, View } from "react-native";
+import { Pressable, ScrollView, StatusBar, Text, View } from "react-native";
 import NewCustomerModal from "../components/customers/NewCustomerModal";
 import DashboardActionBar from "../components/dashboard/DashboardActionBar";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
@@ -13,7 +13,7 @@ import Loader from "../components/feedback/Loader";
 import { useAddCustomer } from "../hooks/useCustomer";
 import { useDashboard } from "../hooks/useDashboard";
 import { useAuthStore } from "../store/authStore";
-import { dashboardPalette as C } from "../utils/dashboardUi";
+import { dashboardPalette as C, formatINR } from "../utils/dashboardUi";
 
 // ─────────────── Main Screen ────────────
 export const DashboardScreen = () => {
@@ -42,13 +42,10 @@ export const DashboardScreen = () => {
     return <EmptyState message="Failed to load dashboard data" />;
 
   const mode = profile.dashboard_mode ?? profile.role ?? "vendor";
-  const isVendorMode = [
-    "vendor",
-    "seller",
-    "wholesaler",
-    "retailer",
-    "both",
-  ].includes(mode);
+  const isBothMode = mode === "both";
+  const isVendorMode = ["vendor", "seller", "wholesaler", "retailer"].includes(
+    mode,
+  );
 
   const heroAmount = isVendorMode ? data.customersOweMe : data.iOweSuppliers;
   const heroLabel = isVendorMode ? "YOU WILL RECEIVE" : "YOU OWE";
@@ -77,10 +74,128 @@ export const DashboardScreen = () => {
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
-        <DashboardHeroCard label={heroLabel} amount={heroAmount} />
+        {isBothMode ? (
+          <View
+            style={{
+              backgroundColor: C.white,
+              borderRadius: 24,
+              padding: 20,
+              marginBottom: 12,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.07,
+              shadowRadius: 12,
+              elevation: 4,
+            }}
+          >
+            {/* Split row */}
+            <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
+              {/* Customers owe me */}
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: "#F0FDF4",
+                  borderRadius: 16,
+                  padding: 16,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: 1,
+                    color: "#16A34A",
+                    fontWeight: "700",
+                    marginBottom: 6,
+                  }}
+                >
+                  YOU RECEIVE
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 22,
+                    fontWeight: "800",
+                    color: "#16A34A",
+                    letterSpacing: -0.3,
+                  }}
+                >
+                  {formatINR(data.customersOweMe)}
+                </Text>
+              </View>
+
+              {/* I owe suppliers */}
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: "#FEF2F2",
+                  borderRadius: 16,
+                  padding: 16,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: 1,
+                    color: "#DC2626",
+                    fontWeight: "700",
+                    marginBottom: 6,
+                  }}
+                >
+                  YOU OWE
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 22,
+                    fontWeight: "800",
+                    color: "#DC2626",
+                    letterSpacing: -0.3,
+                  }}
+                >
+                  {formatINR(data.iOweSuppliers)}
+                </Text>
+              </View>
+            </View>
+
+            {/* Net Position */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                backgroundColor: "#F6F7FB",
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontWeight: "600",
+                  color: "#636366",
+                  letterSpacing: 0.4,
+                }}
+              >
+                NET POSITION
+              </Text>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "800",
+                  color: data.netPosition >= 0 ? "#16A34A" : "#DC2626",
+                  letterSpacing: -0.3,
+                }}
+              >
+                {data.netPosition >= 0 ? "+" : ""}
+                {formatINR(data.netPosition)}
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <DashboardHeroCard label={heroLabel} amount={heroAmount} />
+        )}
 
         <DashboardActionBar
-          onViewReport={() => router.push("/(main)/export" as any)}
+          onViewReport={() => router.push("/(main)/reports" as any)}
         />
 
         <DashboardStatCards
@@ -113,7 +228,7 @@ export const DashboardScreen = () => {
         }}
         onPress={() => router.push("/orders/createOrderScreen")}
       >
-        <Ionicons name="add" size={28} color="#fff" />
+        <Plus size={26} color="#fff" strokeWidth={2.5} />
       </Pressable>
 
       <NewCustomerModal

@@ -1,9 +1,9 @@
-import { Ionicons } from "@expo/vector-icons";
 import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetFlatList,
-  BottomSheetView,
+    BottomSheetBackdrop,
+    BottomSheetFlatList,
+    BottomSheetView,
 } from "@gorhom/bottom-sheet";
+import { X } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { Keyboard, Text, TouchableOpacity, View } from "react-native";
 import SearchBar from "../SearchBar";
@@ -49,7 +49,7 @@ export default function BottomSheetPicker<T>({
         pressBehavior="close"
       />
     ),
-    []
+    [],
   );
 
   // ✅ Control open/close with useEffect
@@ -80,7 +80,7 @@ export default function BottomSheetPicker<T>({
       <View className="flex-row justify-between items-center px-4 py-2 border-b border-gray-200 bg-white">
         <Text className="text-lg font-semibold text-gray-900">{title}</Text>
         <TouchableOpacity onPress={handleClose}>
-          <Ionicons name="close" size={22} color="#222" />
+          <X size={20} color="#222" strokeWidth={2} />
         </TouchableOpacity>
       </View>
 

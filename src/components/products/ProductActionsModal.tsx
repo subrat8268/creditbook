@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Pencil, Trash2, X } from "lucide-react-native";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
@@ -25,14 +25,14 @@ export default function ProductActionsModal({
             onPress={onClose}
             className="absolute top-4 right-4"
           >
-            <Ionicons name="close" size={20} color="#374151" />
+            <X size={20} color="#374151" strokeWidth={2} />
           </TouchableOpacity>
 
           <TouchableOpacity
             className="bg-primary flex-row items-center justify-center gap-3 py-3 rounded-md mb-3"
             onPress={onEdit}
           >
-            <Ionicons name="create-outline" size={20} color="white" />
+            <Pencil size={20} color="white" strokeWidth={2} />
             <Text className="text-center font-inter-medium text-lg text-white">
               Edit Product
             </Text>
@@ -42,7 +42,7 @@ export default function ProductActionsModal({
             className="bg-danger flex-row items-center justify-center gap-3 py-3 rounded-md mb-3"
             onPress={onDelete}
           >
-            <Ionicons name="trash-outline" size={20} color="white" />
+            <Trash2 size={20} color="white" strokeWidth={2} />
             <Text className="text-center font-inter-medium text-lg text-white">
               Delete Product
             </Text>

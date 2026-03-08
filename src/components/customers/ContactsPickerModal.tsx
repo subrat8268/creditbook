@@ -1,5 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
 import * as Contacts from "expo-contacts";
+import { AlertCircle, Check, Users, X } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -140,7 +140,7 @@ export default function ContactsPickerModal({
             {t("customers:importContacts")}
           </Text>
           <TouchableOpacity onPress={onClose} hitSlop={8}>
-            <Ionicons name="close" size={24} color="#6B7280" />
+            <X size={24} color="#6B7280" strokeWidth={2} />
           </TouchableOpacity>
         </View>
 
@@ -179,7 +179,7 @@ export default function ContactsPickerModal({
 
         {status === "denied" && (
           <View className="items-center justify-center py-16 px-8">
-            <Ionicons name="alert-circle-outline" size={48} color="#EF4444" />
+            <AlertCircle size={48} color="#EF4444" strokeWidth={1.5} />
             <Text className="text-center text-textSecondary mt-3 leading-5">
               {t("customers:permissionDenied")}
             </Text>
@@ -188,7 +188,7 @@ export default function ContactsPickerModal({
 
         {status === "ready" && filtered.length === 0 && (
           <View className="items-center justify-center py-16">
-            <Ionicons name="people-outline" size={48} color="#9CA3AF" />
+            <Users size={48} color="#9CA3AF" strokeWidth={1.5} />
             <Text className="text-textSecondary mt-3">
               {t("customers:noContactsFound")}
             </Text>
@@ -219,7 +219,7 @@ export default function ContactsPickerModal({
                     }`}
                   >
                     {isSelected && (
-                      <Ionicons name="checkmark" size={12} color="white" />
+                      <Check size={12} color="white" strokeWidth={3} />
                     )}
                   </View>
                   <View className="flex-1">

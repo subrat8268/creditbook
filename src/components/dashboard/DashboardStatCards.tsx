@@ -1,5 +1,5 @@
 import { dashboardPalette as C } from "@/src/utils/dashboardUi";
-import { Ionicons } from "@expo/vector-icons";
+import { AlertTriangle, Users } from "lucide-react-native";
 import { Text, View } from "react-native";
 
 type Props = {
@@ -46,7 +46,7 @@ export default function DashboardStatCards({
               justifyContent: "center",
             }}
           >
-            <Ionicons name="people-outline" size={20} color={C.blue} />
+            <Users size={20} color={C.blue} strokeWidth={1.8} />
           </View>
         </View>
         <Text style={{ fontSize: 13, color: C.body, marginTop: 6 }}>
@@ -87,7 +87,7 @@ export default function DashboardStatCards({
               justifyContent: "center",
             }}
           >
-            <Ionicons name="warning-outline" size={20} color={C.red} />
+            <AlertTriangle size={20} color={C.red} strokeWidth={1.8} />
           </View>
         </View>
         <Text style={{ fontSize: 13, color: C.body, marginTop: 6 }}>

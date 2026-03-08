@@ -6,8 +6,8 @@ import Loader from "@/src/components/feedback/Loader";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { useLanguageStore } from "@/src/store/languageStore";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { ChevronRight, Download } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import {
   ScrollView,
@@ -277,7 +277,7 @@ export default function ProfileScreen() {
           onPress={() => router.push("/(main)/export" as any)}
         >
           <View className="flex-row items-center gap-3">
-            <Ionicons name="download-outline" size={20} color="#16a34a" />
+            <Download size={20} color="#16a34a" strokeWidth={2} />
             <View>
               <Text className="font-semibold text-green-800">
                 {t("export.title")}
@@ -287,7 +287,7 @@ export default function ProfileScreen() {
               </Text>
             </View>
           </View>
-          <Ionicons name="chevron-forward" size={18} color="#16a34a" />
+          <ChevronRight size={18} color="#16a34a" strokeWidth={2} />
         </TouchableOpacity>
 
         {/* Logout */}

@@ -1,5 +1,5 @@
 import { dashboardPalette as C } from "@/src/utils/dashboardUi";
-import { Ionicons } from "@expo/vector-icons";
+import { FileText, Send } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
@@ -39,7 +39,7 @@ export default function DashboardActionBar({
         }}
         onPress={onViewReport}
       >
-        <Ionicons name="document-text-outline" size={18} color={C.blue} />
+        <FileText size={18} color={C.blue} strokeWidth={2} />
         <Text style={{ fontSize: 14, fontWeight: "600", color: C.blue }}>
           View Report
         </Text>
@@ -55,7 +55,7 @@ export default function DashboardActionBar({
         }}
         onPress={onSendReminder}
       >
-        <Ionicons name="send-outline" size={18} color={C.blue} />
+        <Send size={18} color={C.blue} strokeWidth={2} />
         <Text style={{ fontSize: 14, fontWeight: "600", color: C.blue }}>
           Send Reminder
         </Text>

@@ -1,5 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { Banknote, Download, Receipt, Store, Users } from "lucide-react-native";
+import { ComponentType, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     ActivityIndicator,
@@ -98,7 +98,7 @@ export default function ExportScreen() {
     type: ExportType;
     label: string;
     desc: string;
-    icon: keyof typeof Ionicons.glyphMap;
+    Icon: ComponentType<{ size: number; color: string; strokeWidth?: number }>;
     color: string;
     bg: string;
     hasDateFilter: boolean;
@@ -107,7 +107,7 @@ export default function ExportScreen() {
       type: "orders",
       label: t("export.orders"),
       desc: t("export.ordersDesc"),
-      icon: "receipt-outline",
+      Icon: Receipt,
       color: "#16a34a",
       bg: "#f0fdf4",
       hasDateFilter: true,
@@ -116,7 +116,7 @@ export default function ExportScreen() {
       type: "payments",
       label: t("export.payments"),
       desc: t("export.paymentsDesc"),
-      icon: "cash-outline",
+      Icon: Banknote,
       color: "#2563eb",
       bg: "#eff6ff",
       hasDateFilter: true,
@@ -125,7 +125,7 @@ export default function ExportScreen() {
       type: "customers",
       label: t("export.customers"),
       desc: t("export.customersDesc"),
-      icon: "people-outline",
+      Icon: Users,
       color: "#7c3aed",
       bg: "#f5f3ff",
       hasDateFilter: false,
@@ -134,7 +134,7 @@ export default function ExportScreen() {
       type: "suppliers",
       label: t("export.suppliers"),
       desc: t("export.suppliersDesc"),
-      icon: "storefront-outline",
+      Icon: Store,
       color: "#dc2626",
       bg: "#fef2f2",
       hasDateFilter: true,
@@ -211,7 +211,7 @@ export default function ExportScreen() {
                 className="w-11 h-11 rounded-xl items-center justify-center mr-4"
                 style={{ backgroundColor: btn.color + "20" }}
               >
-                <Ionicons name={btn.icon} size={22} color={btn.color} />
+                <btn.Icon size={22} color={btn.color} strokeWidth={1.8} />
               </View>
 
               {/* Text */}
@@ -231,7 +231,7 @@ export default function ExportScreen() {
               {loading === btn.type ? (
                 <ActivityIndicator color={btn.color} size="small" />
               ) : (
-                <Ionicons name="download-outline" size={20} color={btn.color} />
+                <Download size={20} color={btn.color} strokeWidth={1.8} />
               )}
             </TouchableOpacity>
           ))}

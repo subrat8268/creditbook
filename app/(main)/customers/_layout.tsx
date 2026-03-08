@@ -1,5 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
+import { ArrowLeft } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
 type CustomHeaderProps = {
@@ -18,7 +18,7 @@ const CustomHeader = ({ title, showBack }: CustomHeaderProps) => {
           onPress={() => router.back()}
           className="absolute left-4 top-14"
         >
-          <Ionicons name="arrow-back" size={24} color="black" />
+          <ArrowLeft size={24} color="black" strokeWidth={2} />
         </TouchableOpacity>
       )}
       <Text className="text-xl font-semibold">{title}</Text>

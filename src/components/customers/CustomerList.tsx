@@ -24,6 +24,7 @@ export default function CustomerList({
   onEndReached,
   isFetchingNextPage,
   filter = "All",
+  onAddCustomer,
 }: {
   customers: Customer[];
   onPressCustomer: (customerId: string) => void;
@@ -34,6 +35,7 @@ export default function CustomerList({
   onEndReached: () => void;
   isFetchingNextPage: boolean;
   filter?: CustomerFilter;
+  onAddCustomer?: () => void;
 }) {
   if (isLoading) return <Loader message="Fetching customers" />;
   if (error) return <ErrorState message="Failed to fetch customers" />;
@@ -60,7 +62,14 @@ export default function CustomerList({
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-      ListEmptyComponent={<EmptyState message="No customers found" />}
+      ListEmptyComponent={
+        <EmptyState
+          title="No customers yet"
+          description="Add your first customer and start tracking credit easily."
+          cta={onAddCustomer ? "Add Customer" : undefined}
+          onCta={onAddCustomer}
+        />
+      }
       ListFooterComponent={
         isFetchingNextPage ? (
           <Loader message="Loading more customers..." />

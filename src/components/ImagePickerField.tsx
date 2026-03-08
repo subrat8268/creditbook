@@ -1,5 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { Camera } from "lucide-react-native";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 function getInitials(name: string): string {
@@ -54,7 +54,7 @@ export default function ImagePickerField({
         ) : showInitials ? (
           <Text style={styles.initialsText}>{getInitials(name!)}</Text>
         ) : (
-          <Ionicons name="camera-outline" size={30} color="#6B7280" />
+          <Camera size={30} color="#6B7280" strokeWidth={1.8} />
         )}
       </Pressable>
     </View>

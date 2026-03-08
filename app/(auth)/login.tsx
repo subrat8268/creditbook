@@ -1,8 +1,8 @@
 import { useLogin } from "@/src/hooks/useAuth";
 import { LoginSchema } from "@/src/utils/schemas";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Formik } from "formik";
+import { Mail } from "lucide-react-native";
 import {
     Image,
     KeyboardAvoidingView,
@@ -65,9 +65,7 @@ export default function LoginPage() {
                   value={values.email}
                   onChangeText={handleChange("email")}
                   error={touched.email ? errors.email : undefined}
-                  icon={
-                    <Ionicons name="mail-outline" size={20} color="#6B7280" />
-                  }
+                  icon={<Mail size={20} color="#6B7280" strokeWidth={1.8} />}
                   iconPosition="left"
                 />
                 <Text className="text-sm text-neutral-600 mb-4">
