@@ -77,6 +77,10 @@ export default function RecordPaymentMadeModal({
     reset();
   };
 
+  const inputNum = parseFloat(amount) || 0;
+  const showWarning = inputNum > 0 && inputNum > balanceOwed;
+  const isValid = inputNum > 0 && inputNum <= balanceOwed && mode !== null;
+
   return (
     <BottomSheet
       ref={sheetRef}
@@ -106,16 +110,22 @@ export default function RecordPaymentMadeModal({
         </Text>
 
         {/* Amount */}
-        <View className="border border-neutral-300 rounded-lg flex-row items-center px-3 mb-3">
-          <Text className="text-neutral-600 font-inter mr-1">\u20B9</Text>
+        <View className="border border-neutral-300 rounded-lg flex-row items-center px-3 mb-1">
+          <Text className="text-neutral-600 font-inter mr-1">₹</Text>
           <TextInput
             className="flex-1 py-2.5 font-inter"
-            placeholder={`Enter amount (max \u20B9${balanceOwed.toLocaleString("en-IN")})`}
+            placeholder={`Enter amount (max ₹${balanceOwed.toLocaleString("en-IN")})`}
             value={amount}
             onChangeText={setAmount}
             keyboardType="numeric"
           />
         </View>
+        {showWarning && (
+          <Text className="text-red-500 text-xs font-inter mb-3">
+            Amount exceeds balance owed (₹{balanceOwed.toLocaleString("en-IN")})
+          </Text>
+        )}
+        {!showWarning && <View className="mb-3" />}
 
         {/* Payment Mode */}
         <View className="flex-row flex-wrap gap-2 mb-3">
@@ -157,8 +167,10 @@ export default function RecordPaymentMadeModal({
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleSubmit}
-            disabled={loading}
-            className="flex-2 flex-grow py-3 rounded-lg bg-primary"
+            disabled={loading || !isValid}
+            className={`flex-2 flex-grow py-3 rounded-lg ${
+              loading || !isValid ? "bg-neutral-300" : "bg-primary"
+            }`}
           >
             {loading ? (
               <ActivityIndicator color="white" />
