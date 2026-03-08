@@ -61,7 +61,7 @@ export default function ProductCard({
                 className="flex-row justify-between items-center py-2 mt-1 px-3 border bg-neutral-100 border-neutral-200 rounded-lg mb-1"
               >
                 <Text className="text-neutral-900 font-inter-medium">
-                  {variant.name}
+                  {variant.variant_name}
                 </Text>
                 <Text className="text-primary font-inter-semibold">
                   ₹{variant.price}

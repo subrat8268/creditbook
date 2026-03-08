@@ -5,7 +5,7 @@ import { ArrowLeft, Check, Store, User, Users } from "lucide-react-native";
 import { ComponentType, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
-type Role = "wholesaler" | "retailer" | "user";
+type Role = "retailer" | "wholesaler" | "small-business";
 
 interface RoleCard {
   role: Role;
@@ -37,37 +37,40 @@ const ROLES: RoleCard[] = [
     bannerBg: "#bfdbfe",
   },
   {
-    role: "user",
+    role: "small-business",
     Icon: User,
-    title: "Customer / End User",
-    subtitle: "I buy goods for personal use and want to track my purchases.",
+    title: "Small Business Owner",
+    subtitle: "I run a small business and want to track sales and credit.",
     accentColor: "#d97706",
     image: require("../../../assets/images/role-user.png"),
     bannerBg: "#fde68a",
   },
 ];
 
+// Maps each selectable role to the canonical dashboard_mode stored in DB
+// DB CHECK constraint: dashboard_mode IN ('seller', 'distributor', 'both')
+const MODE_MAP = {
+  retailer: "seller",
+  wholesaler: "distributor",
+  "small-business": "seller",
+} as const;
+
 export default function OnboardingRole() {
   const router = useRouter();
   const { user, profile, setProfile, fetchProfile } = useAuthStore();
-  const [selected, setSelected] = useState<Role | null>(
-    (profile?.role as Role | null) ?? null,
-  );
+  const [selected, setSelected] = useState<Role | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Derive dashboard_mode from role so existing screens keep working
-  const dashboardModeFor = (r: Role) =>
-    r === "wholesaler" ? "vendor" : "receiver";
 
   const handleContinue = async () => {
     if (!selected || !user) return;
     setLoading(true);
     setError(null);
+    const dashboardMode = MODE_MAP[selected];
     try {
       const { error: dbErr } = await supabase
         .from("profiles")
-        .update({ role: selected, dashboard_mode: dashboardModeFor(selected) })
+        .update({ role: selected, dashboard_mode: dashboardMode })
         .eq("user_id", user.id);
       if (dbErr) throw dbErr;
 
@@ -76,7 +79,7 @@ export default function OnboardingRole() {
         setProfile({
           ...currentProfile,
           role: selected,
-          dashboard_mode: dashboardModeFor(selected),
+          dashboard_mode: dashboardMode,
         });
       } else {
         await fetchProfile();
@@ -85,7 +88,7 @@ export default function OnboardingRole() {
           setProfile({
             ...fetched,
             role: selected,
-            dashboard_mode: dashboardModeFor(selected),
+            dashboard_mode: dashboardMode,
           });
       }
 

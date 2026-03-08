@@ -109,9 +109,11 @@ export default function NewProductModal({
                       >
                         <TextInput
                           placeholder="Variant Name"
-                          value={variant.name}
-                          onChangeText={handleChange(`variants[${index}].name`)}
-                          onBlur={handleBlur(`variants[${index}].name`)}
+                          value={variant.variant_name ?? ""}
+                          onChangeText={handleChange(
+                            `variants[${index}].variant_name`,
+                          )}
+                          onBlur={handleBlur(`variants[${index}].variant_name`)}
                           className="flex-1 border placeholder:text-textPrimary font-inter border-default rounded-lg px-3 py-2"
                         />
                         <TextInput

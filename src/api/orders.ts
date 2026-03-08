@@ -107,7 +107,7 @@ export async function fetchOrders(
     ...o,
     total_amount: Number(o.total_amount),
     amount_paid: Number(o.amount_paid),
-    balance_due: Number(o.total_amount) - Number(o.amount_paid),
+    balance_due: Number(o.balance_due), // DB GENERATED column — do not recompute in JS
     previous_balance: Number(o.previous_balance || 0),
     loading_charge: Number(o.loading_charge || 0),
     tax_percent: Number(o.tax_percent || 0),

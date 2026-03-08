@@ -1,9 +1,9 @@
 # CreditBook Product Roadmap
 
-> **Version**: 1.0
-> **Last Updated**: March 5, 2026
+> **Version**: 1.1
+> **Last Updated**: March 8, 2026
 > **Status**: Active Development
-> **Current Phase**: Phase 6 (complete) → Phase 7 (in progress)
+> **Current Phase**: Phase 6.2 (complete) → Phase 7 (in progress)
 
 ---
 
@@ -23,16 +23,17 @@ The product is built around three core outcomes:
 
 ## Roadmap Overview
 
-| Phase   | Title                     | Status         | Key Deliverable                                           |
-| :------ | :------------------------ | :------------- | :-------------------------------------------------------- |
-| Phase 1 | Core Ledger MVP           | ✅ Complete    | Customer credit tracking and balance management           |
-| Phase 2 | Billing & Suppliers       | ✅ Complete    | Itemized bills, supplier management, net position         |
-| Phase 3 | Indian Billing Suite      | ✅ Complete    | GST, sequential IDs, loading charge, WhatsApp reminders   |
-| Phase 4 | Platform Features         | ✅ Complete    | Onboarding, Sentry, i18n, CSV export, contacts import     |
-| Phase 5 | Design System & Dashboard | ✅ Complete    | Green (#22C55E) brand system, premium dashboard redesign  |
-| Phase 6 | Customer UI Overhaul      | ✅ Complete    | Transaction feed, payment modal, customer detail redesign |
-| Phase 7 | Growth & Monetisation     | 🔄 In Progress | UPI, push notifications, analytics, premium tier          |
-| Phase 8 | Financial Platform        | 🗓 Planned     | Credit scoring, lending, automated bookkeeping            |
+| Phase     | Title                                 | Status         | Key Deliverable                                                          |
+| :-------- | :------------------------------------ | :------------- | :----------------------------------------------------------------------- |
+| Phase 1   | Core Ledger MVP                       | ✅ Complete    | Customer credit tracking and balance management                          |
+| Phase 2   | Billing & Suppliers                   | ✅ Complete    | Itemized bills, supplier management, net position                        |
+| Phase 3   | Indian Billing Suite                  | ✅ Complete    | GST, sequential IDs, loading charge, WhatsApp reminders                  |
+| Phase 4   | Platform Features                     | ✅ Complete    | Onboarding, Sentry, i18n, CSV export, contacts import                    |
+| Phase 5   | Design System & Dashboard             | ✅ Complete    | Green (#22C55E) brand system, premium dashboard redesign                 |
+| Phase 6   | Customer UI Overhaul                  | ✅ Complete    | Transaction feed, payment modal, customer detail redesign                |
+| Phase 6.2 | UI Audit — Icons, Colors & Components | ✅ Complete    | Lucide migration, @gorhom/bottom-sheet, Toast, Financial Position screen |
+| Phase 7   | Growth & Monetisation                 | 🔄 In Progress | UPI, push notifications, analytics, premium tier                         |
+| Phase 8   | Financial Platform                    | 🗓 Planned     | Credit scoring, lending, automated bookkeeping                           |
 
 ---
 
@@ -244,6 +245,40 @@ The product is built around three core outcomes:
 
 ---
 
+## Phase 6.2 — UI Audit: Icons, Colors & Components
+
+**Goal**: Complete the visual and component quality bar set by Phase 5 — migrate all icons to `lucide-react-native`, harden payment modals with `@gorhom/bottom-sheet`, add Toast feedback, upgrade EmptyState, and ship the dedicated Financial Position screen.
+
+**Status**: ✅ Complete
+
+### Features
+
+| Feature                       | Description                                                                                                                                           |
+| :---------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Lucide Icon Migration**     | Replaced all `@expo/vector-icons` (Ionicons, MaterialIcons) with `lucide-react-native` across ~35 files; package removed                              |
+| **@gorhom/bottom-sheet**      | Upgraded `RecordCustomerPaymentModal` and `RecordPaymentMadeModal` to `@gorhom/bottom-sheet` v5.2.6 (`snapPoints: ["65%"]` / `["62%"]`)               |
+| **Toast Component**           | Built animated `Toast.tsx` with `ToastProvider` / `useToast()` hook; success (green `#22C55E`) + error (red `#EF4444`); wired into root `_layout.tsx` |
+| **EmptyState Upgrade**        | Enhanced `EmptyState` component with `title`, `description`, `cta`, `onCta` props + `CircleOff` icon + green CTA button                               |
+| **Financial Position Screen** | New screen at `app/(main)/reports/index.tsx`; shows receivables, payables, and net position; linked from Dashboard "View Report"                      |
+| **Dashboard "Both" Mode**     | Split hero card for `dashboard_mode = 'both'`: green `#F0FDF4` YOU RECEIVE panel + red `#FEF2F2` YOU OWE panel + net position row                     |
+| **Primary Color Lock**        | `theme.ts` primary locked to `#22C55E`; `primary.light = "#DCFCE7"`, `primary.dark = "#16A34A"` applied consistently                                  |
+
+### GitHub Issues
+
+```
+[✓] refactor: Replace all @expo/vector-icons with lucide-react-native (~35 files)
+[✓] feat: Upgrade RecordCustomerPaymentModal to @gorhom/bottom-sheet v5.2.6
+[✓] feat: Upgrade RecordPaymentMadeModal to @gorhom/bottom-sheet v5.2.6
+[✓] feat: Build Toast.tsx with ToastProvider and useToast hook
+[✓] feat: Wire ToastProvider into app/_layout.tsx root layout
+[✓] feat: Upgrade EmptyState with title/description/cta/onCta props
+[✓] feat: Build Financial Position screen at app/(main)/reports/index.tsx
+[✓] feat: Dashboard split hero card for dashboard_mode = 'both'
+[✓] fix: Lock primary color to #22C55E in theme.ts (light + dark variants)
+```
+
+---
+
 ## Phase 7 — Growth & Monetisation
 
 **Goal**: Drive retention through engagement features and introduce the premium subscription tier.
@@ -322,6 +357,7 @@ The product is built around three core outcomes:
 | **Platform Launch**           | Onboarding, i18n, Sentry, CSV export, contacts import                     | ✅ Shipped |
 | **Design System Launch**      | Green (#22C55E) brand system, premium dashboard, unified theme            | ✅ Shipped |
 | **Customer UI Launch**        | Transaction feed, payment modal, Customer Detail redesign                 | ✅ Shipped |
+| **UI Audit Launch**           | Lucide icons, @gorhom/bottom-sheet, Toast, Financial Position screen      | ✅ Shipped |
 | **Growth Launch**             | OTP login, push notifications, WhatsApp Business API, premium tier        | 🔄 Q2 2026 |
 | **Financial Platform Launch** | Credit scoring, GST filing, lending integration                           | 🗓 Q4 2026 |
 

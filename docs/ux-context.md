@@ -1,7 +1,7 @@
 # CreditBook UX Context
 
 > **Purpose**: This document provides complete UX context for AI UI generation tools (e.g., Google Stitch, Galileo, Uizard) and human designers onboarding to the CreditBook product.
-> **Last Updated**: March 5, 2026
+> **Last Updated**: March 8, 2026
 > **References**: `docs/prd.md`, `docs/design-system.md`, `docs/roadmap.md`, `README.md`
 
 ---
@@ -202,8 +202,8 @@ Every screen should support at least one of these goals:
 **Main UI components**:
 
 - Header: avatar, business name, notification icon
-- **Hero card** (gradient `#DC2626 → #B91C1C`): total net receivable amount in large white text
-- Action bar: "View Report" / "Send Reminder" buttons
+- **Hero card**: for `seller` / `distributor` modes — gradient (`#DC2626 → #B91C1C`) with net receivable amount; for `both` mode — splits into a green `#F0FDF4` **YOU RECEIVE** panel + red `#FEF2F2` **YOU OWE** panel + net position row below
+- Action bar: "View Report" (links to Financial Position screen at `/(main)/reports`) / "Send Reminder" buttons
 - **Stat cards**: Active Buyers count + Overdue count (side by side)
 - **Recent Activity feed**: last 5 transactions with customer name, amount, status chip, and time
 - **Floating Action Button** (gradient): "+" for creating a new bill
@@ -267,6 +267,8 @@ Every screen should support at least one of these goals:
 ### 4.9 Record Payment Bottom Sheet (Modal)
 
 **Purpose**: In-context payment recording without leaving the Customer Detail screen.
+
+**Library**: `@gorhom/bottom-sheet` v5.2.6 — snap point `["65%"]`
 
 **Main UI components**:
 
@@ -349,24 +351,44 @@ Every screen should support at least one of these goals:
 
 ---
 
-### 4.13 Net Position Dashboard
+### 4.13 Net Position Dashboard (Home — "Both" Mode)
 
-**Purpose**: Aggregate financial health — receivable vs payable in one view.
+**Purpose**: Aggregate financial health — receivable vs payable visible directly on the home screen when `dashboard_mode = 'both'`.
 
 **Main UI components**:
 
-- **"Customers Owe Me"** card (green): sum of all positive customer balances
-- **"I Owe Suppliers"** card (red): sum of all outstanding supplier balances
-- **"Net Position"** card (green if positive, amber if negative): receivable − payable
-- Visible cards controlled by dashboard mode (Seller / Distributor / Both in Profile)
+- **YOU RECEIVE panel** (green `#F0FDF4` background, `#22C55E` amount text): total positive customer balances
+- **YOU OWE panel** (red `#FEF2F2` background, `#EF4444` amount text): total outstanding supplier balances
+- **Net Position row** below both panels: `receivables − payables`; green if positive, red if negative
+- For `seller` or `distributor` mode, only the relevant single-card summary is shown (not the split layout)
 
 **Key user actions**:
 
 - View net position at a glance — no taps required
+- Tap "View Report" in the action bar → navigate to the dedicated Financial Position screen
 
 ---
 
-### 4.14 Profile / Settings Screen
+### 4.14 Financial Position Screen
+
+**Route**: `/(main)/reports`  
+**Purpose**: Dedicated full-screen financial breakdown; accessible from the Dashboard "View Report" button.
+
+**Main UI components**:
+
+- Header with back button (`ArrowLeft` from lucide-react-native) and title "Financial Position"
+- **Customers Owe Me** card: green background `#F0FDF4`, `#22C55E` amount, `TrendingUp` icon
+- **I Owe Suppliers** card: red background `#FEF2F2`, `#EF4444` amount, `TrendingDown` icon
+- **Net Position** row: `TrendingUp`/`TrendingDown` icon based on sign; green if positive, red if negative
+- Loading spinner (`#22C55E`) and error state handled gracefully
+
+**Key user actions**:
+
+- Tap back button → return to Dashboard
+
+---
+
+### 4.15 Profile / Settings Screen
 
 **Purpose**: Manage business details, app preferences, and account settings.
 
@@ -525,6 +547,21 @@ Used for in-context actions that do not require navigating away (record payment,
 - Background: white, `border-radius-top: 24dp`
 - Backdrop: `rgba(0,0,0,0.4)` — tapping closes the sheet
 - Bottom padding: 32dp (accounts for Android gesture nav)
+
+---
+
+### Toast Notifications
+
+Success and error feedback is delivered via the shared `Toast` component — never block the user with a modal for a status message.
+
+| Property  | Value                                                        |
+| :-------- | :----------------------------------------------------------- |
+| Position  | Slides in from top of screen, below status bar               |
+| Animation | Slide-down 200ms, auto-dismiss after 3s                      |
+| Success   | Green `#22C55E` background — payment recorded, save success  |
+| Error     | Red `#EF4444` background — network failure, validation error |
+
+**Usage**: `useToast()` hook from `src/components/feedback/Toast.tsx`. `ToastProvider` wraps the root layout.
 
 ---
 

@@ -1,8 +1,10 @@
 import { supabase } from "../services/supabase";
 
 export interface ProductVariant {
-  name: string;
+  id: string;
+  variant_name: string; // DB column name — was incorrectly "name"
   price: number;
+  created_at: string;
 }
 
 export interface Product {
@@ -20,11 +22,14 @@ export const PAGE_SIZE = 10;
 export async function fetchProducts(
   pageParam: number,
   vendorId: string,
-  search?: string
+  search?: string,
 ) {
   let query = supabase
     .from("products")
-    .select("*")
+    .select(
+      `id, vendor_id, name, base_price, image_url, created_at,
+      product_variants ( id, variant_name, price, created_at )`,
+    )
     .eq("vendor_id", vendorId)
     .order("created_at", { ascending: false })
     .range(pageParam * PAGE_SIZE, pageParam * PAGE_SIZE + PAGE_SIZE - 1);
@@ -35,12 +40,26 @@ export async function fetchProducts(
 
   const { data, error } = await query;
   if (error) throw error;
-  return data as Product[];
+
+  // Reshape: Supabase returns joined rows as `product_variants`;
+  // map to `variants` to keep the Product interface stable across the app.
+  return (data ?? []).map((p) => {
+    const { product_variants, ...rest } = p as any;
+    return {
+      ...rest,
+      variants: (product_variants ?? []).map((v: any) => ({
+        id: v.id,
+        variant_name: v.variant_name,
+        price: Number(v.price),
+        created_at: v.created_at,
+      })) as ProductVariant[],
+    } as Product;
+  });
 }
 
 export async function addProduct(
   vendorId: string,
-  values: Omit<Product, "id" | "vendor_id" | "created_at">
+  values: Omit<Product, "id" | "vendor_id" | "created_at">,
 ) {
   const { data, error } = await supabase
     .from("products")
@@ -53,7 +72,7 @@ export async function addProduct(
 
 export async function updateProduct(
   productId: string,
-  values: Partial<Product>
+  values: Partial<Product>,
 ) {
   const { data, error } = await supabase
     .from("products")

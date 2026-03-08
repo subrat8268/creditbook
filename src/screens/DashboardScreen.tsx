@@ -41,24 +41,21 @@ export const DashboardScreen = () => {
   if (isError || !data)
     return <EmptyState message="Failed to load dashboard data" />;
 
-  const mode = profile.dashboard_mode ?? profile.role ?? "vendor";
+  const mode = profile.dashboard_mode ?? "seller";
   const isBothMode = mode === "both";
-  const isVendorMode = ["vendor", "seller", "wholesaler", "retailer"].includes(
-    mode,
-  );
+  const isSellerMode = mode === "seller";
+  const isDistributor = mode === "distributor";
 
-  const heroAmount = isVendorMode ? data.customersOweMe : data.iOweSuppliers;
-  const heroLabel = isVendorMode ? "YOU WILL RECEIVE" : "YOU OWE";
+  const heroAmount = isSellerMode ? data.customersOweMe : data.iOweSuppliers;
+  const heroLabel = isSellerMode ? "YOU WILL RECEIVE" : "YOU OWE";
 
   const businessName = profile.business_name ?? profile.name ?? "My Business";
   const roleLabel =
-    mode === "wholesaler"
-      ? "CreditBook Wholesaler"
-      : mode === "retailer"
-        ? "CreditBook Retailer"
-        : mode === "user"
-          ? "CreditBook User"
-          : "CreditBook Seller";
+    mode === "distributor"
+      ? "CreditBook Distributor"
+      : mode === "both"
+        ? "CreditBook Business"
+        : "CreditBook Seller";
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>

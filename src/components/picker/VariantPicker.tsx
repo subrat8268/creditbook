@@ -4,7 +4,7 @@ import BottomSheetPicker from "./BottomSheetPicker";
 
 interface Variant {
   id: string;
-  name: string;
+  variant_name: string;
   price: number;
   image?: string;
 }
@@ -23,7 +23,7 @@ interface VariantPickerProps {
   onSelect: (
     variantId: string | null,
     variantName: string,
-    price: number
+    price: number,
   ) => void;
   onClose: () => void;
 }
@@ -39,12 +39,12 @@ export default function VariantPicker({
   // Combine base option + variants
   const items = useMemo(() => {
     const baseOption = [
-      { id: "base", name: "Base", price: product.base_price },
+      { id: "base", variant_name: "Base", price: product.base_price },
     ];
     return baseOption.concat(
       product.variants.filter((v) =>
-        v.name.toLowerCase().includes(search.toLowerCase())
-      )
+        v.variant_name.toLowerCase().includes(search.toLowerCase()),
+      ),
     );
   }, [product, search]);
 
@@ -53,7 +53,7 @@ export default function VariantPicker({
     if (item.id === "base") {
       onSelect(null, "Base", item.price);
     } else {
-      onSelect(item.id, item.name, item.price);
+      onSelect(item.id, item.variant_name, item.price);
     }
     onClose(); // close bottomsheet immediately
   };
@@ -73,7 +73,7 @@ export default function VariantPicker({
           onPress={() => handleSelect(item)}
         >
           <Text>
-            {item.name} - ₹{item.price}
+            {item.variant_name} - ₹{item.price}
           </Text>
         </TouchableOpacity>
       )}

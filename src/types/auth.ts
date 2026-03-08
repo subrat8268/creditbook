@@ -25,16 +25,8 @@ export interface Profile {
   bill_number_prefix?: string | null;
 
   // Dashboard mode: controls which financial view is shown
-  dashboard_mode?:
-    | "vendor"
-    | "receiver"
-    | "seller"
-    | "distributor"
-    | "wholesaler"
-    | "retailer"
-    | "user"
-    | "both"
-    | null;
+  // Canonical values aligned with DB CHECK constraint ('seller','distributor','both')
+  dashboard_mode?: "seller" | "distributor" | "both" | null;
 
   // Onboarding: false until user completes the 3-step setup flow
   onboarding_complete?: boolean | null;

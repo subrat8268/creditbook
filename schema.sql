@@ -453,21 +453,21 @@ ALTER TABLE supplier_delivery_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payments_made        ENABLE ROW LEVEL SECURITY;
 
 -- suppliers
-DROP POLICY IF EXISTS "Vendors manage own suppliers" ON suppliers;
-CREATE POLICY "Vendors manage own suppliers" ON suppliers
-  FOR ALL USING (vendor_id = auth.uid()) WITH CHECK (vendor_id = auth.uid());
+DROP POLICY IF EXISTS "Vendors can manage own suppliers" ON suppliers;
+CREATE POLICY "Vendors can manage own suppliers" ON suppliers
+  FOR ALL USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
 
 -- supplier_deliveries
-DROP POLICY IF EXISTS "Vendors manage own deliveries" ON supplier_deliveries;
-CREATE POLICY "Vendors manage own deliveries" ON supplier_deliveries
-  FOR ALL USING (vendor_id = auth.uid()) WITH CHECK (vendor_id = auth.uid());
+DROP POLICY IF EXISTS "Vendors can manage own deliveries" ON supplier_deliveries;
+CREATE POLICY "Vendors can manage own deliveries" ON supplier_deliveries
+  FOR ALL USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
 
 -- supplier_delivery_items
-DROP POLICY IF EXISTS "Vendors manage own delivery items" ON supplier_delivery_items;
-CREATE POLICY "Vendors manage own delivery items" ON supplier_delivery_items
-  FOR ALL USING (vendor_id = auth.uid()) WITH CHECK (vendor_id = auth.uid());
+DROP POLICY IF EXISTS "Vendors can manage own delivery items" ON supplier_delivery_items;
+CREATE POLICY "Vendors can manage own delivery items" ON supplier_delivery_items
+  FOR ALL USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
 
 -- payments_made
-DROP POLICY IF EXISTS "Vendors manage own payments made" ON payments_made;
-CREATE POLICY "Vendors manage own payments made" ON payments_made
-  FOR ALL USING (vendor_id = auth.uid()) WITH CHECK (vendor_id = auth.uid());
+DROP POLICY IF EXISTS "Vendors can manage own payments made" ON payments_made;
+CREATE POLICY "Vendors can manage own payments made" ON payments_made
+  FOR ALL USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));

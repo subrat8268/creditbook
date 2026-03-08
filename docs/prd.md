@@ -1,7 +1,7 @@
 # CreditBook – Product Requirements Document
 
-> **Version**: 1.0
-> **Last Updated**: March 5, 2026
+> **Version**: 1.1
+> **Last Updated**: March 8, 2026
 > **Status**: Active Development
 > **Owner**: CreditBook Product Team
 
@@ -246,8 +246,8 @@ Role maps to `dashboard_mode` on the `profiles` table and controls which net-pos
 **Contents**:
 
 - Business name + avatar header
-- Gradient hero card — net receivable amount
-- View Report / Send Reminder quick action bar
+- **Hero card**: gradient net receivable amount; in `dashboard_mode = 'both'`, splits into a green "YOU RECEIVE" panel (`#F0FDF4`) + red "YOU OWE" panel (`#FEF2F2`) + net position row
+- **Action bar**: "View Report" (navigates to Financial Position screen at `/(main)/reports`) / "Send Reminder" quick actions
 - Active Buyers count + Overdue count stat cards
 - Recent Activity feed (last 5 transactions with status chips)
 - FAB for creating a new bill
@@ -331,6 +331,22 @@ Role maps to `dashboard_mode` on the `profiles` table and controls which net-pos
 
 ---
 
+### 4.9 Financial Position Screen
+
+**Route**: `/(main)/reports`  
+**Purpose**: Dedicated full-screen financial breakdown; accessible from the "View Report" button in the Dashboard action bar.
+
+**Contents**:
+
+- Header with back navigation and title "Financial Position"
+- **Customers Owe Me** card (green `#F0FDF4` background, `#22C55E` text): total receivables from all customers
+- **I Owe Suppliers** card (red `#FEF2F2` background, `#EF4444` text): total payables to all suppliers
+- **Net Position** row: `receivables − payables`; green if positive (`#22C55E`), red if negative (`#EF4444`)
+- Trend icons: `TrendingUp` (green) / `TrendingDown` (red) from `lucide-react-native`
+- Loading and error states handled gracefully
+
+---
+
 ## 5. UX Principles
 
 ### 5.1 Simplicity
@@ -407,6 +423,9 @@ The color system encodes financial status visually — users can assess ledger h
 | **Crash Reporting**      | `@sentry/react-native`                  | Error tracking, crash reports, performance tracing                                                 |
 | **Contacts Import**      | `expo-contacts`                         | Import customers from device contacts                                                              |
 | **Internationalisation** | `i18next` + `react-i18next`             | EN/HI language toggle with AsyncStorage persistence                                                |
+| **Icons**                | `lucide-react-native`                   | Sole icon library — `@expo/vector-icons` removed; all icons migrated to Lucide in v3.3             |
+| **Bottom Sheets**        | `@gorhom/bottom-sheet` v5.2.6           | Payment recording modals (`RecordCustomerPaymentModal`, `RecordPaymentMadeModal`)                  |
+| **Toast / Feedback**     | Custom `Toast.tsx` + `ToastProvider`    | Animated slide-down toasts for success/error feedback; wired into root layout                      |
 
 ---
 

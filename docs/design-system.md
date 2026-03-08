@@ -1,7 +1,7 @@
 # CreditBook Design System
 
-> **Version**: 1.1
-> **Last Updated**: March 5, 2026
+> **Version**: 1.2
+> **Last Updated**: March 8, 2026
 > **Maintained by**: CreditBook Product & Design Team
 
 ---
@@ -130,6 +130,17 @@ Customer Balance:  linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)
 Supplier Payable:  linear-gradient(135deg, #DB2777 0%, #BE185D 100%)
 Net Position:      linear-gradient(135deg, #0F172A 0%, #334155 100%)
 ```
+
+### Dashboard "Both" Mode — Split Hero Card
+
+When `dashboard_mode = 'both'` the home dashboard hero area splits into two side-by-side panels:
+
+| Panel           | Background | Amount Color | Label                           |
+| :-------------- | :--------- | :----------- | :------------------------------ |
+| **YOU RECEIVE** | `#F0FDF4`  | `#22C55E`    | Total receivable from customers |
+| **YOU OWE**     | `#FEF2F2`  | `#EF4444`    | Total payable to suppliers      |
+
+Below the two panels a **Net Position row** displays: `receivables − payables` — green text if positive, red if negative.
 
 ### Financial State Color Mapping
 
@@ -362,15 +373,57 @@ Bottom tab navigation bar style.
 
 ### Bottom Sheet / Modal
 
-Used for in-context actions that don't require a new screen (`RecordPaymentModal`, `NewCustomerModal`).
+Used for in-context actions that don't require a new screen (`RecordCustomerPaymentModal`, `RecordPaymentMadeModal`).
 
-| Property            | Value                              |
-| :------------------ | :--------------------------------- |
-| Background          | White                              |
-| Border radius (top) | 24dp                               |
-| Handle              | Centered pill, `40×4dp`, `#E5E5EA` |
-| Backdrop            | `rgba(0,0,0,0.4)`                  |
-| Padding             | 24dp horizontal, 32dp bottom       |
+**Library**: `@gorhom/bottom-sheet` v5.2.6
+
+| Property            | Value                                                  |
+| :------------------ | :----------------------------------------------------- |
+| Background          | White                                                  |
+| Border radius (top) | 24dp                                                   |
+| Handle              | Centered pill, `40×4dp`, `#E5E5EA`                     |
+| Backdrop            | `rgba(0,0,0,0.4)`                                      |
+| Padding             | 24dp horizontal, 32dp bottom                           |
+| Snap Points         | `["65%"]` (payment received), `["62%"]` (payment made) |
+
+---
+
+### Toast
+
+Animated slide-down notification for success and error feedback. Implemented in `src/components/feedback/Toast.tsx`.
+
+**Usage**: Import `useToast()` hook — `showToast({ message, type })`. `ToastProvider` must wrap the root layout.
+
+| Property      | Value                                          |
+| :------------ | :--------------------------------------------- |
+| Position      | Top of screen, below status bar                |
+| Animation     | Slide-down (200ms easeOut), auto-dismiss at 3s |
+| Success color | `#22C55E` background, white text               |
+| Error color   | `#EF4444` background, white text               |
+| Border radius | 12dp                                           |
+| Shadow        | Soft elevation 4                               |
+
+```tsx
+const { showToast } = useToast();
+showToast({ message: "Payment recorded", type: "success" });
+showToast({ message: "Something went wrong", type: "error" });
+```
+
+---
+
+### EmptyState
+
+Full-screen (or section-level) empty state component used when lists have no data. Implemented in `src/components/ui/EmptyState.tsx`.
+
+| Prop          | Type         | Description                                |
+| :------------ | :----------- | :----------------------------------------- |
+| `title`       | `string`     | Primary heading (e.g., "No customers yet") |
+| `description` | `string`     | Supporting body text                       |
+| `cta`         | `string`     | Optional CTA button label                  |
+| `onCta`       | `() => void` | Callback called when CTA button is tapped  |
+
+- Icon: `CircleOff` from `lucide-react-native` (48dp, `#9CA3AF`)
+- CTA button: green `#22C55E` fill, white text, 14dp border-radius
 
 ---
 
@@ -383,13 +436,27 @@ Used for in-context actions that don't require a new screen (`RecordPaymentModal
 - Size: **22–24dp** for navigation; **18–20dp** for inline use
 - Color: match surrounding text or use token color
 
-### Recommended Libraries
+### Icon Library
 
-| Library            | Use Case                                     |
-| :----------------- | :------------------------------------------- |
-| **Lucide Icons**   | General UI — navigation, actions, status     |
-| **Heroicons**      | Alternative for form and modal contexts      |
-| **Phosphor Icons** | Extended set for specialized financial icons |
+CreditBook uses **`lucide-react-native`** as the sole icon library. The `@expo/vector-icons` package (Ionicons, MaterialIcons, etc.) has been completely removed from the codebase as of v3.3.
+
+| Library                   | Status     | Notes                                                   |
+| :------------------------ | :--------- | :------------------------------------------------------ |
+| **`lucide-react-native`** | ✅ Active  | All icons — navigation, actions, status, indicators, UI |
+| `@expo/vector-icons`      | ❌ Removed | Fully replaced; do not re-introduce                     |
+
+**Usage example**:
+
+```tsx
+import {
+  CircleOff,
+  TrendingUp,
+  ArrowLeft,
+  ReceiptText,
+} from "lucide-react-native";
+
+<TrendingUp size={22} color="#22C55E" strokeWidth={2} />;
+```
 
 ### Icon Properties
 
@@ -471,6 +538,25 @@ This eliminates perceived latency during high-frequency billing sessions.
 
 ---
 
+### Toast Notifications
+
+Surface success and error feedback using the `useToast()` hook from `Toast.tsx`.
+
+- **Never block the UI** with a modal for a success state — always use a toast
+- Success toasts auto-dismiss after 3 seconds
+- Error toasts remain until dismissed or 5 seconds
+- Toast slides down from the top of the screen — never overlaps FAB or bottom navigation
+
+```tsx
+const { showToast } = useToast();
+// On payment success:
+showToast({ message: "Payment of ₹2,500 recorded", type: "success" });
+// On API error:
+showToast({ message: "Failed to save. Check your connection.", type: "error" });
+```
+
+---
+
 ### Transaction Feed Pattern
 
 Customer and supplier detail screens use a **unified chronological feed** of bills and payments:
@@ -485,6 +571,25 @@ Customer and supplier detail screens use a **unified chronological feed** of bil
 ### Status Chips Over Text Labels
 
 Plain text labels (`Paid`, `Due`, `Partial`) are always replaced with **pill-shaped status chips**. Chips allow users to scan a long list and assess ledger health without reading individual words.
+
+---
+
+### Empty State Pattern
+
+When a list screen has no data, use the shared `EmptyState` component. Never leave a blank white screen.
+
+```tsx
+<EmptyState
+  title="No customers yet"
+  description="Add your first customer to start tracking credit."
+  cta="Add Customer"
+  onCta={() => openNewCustomerModal()}
+/>
+```
+
+- Always provide `title` + `description` + `cta` for actionable empty states (e.g., no customers, no products)
+- For read-only empty states (e.g., no transactions in a filtered view), `cta` and `onCta` can be omitted
+- Icon: `CircleOff` from `lucide-react-native` (48dp, `#9CA3AF`) indicates "nothing here"
 
 ---
 

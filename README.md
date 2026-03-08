@@ -1,7 +1,7 @@
 # CreditBook App - Complete Project Documentation
 
-> **Last Updated**: March 5, 2026
-> **Version**: 3.2
+> **Last Updated**: March 8, 2026
+> **Version**: 3.3
 > **Status**: Active Development
 > **Target Market**: Indian SMBs (Retailers, Wholesalers, Distributors)
 
@@ -164,6 +164,8 @@ This section contains the deep technical details required for an AI or developer
 │   │   │   └── _layout.tsx        # Stack navigator
 │   │   ├── export/       # CSV/Excel export screen (hidden tab)  ← v2.3
 │   │   │   └── index.tsx
+│   │   ├── reports/      # Financial Position screen             ← v3.2
+│   │   │   └── index.tsx # Net receivables vs payables breakdown
 │   │   ├── profile/      # User Settings & Business Profile
 │   │   └── dashboard/    # Analytics & Overview
 │   └── _layout.tsx       # Root Layout (Auth Check + i18n + Sentry)
@@ -174,6 +176,9 @@ This section contains the deep technical details required for an AI or developer
 │   │   ├── export.ts     # 4 export queries: orders, payments, customers, suppliers ← v2.3
 │   │   └── ...           # customers, orders, products, profiles, auth, upload
 │   ├── components/
+│   │   ├── feedback/     # App-wide feedback components
+│   │   │   ├── Toast.tsx         # ToastProvider + useToast hook   ← v3.2
+│   │   │   └── EmptyState.tsx    # Upgraded: title/description/cta ← v3.2
 │   │   ├── dashboard/    # Extracted premium dashboard UI blocks          ← v3.0
 │   │   │   ├── DashboardHeader.tsx       # Avatar, business name, icon row
 │   │   │   ├── DashboardHeroCard.tsx     # Gradient hero amount card
@@ -559,6 +564,17 @@ Specific adaptations for the Indian market implemented in the app:
   - [x] `RecordCustomerPaymentModal` — bottom-sheet with amount input, 5 payment mode chips, Partial / Mark Full Paid actions.
   - [x] Tab bar height corrected for edge-to-edge Android — `useSafeAreaInsets()`, `height = 64 + insets.bottom`.
   - [x] Customer Detail status bar overlap fixed — `SafeAreaView` `edges` now includes `"top"`.
+- [x] **Phase 6.2: UI Audit — Icons, Colors & Components (v3.2–v3.3 Completed)**
+  - [x] **Primary brand color** changed from purple `#5B3FFF` to green `#22C55E` across `theme.ts` (`primary.DEFAULT`, `primary.light`, `primary.dark`, `icon.bg`).
+  - [x] **`CustomerCard` avatar palette** updated to 8-color spec (EF4444, F97316, EAB308, 22C55E, 14B8A6, 3B82F6, 8B5CF6, EC4899). Advance chip → info blue.
+  - [x] **`@expo/vector-icons` fully removed** — complete Ionicons/Feather → `lucide-react-native` migration across all ~35 files. Zero vector-icons imports remain.
+  - [x] **`RecordCustomerPaymentModal`** converted from RN `Modal` to `@gorhom/bottom-sheet` (`snapPoints: ["65%"]`).
+  - [x] **`RecordPaymentMadeModal`** converted from RN `Modal` to `@gorhom/bottom-sheet` (`snapPoints: ["62%"]`, `BottomSheetScrollView`).
+  - [x] **`EmptyState` component** upgraded with `title`, `description`, `cta`, `onCta` props + `CircleOff` icon. `CustomerList`, `SupplierList`, `OrderList` updated with rich empty states and CTA callbacks.
+  - [x] **`Toast` component** added — `ToastProvider`/`useToast` context, animated slide-down, success (green) & error (red) types. Wired into root `_layout.tsx`.
+  - [x] **Financial Position screen** added at `app/(main)/reports/index.tsx` — hero net-position card, Customers Owe Me vs I Owe Suppliers progress bars, breakdown rows.
+  - [x] **Dashboard "both" mode** fixed — split hero card with green YOU RECEIVE panel + red YOU OWE panel + net position row.
+  - [x] `ActivityIndicator` spinner color updated to green `#22C55E` in `RecordCustomerPaymentModal`.
 - [~] **Phase 7: Growth — In Progress**
   - [ ] WhatsApp Business API (auto-send bill on creation).
   - [ ] Push notifications for overdue payments.
@@ -573,7 +589,28 @@ Specific adaptations for the Indian market implemented in the app:
 
 ## 9. Recent Updates & Changelog
 
-### v3.1 — Customer UI & Feature Overhaul (Current)
+### v3.3 — Icon Migration & Component Polish (Current)
+
+- **COMPLETE**: **`@expo/vector-icons` fully removed** from entire codebase. All ~35 files migrated to `lucide-react-native`. Zero Ionicons/Feather imports remain.
+- **Affected files**: `signup.tsx`, `onboarding/index.tsx`, `ExportScreen.tsx`, `ImagePickerField.tsx`, `NewProductModal.tsx`, `PaymentHistory.tsx`, `OrderItemCard.tsx`, `OrderBillSummary.tsx`, `DashboardStatCards.tsx`, `DashboardRecentActivity.tsx`, `DashboardHeader.tsx`, `ContactsPickerModal.tsx`, `BottomSheetForm.tsx`, and 20+ more from the previous session.
+- **FIX**: `signup.tsx` — replaced `Ionicons` `mail-outline`, `lock-closed-outline`, `shield-checkmark-outline`, `alert-circle-outline` with Lucide `Mail`, `Lock`, `ShieldCheck`, `AlertCircle`.
+- **FIX**: `onboarding/index.tsx` — `call-outline` → Lucide `Phone`.
+- **FIX**: `ExportScreen.tsx` — buttons array `icon: keyof typeof Ionicons.glyphMap` converted to `Icon: ComponentType<{size, color, strokeWidth?}>` using `Receipt`, `Banknote`, `Users`, `Store`. Download arrow → `Download` icon.
+
+### v3.2 — UI Audit: Theme, Components & Screens (Latest)
+
+- **BREAKING**: **Primary brand color changed** — `theme.ts` `primary.DEFAULT` updated from purple `#5B3FFF` to green `#22C55E`. `primary.light` → `#DCFCE7`, `primary.dark` → `#16A34A`, `icon.bg` → `#22C55E22`. All `bg-primary`, `text-primary`, `border-primary` Tailwind classes now render green.
+- **NEW**: **`Toast` component** — `src/components/feedback/Toast.tsx`. `ToastProvider` wraps entire app in `_layout.tsx`. `useToast()` hook: `show({ message, type: "success"|"error", duration? })`. Animated slide-down from top using `Animated.Value`. Respects `useSafeAreaInsets()` for notch/island devices.
+- **NEW**: **Financial Position screen** — `app/(main)/reports/index.tsx`. Hero net-position card (green if ≥ 0, red if < 0). Two breakdown cards: Customers Owe Me (green progress bar) + I Owe Suppliers (red progress bar). `BreakdownRow` sub-component with overdue/net summary. Uses `useDashboard()` hook. Linked from DashboardActionBar "View Report" button.
+- **FIX**: **Dashboard "both" mode** — Previously `isBothMode` was included in `isVendorMode` so it defaulted to customer-only view. Now renders a split hero card: green `#F0FDF4` YOU RECEIVE panel + red `#FEF2F2` YOU OWE panel + net position row (green if ≥ 0, red if < 0).
+- **FIX**: **`RecordCustomerPaymentModal`** converted from `Modal` + `KeyboardAvoidingView` to `@gorhom/bottom-sheet`. `snapPoints: ["65%"]`, `useEffect` open/close pattern, `backdropComponent`, `keyboardBehavior="interactive"`. `ActivityIndicator color` set to `#22C55E`.
+- **FIX**: **`RecordPaymentMadeModal`** converted to `@gorhom/bottom-sheet`. `snapPoints: ["62%"]`, `BottomSheetScrollView`.
+- **FIX**: **`EmptyState` component** upgraded — now supports `title`, `description`, `cta`, `onCta` props alongside legacy `message`. Renders `CircleOff` icon in a gray circle, bold title, description body, and green CTA button. `CustomerList` and `SupplierList` updated to pass `onAddCustomer`/`onAddSupplier` callbacks. `OrderList` uses rich empty state for error and empty states.
+- **FIX**: **`CustomerCard` avatar palette** updated to 8-color spec: `["#EF4444","#F97316","#EAB308","#22C55E","#14B8A6","#3B82F6","#8B5CF6","#EC4899"]`. Advance chip color → info blue (`#0369A1` / `#4F9CFF`).
+- **FIX**: All purple `#5B3FFF` color hardcodes in `[customerId].tsx`, `DashboardActionBar`, `RecordCustomerPaymentModal` replaced with green equivalents.
+- **Ionicons cleanup (partial)**: `DashboardHeroCard`, `DashboardActionBar`, `Modal`, `BottomSheetPicker`, `SearchBar`, `SearchablePickerModal`, `SupplierCard`, `ProductCard`, `ProductActionsModal`, `RecordDeliveryModal`, `ProfileScreen`, `ProductsScreen`, all `_layout.tsx` navigators, `[customerId].tsx`, `[supplierId].tsx`, `onboarding/ready.tsx`, `onboarding/role.tsx`, `login.tsx`, `resetPassword.tsx`.
+
+### v3.1 — Customer UI & Feature Overhaul
 
 - **NEW**: **`Transaction` type** in `src/types/customer.ts` — `{ id, type: "bill"|"payment", created_at, amount, runningBalance, billNumber?, status?, paymentMode? }`. `CustomerDetail` extended with `transactions[]`, `lastActiveAt`, `pendingOrderId`, `pendingOrderBalance`.
 - **NEW**: **`fetchCustomerDetail` rewritten** (`src/api/customers.ts`) — fetches all orders with `bill_number` ascending, batch-fetches all payments in one query, merges into unified event list, forward-pass computes running balance (bill `+=amount`, payment `-=amount`, floor 0), reverses to newest-first. Identifies oldest pending order as `pendingOrderId`/`pendingOrderBalance` for payment recording.
@@ -703,8 +740,9 @@ Specific adaptations for the Indian market implemented in the app:
 **Document History**
 
 | Version | Date | Author | Notes |
-| :------ | :----------- | :----------- | :-------------------------------------------------------------------------------------------- || **3.2** | Mar 5, 2026 | AI Assistant | Brand & design system docs rewrite: identity, color system, UX language, UI structure, patterns, typography |
-| **3.1** | Mar 3, 2026 | AI Assistant | Customer UI overhaul: list redesign, detail redesign, transaction feed, payment modal, nav fixes || **3.0** | Mar 3, 2026 | AI Assistant | Design system overhaul: green palette, unified theme.ts, dashboard redesign, 7 UI components |
+| :------ | :----------- | :----------- | :-------------------------------------------------------------------------------------------- || **3.3** | Mar 8, 2026 | AI Assistant | Icon migration complete: @expo/vector-icons fully removed, all ~35 files migrated to lucide-react-native |
+| **3.2** | Mar 8, 2026 | AI Assistant | UI audit: green primary color, Toast, Financial Position screen, bottom-sheet modals, EmptyState upgrade, CustomerCard palette, dashboard "both" fix |
+| **3.1** | Mar 5, 2026 | AI Assistant | Brand & design system docs rewrite: identity, color system, UX language, UI structure, patterns, typography || **3.0** | Mar 3, 2026 | AI Assistant | Design system overhaul: green palette, unified theme.ts, dashboard redesign, 7 UI components |
 | **2.4** | Mar 2, 2026 | AI Assistant | Import customers from phone contacts (expo-contacts, multi-select picker) |
 | **2.3** | Mar 2, 2026 | AI Assistant | CSV/Excel data export — 4 report types, date range filter, share sheet |
 | **2.2** | Mar 2, 2026 | AI Assistant | Hindi UI language toggle (i18next, 10 namespaces, AsyncStorage persistence) |
