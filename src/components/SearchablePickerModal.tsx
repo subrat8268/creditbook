@@ -8,7 +8,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import SearchBar from "./SearchBar";
+import SearchBar from "./ui/SearchBar";
 
 interface Item {
   id: string;

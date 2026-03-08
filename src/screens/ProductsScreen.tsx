@@ -6,11 +6,11 @@ import * as Yup from "yup";
 
 import { uploadImage } from "../api/upload";
 import BottomSheetForm from "../components/BottomSheetForm";
-import FloatingActionButton from "../components/FloatingActionButton";
-import ScreenWrapper from "../components/ScreenWrapper";
-import SearchBar from "../components/SearchBar";
 import ProductActionsModal from "../components/products/ProductActionsModal";
 import ProductCard from "../components/products/ProductCard";
+import ScreenWrapper from "../components/ScreenWrapper";
+import FloatingActionButton from "../components/ui/FloatingActionButton";
+import SearchBar from "../components/ui/SearchBar";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import {
     useAddProduct,

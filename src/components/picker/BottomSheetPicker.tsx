@@ -6,9 +6,9 @@ import BottomSheet, {
 import { X } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { Keyboard, Text, TouchableOpacity, View } from "react-native";
-import SearchBar from "../SearchBar";
 import EmptyState from "../feedback/EmptyState";
 import Loader from "../feedback/Loader";
+import SearchBar from "../ui/SearchBar";
 
 interface BottomSheetPickerProps<T> {
   visible: boolean;

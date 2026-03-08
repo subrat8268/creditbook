@@ -1,9 +1,9 @@
 import EmptyState from "@/src/components/feedback/EmptyState";
 import Loader from "@/src/components/feedback/Loader";
-import FloatingActionButton from "@/src/components/FloatingActionButton";
 import ScreenWrapper from "@/src/components/ScreenWrapper";
 import RecordDeliveryModal from "@/src/components/suppliers/RecordDeliveryModal";
 import RecordPaymentMadeModal from "@/src/components/suppliers/RecordPaymentMadeModal";
+import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import {
     useRecordDelivery,
     useRecordPaymentMade,

@@ -8,8 +8,8 @@ import CustomerList, {
     CustomerFilter,
 } from "../components/customers/CustomerList";
 import NewCustomerModal from "../components/customers/NewCustomerModal";
-import FloatingActionButton from "../components/FloatingActionButton";
-import SearchBar from "../components/SearchBar";
+import FloatingActionButton from "../components/ui/FloatingActionButton";
+import SearchBar from "../components/ui/SearchBar";
 import { useAddCustomer, useCustomers } from "../hooks/useCustomer";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { useAuthStore } from "../store/authStore";

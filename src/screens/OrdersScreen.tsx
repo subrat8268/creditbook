@@ -1,6 +1,6 @@
-import FloatingActionButton from "@/src/components/FloatingActionButton";
 import ScreenWrapper from "@/src/components/ScreenWrapper";
 import OrderList from "@/src/components/orders/OrderList";
+import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useOrders } from "@/src/hooks/useOrders";
 import { useAuthStore } from "@/src/store/authStore";
