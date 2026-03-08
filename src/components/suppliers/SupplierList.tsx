@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { FlatList, RefreshControl } from "react-native";
 import { Supplier } from "../../types/supplier";
 import EmptyState from "../feedback/EmptyState";
@@ -29,16 +30,20 @@ export default function SupplierList({
   if (isLoading) return <Loader message="Fetching suppliers" />;
   if (error) return <ErrorState message="Failed to fetch suppliers" />;
 
+  const SUPPLIER_ITEM_H = 80;
+
+  const renderItem = useCallback(
+    ({ item }: { item: Supplier }) => (
+      <SupplierCard supplier={item} onPress={() => onPressSupplier(item.id)} />
+    ),
+    [onPressSupplier],
+  );
+
   return (
     <FlatList
       data={suppliers}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <SupplierCard
-          supplier={item}
-          onPress={() => onPressSupplier(item.id)}
-        />
-      )}
+      renderItem={renderItem}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
@@ -57,10 +62,16 @@ export default function SupplierList({
       }
       onEndReached={onEndReached}
       onEndReachedThreshold={0.3}
+      removeClippedSubviews={true}
       initialNumToRender={10}
+      maxToRenderPerBatch={10}
+      windowSize={5}
+      getItemLayout={(_, i) => ({
+        length: SUPPLIER_ITEM_H,
+        offset: SUPPLIER_ITEM_H * i,
+        index: i,
+      })}
       contentContainerStyle={{ paddingBottom: 100 }}
-      windowSize={10}
-      removeClippedSubviews
     />
   );
 }

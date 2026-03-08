@@ -1,4 +1,5 @@
 import { Customer } from "@/src/api/customers";
+import { useCallback } from "react";
 import { FlatList, RefreshControl } from "react-native";
 import EmptyState from "../feedback/EmptyState";
 import ErrorState from "../feedback/ErrorState";
@@ -45,20 +46,27 @@ export default function CustomerList({
       ? customers
       : customers.filter((c) => getStatus(c) === filter);
 
+  const CUSTOMER_ITEM_H = 88;
+
+  const renderItem = useCallback(
+    ({ item }: { item: Customer }) => (
+      <CustomerCard
+        name={item.name}
+        phone={item.phone}
+        isOverdue={item.isOverdue}
+        outstandingBalance={item.outstandingBalance}
+        onPress={() => onPressCustomer(item.id)}
+      />
+    ),
+    [onPressCustomer],
+  );
+
   return (
     <FlatList
       data={filtered}
       keyExtractor={(item) => item.id}
       style={{ flex: 1 }}
-      renderItem={({ item }) => (
-        <CustomerCard
-          name={item.name}
-          phone={item.phone}
-          isOverdue={item.isOverdue}
-          outstandingBalance={item.outstandingBalance}
-          onPress={() => onPressCustomer(item.id)}
-        />
-      )}
+      renderItem={renderItem}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
@@ -77,10 +85,16 @@ export default function CustomerList({
       }
       onEndReached={onEndReached}
       onEndReachedThreshold={0.3}
+      removeClippedSubviews={true}
       initialNumToRender={10}
+      maxToRenderPerBatch={10}
+      windowSize={5}
+      getItemLayout={(_, i) => ({
+        length: CUSTOMER_ITEM_H,
+        offset: CUSTOMER_ITEM_H * i,
+        index: i,
+      })}
       contentContainerStyle={{ paddingBottom: 100 }}
-      windowSize={10}
-      removeClippedSubviews
     />
   );
 }

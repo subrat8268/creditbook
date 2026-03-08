@@ -197,6 +197,22 @@ export default function ProductsScreen() {
     setIsActionsOpen(true);
   };
 
+  const PRODUCT_ITEM_H = 72;
+
+  const renderProductItem = useCallback(
+    ({ item }: { item: any }) => (
+      <ProductCard
+        name={item.name}
+        basePrice={item.base_price}
+        variants={item.variants}
+        image={item.image_url || undefined}
+        onOptionsPress={() => handleOptionsPress(item)}
+      />
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
   const handleEditPress = () => {
     if (!selectedProduct) return;
     setEditingProduct(selectedProduct);
@@ -219,15 +235,17 @@ export default function ProductsScreen() {
         refreshing={refreshing}
         onRefresh={onRefresh}
         onEndReached={handleEndReached}
-        renderItem={({ item }) => (
-          <ProductCard
-            name={item.name}
-            basePrice={item.base_price}
-            variants={item.variants}
-            image={item.image_url || undefined}
-            onOptionsPress={() => handleOptionsPress(item)}
-          />
-        )}
+        renderItem={renderProductItem}
+        removeClippedSubviews={true}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        getItemLayout={(_, i) => ({
+          length: PRODUCT_ITEM_H,
+          offset: PRODUCT_ITEM_H * i,
+          index: i,
+        })}
+        contentContainerStyle={{ paddingBottom: 80 }}
         ListEmptyComponent={
           !isLoading && !error ? (
             <View className="items-center mt-10">

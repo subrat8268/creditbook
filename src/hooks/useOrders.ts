@@ -124,8 +124,13 @@ export function useCreateOrder(vendorId: string) {
           };
         },
       );
-      queryClient.invalidateQueries({ queryKey: ["customers", vendorId], exact: false });
-      queryClient.invalidateQueries({ queryKey: ["customerDetail", variables.customerId] });
+      queryClient.invalidateQueries({
+        queryKey: ["customers", vendorId],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["customerDetail", variables.customerId],
+      });
       queryClient.invalidateQueries({ queryKey: ["dashboard", vendorId] });
     },
   });
