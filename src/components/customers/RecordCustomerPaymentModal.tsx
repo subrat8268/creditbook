@@ -7,13 +7,13 @@ import BottomSheet, {
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-    ActivityIndicator,
     Alert,
     Text,
     TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
+import Button from "../ui/Button";
 
 type PaymentMode = "Cash" | "UPI" | "NEFT" | "Draft" | "Cheque";
 
@@ -158,32 +158,22 @@ export default function RecordCustomerPaymentModal({
 
         {/* Buttons */}
         <View className="flex-row gap-3">
-          <TouchableOpacity
-            className="flex-1 py-[15px] rounded-[14px] items-center justify-center border-[1.5px] border-primary bg-white"
+          <Button
+            variant="outline"
+            title="Record Partial"
             onPress={() => handleSubmit(false)}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#22C55E" />
-            ) : (
-              <Text className="text-[15px] font-bold text-primary">
-                Record Partial
-              </Text>
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="flex-1 py-[15px] rounded-[14px] items-center justify-center bg-primary"
+            loading={loading}
+            disabled={!amount || !mode || loading}
+            className="flex-1"
+          />
+          <Button
+            variant="primary"
+            title="Mark Full Paid"
             onPress={() => handleSubmit(true)}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text className="text-[15px] font-bold text-white">
-                Mark Full Paid
-              </Text>
-            )}
-          </TouchableOpacity>
+            loading={loading}
+            disabled={!mode || loading}
+            className="flex-1"
+          />
         </View>
       </BottomSheetView>
     </BottomSheet>

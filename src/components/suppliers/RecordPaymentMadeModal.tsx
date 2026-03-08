@@ -4,13 +4,13 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-    ActivityIndicator,
     Alert,
     Text,
     TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
+import Button from "../ui/Button";
 
 interface Props {
   visible: boolean;
@@ -133,7 +133,7 @@ export default function RecordPaymentMadeModal({
             <TouchableOpacity
               key={m}
               onPress={() => setMode(m)}
-              className={`px-3 py-2 rounded-lg border ${
+              className={`px-3 py-2 rounded-full border ${
                 mode === m ? "bg-primary border-primary" : "border-neutral-300"
               }`}
             >
@@ -157,29 +157,20 @@ export default function RecordPaymentMadeModal({
         />
 
         <View className="flex-row gap-3">
-          <TouchableOpacity
+          <Button
+            variant="outline"
+            title="Cancel"
             onPress={onClose}
-            className="flex-1 py-3 rounded-lg border border-neutral-300"
-          >
-            <Text className="text-center font-inter-medium text-neutral-700">
-              Cancel
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+            className="flex-1"
+          />
+          <Button
+            variant="primary"
+            title="Record Payment"
             onPress={handleSubmit}
+            loading={loading}
             disabled={loading || !isValid}
-            className={`flex-2 flex-grow py-3 rounded-lg ${
-              loading || !isValid ? "bg-neutral-300" : "bg-primary"
-            }`}
-          >
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="text-center font-inter-semibold text-white">
-                Record Payment
-              </Text>
-            )}
-          </TouchableOpacity>
+            className="flex-1"
+          />
         </View>
       </BottomSheetScrollView>
     </BottomSheet>

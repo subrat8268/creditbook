@@ -257,29 +257,35 @@ These do not crash the app but produce wrong UX patterns, design inconsistencies
 
 ---
 
-### M-01 — Three Modal Libraries in Production
+### M-01 — Three Modal Libraries in Production (Partially Resolved)
 
 **Files:** `RecordCustomerPaymentModal.tsx`, `RecordPaymentMadeModal.tsx`, `AppModal (Modal.tsx)`, `RecordDeliveryModal.tsx`  
 **Category:** Wrong UX pattern / architecture
 
-| Modal                                                     | Library                                |
-| --------------------------------------------------------- | -------------------------------------- |
-| `RecordCustomerPaymentModal`                              | `@gorhom/bottom-sheet`                 |
-| `RecordPaymentMadeModal`                                  | `@gorhom/bottom-sheet`                 |
-| `RecordDeliveryModal`                                     | `@gorhom/bottom-sheet` ✅ (fixed C-08) |
-| `NewProductModal`, `NewCustomerModal`, `NewSupplierModal` | `react-native-modal` via `AppModal`    |
-| `RecordDeliveryModal`                                     | RN built-in `Modal`                    |
+| Modal                                                     | Library                                   |
+| --------------------------------------------------------- | ----------------------------------------- |
+| `RecordCustomerPaymentModal`                              | `@gorhom/bottom-sheet` ✅                  |
+| `RecordPaymentMadeModal`                                  | `@gorhom/bottom-sheet` ✅                  |
+| `RecordDeliveryModal`                                     | `@gorhom/bottom-sheet` ✅ (fixed C-08)     |
+| `NewProductModal`, `NewCustomerModal`, `NewSupplierModal` | `react-native-modal` via `AppModal` ⚠️     |
 
-Each library has different animation, keyboard behavior, backdrop behavior, and closing gesture. Users experience three distinct modal interaction patterns in the same session.
+All transaction modals are now on `@gorhom/bottom-sheet`. The remaining `react-native-modal` usage is isolated to the `AppModal` wrapper used by entity-creation forms (Product/Customer/Supplier). Consolidating those is tracked as a lower-priority cleanup.
 
 ---
 
-### M-02 — Two Button Patterns: `Button.tsx` vs Raw `TouchableOpacity`
+### ✅ M-02 — Two Button Patterns: `Button.tsx` vs Raw `TouchableOpacity` — FIXED March 8, 2026
 
 **Files:** `RecordCustomerPaymentModal.tsx`, `RecordPaymentMadeModal.tsx`  
 **Category:** Wrong component / architecture
 
-Both payment modals bypass `Button.tsx` entirely and use raw `TouchableOpacity`. These buttons have no shared disabled state, no consistent loading spinner behavior, non-standard border width (`border-[1.5px]`), and arbitrary radius (`rounded-[14px]`). Any future change to button behavior must be applied in three places instead of one.
+**Fix applied:**
+
+- `ActivityIndicator` removed from both modals' react-native imports.
+- `import Button from "../ui/Button"` added to both.
+- `RecordCustomerPaymentModal`: two raw `TouchableOpacity` buttons replaced with `<Button variant="outline" title="Record Partial" ...>` and `<Button variant="primary" title="Mark Full Paid" ...>`; disabled state wired (`!amount || !mode || loading` for partial, `!mode || loading` for full).
+- `RecordPaymentMadeModal`: two raw `TouchableOpacity` buttons replaced with `<Button variant="outline" title="Cancel" ...>` and `<Button variant="primary" title="Record Payment" ...>`; disabled state uses pre-existing `isValid` flag.
+- `RecordPaymentMadeModal` payment mode chips: `rounded-lg` → `rounded-full` — now matches `RecordCustomerPaymentModal` pill shape.
+- Outline spinner is green (`#22C55E`) automatically from the C-07 fix.
 
 ---
 
@@ -348,12 +354,18 @@ Every other sub-folder under `(main)` — `customers/`, `orders/`, `products/`, 
 
 ---
 
-### M-10 — `useDashboardStore` is Dead Code
+### ✅ M-10 — Dead Code: `useDashboardStore`, `PdfPreviewModal`, `QuickAction` — FIXED March 8, 2026
 
-**File:** `src/store/dashboardStore.tsx`  
+**Files:** `src/store/dashboardStore.tsx`, `src/components/PdfPreviewModal.tsx`, `src/components/QuickAction.tsx`  
 **Category:** Dead code
 
-The Zustand store `useDashboardStore` is exported but never imported by any screen or hook. All dashboard state is managed by TanStack Query (`useDashboard`). The file is misleading — a developer adopting this codebase would assume Zustand manages dashboard state.
+**Fix applied:** All three files deleted. Confirmed zero external imports for each via `grep` before deletion. `npx tsc --noEmit` produced no new errors after deletion.
+
+| File | Was Used? | Action |
+|---|---|---|
+| `dashboardStore.tsx` | Never imported — all dashboard state via `useDashboard` TanStack hook | Deleted |
+| `PdfPreviewModal.tsx` | Never imported in any screen or component | Deleted |
+| `QuickAction.tsx` | Never imported; `quickActions` key is i18n string only | Deleted |
 
 ---
 
@@ -572,11 +584,11 @@ Supplier modal: `border-neutral-300` — Tailwind bare class (`#D4D4D4`) ≠ the
 | ~~7~~    | ~~C-07~~ ✅ | ~~Fix outline spinner color in `Button.tsx`~~ **DONE**                                   | Fixed March 8, 2026 — spinner `#000` → `#22C55E`; `rounded-md` → `rounded-xl`                                                   |
 | ~~8~~    | ~~C-08~~ ✅ | ~~Migrate `RecordDeliveryModal` to `@gorhom/bottom-sheet`~~ **DONE**                     | Fixed March 8, 2026 — `BottomSheet`+`BottomSheetScrollView`, `keyboardBehavior="interactive"`, `index={-1}`, `Button` at bottom |
 | ~~9~~    | ~~C-09~~ ✅ | ~~Fix `RecordPaymentMadeModal` over-pay validation + proactive button disable~~ **DONE** | Fixed March 8, 2026 — `showWarning`/`isValid` derived; inline warning; `disabled={loading \| !isValid}`                         |
-| 9        | M-01        | Consolidate to single modal library (`@gorhom/bottom-sheet`)                             | All modal components                                                                                                            |
-| 10       | M-02        | Replace raw `TouchableOpacity` buttons with `Button.tsx`                                 | Payment modals                                                                                                                  |
+| ~~9~~    | M-01 ⚠️    | Modal library consolidation (partially resolved — AppModal still react-native-modal) | `NewProductModal`, `NewCustomerModal`, `NewSupplierModal` via `AppModal`                                                        |
+| ~~10~~   | ~~M-02~~ ✅  | ~~Replace raw `TouchableOpacity` buttons with `Button.tsx`~~ **DONE**                    | Fixed March 8, 2026 — Both payment modals use `Button.tsx`; chips `rounded-full`; `ActivityIndicator` removed                  |
 | 11       | M-03        | Add active state to `FilterBar` chips                                                    | `src/components/orders/FilterBar.tsx`                                                                                           |
 | 12       | M-04        | Add Export to tab bar or make it a proper navigation destination                         | `app/(main)/_layout.tsx`                                                                                                        |
 | 13       | M-07        | Migrate `EmptyState` + `Toast` to NativeWind                                             | `src/components/feedback/`                                                                                                      |
 | ~~14~~   | ~~M-15~~ ✅ | ~~Add 3 missing DB indexes~~ **DONE**                                                    | Fixed March 8, 2026 — added to `schema.sql` + run via Supabase SQL Editor                                                       |
-| 15       | M-05–M-14   | Remaining architecture + data issues                                                     | Various                                                                                                                         |
+| 15       | ~~M-10~~ ✅ + M-05–M-09, M-11–M-14 | ~~Delete dead files~~ **DONE** + remaining architecture issues | Dead files deleted March 8, 2026; others still open |
 | 16       | N-01–N-15   | Visual polish pass                                                                       | Various                                                                                                                         |
