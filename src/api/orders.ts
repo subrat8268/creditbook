@@ -49,6 +49,7 @@ export interface Payment {
   amount: number;
   payment_date: string;
   payment_mode: PaymentMode;
+  created_at: string;
 }
 
 export const PAGE_SIZE = 10;
@@ -61,9 +62,15 @@ export async function fetchOrders(
   statusFilter?: string,
   sortBy?: "newest" | "oldest" | "high" | "low",
 ): Promise<Order[]> {
+  // Use !inner when searching so the join filters the result set;
+  // fall back to regular join (allows orders with no customer) when not searching.
+  const selectClause = search?.trim()
+    ? "*, customers!inner(id, name, phone)"
+    : "*, customers(id, name, phone)";
+
   let query = supabase
     .from("orders")
-    .select("*, customers(id, name, phone))")
+    .select(selectClause)
     .eq("vendor_id", vendorId);
 
   // Apply status filter if not "All"
@@ -71,11 +78,11 @@ export async function fetchOrders(
     query = query.eq("status", statusFilter);
   }
 
-  // Apply search filter (by order id, customer name or phone)
+  // Apply search filter — uses dot notation to reference joined customers columns
   if (search && search.trim() !== "") {
     const searchTerm = `%${search.trim()}%`;
     query = query.or(
-      `id.ilike.${searchTerm},customer_name.ilike.${searchTerm},customer_phone.ilike.${searchTerm}`,
+      `bill_number.ilike.${searchTerm},customers.name.ilike.${searchTerm},customers.phone.ilike.${searchTerm}`,
     );
   }
 

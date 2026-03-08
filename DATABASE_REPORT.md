@@ -189,11 +189,8 @@ payments_made               ← payments made by vendor to suppliers
 > ✅ **Issue #6 — FIXED (March 8, 2026)**  
 > JS recalculation removed from `fetchOrders()`. Now reads `Number(o.balance_due)` directly from the DB GENERATED column.
 
-> 🔴 **Issue #7 — Full-text search references non-existent columns**  
-> `fetchOrders` search filter uses:  
-> `.or("id.ilike.${searchTerm},customer_name.ilike.${searchTerm},customer_phone.ilike.${searchTerm}")`  
-> `customer_name` and `customer_phone` do NOT exist on the `orders` table.  
-> These are on the related `customers` table. **The search filter silently returns wrong results for any name/phone search.**
+> ✅ **Issue #7 — FIXED (March 8, 2026)**  
+> `fetchOrders()` search updated. `!inner` join on `customers` added to `selectClause` when a search term is present. `.or()` filter now uses dot notation: `bill_number.ilike.%s%,customers.name.ilike.%s%,customers.phone.ilike.%s%`. Searching by customer name or phone number now returns correct results.
 
 ---
 
@@ -241,14 +238,11 @@ No issues found.
 
 **Issues:**
 
-> 🔴 **Issue #8 — `reference` column selected but does NOT exist in schema**  
-> `fetchPaymentsForExport` selects: `payment_date, amount, payment_mode, reference`  
-> `reference` is not in the `payments` CREATE TABLE definition and not in any migration.  
-> This will cause a **Supabase query error** when the export feature is used.  
-> Fix: either add `reference TEXT` column to `payments`, or remove it from the select.
+> ✅ **Issue #8 — FIXED (March 8, 2026)**  
+> `reference` removed from `fetchPaymentsForExport()` select. `total_amount` added to the `orders` join for CSV completeness. `ExportPayment` interface updated: `reference` field removed.
 
-> ⚠️ **Issue #9 — `Payment` TypeScript interface is missing `created_at`**  
-> DB has `created_at`, `Payment` interface only has `id, vendor_id, order_id, amount, payment_date, payment_mode`.
+> ✅ **Issue #9 — FIXED (March 8, 2026)**  
+> `Payment` TypeScript interface in `src/api/orders.ts` updated: `created_at: string` field added.
 
 ---
 

@@ -25,7 +25,6 @@ export interface ExportPayment {
   customer_phone: string;
   amount: number;
   payment_mode: string;
-  reference: string;
 }
 
 export interface ExportCustomer {
@@ -119,8 +118,8 @@ export async function fetchPaymentsForExport(
   let query = supabase
     .from("payments")
     .select(
-      `payment_date, amount, payment_mode, reference,
-       orders ( bill_number, customers ( name, phone ) )`,
+      `payment_date, amount, payment_mode,
+       orders ( bill_number, total_amount, customers ( name, phone ) )`,
     )
     .eq("vendor_id", vendorId)
     .order("payment_date", { ascending: false });
@@ -145,7 +144,6 @@ export async function fetchPaymentsForExport(
       customer_phone: customer.phone ?? "",
       amount: Number(p.amount ?? 0),
       payment_mode: p.payment_mode ?? "",
-      reference: p.reference ?? "",
     };
   });
 }

@@ -34,33 +34,43 @@ Policies renamed to `"Vendors can manage own suppliers/deliveries/delivery items
 
 ---
 
-### C-02 — Order Search is Silently Broken
+### ✅ C-02 — Order Search — FIXED (March 8, 2026)
 
 **File:** `src/api/orders.ts` → `fetchOrders()`  
 **Category:** Incorrect calculation / broken feature
 
-Search filter references columns that do not exist on the `orders` table:
+Fixed with a join-aware query and Supabase dot-notation `.or()` filter:
 
 ```typescript
-.or(`id.ilike.${searchTerm},customer_name.ilike.${searchTerm},customer_phone.ilike.${searchTerm}`)
+// selectClause dynamically uses !inner when a search string is present
+const selectClause = search?.trim()
+  ? "*, customers!inner(id, name, phone)"
+  : "*, customers(id, name, phone)";
+
+// .or() now references the joined customers table using dot notation
+query = query.or(
+  `bill_number.ilike.${searchTerm},customers.name.ilike.${searchTerm},customers.phone.ilike.${searchTerm}`,
+);
 ```
 
-`customer_name` and `customer_phone` are not columns on `orders` — they are on the joined `customers` table. Supabase silently ignores unknown column filters, so searching by customer name or phone always returns zero results without any error shown to the user.
+`!inner` ensures only orders with a matching customer are returned. Searching by bill number, customer name, or phone now works correctly.
 
 ---
 
-### C-03 — Export Feature Crashes at Runtime
+### ✅ C-03 — Export Feature Crashes at Runtime — FIXED (March 8, 2026)
 
 **File:** `src/api/export.ts` → `fetchPaymentsForExport()`  
 **Category:** Breaking UI / runtime error
 
-The payments export selects a `reference` column:
+`reference` removed from the select — column does not exist in the `payments` schema. Select updated to include `total_amount` for completeness:
 
 ```typescript
-.select(`payment_date, amount, payment_mode, reference, orders(...)`)
+.select(`payment_date, amount, payment_mode,
+  orders ( bill_number, total_amount, customers ( name, phone ) )`)
 ```
 
-`reference` does not exist in the `payments` table schema or any migration. This causes a Supabase PostgREST error the moment the Export Payments button is tapped. The entire export screen fails for that export type.
+`ExportPayment` interface updated: `reference: string` field removed.  
+`Payment` interface in `orders.ts` updated: `created_at: string` field added (DB column was missing from the type).
 
 ---
 
@@ -474,8 +484,8 @@ Supplier modal: `border-neutral-300` — Tailwind bare class (`#D4D4D4`) ≠ the
 | -------- | ----------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
 | ~~1~~    | ~~C-01~~ ✅ | ~~Fix all 4 supplier RLS policies~~ **DONE**                                   | Fixed March 8, 2026 — Supabase SQL Editor + `schema.sql` updated                                                              |
 | ~~2~~    | ~~C-05~~ ✅ | ~~Align `dashboard_mode` DB constraint with TypeScript enum~~ **DONE**         | Fixed March 8, 2026 — types, role.tsx, DashboardScreen, SQL migration                                                         |
-| 3        | C-02        | Fix `fetchOrders` search to use a `customers` join                             | `src/api/orders.ts`                                                                                                           |
-| 4        | C-03        | Remove `reference` from export select or add column to `payments`              | `src/api/export.ts` / `schema.sql`                                                                                            |
+| ~~3~~    | ~~C-02~~ ✅ | ~~Fix `fetchOrders` search to use a `customers` join~~ **DONE**                | Fixed March 8, 2026 — `!inner` join + dot-notation `.or()` filter on `customers.name`/`customers.phone`                       |
+| ~~4~~    | ~~C-03~~ ✅ | ~~Remove `reference` from export select or add column to `payments`~~ **DONE** | Fixed March 8, 2026 — `reference` removed from select + `ExportPayment` interface; `Payment.created_at` added                 |
 | ~~5~~    | ~~C-04~~ ✅ | ~~Fix `fetchProducts` to join `product_variants`, align field names~~ **DONE** | Fixed March 8, 2026 — join added, `ProductVariant` interface aligned, `ProductCard`+`VariantPicker`+`NewProductModal` updated |
 | 6        | C-06        | Add `Overdue` + `Partially Paid` chip cases to `OrderList`                     | `src/components/orders/OrderList.tsx`                                                                                         |
 | 7        | C-07        | Fix outline spinner color in `Button.tsx`                                      | `src/components/ui/Button.tsx`                                                                                                |
