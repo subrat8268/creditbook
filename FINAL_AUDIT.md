@@ -410,6 +410,18 @@ Same content, same interaction, different shape. No design reason for the differ
 
 ---
 
+### ✅ P-20 — `OrderBillSummary` Grand Total Size, Previous Balance Color — FIXED March 8, 2026
+
+**File:** `src/components/orders/OrderBillSummary.tsx`  
+**Category:** Financial UI correctness
+
+- Grand Total `fontSize: 20` → `fontSize: 28` (spec 28px; unchanged color `#1C1C1E` already correct — debt created, not money received)
+- Previous Balance label + value: `text-amber-600` / `color: #d97706` → `style={{ color: "#E74C3C" }}` on both label and value text; spinner `#d97706` → `#E74C3C`
+- Formula verified clean: tax applied to `itemsTotal` only (`loadingCharge` excluded from GST base); `grandTotal = todayTotal + previousBalance` ✔️
+- Customer selector row: already subtitle-free (only avatar + name + pencil icon) — no change needed
+
+---
+
 ### ✅ M-12 — `balance_due` Recalculated in JS — FIXED (March 8, 2026)
 
 **File:** `src/api/orders.ts` → `fetchOrders()`  
@@ -609,7 +621,7 @@ Supplier modal: `border-neutral-300` — Tailwind bare class (`#D4D4D4`) ≠ the
 ## Recommended Fix Order
 
 | Priority | ID                                                                                                                                                                | What                                                                                                      | Where                                                                                                                                     |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | --- | ------ | ----------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | ~~1~~    | ~~C-01~~ ✅                                                                                                                                                       | ~~Fix all 4 supplier RLS policies~~ **DONE**                                                              | Fixed March 8, 2026 — Supabase SQL Editor + `schema.sql` updated                                                                          |
 | ~~2~~    | ~~C-05~~ ✅                                                                                                                                                       | ~~Align `dashboard_mode` DB constraint with TypeScript enum~~ **DONE**                                    | Fixed March 8, 2026 — types, role.tsx, DashboardScreen, SQL migration                                                                     |
 | ~~3~~    | ~~C-02~~ ✅                                                                                                                                                       | ~~Fix `fetchOrders` search to use a `customers` join~~ **DONE**                                           | Fixed March 8, 2026 — `!inner` join + dot-notation `.or()` filter on `customers.name`/`customers.phone`                                   |
@@ -628,4 +640,4 @@ Supplier modal: `border-neutral-300` — Tailwind bare class (`#D4D4D4`) ≠ the
 | 15       | ~~M-10~~ ✅ ~~M-09~~ ✅ ~~M-11~~ ✅ + M-05–M-08, M-12–M-14                                                                                                        | ~~Delete dead files~~ ~~Add reports/\_layout.tsx~~ ~~Fix AppModal animation~~ **DONE** + remaining issues | M-09, M-10 & M-11 fixed March 8, 2026; others still open                                                                                  |
 | 16       | ~~N-01~~ ✅ ~~N-02~~ ✅ ~~N-03~~ ✅ ~~N-04~~ ✅ ~~N-05~~ ✅ ~~N-06~~ ✅ ~~N-07~~ ✅ ~~N-08~~ ✅ ~~N-09~~ ✅ ~~N-10~~ ✅ ~~N-11~~ ✅ ~~N-13~~ ✅ + N-12, N-14–N-15 | Visual polish — 12 of 15 done                                                                             | N-04, N-06, N-09 fixed March 8, 2026; 3 still open                                                                                        |
 | ~~17~~   | ~~P-18~~ ✅                                                                                                                                                       | ~~DashboardHeader: initials avatar, greeting, overdue bell dot~~ **DONE**                                 | Fixed March 8, 2026 — `useAuthStore` direct read; `getInitials`; `getGreeting`; overdue red dot on bell                                   |
-| ~~18~~   | ~~P-19~~ ✅                                                                                                                                                       | ~~CustomerDetail: "Send Reminder" label, MODE_LABEL map, zero-balance green hero~~ **DONE**               | Fixed March 8, 2026 — `MODE_LABEL` normalises "online"→"UPI"; hero colors/label derived from `outstandingBalance === 0`                   |
+| ~~18~~   | ~~P-19~~ ✅                                                                                                                                                       | ~~CustomerDetail: "Send Reminder" label, MODE_LABEL map, zero-balance green hero~~ **DONE**               | Fixed March 8, 2026 — `MODE_LABEL` normalises "online"→"UPI"; hero colors/label derived from `outstandingBalance === 0`                   |     | ~~19~~ | ~~P-20~~ ✅ | ~~OrderBillSummary: Grand Total font size 28px, Previous Balance red~~ **DONE** | Fixed March 8, 2026 — `fontSize: 20→28`; Previous Balance `amber-600` → `#E74C3C`; formula verified clean |

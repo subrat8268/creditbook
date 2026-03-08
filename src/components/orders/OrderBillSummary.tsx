@@ -126,13 +126,19 @@ export default function OrderBillSummary({
 
         {/* Previous balance */}
         <View className="flex-row justify-between items-center">
-          <Text className="text-sm font-inter-medium text-amber-600">
+          <Text
+            className="text-sm font-inter-medium"
+            style={{ color: "#E74C3C" }}
+          >
             Previous Balance
           </Text>
           {isFetchingBalance ? (
-            <ActivityIndicator size="small" color="#d97706" />
+            <ActivityIndicator size="small" color="#E74C3C" />
           ) : (
-            <Text className="text-sm font-inter-semibold text-amber-600">
+            <Text
+              className="text-sm font-inter-semibold"
+              style={{ color: "#E74C3C" }}
+            >
               ₹{previousBalance.toLocaleString("en-IN")}
             </Text>
           )}
@@ -146,7 +152,7 @@ export default function OrderBillSummary({
           <Text style={{ fontSize: 15, fontWeight: "700", color: "#1C1C1E" }}>
             Grand Total
           </Text>
-          <Text style={{ fontSize: 20, fontWeight: "700", color: "#1C1C1E" }}>
+          <Text style={{ fontSize: 28, fontWeight: "700", color: "#1C1C1E" }}>
             ₹{grandTotal.toLocaleString("en-IN")}
           </Text>
         </View>
