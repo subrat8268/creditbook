@@ -8,7 +8,9 @@ import { useCallback, useMemo, useState } from "react";
 import {
     Alert,
     FlatList,
+    KeyboardAvoidingView,
     Linking,
+    Platform,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -307,147 +309,152 @@ export default function CreateOrderScreen() {
 
   return (
     <ScreenWrapper>
-      {/* Customer */}
-      <TouchableOpacity
-        style={styles.customerRow}
-        onPress={() => setCustomerPickerVisible(true)}
-        activeOpacity={0.75}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        {/* Avatar */}
-        {selectedCustomer ? (
-          <View
-            style={[
-              styles.avatar,
-              { backgroundColor: getAvatarColor(selectedCustomer.name) },
-            ]}
-          >
-            <Text style={styles.avatarText}>
-              {getInitials(selectedCustomer.name)}
-            </Text>
-          </View>
-        ) : (
-          <View style={[styles.avatar, { backgroundColor: "#E5E7EB" }]}>
-            <Text style={[styles.avatarText, { color: "#9CA3AF" }]}>?</Text>
-          </View>
-        )}
-
-        {/* Name */}
-        <Text style={styles.customerName} numberOfLines={1}>
-          {selectedCustomer ? selectedCustomer.name : "Select Customer"}
-        </Text>
-
-        {/* Edit icon */}
-        <Pencil size={16} color="#9CA3AF" strokeWidth={2} />
-      </TouchableOpacity>
-
-      {/* Payment reminder button — shown only when previous balance > 0 */}
-      {selectedCustomer && previousBalance > 0 && !isFetchingBalance && (
+        {/* Customer */}
         <TouchableOpacity
-          className="flex-row items-center gap-2 px-4 py-2.5 mb-3 bg-amber-50 border border-amber-300 rounded-xl"
-          onPress={handleSendReminder}
+          style={styles.customerRow}
+          onPress={() => setCustomerPickerVisible(true)}
+          activeOpacity={0.75}
         >
-          <Text className="text-amber-700 font-inter-medium text-sm flex-1">
-            🔔 Send payment reminder to {selectedCustomer.name}
+          {/* Avatar */}
+          {selectedCustomer ? (
+            <View
+              style={[
+                styles.avatar,
+                { backgroundColor: getAvatarColor(selectedCustomer.name) },
+              ]}
+            >
+              <Text style={styles.avatarText}>
+                {getInitials(selectedCustomer.name)}
+              </Text>
+            </View>
+          ) : (
+            <View style={[styles.avatar, { backgroundColor: "#E5E7EB" }]}>
+              <Text style={[styles.avatarText, { color: "#9CA3AF" }]}>?</Text>
+            </View>
+          )}
+
+          {/* Name */}
+          <Text style={styles.customerName} numberOfLines={1}>
+            {selectedCustomer ? selectedCustomer.name : "Select Customer"}
           </Text>
-          <Text className="text-amber-700 text-xs font-inter-semibold">
-            ₹{previousBalance.toLocaleString("en-IN")} due
-          </Text>
+
+          {/* Edit icon */}
+          <Pencil size={16} color="#9CA3AF" strokeWidth={2} />
         </TouchableOpacity>
-      )}
 
-      {/* Product */}
-      <TouchableOpacity
-        className="p-4 border rounded-xl mb-4 bg-white"
-        onPress={() => setProductPickerVisible(true)}
-      >
-        <Text className="font-inter-medium text-gray-700">Add Products</Text>
-      </TouchableOpacity>
-
-      {/* Cart */}
-      <FlatList
-        data={cart}
-        keyExtractor={(item) => item.key}
-        renderItem={({ item }) => (
-          <OrderItemCard
-            id={item.id}
-            name={item.name}
-            variantName={item.variantName}
-            price={item.price}
-            quantity={item.quantity}
-            onRemove={() => handleRemoveProduct(item.key)}
-            onUpdateQuantity={(qty) => handleUpdateQuantity(item.key, qty)}
-          />
+        {/* Payment reminder button — shown only when previous balance > 0 */}
+        {selectedCustomer && previousBalance > 0 && !isFetchingBalance && (
+          <TouchableOpacity
+            className="flex-row items-center gap-2 px-4 py-2.5 mb-3 bg-amber-50 border border-amber-300 rounded-xl"
+            onPress={handleSendReminder}
+          >
+            <Text className="text-amber-700 font-inter-medium text-sm flex-1">
+              🔔 Send payment reminder to {selectedCustomer.name}
+            </Text>
+            <Text className="text-amber-700 text-xs font-inter-semibold">
+              ₹{previousBalance.toLocaleString("en-IN")} due
+            </Text>
+          </TouchableOpacity>
         )}
-        ListEmptyComponent={
-          <Text className="text-center text-gray-400 mt-4">
-            No products added yet
-          </Text>
-        }
-        contentContainerStyle={{ paddingBottom: 280 }}
-      />
 
-      {/* Summary */}
-      <OrderSummary
-        itemsTotal={itemsTotal}
-        loadingCharge={loadingCharge}
-        taxPercent={taxPercent}
-        taxAmount={taxAmount}
-        previousBalance={previousBalance}
-        grandTotal={grandTotal}
-        onSave={handleSaveOrder}
-        onSendBill={handleSendBill}
-        onLoadingChargeChange={setLoadingCharge}
-        onTaxChange={setTaxPercent}
-        isFetchingBalance={isFetchingBalance}
-      />
+        {/* Product */}
+        <TouchableOpacity
+          className="p-4 border rounded-xl mb-4 bg-white"
+          onPress={() => setProductPickerVisible(true)}
+        >
+          <Text className="font-inter-medium text-gray-700">Add Products</Text>
+        </TouchableOpacity>
 
-      {/* Customer Picker */}
-      <CustomerPicker
-        visible={isCustomerPickerVisible}
-        onClose={() => setCustomerPickerVisible(false)}
-        selectedCustomer={selectedCustomer}
-        setSelectedCustomer={handleSelectCustomer}
-        vendorId={vendorId!}
-      />
+        {/* Cart */}
+        <FlatList
+          data={cart}
+          keyExtractor={(item) => item.key}
+          renderItem={({ item }) => (
+            <OrderItemCard
+              id={item.id}
+              name={item.name}
+              variantName={item.variantName}
+              price={item.price}
+              quantity={item.quantity}
+              onRemove={() => handleRemoveProduct(item.key)}
+              onUpdateQuantity={(qty) => handleUpdateQuantity(item.key, qty)}
+            />
+          )}
+          ListEmptyComponent={
+            <Text className="text-center text-gray-400 mt-4">
+              No products added yet
+            </Text>
+          }
+          contentContainerStyle={{ paddingBottom: 280 }}
+        />
 
-      {/* Product Picker */}
-      <ProductPicker
-        visible={isProductPickerVisible}
-        onClose={() => setProductPickerVisible(false)}
-        vendorId={vendorId!}
-        addToCart={addToCart}
-        setVariantSelection={(product: any) => {
-          setSelectedProduct(product);
-          setProductPickerVisible(false); // close product picker
-          // open variant picker after small delay
-          setTimeout(() => setVariantPickerVisible(true), 300);
-        }}
-      />
+        {/* Summary */}
+        <OrderSummary
+          itemsTotal={itemsTotal}
+          loadingCharge={loadingCharge}
+          taxPercent={taxPercent}
+          taxAmount={taxAmount}
+          previousBalance={previousBalance}
+          grandTotal={grandTotal}
+          onSave={handleSaveOrder}
+          onSendBill={handleSendBill}
+          onLoadingChargeChange={setLoadingCharge}
+          onTaxChange={setTaxPercent}
+          isFetchingBalance={isFetchingBalance}
+        />
 
-      {/* Variant Picker */}
-      {selectedProduct && (
-        <VariantPicker
-          visible={isVariantPickerVisible}
-          product={selectedProduct}
-          onSelect={(variantId, variantName, price) => {
-            addToCart(
-              selectedProduct.id,
-              selectedProduct.name,
-              price,
-              variantId ?? undefined,
-              variantName,
-            );
-            setTimeout(() => {
-              setVariantPickerVisible(false);
-              setSelectedProduct(null);
-            }, 50);
-          }}
-          onClose={() => {
-            setVariantPickerVisible(false);
-            setSelectedProduct(null);
+        {/* Customer Picker */}
+        <CustomerPicker
+          visible={isCustomerPickerVisible}
+          onClose={() => setCustomerPickerVisible(false)}
+          selectedCustomer={selectedCustomer}
+          setSelectedCustomer={handleSelectCustomer}
+          vendorId={vendorId!}
+        />
+
+        {/* Product Picker */}
+        <ProductPicker
+          visible={isProductPickerVisible}
+          onClose={() => setProductPickerVisible(false)}
+          vendorId={vendorId!}
+          addToCart={addToCart}
+          setVariantSelection={(product: any) => {
+            setSelectedProduct(product);
+            setProductPickerVisible(false); // close product picker
+            // open variant picker after small delay
+            setTimeout(() => setVariantPickerVisible(true), 300);
           }}
         />
-      )}
+
+        {/* Variant Picker */}
+        {selectedProduct && (
+          <VariantPicker
+            visible={isVariantPickerVisible}
+            product={selectedProduct}
+            onSelect={(variantId, variantName, price) => {
+              addToCart(
+                selectedProduct.id,
+                selectedProduct.name,
+                price,
+                variantId ?? undefined,
+                variantName,
+              );
+              setTimeout(() => {
+                setVariantPickerVisible(false);
+                setSelectedProduct(null);
+              }, 50);
+            }}
+            onClose={() => {
+              setVariantPickerVisible(false);
+              setSelectedProduct(null);
+            }}
+          />
+        )}
+      </KeyboardAvoidingView>
     </ScreenWrapper>
   );
 }
