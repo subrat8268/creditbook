@@ -140,20 +140,41 @@ All four layers aligned to the DB CHECK constraint `('seller', 'distributor', 'b
 
 ---
 
-### C-06 — Order Status Chip Has No Case for `"Overdue"` or `"Partially Paid"`
+### ✅ C-06 — Order Status Chip Has No Case for `"Overdue"` or `"Partially Paid"` — FIXED March 8, 2026
 
 **File:** `src/components/orders/OrderList.tsx`  
 **Category:** Breaking UI / wrong data displayed
 
-The status chip logic is a two-branch conditional:
+**Fix applied:**
+
+- Replaced 2-branch `className` conditional with a `STATUS_STYLES` lookup map covering all 4 states.
+- `"Overdue"` is UI-derived: `status === "Pending" && daysSince(created_at) > 30`.
+- `daysSince()` helper added to `src/utils/helper.ts`.
+- Chip renders via inline `style` props (not Tailwind classes) for precise color control.
 
 ```typescript
-item.status === "Paid"
-  ? "bg-green-100 text-green-800"
-  : "bg-yellow-100 text-yellow-800";
+// src/utils/helper.ts
+export const daysSince = (date: string): number =>
+  Math.floor((Date.now() - new Date(date).getTime()) / 86_400_000);
+
+// src/components/orders/OrderList.tsx
+const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+  Paid:             { bg: "#DCFCE7", text: "#16A34A", label: "PAID" },
+  "Partially Paid": { bg: "#EFF6FF", text: "#1D4ED8", label: "PARTIAL" },
+  Pending:          { bg: "#FEF3C7", text: "#D97706", label: "PENDING" },
+  Overdue:          { bg: "#FEE2E2", text: "#DC2626", label: "OVERDUE" },
+};
+const isOverdue = item.status === "Pending" && daysSince(item.created_at) > 30;
+const statusKey = isOverdue ? "Overdue" : item.status;
+const chipStyle = STATUS_STYLES[statusKey] ?? STATUS_STYLES["Pending"];
 ```
 
-`"Overdue"` and `"Partially Paid"` both silently fall into the yellow `"Pending"` branch. An overdue bill looks identical to a pending bill. A partially-paid bill cannot be distinguished from an unpaid one. These are financially significant distinctions in a credit-book app.
+| Status | Before | After |
+|---|---|---|
+| Paid | green | ✅ green |
+| Partially Paid | yellow (wrong) | ✅ blue PARTIAL |
+| Pending (fresh) | yellow | ✅ yellow |
+| Pending >30 days | yellow (wrong) | ✅ red OVERDUE |
 
 ---
 
@@ -495,7 +516,7 @@ Supplier modal: `border-neutral-300` — Tailwind bare class (`#D4D4D4`) ≠ the
 | ~~3~~    | ~~C-02~~ ✅ | ~~Fix `fetchOrders` search to use a `customers` join~~ **DONE**                | Fixed March 8, 2026 — `!inner` join + dot-notation `.or()` filter on `customers.name`/`customers.phone`                       |
 | ~~4~~    | ~~C-03~~ ✅ | ~~Remove `reference` from export select or add column to `payments`~~ **DONE** | Fixed March 8, 2026 — `reference` removed from select + `ExportPayment` interface; `Payment.created_at` added                 |
 | ~~5~~    | ~~C-04~~ ✅ | ~~Fix `fetchProducts` to join `product_variants`, align field names~~ **DONE** | Fixed March 8, 2026 — join added, `ProductVariant` interface aligned, `ProductCard`+`VariantPicker`+`NewProductModal` updated |
-| 6        | C-06        | Add `Overdue` + `Partially Paid` chip cases to `OrderList`                     | `src/components/orders/OrderList.tsx`                                                                                         |
+| ~~6~~    | ~~C-06~~ ✅ | ~~Add `Overdue` + `Partially Paid` chip cases to `OrderList`~~ **DONE**        | Fixed March 8, 2026 — `STATUS_STYLES` map; `Overdue` derived from Pending >30 days; `daysSince()` added to `helper.ts`        |
 | 7        | C-07        | Fix outline spinner color in `Button.tsx`                                      | `src/components/ui/Button.tsx`                                                                                                |
 | 8        | C-08        | Migrate `RecordDeliveryModal` to `@gorhom/bottom-sheet`                        | `src/components/suppliers/RecordDeliveryModal.tsx`                                                                            |
 | 9        | M-01        | Consolidate to single modal library (`@gorhom/bottom-sheet`)                   | All modal components                                                                                                          |

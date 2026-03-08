@@ -1,8 +1,16 @@
 import { Order } from "@/src/api/orders";
 import { useOrderStore } from "@/src/store/orderStore";
+import { daysSince } from "@/src/utils/helper";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import EmptyState from "../feedback/EmptyState";
 import Loader from "../feedback/Loader";
+
+const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+  Paid:              { bg: "#DCFCE7", text: "#16A34A", label: "PAID" },
+  "Partially Paid":  { bg: "#EFF6FF", text: "#1D4ED8", label: "PARTIAL" },
+  Pending:           { bg: "#FEF3C7", text: "#D97706", label: "PENDING" },
+  Overdue:           { bg: "#FEE2E2", text: "#DC2626", label: "OVERDUE" },
+};
 
 interface Props {
   orders: Order[];
@@ -52,6 +60,10 @@ export default function OrderList({
       onEndReached={onEndReached}
       renderItem={({ item }) => {
         const isUpdating = updatingOrderIds.includes(item.id);
+        const isOverdue =
+          item.status === "Pending" && daysSince(item.created_at) > 30;
+        const statusKey = isOverdue ? "Overdue" : item.status;
+        const chipStyle = STATUS_STYLES[statusKey] ?? STATUS_STYLES["Pending"];
         return (
           <TouchableOpacity
             onPress={() => onPressOrder(item.id)}
@@ -65,17 +77,26 @@ export default function OrderList({
                 {new Date(item.created_at).toDateString()}
               </Text>
             </View>
-            <View>
+            <View className="items-end">
               {isUpdating && <Loader />}
-              <Text
-                className={`px-3 py-1.5 rounded-full text-xs font-inter ${
-                  item.status === "Paid"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-yellow-100 text-yellow-800"
-                }`}
+              <View
+                style={{
+                  backgroundColor: chipStyle.bg,
+                  borderRadius: 999,
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                }}
               >
-                {item.status}
-              </Text>
+                <Text
+                  style={{
+                    color: chipStyle.text,
+                    fontSize: 11,
+                    fontWeight: "600",
+                  }}
+                >
+                  {chipStyle.label}
+                </Text>
+              </View>
             </View>
           </TouchableOpacity>
         );

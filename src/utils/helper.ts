@@ -20,3 +20,7 @@ export function formatDate(dateStr: string | Date): string {
     year: "numeric", // 2025
   }).format(date);
 }
+
+/** Returns the number of whole days elapsed since the given ISO date string. */
+export const daysSince = (date: string): number =>
+  Math.floor((Date.now() - new Date(date).getTime()) / 86_400_000);
