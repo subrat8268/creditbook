@@ -1,4 +1,5 @@
 import { Image, Text, TouchableOpacity, View } from "react-native";
+import { colors } from "../../utils/theme";
 
 type CustomerStatus = "Overdue" | "Pending" | "Paid" | "Advance";
 
@@ -14,15 +15,15 @@ type Props = {
 // --- Helpers ---
 
 const AVATAR_COLORS = [
-  "#EF4444",
-  "#F97316",
-  "#EAB308",
-  "#22C55E",
-  "#14B8A6",
-  "#3B82F6",
-  "#8B5CF6",
-  "#EC4899",
-];
+  colors.danger.DEFAULT, // #E74C3C  red
+  colors.warning.DEFAULT, // #F39C12  amber/orange
+  colors.primary.DEFAULT, // #22C55E  green
+  colors.info.DEFAULT, // #4F9CFF  blue
+  "#9B59B6", // purple — nearest semantic fit
+  "#E91E8C", // pink    — nearest semantic fit
+  "#00BCD4", // teal    — nearest semantic fit
+  "#FF5722", // deep orange — nearest semantic fit
+] as const;
 
 function getAvatarColor(name: string): string {
   let hash = 0;
@@ -57,10 +58,26 @@ const STATUS_STYLES: Record<
   CustomerStatus,
   { text: string; border: string; bg: string }
 > = {
-  Overdue: { text: "#E74C3C", border: "#E74C3C", bg: "#FFF0EE" },
-  Pending: { text: "#F39C12", border: "#F39C12", bg: "#FFF8EE" },
-  Paid: { text: "#2ECC71", border: "#2ECC71", bg: "#EDFAF4" },
-  Advance: { text: "#0369A1", border: "#4F9CFF", bg: "#EAF0FB" },
+  Overdue: {
+    text: colors.danger.DEFAULT,
+    border: colors.danger.DEFAULT,
+    bg: colors.danger.light,
+  },
+  Pending: {
+    text: colors.warning.DEFAULT,
+    border: colors.warning.DEFAULT,
+    bg: colors.warning.light,
+  },
+  Paid: {
+    text: colors.success.text,
+    border: colors.primary.light,
+    bg: colors.success.light,
+  },
+  Advance: {
+    text: colors.info.text,
+    border: colors.info.DEFAULT,
+    bg: colors.info.light,
+  },
 };
 
 const AMOUNT_COLOR: Record<CustomerStatus, string> = {
@@ -89,7 +106,7 @@ export default function CustomerCard({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      className="flex-row items-center bg-white px-5 py-[15px] border-b border-[#F0F0F5]"
+      className="flex-row items-center bg-white px-5 py-[15px] border-b border-light"
     >
       {/* Avatar */}
       {avatar ? (
@@ -114,12 +131,15 @@ export default function CustomerCard({
       {/* Name + Phone */}
       <View className="flex-1 mr-[10px]">
         <Text
-          className="text-[15px] font-semibold text-[#1C1C1E] mb-[3px]"
+          className="text-[15px] font-semibold mb-[3px]"
+          style={{ color: colors.neutral[900] }}
           numberOfLines={1}
         >
           {name}
         </Text>
-        <Text className="text-[13px] text-[#8E8E93]">{phone}</Text>
+        <Text className="text-[13px]" style={{ color: colors.neutral[500] }}>
+          {phone}
+        </Text>
       </View>
 
       {/* Amount + Badge */}

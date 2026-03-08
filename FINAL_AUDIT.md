@@ -447,27 +447,27 @@ These are visible inconsistencies that degrade the perceived quality of the UI b
 
 ---
 
-### N-01 — 6 of 8 Avatar Colors Not in Design System
+### ✅ N-01 — 6 of 8 Avatar Colors Not in Design System — FIXED March 8, 2026
 
 **File:** `src/components/customers/CustomerCard.tsx`
 
-Purple (`#8B5CF6`), pink (`#EC4899`), teal (`#14B8A6`), orange (`#F97316`), yellow (`#EAB308`), and blue (`#3B82F6`) are all outside `theme.ts`. Should use colors from the `primary`, `danger`, `warning`, `info`, and `success` palette with `+22` transparency.
+`AVATAR_COLORS` replaced with theme-token values: `colors.danger.DEFAULT`, `colors.warning.DEFAULT`, `colors.primary.DEFAULT`, `colors.info.DEFAULT`, plus 4 semantic near-fits (`#9B59B6` purple, `#E91E8C` pink, `#00BCD4` teal, `#FF5722` deep orange). Algorithm unchanged.
 
 ---
 
-### N-02 — `CustomerCard` Status Badge Background Colors Are Off-System
+### ✅ N-02 — `CustomerCard` Status Badge Background Colors Are Off-System — FIXED March 8, 2026
 
 **File:** `src/components/customers/CustomerCard.tsx`
 
-`Overdue` bg `#FFF0EE` ≠ `danger.light` (`#FEE2E2`). `Pending` bg `#FFF8EE` ≠ `warning.light` (`#FEF3C7`). `Paid` bg `#EDFAF4` ≠ `success.light` (`#DCFCE7`). All chip colors are raw hex not referencing `theme.ts`.
+`STATUS_STYLES` rewritten with `colors.danger.light` / `colors.warning.light` / `colors.success.light` / `colors.info.light` for bg; `colors.danger.DEFAULT` / `colors.warning.DEFAULT` / `colors.success.text` / `colors.info.text` for text. `colors` imported from `../../utils/theme`.
 
 ---
 
-### N-03 — `Paid` Badge Text Uses Wrong Contrast Token
+### ✅ N-03 — `Paid` Badge Text Uses Wrong Contrast Token — FIXED March 8, 2026
 
 **File:** `src/components/customers/CustomerCard.tsx`
 
-`Paid` badge text color is `#2ECC71` (`success.DEFAULT` — a medium green) rendered on a light green background. Should use `success.text` (`#166534`, dark green) for accessibility contrast. Design system chip text tokens exist precisely for this.
+`Paid` badge text: `"#2ECC71"` (success.DEFAULT, medium green on light green — poor contrast) → `colors.success.text` (`#166534`, dark green). Fixed as part of the `STATUS_STYLES` rewrite in P14.
 
 ---
 
@@ -519,19 +519,19 @@ Error background `#EF4444` ≠ `danger.DEFAULT` (`#E74C3C`). These are two visua
 
 ---
 
-### N-10 — `FilterBar` Uses `gray-*` Classes Throughout
+### ✅ N-10 — `FilterBar` Uses `gray-*` Classes Throughout — FIXED March 8, 2026 (P12)
 
 **File:** `src/components/orders/FilterBar.tsx`
 
-`bg-gray-50`, `border-gray-300`, `text-gray-700`, `text-gray-500` — the entire component uses Tailwind's built-in gray scale instead of the `neutral` theme tokens. Icon colors are hardcoded `#4B5563` and `#6B7280`.
+All `gray-*` classes replaced with theme aliases (`bg-search`, `border-default`, `text-textPrimary`). Icon colors: `"#4B5563"` → `colors.neutral[600]`; `"#6B7280"` → `colors.neutral[500]`. Fixed as part of P12 FilterBar active-state rewrite.
 
 ---
 
-### N-11 — `CustomerCard` Body Text All Raw Hex
+### ✅ N-11 — `CustomerCard` Body Text All Raw Hex — FIXED March 8, 2026
 
 **File:** `src/components/customers/CustomerCard.tsx`
 
-`text-[#1C1C1E]` (name), `text-[#8E8E93]` (phone), `border-[#F0F0F5]` (row divider — a non-existent color, closest is `neutral.200` = `#E5E5EA`). None reference Tailwind aliases or `theme.ts`.
+`text-[#1C1C1E]` → `style={{ color: colors.neutral[900] }}`. `text-[#8E8E93]` → `style={{ color: colors.neutral[500] }}`. `border-[#F0F0F5]` → `border-light` (neutral[200]). Fixed as part of P14.
 
 ---
 
@@ -581,22 +581,22 @@ Supplier modal: `border-neutral-300` — Tailwind bare class (`#D4D4D4`) ≠ the
 
 ## Recommended Fix Order
 
-| Priority | ID                                             | What                                                                                     | Where                                                                                                                                     |
-| -------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| ~~1~~    | ~~C-01~~ ✅                                    | ~~Fix all 4 supplier RLS policies~~ **DONE**                                             | Fixed March 8, 2026 — Supabase SQL Editor + `schema.sql` updated                                                                          |
-| ~~2~~    | ~~C-05~~ ✅                                    | ~~Align `dashboard_mode` DB constraint with TypeScript enum~~ **DONE**                   | Fixed March 8, 2026 — types, role.tsx, DashboardScreen, SQL migration                                                                     |
-| ~~3~~    | ~~C-02~~ ✅                                    | ~~Fix `fetchOrders` search to use a `customers` join~~ **DONE**                          | Fixed March 8, 2026 — `!inner` join + dot-notation `.or()` filter on `customers.name`/`customers.phone`                                   |
-| ~~4~~    | ~~C-03~~ ✅                                    | ~~Remove `reference` from export select or add column to `payments`~~ **DONE**           | Fixed March 8, 2026 — `reference` removed from select + `ExportPayment` interface; `Payment.created_at` added                             |
-| ~~5~~    | ~~C-04~~ ✅                                    | ~~Fix `fetchProducts` to join `product_variants`, align field names~~ **DONE**           | Fixed March 8, 2026 — join added, `ProductVariant` interface aligned, `ProductCard`+`VariantPicker`+`NewProductModal` updated             |
-| ~~6~~    | ~~C-06~~ ✅                                    | ~~Add `Overdue` + `Partially Paid` chip cases to `OrderList`~~ **DONE**                  | Fixed March 8, 2026 — `STATUS_STYLES` map; `Overdue` derived from Pending >30 days; `daysSince()` added to `helper.ts`                    |
-| ~~7~~    | ~~C-07~~ ✅                                    | ~~Fix outline spinner color in `Button.tsx`~~ **DONE**                                   | Fixed March 8, 2026 — spinner `#000` → `#22C55E`; `rounded-md` → `rounded-xl`                                                             |
-| ~~8~~    | ~~C-08~~ ✅                                    | ~~Migrate `RecordDeliveryModal` to `@gorhom/bottom-sheet`~~ **DONE**                     | Fixed March 8, 2026 — `BottomSheet`+`BottomSheetScrollView`, `keyboardBehavior="interactive"`, `index={-1}`, `Button` at bottom           |
-| ~~9~~    | ~~C-09~~ ✅                                    | ~~Fix `RecordPaymentMadeModal` over-pay validation + proactive button disable~~ **DONE** | Fixed March 8, 2026 — `showWarning`/`isValid` derived; inline warning; `disabled={loading \| !isValid}`                                   |
-| ~~9~~    | M-01 ⚠️                                        | Modal library consolidation (partially resolved — AppModal still react-native-modal)     | `NewProductModal`, `NewCustomerModal`, `NewSupplierModal` via `AppModal`                                                                  |
-| ~~10~~   | ~~M-02~~ ✅                                    | ~~Replace raw `TouchableOpacity` buttons with `Button.tsx`~~ **DONE**                    | Fixed March 8, 2026 — Both payment modals use `Button.tsx`; chips `rounded-full`; `ActivityIndicator` removed                             |
-| ~~11~~   | ~~M-03~~ ✅                                    | ~~Add active state to `FilterBar` chips~~ **DONE**                                       | Fixed March 8, 2026 — chip row was missing entirely; added `ScrollView` chips with `getChipStyle`/`getTextStyle`; `gray-*` → theme tokens |
-| 12       | M-04                                           | Add Export to tab bar or make it a proper navigation destination                         | `app/(main)/_layout.tsx`                                                                                                                  |
-| 13       | M-07                                           | Migrate `EmptyState` + `Toast` to NativeWind                                             | `src/components/feedback/`                                                                                                                |
-| ~~14~~   | ~~M-15~~ ✅                                    | ~~Add 3 missing DB indexes~~ **DONE**                                                    | Fixed March 8, 2026 — added to `schema.sql` + run via Supabase SQL Editor                                                                 |
-| 15       | ~~M-10~~ ✅ ~~M-09~~ ✅ + M-05–M-08, M-11–M-14 | ~~Delete dead files~~ ~~Add reports/\_layout.tsx~~ **DONE** + remaining issues           | M-09 & M-10 fixed March 8, 2026; others still open                                                                                        |
-| 16       | N-01–N-15                                      | Visual polish pass                                                                       | Various                                                                                                                                   |
+| Priority | ID                                                                                 | What                                                                                     | Where                                                                                                                                     |
+| -------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| ~~1~~    | ~~C-01~~ ✅                                                                        | ~~Fix all 4 supplier RLS policies~~ **DONE**                                             | Fixed March 8, 2026 — Supabase SQL Editor + `schema.sql` updated                                                                          |
+| ~~2~~    | ~~C-05~~ ✅                                                                        | ~~Align `dashboard_mode` DB constraint with TypeScript enum~~ **DONE**                   | Fixed March 8, 2026 — types, role.tsx, DashboardScreen, SQL migration                                                                     |
+| ~~3~~    | ~~C-02~~ ✅                                                                        | ~~Fix `fetchOrders` search to use a `customers` join~~ **DONE**                          | Fixed March 8, 2026 — `!inner` join + dot-notation `.or()` filter on `customers.name`/`customers.phone`                                   |
+| ~~4~~    | ~~C-03~~ ✅                                                                        | ~~Remove `reference` from export select or add column to `payments`~~ **DONE**           | Fixed March 8, 2026 — `reference` removed from select + `ExportPayment` interface; `Payment.created_at` added                             |
+| ~~5~~    | ~~C-04~~ ✅                                                                        | ~~Fix `fetchProducts` to join `product_variants`, align field names~~ **DONE**           | Fixed March 8, 2026 — join added, `ProductVariant` interface aligned, `ProductCard`+`VariantPicker`+`NewProductModal` updated             |
+| ~~6~~    | ~~C-06~~ ✅                                                                        | ~~Add `Overdue` + `Partially Paid` chip cases to `OrderList`~~ **DONE**                  | Fixed March 8, 2026 — `STATUS_STYLES` map; `Overdue` derived from Pending >30 days; `daysSince()` added to `helper.ts`                    |
+| ~~7~~    | ~~C-07~~ ✅                                                                        | ~~Fix outline spinner color in `Button.tsx`~~ **DONE**                                   | Fixed March 8, 2026 — spinner `#000` → `#22C55E`; `rounded-md` → `rounded-xl`                                                             |
+| ~~8~~    | ~~C-08~~ ✅                                                                        | ~~Migrate `RecordDeliveryModal` to `@gorhom/bottom-sheet`~~ **DONE**                     | Fixed March 8, 2026 — `BottomSheet`+`BottomSheetScrollView`, `keyboardBehavior="interactive"`, `index={-1}`, `Button` at bottom           |
+| ~~9~~    | ~~C-09~~ ✅                                                                        | ~~Fix `RecordPaymentMadeModal` over-pay validation + proactive button disable~~ **DONE** | Fixed March 8, 2026 — `showWarning`/`isValid` derived; inline warning; `disabled={loading \| !isValid}`                                   |
+| ~~9~~    | M-01 ⚠️                                                                            | Modal library consolidation (partially resolved — AppModal still react-native-modal)     | `NewProductModal`, `NewCustomerModal`, `NewSupplierModal` via `AppModal`                                                                  |
+| ~~10~~   | ~~M-02~~ ✅                                                                        | ~~Replace raw `TouchableOpacity` buttons with `Button.tsx`~~ **DONE**                    | Fixed March 8, 2026 — Both payment modals use `Button.tsx`; chips `rounded-full`; `ActivityIndicator` removed                             |
+| ~~11~~   | ~~M-03~~ ✅                                                                        | ~~Add active state to `FilterBar` chips~~ **DONE**                                       | Fixed March 8, 2026 — chip row was missing entirely; added `ScrollView` chips with `getChipStyle`/`getTextStyle`; `gray-*` → theme tokens |
+| 12       | M-04                                                                               | Add Export to tab bar or make it a proper navigation destination                         | `app/(main)/_layout.tsx`                                                                                                                  |
+| 13       | M-07                                                                               | Migrate `EmptyState` + `Toast` to NativeWind                                             | `src/components/feedback/`                                                                                                                |
+| ~~14~~   | ~~M-15~~ ✅                                                                        | ~~Add 3 missing DB indexes~~ **DONE**                                                    | Fixed March 8, 2026 — added to `schema.sql` + run via Supabase SQL Editor                                                                 |
+| 15       | ~~M-10~~ ✅ ~~M-09~~ ✅ + M-05–M-08, M-11–M-14                                     | ~~Delete dead files~~ ~~Add reports/\_layout.tsx~~ **DONE** + remaining issues           | M-09 & M-10 fixed March 8, 2026; others still open                                                                                        |
+| 16       | ~~N-01~~ ✅ ~~N-02~~ ✅ ~~N-03~~ ✅ ~~N-10~~ ✅ ~~N-11~~ ✅ + N-04–N-09, N-12–N-15 | Visual polish pass — 5 of 15 done (CustomerCard + FilterBar)                             | Fixed March 8, 2026; N-04–N-09, N-12–N-15 still open                                                                                      |
