@@ -94,7 +94,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   );
 
   const isSuccess = toast?.type !== "error";
-  const bg = isSuccess ? "#22C55E" : "#EF4444";
+  const bg = isSuccess ? "#22C55E" : "#E74C3C";
 
   return (
     <ToastContext.Provider value={{ show }}>

@@ -4,14 +4,14 @@ import { Supplier } from "../../types/supplier";
 import { colors } from "../../utils/theme";
 
 const AVATAR_COLORS = [
-  colors.danger.DEFAULT,   // #E74C3C  red
-  colors.warning.DEFAULT,  // #F39C12  amber/orange
-  colors.primary.DEFAULT,  // #22C55E  green
-  colors.info.DEFAULT,     // #4F9CFF  blue
-  "#9B59B6",               // purple
-  "#E91E8C",               // pink
-  "#00BCD4",               // teal
-  "#FF5722",               // deep orange
+  colors.danger.DEFAULT, // #E74C3C  red
+  colors.warning.DEFAULT, // #F39C12  amber/orange
+  colors.primary.DEFAULT, // #22C55E  green
+  colors.info.DEFAULT, // #4F9CFF  blue
+  "#9B59B6", // purple
+  "#E91E8C", // pink
+  "#00BCD4", // teal
+  "#FF5722", // deep orange
 ] as const;
 
 function getAvatarColor(name: string): string {
@@ -40,7 +40,11 @@ export default function SupplierCard({ supplier, onPress }: Props) {
 
   const balanceBadge =
     balance > 0
-      ? { bg: colors.danger.light, text: colors.danger.DEFAULT, label: "PENDING" }
+      ? {
+          bg: colors.danger.light,
+          text: colors.danger.DEFAULT,
+          label: "PENDING",
+        }
       : { bg: colors.success.light, text: colors.success.text, label: "PAID" };
 
   return (
