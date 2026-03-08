@@ -262,12 +262,12 @@ These do not crash the app but produce wrong UX patterns, design inconsistencies
 **Files:** `RecordCustomerPaymentModal.tsx`, `RecordPaymentMadeModal.tsx`, `AppModal (Modal.tsx)`, `RecordDeliveryModal.tsx`  
 **Category:** Wrong UX pattern / architecture
 
-| Modal                                                     | Library                                   |
-| --------------------------------------------------------- | ----------------------------------------- |
-| `RecordCustomerPaymentModal`                              | `@gorhom/bottom-sheet` ✅                  |
-| `RecordPaymentMadeModal`                                  | `@gorhom/bottom-sheet` ✅                  |
-| `RecordDeliveryModal`                                     | `@gorhom/bottom-sheet` ✅ (fixed C-08)     |
-| `NewProductModal`, `NewCustomerModal`, `NewSupplierModal` | `react-native-modal` via `AppModal` ⚠️     |
+| Modal                                                     | Library                                |
+| --------------------------------------------------------- | -------------------------------------- |
+| `RecordCustomerPaymentModal`                              | `@gorhom/bottom-sheet` ✅              |
+| `RecordPaymentMadeModal`                                  | `@gorhom/bottom-sheet` ✅              |
+| `RecordDeliveryModal`                                     | `@gorhom/bottom-sheet` ✅ (fixed C-08) |
+| `NewProductModal`, `NewCustomerModal`, `NewSupplierModal` | `react-native-modal` via `AppModal` ⚠️ |
 
 All transaction modals are now on `@gorhom/bottom-sheet`. The remaining `react-native-modal` usage is isolated to the `AppModal` wrapper used by entity-creation forms (Product/Customer/Supplier). Consolidating those is tracked as a lower-priority cleanup.
 
@@ -361,11 +361,11 @@ Every other sub-folder under `(main)` — `customers/`, `orders/`, `products/`, 
 
 **Fix applied:** All three files deleted. Confirmed zero external imports for each via `grep` before deletion. `npx tsc --noEmit` produced no new errors after deletion.
 
-| File | Was Used? | Action |
-|---|---|---|
-| `dashboardStore.tsx` | Never imported — all dashboard state via `useDashboard` TanStack hook | Deleted |
-| `PdfPreviewModal.tsx` | Never imported in any screen or component | Deleted |
-| `QuickAction.tsx` | Never imported; `quickActions` key is i18n string only | Deleted |
+| File                  | Was Used?                                                             | Action  |
+| --------------------- | --------------------------------------------------------------------- | ------- |
+| `dashboardStore.tsx`  | Never imported — all dashboard state via `useDashboard` TanStack hook | Deleted |
+| `PdfPreviewModal.tsx` | Never imported in any screen or component                             | Deleted |
+| `QuickAction.tsx`     | Never imported; `quickActions` key is i18n string only                | Deleted |
 
 ---
 
@@ -573,22 +573,22 @@ Supplier modal: `border-neutral-300` — Tailwind bare class (`#D4D4D4`) ≠ the
 
 ## Recommended Fix Order
 
-| Priority | ID          | What                                                                                     | Where                                                                                                                           |
-| -------- | ----------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| ~~1~~    | ~~C-01~~ ✅ | ~~Fix all 4 supplier RLS policies~~ **DONE**                                             | Fixed March 8, 2026 — Supabase SQL Editor + `schema.sql` updated                                                                |
-| ~~2~~    | ~~C-05~~ ✅ | ~~Align `dashboard_mode` DB constraint with TypeScript enum~~ **DONE**                   | Fixed March 8, 2026 — types, role.tsx, DashboardScreen, SQL migration                                                           |
-| ~~3~~    | ~~C-02~~ ✅ | ~~Fix `fetchOrders` search to use a `customers` join~~ **DONE**                          | Fixed March 8, 2026 — `!inner` join + dot-notation `.or()` filter on `customers.name`/`customers.phone`                         |
-| ~~4~~    | ~~C-03~~ ✅ | ~~Remove `reference` from export select or add column to `payments`~~ **DONE**           | Fixed March 8, 2026 — `reference` removed from select + `ExportPayment` interface; `Payment.created_at` added                   |
-| ~~5~~    | ~~C-04~~ ✅ | ~~Fix `fetchProducts` to join `product_variants`, align field names~~ **DONE**           | Fixed March 8, 2026 — join added, `ProductVariant` interface aligned, `ProductCard`+`VariantPicker`+`NewProductModal` updated   |
-| ~~6~~    | ~~C-06~~ ✅ | ~~Add `Overdue` + `Partially Paid` chip cases to `OrderList`~~ **DONE**                  | Fixed March 8, 2026 — `STATUS_STYLES` map; `Overdue` derived from Pending >30 days; `daysSince()` added to `helper.ts`          |
-| ~~7~~    | ~~C-07~~ ✅ | ~~Fix outline spinner color in `Button.tsx`~~ **DONE**                                   | Fixed March 8, 2026 — spinner `#000` → `#22C55E`; `rounded-md` → `rounded-xl`                                                   |
-| ~~8~~    | ~~C-08~~ ✅ | ~~Migrate `RecordDeliveryModal` to `@gorhom/bottom-sheet`~~ **DONE**                     | Fixed March 8, 2026 — `BottomSheet`+`BottomSheetScrollView`, `keyboardBehavior="interactive"`, `index={-1}`, `Button` at bottom |
-| ~~9~~    | ~~C-09~~ ✅ | ~~Fix `RecordPaymentMadeModal` over-pay validation + proactive button disable~~ **DONE** | Fixed March 8, 2026 — `showWarning`/`isValid` derived; inline warning; `disabled={loading \| !isValid}`                         |
-| ~~9~~    | M-01 ⚠️    | Modal library consolidation (partially resolved — AppModal still react-native-modal) | `NewProductModal`, `NewCustomerModal`, `NewSupplierModal` via `AppModal`                                                        |
-| ~~10~~   | ~~M-02~~ ✅  | ~~Replace raw `TouchableOpacity` buttons with `Button.tsx`~~ **DONE**                    | Fixed March 8, 2026 — Both payment modals use `Button.tsx`; chips `rounded-full`; `ActivityIndicator` removed                  |
-| 11       | M-03        | Add active state to `FilterBar` chips                                                    | `src/components/orders/FilterBar.tsx`                                                                                           |
-| 12       | M-04        | Add Export to tab bar or make it a proper navigation destination                         | `app/(main)/_layout.tsx`                                                                                                        |
-| 13       | M-07        | Migrate `EmptyState` + `Toast` to NativeWind                                             | `src/components/feedback/`                                                                                                      |
-| ~~14~~   | ~~M-15~~ ✅ | ~~Add 3 missing DB indexes~~ **DONE**                                                    | Fixed March 8, 2026 — added to `schema.sql` + run via Supabase SQL Editor                                                       |
-| 15       | ~~M-10~~ ✅ + M-05–M-09, M-11–M-14 | ~~Delete dead files~~ **DONE** + remaining architecture issues | Dead files deleted March 8, 2026; others still open |
-| 16       | N-01–N-15   | Visual polish pass                                                                       | Various                                                                                                                         |
+| Priority | ID                                 | What                                                                                     | Where                                                                                                                           |
+| -------- | ---------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| ~~1~~    | ~~C-01~~ ✅                        | ~~Fix all 4 supplier RLS policies~~ **DONE**                                             | Fixed March 8, 2026 — Supabase SQL Editor + `schema.sql` updated                                                                |
+| ~~2~~    | ~~C-05~~ ✅                        | ~~Align `dashboard_mode` DB constraint with TypeScript enum~~ **DONE**                   | Fixed March 8, 2026 — types, role.tsx, DashboardScreen, SQL migration                                                           |
+| ~~3~~    | ~~C-02~~ ✅                        | ~~Fix `fetchOrders` search to use a `customers` join~~ **DONE**                          | Fixed March 8, 2026 — `!inner` join + dot-notation `.or()` filter on `customers.name`/`customers.phone`                         |
+| ~~4~~    | ~~C-03~~ ✅                        | ~~Remove `reference` from export select or add column to `payments`~~ **DONE**           | Fixed March 8, 2026 — `reference` removed from select + `ExportPayment` interface; `Payment.created_at` added                   |
+| ~~5~~    | ~~C-04~~ ✅                        | ~~Fix `fetchProducts` to join `product_variants`, align field names~~ **DONE**           | Fixed March 8, 2026 — join added, `ProductVariant` interface aligned, `ProductCard`+`VariantPicker`+`NewProductModal` updated   |
+| ~~6~~    | ~~C-06~~ ✅                        | ~~Add `Overdue` + `Partially Paid` chip cases to `OrderList`~~ **DONE**                  | Fixed March 8, 2026 — `STATUS_STYLES` map; `Overdue` derived from Pending >30 days; `daysSince()` added to `helper.ts`          |
+| ~~7~~    | ~~C-07~~ ✅                        | ~~Fix outline spinner color in `Button.tsx`~~ **DONE**                                   | Fixed March 8, 2026 — spinner `#000` → `#22C55E`; `rounded-md` → `rounded-xl`                                                   |
+| ~~8~~    | ~~C-08~~ ✅                        | ~~Migrate `RecordDeliveryModal` to `@gorhom/bottom-sheet`~~ **DONE**                     | Fixed March 8, 2026 — `BottomSheet`+`BottomSheetScrollView`, `keyboardBehavior="interactive"`, `index={-1}`, `Button` at bottom |
+| ~~9~~    | ~~C-09~~ ✅                        | ~~Fix `RecordPaymentMadeModal` over-pay validation + proactive button disable~~ **DONE** | Fixed March 8, 2026 — `showWarning`/`isValid` derived; inline warning; `disabled={loading \| !isValid}`                         |
+| ~~9~~    | M-01 ⚠️                            | Modal library consolidation (partially resolved — AppModal still react-native-modal)     | `NewProductModal`, `NewCustomerModal`, `NewSupplierModal` via `AppModal`                                                        |
+| ~~10~~   | ~~M-02~~ ✅                        | ~~Replace raw `TouchableOpacity` buttons with `Button.tsx`~~ **DONE**                    | Fixed March 8, 2026 — Both payment modals use `Button.tsx`; chips `rounded-full`; `ActivityIndicator` removed                   |
+| 11       | M-03                               | Add active state to `FilterBar` chips                                                    | `src/components/orders/FilterBar.tsx`                                                                                           |
+| 12       | M-04                               | Add Export to tab bar or make it a proper navigation destination                         | `app/(main)/_layout.tsx`                                                                                                        |
+| 13       | M-07                               | Migrate `EmptyState` + `Toast` to NativeWind                                             | `src/components/feedback/`                                                                                                      |
+| ~~14~~   | ~~M-15~~ ✅                        | ~~Add 3 missing DB indexes~~ **DONE**                                                    | Fixed March 8, 2026 — added to `schema.sql` + run via Supabase SQL Editor                                                       |
+| 15       | ~~M-10~~ ✅ + M-05–M-09, M-11–M-14 | ~~Delete dead files~~ **DONE** + remaining architecture issues                           | Dead files deleted March 8, 2026; others still open                                                                             |
+| 16       | N-01–N-15                          | Visual polish pass                                                                       | Various                                                                                                                         |

@@ -6,13 +6,7 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-    Alert,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import Button from "../ui/Button";
 
 type PaymentMode = "Cash" | "UPI" | "NEFT" | "Draft" | "Cheque";

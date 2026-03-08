@@ -3,13 +3,7 @@ import BottomSheet, {
     BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-    Alert,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import Button from "../ui/Button";
 
 interface Props {
