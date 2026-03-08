@@ -62,8 +62,7 @@ export const DashboardScreen = () => {
       <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
 
       <DashboardHeader
-        businessName={businessName}
-        roleLabel={roleLabel}
+        overdueCount={data.overdueCustomers}
         onPressSettings={() => router.push("/(main)/profile")}
       />
 

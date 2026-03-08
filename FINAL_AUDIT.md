@@ -386,6 +386,19 @@ Same content, same interaction, different shape. No design reason for the differ
 
 ---
 
+### ✅ P-18 — `DashboardHeader` Hardcoded Avatar, Missing Greeting, No Overdue Bell Dot — FIXED March 8, 2026
+
+**File:** `src/components/dashboard/DashboardHeader.tsx`, `src/screens/DashboardScreen.tsx`  
+**Category:** Data binding + UX
+
+- Avatar: 🌿 emoji in `#E9F0E9` circle → 40dp `#22C55E` filled circle with white bold initials (first 2 words of `business_name`, uppercase)
+- Business name: now read directly from `useAuthStore().profile.business_name` inside the header; `businessName` prop removed
+- Subtitle: static `roleLabel` → `getGreeting()` — time-of-day aware (Good morning / afternoon / evening + 👋)
+- Bell: size 20, `C.heading` → size 22, `#1C1C1E`, `strokeWidth 1.75`; wrapped in relative `View` with 8dp `#E74C3C` absolute dot when `overdueCount > 0`
+- `DashboardScreen.tsx`: removed `businessName` + `roleLabel` props from `<DashboardHeader>`; added `overdueCount={data.overdueCustomers}`
+
+---
+
 ### ✅ M-12 — `balance_due` Recalculated in JS — FIXED (March 8, 2026)
 
 **File:** `src/api/orders.ts` → `fetchOrders()`  
@@ -585,7 +598,7 @@ Supplier modal: `border-neutral-300` — Tailwind bare class (`#D4D4D4`) ≠ the
 ## Recommended Fix Order
 
 | Priority | ID                                                                                                                                                                | What                                                                                                      | Where                                                                                                                                     |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | ----------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | ~~1~~    | ~~C-01~~ ✅                                                                                                                                                       | ~~Fix all 4 supplier RLS policies~~ **DONE**                                                              | Fixed March 8, 2026 — Supabase SQL Editor + `schema.sql` updated                                                                          |
 | ~~2~~    | ~~C-05~~ ✅                                                                                                                                                       | ~~Align `dashboard_mode` DB constraint with TypeScript enum~~ **DONE**                                    | Fixed March 8, 2026 — types, role.tsx, DashboardScreen, SQL migration                                                                     |
 | ~~3~~    | ~~C-02~~ ✅                                                                                                                                                       | ~~Fix `fetchOrders` search to use a `customers` join~~ **DONE**                                           | Fixed March 8, 2026 — `!inner` join + dot-notation `.or()` filter on `customers.name`/`customers.phone`                                   |
@@ -602,4 +615,4 @@ Supplier modal: `border-neutral-300` — Tailwind bare class (`#D4D4D4`) ≠ the
 | ~~13~~   | ~~M-07~~ ✅                                                                                                                                                       | ~~Migrate `EmptyState` + `Toast` to NativeWind~~ **DONE**                                                 | Fixed March 8, 2026 — EmptyState: `StyleSheet` → NativeWind, colors fixed; Toast: error bg `#EF4444` → `#E74C3C`                          |
 | ~~14~~   | ~~M-15~~ ✅                                                                                                                                                       | ~~Add 3 missing DB indexes~~ **DONE**                                                                     | Fixed March 8, 2026 — added to `schema.sql` + run via Supabase SQL Editor                                                                 |
 | 15       | ~~M-10~~ ✅ ~~M-09~~ ✅ ~~M-11~~ ✅ + M-05–M-08, M-12–M-14                                                                                                        | ~~Delete dead files~~ ~~Add reports/\_layout.tsx~~ ~~Fix AppModal animation~~ **DONE** + remaining issues | M-09, M-10 & M-11 fixed March 8, 2026; others still open                                                                                  |
-| 16       | ~~N-01~~ ✅ ~~N-02~~ ✅ ~~N-03~~ ✅ ~~N-04~~ ✅ ~~N-05~~ ✅ ~~N-06~~ ✅ ~~N-07~~ ✅ ~~N-08~~ ✅ ~~N-09~~ ✅ ~~N-10~~ ✅ ~~N-11~~ ✅ ~~N-13~~ ✅ + N-12, N-14–N-15 | Visual polish — 12 of 15 done                                                                             | N-04, N-06, N-09 fixed March 8, 2026; 3 still open                                                                                        |
+| 16       | ~~N-01~~ ✅ ~~N-02~~ ✅ ~~N-03~~ ✅ ~~N-04~~ ✅ ~~N-05~~ ✅ ~~N-06~~ ✅ ~~N-07~~ ✅ ~~N-08~~ ✅ ~~N-09~~ ✅ ~~N-10~~ ✅ ~~N-11~~ ✅ ~~N-13~~ ✅ + N-12, N-14–N-15 | Visual polish — 12 of 15 done                                                                             | N-04, N-06, N-09 fixed March 8, 2026; 3 still open                                                                                        |     | 17  | ~~P-18~~ ✅ | ~~DashboardHeader: initials avatar, greeting, overdue bell dot~~ **DONE** | Fixed March 8, 2026 — `useAuthStore` direct read; `getInitials`; `getGreeting`; overdue red dot on bell |

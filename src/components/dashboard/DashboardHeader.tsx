@@ -1,20 +1,36 @@
+import { useAuthStore } from "@/src/store/authStore";
 import { dashboardPalette as C } from "@/src/utils/dashboardUi";
 import { Bell, Settings } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
-  businessName: string;
-  roleLabel: string;
+  roleLabel?: string;
+  overdueCount?: number;
   onPressNotifications?: () => void;
   onPressSettings?: () => void;
 };
 
+const getInitials = (name: string): string => {
+  const parts = name.trim().split(" ").slice(0, 2);
+  return parts.map((w) => w[0]?.toUpperCase() || "").join("") || "CB";
+};
+
+const getGreeting = (): string => {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning 👋";
+  if (h < 17) return "Good afternoon 👋";
+  return "Good evening 👋";
+};
+
 export default function DashboardHeader({
-  businessName,
-  roleLabel,
+  overdueCount = 0,
   onPressNotifications,
   onPressSettings,
 }: Props) {
+  const { profile } = useAuthStore();
+  const businessName = profile?.business_name ?? profile?.name ?? "My Business";
+  const initials = getInitials(businessName);
+
   return (
     <View
       style={{
@@ -26,20 +42,21 @@ export default function DashboardHeader({
         backgroundColor: C.bg,
       }}
     >
+      {/* Initials avatar */}
       <View
         style={{
-          width: 46,
-          height: 46,
-          borderRadius: 23,
-          backgroundColor: "#E9F0E9",
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          backgroundColor: "#22C55E",
           alignItems: "center",
           justifyContent: "center",
           marginRight: 12,
-          borderWidth: 1.5,
-          borderColor: "#D1D9D1",
         }}
       >
-        <Text style={{ fontSize: 22 }}>🌿</Text>
+        <Text style={{ fontSize: 14, fontWeight: "700", color: "#FFFFFF" }}>
+          {initials}
+        </Text>
       </View>
       <View style={{ flex: 1 }}>
         <Text
@@ -48,7 +65,7 @@ export default function DashboardHeader({
         >
           {businessName}
         </Text>
-        <Text style={{ fontSize: 12, color: C.body }}>{roleLabel}</Text>
+        <Text style={{ fontSize: 12, color: C.body }}>{getGreeting()}</Text>
       </View>
       <TouchableOpacity
         style={{
@@ -67,7 +84,22 @@ export default function DashboardHeader({
         }}
         onPress={onPressNotifications}
       >
-        <Bell size={20} color={C.heading} strokeWidth={1.8} />
+        <View style={{ position: "relative" }}>
+          <Bell size={22} color="#1C1C1E" strokeWidth={1.75} />
+          {overdueCount > 0 && (
+            <View
+              style={{
+                position: "absolute",
+                top: -2,
+                right: -2,
+                width: 8,
+                height: 8,
+                borderRadius: 4,
+                backgroundColor: "#E74C3C",
+              }}
+            />
+          )}
+        </View>
       </TouchableOpacity>
       <TouchableOpacity
         style={{
