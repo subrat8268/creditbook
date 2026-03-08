@@ -158,23 +158,26 @@ export const daysSince = (date: string): number =>
   Math.floor((Date.now() - new Date(date).getTime()) / 86_400_000);
 
 // src/components/orders/OrderList.tsx
-const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  Paid:             { bg: "#DCFCE7", text: "#16A34A", label: "PAID" },
+const STATUS_STYLES: Record<
+  string,
+  { bg: string; text: string; label: string }
+> = {
+  Paid: { bg: "#DCFCE7", text: "#16A34A", label: "PAID" },
   "Partially Paid": { bg: "#EFF6FF", text: "#1D4ED8", label: "PARTIAL" },
-  Pending:          { bg: "#FEF3C7", text: "#D97706", label: "PENDING" },
-  Overdue:          { bg: "#FEE2E2", text: "#DC2626", label: "OVERDUE" },
+  Pending: { bg: "#FEF3C7", text: "#D97706", label: "PENDING" },
+  Overdue: { bg: "#FEE2E2", text: "#DC2626", label: "OVERDUE" },
 };
 const isOverdue = item.status === "Pending" && daysSince(item.created_at) > 30;
 const statusKey = isOverdue ? "Overdue" : item.status;
 const chipStyle = STATUS_STYLES[statusKey] ?? STATUS_STYLES["Pending"];
 ```
 
-| Status | Before | After |
-|---|---|---|
-| Paid | green | ✅ green |
-| Partially Paid | yellow (wrong) | ✅ blue PARTIAL |
-| Pending (fresh) | yellow | ✅ yellow |
-| Pending >30 days | yellow (wrong) | ✅ red OVERDUE |
+| Status           | Before         | After           |
+| ---------------- | -------------- | --------------- |
+| Paid             | green          | ✅ green        |
+| Partially Paid   | yellow (wrong) | ✅ blue PARTIAL |
+| Pending (fresh)  | yellow         | ✅ yellow       |
+| Pending >30 days | yellow (wrong) | ✅ red OVERDUE  |
 
 ---
 

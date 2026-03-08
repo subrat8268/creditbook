@@ -5,11 +5,14 @@ import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import EmptyState from "../feedback/EmptyState";
 import Loader from "../feedback/Loader";
 
-const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  Paid:              { bg: "#DCFCE7", text: "#16A34A", label: "PAID" },
-  "Partially Paid":  { bg: "#EFF6FF", text: "#1D4ED8", label: "PARTIAL" },
-  Pending:           { bg: "#FEF3C7", text: "#D97706", label: "PENDING" },
-  Overdue:           { bg: "#FEE2E2", text: "#DC2626", label: "OVERDUE" },
+const STATUS_STYLES: Record<
+  string,
+  { bg: string; text: string; label: string }
+> = {
+  Paid: { bg: "#DCFCE7", text: "#16A34A", label: "PAID" },
+  "Partially Paid": { bg: "#EFF6FF", text: "#1D4ED8", label: "PARTIAL" },
+  Pending: { bg: "#FEF3C7", text: "#D97706", label: "PENDING" },
+  Overdue: { bg: "#FEE2E2", text: "#DC2626", label: "OVERDUE" },
 };
 
 interface Props {
