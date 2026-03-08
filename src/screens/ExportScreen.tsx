@@ -1,4 +1,12 @@
-import { Banknote, Download, Receipt, Store, Users } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import {
+    ArrowLeft,
+    Banknote,
+    Download,
+    Receipt,
+    Store,
+    Users,
+} from "lucide-react-native";
 import { ComponentType, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -26,6 +34,7 @@ type ExportType = "orders" | "payments" | "customers" | "suppliers";
 export default function ExportScreen() {
   const { profile } = useAuthStore();
   const { t } = useTranslation();
+  const router = useRouter();
 
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -144,6 +153,13 @@ export default function ExportScreen() {
   return (
     <ScreenWrapper>
       <ScrollView showsVerticalScrollIndicator={false}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          className="mb-4 self-start"
+        >
+          <ArrowLeft size={22} color="#1C1C1E" strokeWidth={1.75} />
+        </TouchableOpacity>
         <Text className="text-2xl font-bold text-gray-900 mb-1">
           {t("export.title")}
         </Text>

@@ -17,6 +17,12 @@ import {
   View,
 } from "react-native";
 
+const getInitials = (name?: string | null): string => {
+  if (!name) return "CB";
+  const parts = name.trim().split(/\s+/).slice(0, 2);
+  return parts.map((w) => w[0]?.toUpperCase() || "").join("");
+};
+
 export default function ProfileScreen() {
   const { user, profile, setProfile, logout } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
@@ -43,12 +49,44 @@ export default function ProfileScreen() {
 
   if (!profile) return <Loader />;
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    logout();
+    router.replace("/(auth)/login");
+  };
+
   return (
     <ScreenWrapper>
       <ScrollView showsVerticalScrollIndicator={false}>
         <Text className="text-2xl font-bold text-gray-900 mb-6">
           {t("profile.title")}
         </Text>
+
+        {/* Profile Avatar */}
+        <View style={{ alignItems: "center", marginBottom: 24 }}>
+          <View
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: 36,
+              backgroundColor: "#22C55E",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={{ color: "#FFFFFF", fontSize: 22, fontWeight: "700" }}>
+              {getInitials(profile.business_name)}
+            </Text>
+          </View>
+          {profile.business_name ? (
+            <Text
+              className="mt-2 text-base font-bold text-gray-900"
+              numberOfLines={1}
+            >
+              {profile.business_name}
+            </Text>
+          ) : null}
+        </View>
 
         {/* Subscription */}
         <SubscriptionCard profile={profile} />
@@ -205,17 +243,18 @@ export default function ProfileScreen() {
         </View>
 
         <View className="flex-row gap-2 mb-8 mt-3">
-          {(["vendor", "receiver"] as const).map((m) => {
-            const labels: Record<string, string> = {
-              vendor: "Vendor",
-              receiver: "Receiver",
-            };
-            const isActive =
-              (profile.dashboard_mode ?? profile.role ?? "vendor") === m;
+          {(
+            [
+              { value: "seller", label: "Seller" },
+              { value: "distributor", label: "Distributor" },
+              { value: "both", label: "Both" },
+            ] as const
+          ).map(({ value, label }) => {
+            const isActive = (profile.dashboard_mode ?? "seller") === value;
             return (
               <TouchableOpacity
-                key={m}
-                onPress={() => updateField("dashboard_mode", m)}
+                key={value}
+                onPress={() => updateField("dashboard_mode", value)}
                 className={`flex-1 py-3 rounded-xl border items-center ${
                   isActive
                     ? "bg-primary border-primary"
@@ -227,7 +266,7 @@ export default function ProfileScreen() {
                     isActive ? "text-white" : "text-gray-600"
                   }`}
                 >
-                  {labels[m]}
+                  {label}
                 </Text>
               </TouchableOpacity>
             );
@@ -293,7 +332,7 @@ export default function ProfileScreen() {
         {/* Logout */}
         <TouchableOpacity
           className="bg-red-100 border border-red-300 py-3 rounded-xl"
-          onPress={logout}
+          onPress={handleSignOut}
         >
           <Text className="text-red-700 text-center font-semibold">
             {t("common.logout")}
