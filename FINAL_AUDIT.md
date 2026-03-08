@@ -203,12 +203,23 @@ const baseStyle = "w-full py-3 rounded-xl items-center justify-center h-14 flex-
 
 ---
 
-### C-08 — `RecordDeliveryModal` Uses RN Built-in `Modal`, Not Bottom Sheet
+### ✅ C-08 — `RecordDeliveryModal` Uses RN Built-in `Modal`, Not Bottom Sheet — FIXED March 8, 2026
 
 **File:** `src/components/suppliers/RecordDeliveryModal.tsx`  
 **Category:** Breaking navigation / wrong UX pattern
 
-This modal is the most complex form in the suppliers flow (multi-line items, totals, scrollable). It uses the raw React Native `Modal` (full-screen overlay, no keyboard-aware scroll, no drag-to-dismiss) while both payment modals use `@gorhom/bottom-sheet` with `keyboardBehavior="interactive"`. On Android, typing into fields inside this modal frequently pushes content off-screen because the native Modal has no coordinated keyboard handling. This is a functional breakage on the most critical supplier data-entry screen.
+**Fix applied:**
+
+- Replaced `Modal` import with `BottomSheet`, `BottomSheetScrollView`, `BottomSheetBackdrop` from `@gorhom/bottom-sheet`.
+- Removed `ActivityIndicator`, `ScrollView`, `Modal` from react-native imports; added `useEffect`, `useMemo`, `useRef`.
+- `sheetRef` + `snapPoints = ["90%"]` added; `useEffect` watches `visible` prop and calls `expand()` / `close()`.
+- `BottomSheet` uses `index={-1}` (starts closed), `enablePanDownToClose`, `keyboardBehavior="interactive"`, `keyboardBlurBehavior="restore"`, `BottomSheetBackdrop` with `opacity={0.4}`.
+- Full-screen header replaced with a compact in-sheet title bar (Cancel left, title center, spacer right).
+- `ScrollView` replaced with `BottomSheetScrollView contentContainerStyle={{ padding: 24, paddingBottom: 48 }}`.
+- Old header Save action replaced with full-width `<Button title="Record Delivery" />` at bottom of scroll content.
+- `Button` component import added from `../ui/Button`.
+
+All form fields (date, line items, charges, notes, summary) are unchanged.
 
 ---
 
@@ -223,12 +234,13 @@ These do not crash the app but produce wrong UX patterns, design inconsistencies
 **Files:** `RecordCustomerPaymentModal.tsx`, `RecordPaymentMadeModal.tsx`, `AppModal (Modal.tsx)`, `RecordDeliveryModal.tsx`  
 **Category:** Wrong UX pattern / architecture
 
-| Modal                                                     | Library                             |
-| --------------------------------------------------------- | ----------------------------------- |
-| `RecordCustomerPaymentModal`                              | `@gorhom/bottom-sheet`              |
-| `RecordPaymentMadeModal`                                  | `@gorhom/bottom-sheet`              |
-| `NewProductModal`, `NewCustomerModal`, `NewSupplierModal` | `react-native-modal` via `AppModal` |
-| `RecordDeliveryModal`                                     | RN built-in `Modal`                 |
+| Modal                                                     | Library                                |
+| --------------------------------------------------------- | -------------------------------------- |
+| `RecordCustomerPaymentModal`                              | `@gorhom/bottom-sheet`                 |
+| `RecordPaymentMadeModal`                                  | `@gorhom/bottom-sheet`                 |
+| `RecordDeliveryModal`                                     | `@gorhom/bottom-sheet` ✅ (fixed C-08) |
+| `NewProductModal`, `NewCustomerModal`, `NewSupplierModal` | `react-native-modal` via `AppModal`    |
+| `RecordDeliveryModal`                                     | RN built-in `Modal`                    |
 
 Each library has different animation, keyboard behavior, backdrop behavior, and closing gesture. Users experience three distinct modal interaction patterns in the same session.
 
@@ -521,21 +533,21 @@ Supplier modal: `border-neutral-300` — Tailwind bare class (`#D4D4D4`) ≠ the
 
 ## Recommended Fix Order
 
-| Priority | ID          | What                                                                           | Where                                                                                                                         |
-| -------- | ----------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| ~~1~~    | ~~C-01~~ ✅ | ~~Fix all 4 supplier RLS policies~~ **DONE**                                   | Fixed March 8, 2026 — Supabase SQL Editor + `schema.sql` updated                                                              |
-| ~~2~~    | ~~C-05~~ ✅ | ~~Align `dashboard_mode` DB constraint with TypeScript enum~~ **DONE**         | Fixed March 8, 2026 — types, role.tsx, DashboardScreen, SQL migration                                                         |
-| ~~3~~    | ~~C-02~~ ✅ | ~~Fix `fetchOrders` search to use a `customers` join~~ **DONE**                | Fixed March 8, 2026 — `!inner` join + dot-notation `.or()` filter on `customers.name`/`customers.phone`                       |
-| ~~4~~    | ~~C-03~~ ✅ | ~~Remove `reference` from export select or add column to `payments`~~ **DONE** | Fixed March 8, 2026 — `reference` removed from select + `ExportPayment` interface; `Payment.created_at` added                 |
-| ~~5~~    | ~~C-04~~ ✅ | ~~Fix `fetchProducts` to join `product_variants`, align field names~~ **DONE** | Fixed March 8, 2026 — join added, `ProductVariant` interface aligned, `ProductCard`+`VariantPicker`+`NewProductModal` updated |
-| ~~6~~    | ~~C-06~~ ✅ | ~~Add `Overdue` + `Partially Paid` chip cases to `OrderList`~~ **DONE**        | Fixed March 8, 2026 — `STATUS_STYLES` map; `Overdue` derived from Pending >30 days; `daysSince()` added to `helper.ts`        |
-| ~~7~~    | ~~C-07~~ ✅ | ~~Fix outline spinner color in `Button.tsx`~~ **DONE**                         | Fixed March 8, 2026 — spinner `#000` → `#22C55E`; `rounded-md` → `rounded-xl`                                                 |
-| 8        | C-08        | Migrate `RecordDeliveryModal` to `@gorhom/bottom-sheet`                        | `src/components/suppliers/RecordDeliveryModal.tsx`                                                                            |
-| 9        | M-01        | Consolidate to single modal library (`@gorhom/bottom-sheet`)                   | All modal components                                                                                                          |
-| 10       | M-02        | Replace raw `TouchableOpacity` buttons with `Button.tsx`                       | Payment modals                                                                                                                |
-| 11       | M-03        | Add active state to `FilterBar` chips                                          | `src/components/orders/FilterBar.tsx`                                                                                         |
-| 12       | M-04        | Add Export to tab bar or make it a proper navigation destination               | `app/(main)/_layout.tsx`                                                                                                      |
-| 13       | M-07        | Migrate `EmptyState` + `Toast` to NativeWind                                   | `src/components/feedback/`                                                                                                    |
-| ~~14~~   | ~~M-15~~ ✅ | ~~Add 3 missing DB indexes~~ **DONE**                                          | Fixed March 8, 2026 — added to `schema.sql` + run via Supabase SQL Editor                                                     |
-| 15       | M-05–M-14   | Remaining architecture + data issues                                           | Various                                                                                                                       |
-| 16       | N-01–N-15   | Visual polish pass                                                             | Various                                                                                                                       |
+| Priority | ID          | What                                                                           | Where                                                                                                                           |
+| -------- | ----------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| ~~1~~    | ~~C-01~~ ✅ | ~~Fix all 4 supplier RLS policies~~ **DONE**                                   | Fixed March 8, 2026 — Supabase SQL Editor + `schema.sql` updated                                                                |
+| ~~2~~    | ~~C-05~~ ✅ | ~~Align `dashboard_mode` DB constraint with TypeScript enum~~ **DONE**         | Fixed March 8, 2026 — types, role.tsx, DashboardScreen, SQL migration                                                           |
+| ~~3~~    | ~~C-02~~ ✅ | ~~Fix `fetchOrders` search to use a `customers` join~~ **DONE**                | Fixed March 8, 2026 — `!inner` join + dot-notation `.or()` filter on `customers.name`/`customers.phone`                         |
+| ~~4~~    | ~~C-03~~ ✅ | ~~Remove `reference` from export select or add column to `payments`~~ **DONE** | Fixed March 8, 2026 — `reference` removed from select + `ExportPayment` interface; `Payment.created_at` added                   |
+| ~~5~~    | ~~C-04~~ ✅ | ~~Fix `fetchProducts` to join `product_variants`, align field names~~ **DONE** | Fixed March 8, 2026 — join added, `ProductVariant` interface aligned, `ProductCard`+`VariantPicker`+`NewProductModal` updated   |
+| ~~6~~    | ~~C-06~~ ✅ | ~~Add `Overdue` + `Partially Paid` chip cases to `OrderList`~~ **DONE**        | Fixed March 8, 2026 — `STATUS_STYLES` map; `Overdue` derived from Pending >30 days; `daysSince()` added to `helper.ts`          |
+| ~~7~~    | ~~C-07~~ ✅ | ~~Fix outline spinner color in `Button.tsx`~~ **DONE**                         | Fixed March 8, 2026 — spinner `#000` → `#22C55E`; `rounded-md` → `rounded-xl`                                                   |
+| ~~8~~    | ~~C-08~~ ✅ | ~~Migrate `RecordDeliveryModal` to `@gorhom/bottom-sheet`~~ **DONE**           | Fixed March 8, 2026 — `BottomSheet`+`BottomSheetScrollView`, `keyboardBehavior="interactive"`, `index={-1}`, `Button` at bottom |
+| 9        | M-01        | Consolidate to single modal library (`@gorhom/bottom-sheet`)                   | All modal components                                                                                                            |
+| 10       | M-02        | Replace raw `TouchableOpacity` buttons with `Button.tsx`                       | Payment modals                                                                                                                  |
+| 11       | M-03        | Add active state to `FilterBar` chips                                          | `src/components/orders/FilterBar.tsx`                                                                                           |
+| 12       | M-04        | Add Export to tab bar or make it a proper navigation destination               | `app/(main)/_layout.tsx`                                                                                                        |
+| 13       | M-07        | Migrate `EmptyState` + `Toast` to NativeWind                                   | `src/components/feedback/`                                                                                                      |
+| ~~14~~   | ~~M-15~~ ✅ | ~~Add 3 missing DB indexes~~ **DONE**                                          | Fixed March 8, 2026 — added to `schema.sql` + run via Supabase SQL Editor                                                       |
+| 15       | M-05–M-14   | Remaining architecture + data issues                                           | Various                                                                                                                         |
+| 16       | N-01–N-15   | Visual polish pass                                                             | Various                                                                                                                         |
