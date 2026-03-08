@@ -479,11 +479,11 @@ These are visible inconsistencies that degrade the perceived quality of the UI b
 
 ---
 
-### N-05 — `SupplierCard` Balance Badges Use Wrong Reds and Greens
+### ✅ N-05 — `SupplierCard` Balance Badges Use Wrong Reds and Greens — FIXED March 8, 2026
 
 **File:** `src/components/suppliers/SupplierCard.tsx`
 
-`bg-red-50 text-red-600` — Tailwind `red-600` = `#DC2626` vs `danger.DEFAULT` = `#E74C3C`. `bg-green-50 text-green-600` ≠ `success.light` + `success.text`. "You owe" sub-label is `text-red-400` — not a theme token.
+`bg-red-50 text-red-600` (Tailwind) → `colors.danger.light` bg + `colors.danger.DEFAULT` text. `bg-green-50 text-green-600` → `colors.success.light` bg + `colors.success.text` text. `text-red-400` "You owe" label → `colors.danger.DEFAULT`. `ChevronRight` icon `"#999"` → `colors.neutral[400]`. Single `balanceBadge` object drives all badge state. Fixed as part of P15.
 
 ---
 
@@ -543,11 +543,11 @@ All `gray-*` classes replaced with theme aliases (`bg-search`, `border-default`,
 
 ---
 
-### N-13 — `SupplierCard` Has No Initials Avatar
+### ✅ N-13 — `SupplierCard` Has No Initials Avatar — FIXED March 8, 2026
 
 **File:** `src/components/suppliers/SupplierCard.tsx`
 
-`CustomerCard` generates a colored initials avatar per name. `SupplierCard` always shows a static amber building icon. Suppliers have names and should follow the same initials pattern for visual consistency across list screens.
+`Building2` icon with `bg-amber-100` background replaced with initials avatar using the same `AVATAR_COLORS[8]` array and hash algorithm as `CustomerCard`. `Building2` import removed. Fixed as part of P15.
 
 ---
 
@@ -599,4 +599,4 @@ Supplier modal: `border-neutral-300` — Tailwind bare class (`#D4D4D4`) ≠ the
 | 13       | M-07                                                                               | Migrate `EmptyState` + `Toast` to NativeWind                                             | `src/components/feedback/`                                                                                                                |
 | ~~14~~   | ~~M-15~~ ✅                                                                        | ~~Add 3 missing DB indexes~~ **DONE**                                                    | Fixed March 8, 2026 — added to `schema.sql` + run via Supabase SQL Editor                                                                 |
 | 15       | ~~M-10~~ ✅ ~~M-09~~ ✅ + M-05–M-08, M-11–M-14                                     | ~~Delete dead files~~ ~~Add reports/\_layout.tsx~~ **DONE** + remaining issues           | M-09 & M-10 fixed March 8, 2026; others still open                                                                                        |
-| 16       | ~~N-01~~ ✅ ~~N-02~~ ✅ ~~N-03~~ ✅ ~~N-10~~ ✅ ~~N-11~~ ✅ + N-04–N-09, N-12–N-15 | Visual polish pass — 5 of 15 done (CustomerCard + FilterBar)                             | Fixed March 8, 2026; N-04–N-09, N-12–N-15 still open                                                                                      |
+| 16       | ~~N-01~~ ✅ ~~N-02~~ ✅ ~~N-03~~ ✅ ~~N-05~~ ✅ ~~N-10~~ ✅ ~~N-11~~ ✅ ~~N-13~~ ✅ + N-04, N-06–N-09, N-12, N-14–N-15 | Visual polish — 7 of 15 done | Fixed March 8, 2026; 8 still open |
