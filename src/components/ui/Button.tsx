@@ -48,7 +48,9 @@ export default function Button({
       activeOpacity={0.8}
     >
       {loading ? (
-        <ActivityIndicator color={variant === "outline" ? "#22C55E" : "#FFFFFF"} />
+        <ActivityIndicator
+          color={variant === "outline" ? "#22C55E" : "#FFFFFF"}
+        />
       ) : (
         <View className="flex-row items-center justify-center">
           {icon && iconPosition === "left" && (
