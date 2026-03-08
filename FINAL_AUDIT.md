@@ -181,16 +181,25 @@ const chipStyle = STATUS_STYLES[statusKey] ?? STATUS_STYLES["Pending"];
 
 ---
 
-### C-07 — `Button` Outline Spinner Shows Black, Not Primary Color
+### ✅ C-07 — `Button` Outline Spinner Shows Black, Not Primary Color — FIXED March 8, 2026
 
 **File:** `src/components/ui/Button.tsx`  
 **Category:** Breaking UI / wrong affordance
 
-```typescript
-<ActivityIndicator color={variant === "outline" ? "#000" : "#fff"} />
-```
+**Fix applied:**
 
-While an outline button has a white background and green text/border, its loading spinner shows black (`#000`). This is jarring and reads as a broken state. The correct color is `#22C55E` (primary).
+- Spinner color: `"#000"` → `"#22C55E"` for outline variant; `"#fff"` → `"#FFFFFF"` for all others (no functional change, explicit).
+- Border radius: `rounded-md` (6 px) → `rounded-xl` (16 px) — aligns with modal action buttons.
+
+```typescript
+// Before
+<ActivityIndicator color={variant === "outline" ? "#000" : "#fff"} />
+const baseStyle = "w-full py-3 rounded-md items-center justify-center h-14 flex-row";
+
+// After
+<ActivityIndicator color={variant === "outline" ? "#22C55E" : "#FFFFFF"} />
+const baseStyle = "w-full py-3 rounded-xl items-center justify-center h-14 flex-row";
+```
 
 ---
 
@@ -520,7 +529,7 @@ Supplier modal: `border-neutral-300` — Tailwind bare class (`#D4D4D4`) ≠ the
 | ~~4~~    | ~~C-03~~ ✅ | ~~Remove `reference` from export select or add column to `payments`~~ **DONE** | Fixed March 8, 2026 — `reference` removed from select + `ExportPayment` interface; `Payment.created_at` added                 |
 | ~~5~~    | ~~C-04~~ ✅ | ~~Fix `fetchProducts` to join `product_variants`, align field names~~ **DONE** | Fixed March 8, 2026 — join added, `ProductVariant` interface aligned, `ProductCard`+`VariantPicker`+`NewProductModal` updated |
 | ~~6~~    | ~~C-06~~ ✅ | ~~Add `Overdue` + `Partially Paid` chip cases to `OrderList`~~ **DONE**        | Fixed March 8, 2026 — `STATUS_STYLES` map; `Overdue` derived from Pending >30 days; `daysSince()` added to `helper.ts`        |
-| 7        | C-07        | Fix outline spinner color in `Button.tsx`                                      | `src/components/ui/Button.tsx`                                                                                                |
+| ~~7~~    | ~~C-07~~ ✅ | ~~Fix outline spinner color in `Button.tsx`~~ **DONE**                         | Fixed March 8, 2026 — spinner `#000` → `#22C55E`; `rounded-md` → `rounded-xl`                                               |
 | 8        | C-08        | Migrate `RecordDeliveryModal` to `@gorhom/bottom-sheet`                        | `src/components/suppliers/RecordDeliveryModal.tsx`                                                                            |
 | 9        | M-01        | Consolidate to single modal library (`@gorhom/bottom-sheet`)                   | All modal components                                                                                                          |
 | 10       | M-02        | Replace raw `TouchableOpacity` buttons with `Button.tsx`                       | Payment modals                                                                                                                |

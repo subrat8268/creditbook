@@ -24,7 +24,7 @@ export default function Button({
   iconPosition = "left",
 }: Props) {
   const baseStyle =
-    "w-full py-3 rounded-md items-center justify-center h-14 flex-row";
+    "w-full py-3 rounded-xl items-center justify-center h-14 flex-row";
 
   const variantStyle = clsx({
     "bg-primary": variant === "primary" && !disabled,
@@ -48,7 +48,7 @@ export default function Button({
       activeOpacity={0.8}
     >
       {loading ? (
-        <ActivityIndicator color={variant === "outline" ? "#000" : "#fff"} />
+        <ActivityIndicator color={variant === "outline" ? "#22C55E" : "#FFFFFF"} />
       ) : (
         <View className="flex-row items-center justify-center">
           {icon && iconPosition === "left" && (
