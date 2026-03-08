@@ -123,6 +123,15 @@ function buildStatementHtml(
 }
 
 // ─── Transaction Row ──────────────────────────────────────────────────────────
+const MODE_LABEL: Record<string, string> = {
+  cash: "Cash",
+  upi: "UPI",
+  neft: "NEFT",
+  draft: "Draft",
+  cheque: "Cheque",
+  online: "UPI",
+};
+
 function TransactionRow({ tx }: { tx: Transaction }) {
   const isPayment = tx.type === "payment";
   const borderColor = isPayment ? "#2ECC71" : "#E74C3C";
@@ -132,9 +141,10 @@ function TransactionRow({ tx }: { tx: Transaction }) {
   const title = isPayment
     ? "Payment Received"
     : `Invoice${tx.billNumber ? ` #${tx.billNumber}` : ""}`;
-  const subtitle = isPayment
-    ? (tx.paymentMode ?? "Payment")
-    : (tx.status ?? "");
+  const modeLabel = tx.paymentMode
+    ? (MODE_LABEL[tx.paymentMode.toLowerCase()] ?? tx.paymentMode)
+    : "Payment";
+  const subtitle = isPayment ? modeLabel : (tx.status ?? "");
 
   return (
     <View
@@ -318,7 +328,11 @@ export default function CustomerDetailScreen() {
       >
         {/* ── Hero Card ── */}
         <LinearGradient
-          colors={["#C0392B", "#7B1010"]}
+          colors={
+            customer.outstandingBalance === 0
+              ? ["#22C55E", "#16A34A"]
+              : ["#C0392B", "#7B1010"]
+          }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{
@@ -355,7 +369,9 @@ export default function CustomerDetailScreen() {
 
           <View className="flex-row justify-between items-center mb-[10px]">
             <Text className="text-[11px] font-bold text-white/75 tracking-widest">
-              TOTAL BALANCE DUE
+              {customer.outstandingBalance === 0
+                ? "ALL SETTLED 🎉"
+                : "TOTAL BALANCE DUE"}
             </Text>
             {customer.isOverdue && (
               <View className="bg-white/20 px-[10px] py-1 rounded-xl">
@@ -464,7 +480,7 @@ export default function CustomerDetailScreen() {
               <MessageCircle size={22} color="#22C55E" strokeWidth={2} />
             </View>
             <Text className="text-[13px] font-semibold text-[#1C1C1E]">
-              Remind
+              Send Reminder
             </Text>
           </TouchableOpacity>
         </View>
