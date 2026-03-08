@@ -395,24 +395,23 @@ USING (auth.uid() = user_id)
 
 ## Indexes
 
-| Index                          | Table            | Columns         | Type  |
-| ------------------------------ | ---------------- | --------------- | ----- |
-| `idx_customers_vendor`         | customers        | vendor_id       | BTREE |
-| `idx_customers_phone`          | customers        | phone           | BTREE |
-| `idx_products_vendor`          | products         | vendor_id       | BTREE |
-| `idx_product_variants_product` | product_variants | product_id      | BTREE |
-| `idx_orders_vendor`            | orders           | vendor_id       | BTREE |
-| `idx_orders_customer`          | orders           | customer_id     | BTREE |
-| `idx_orders_status`            | orders           | status          | BTREE |
-| `idx_orders_created_at`        | orders           | created_at DESC | BTREE |
-| `idx_order_items_order`        | order_items      | order_id        | BTREE |
-| `idx_payments_order`           | payments         | order_id        | BTREE |
+| Index                                 | Table               | Columns         | Type  |
+| ------------------------------------- | ------------------- | --------------- | ----- |
+| `idx_customers_vendor`                | customers           | vendor_id       | BTREE |
+| `idx_customers_phone`                 | customers           | phone           | BTREE |
+| `idx_products_vendor`                 | products            | vendor_id       | BTREE |
+| `idx_product_variants_product`        | product_variants    | product_id      | BTREE |
+| `idx_orders_vendor`                   | orders              | vendor_id       | BTREE |
+| `idx_orders_customer`                 | orders              | customer_id     | BTREE |
+| `idx_orders_status`                   | orders              | status          | BTREE |
+| `idx_orders_created_at`               | orders              | created_at DESC | BTREE |
+| `idx_order_items_order`               | order_items         | order_id        | BTREE |
+| `idx_payments_order`                  | payments            | order_id        | BTREE |
+| `idx_supplier_deliveries_supplier` ✅ | supplier_deliveries | supplier_id     | BTREE |
+| `idx_payments_made_supplier` ✅       | payments_made       | supplier_id     | BTREE |
+| `idx_payments_vendor` ✅              | payments            | vendor_id       | BTREE |
 
-**Missing indexes (potential slow queries):**
-
-- `supplier_deliveries(supplier_id)` — queried by supplier ID in fetchSupplierDetail
-- `payments_made(supplier_id)` — queried by supplier ID in fetchSuppliers and fetchSupplierDetail
-- `payments(vendor_id)` — queried in getDashboardData with `.eq("vendor_id", vendorId)`
+> ✅ **3 supplier-domain indexes added March 8, 2026** — previously missing, causing full table scans on supplier list, supplier detail, and dashboard load.
 
 ---
 

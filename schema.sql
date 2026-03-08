@@ -159,6 +159,11 @@ CREATE INDEX IF NOT EXISTS idx_orders_created_at    ON orders(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_order_items_order    ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_payments_order       ON payments(order_id);
 
+-- Supplier-domain indexes (added March 8, 2026 — were missing, caused full table scans)
+CREATE INDEX IF NOT EXISTS idx_supplier_deliveries_supplier ON supplier_deliveries(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_payments_made_supplier       ON payments_made(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_payments_vendor              ON payments(vendor_id);
+
 
 -- =============================================================================
 -- MIGRATION HELPERS (run these if upgrading an existing database)

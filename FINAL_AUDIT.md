@@ -327,16 +327,24 @@ balance_due: Number(o.balance_due), // DB GENERATED column — single source of 
 
 ---
 
-### M-15 — Three Missing DB Indexes on High-Traffic Queries
+### ✅ M-15 — Three Missing DB Indexes Added (March 8, 2026)
 
 **File:** `schema.sql`  
 **Category:** Performance
 
-| Missing Index                      | Query That Needs It                                                           |
-| ---------------------------------- | ----------------------------------------------------------------------------- |
-| `supplier_deliveries(supplier_id)` | `fetchSupplierDetail` — joins by supplier ID on every detail page load        |
-| `payments_made(supplier_id)`       | `fetchSuppliers` — runs per-supplier balance aggregation on list screen       |
-| `payments(vendor_id)`              | `getDashboardData` — full scan of payments per vendor on every dashboard load |
+All 3 indexes added to `schema.sql` and run in Supabase SQL Editor:
+
+```sql
+CREATE INDEX IF NOT EXISTS idx_supplier_deliveries_supplier ON supplier_deliveries(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_payments_made_supplier       ON payments_made(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_payments_vendor              ON payments(vendor_id);
+```
+
+| Index                              | Table               | Eliminates Full Scan On                                     |
+| ---------------------------------- | ------------------- | ----------------------------------------------------------- |
+| `idx_supplier_deliveries_supplier` | supplier_deliveries | `fetchSupplierDetail` — joins by supplier_id on detail load |
+| `idx_payments_made_supplier`       | payments_made       | `fetchSuppliers` — per-supplier balance aggregation on list |
+| `idx_payments_vendor`              | payments            | `getDashboardData` — all payments scan per vendor on load   |
 
 ---
 
@@ -495,6 +503,6 @@ Supplier modal: `border-neutral-300` — Tailwind bare class (`#D4D4D4`) ≠ the
 | 11       | M-03        | Add active state to `FilterBar` chips                                          | `src/components/orders/FilterBar.tsx`                                                                                         |
 | 12       | M-04        | Add Export to tab bar or make it a proper navigation destination               | `app/(main)/_layout.tsx`                                                                                                      |
 | 13       | M-07        | Migrate `EmptyState` + `Toast` to NativeWind                                   | `src/components/feedback/`                                                                                                    |
-| 14       | M-15        | Add 3 missing DB indexes                                                       | `schema.sql`                                                                                                                  |
+| ~~14~~   | ~~M-15~~ ✅ | ~~Add 3 missing DB indexes~~ **DONE**                                          | Fixed March 8, 2026 — added to `schema.sql` + run via Supabase SQL Editor                                                     |
 | 15       | M-05–M-14   | Remaining architecture + data issues                                           | Various                                                                                                                       |
 | 16       | N-01–N-15   | Visual polish pass                                                             | Various                                                                                                                       |
