@@ -1,7 +1,7 @@
 # CreditBook Design System
 
-> **Version**: 1.2
-> **Last Updated**: March 8, 2026
+> **Version**: 1.3
+> **Last Updated**: March 9, 2026
 > **Maintained by**: CreditBook Product & Design Team
 
 ---
@@ -106,7 +106,7 @@ Use **short, action-oriented labels**:
 | `primary`        | Green      | `#22C55E` | Primary actions, FAB, active nav state, confirmations         |
 | `primary-dark`   | Dark Green | `#16A34A` | Hover / pressed state for primary green                       |
 | `success`        | Green      | `#22C55E` | Money received, paid invoices, positive balances              |
-| `danger`         | Red        | `#EF4444` | Money owed, overdue accounts, negative values, delete actions |
+| `danger`         | Red        | `#E74C3C` | Money owed, overdue accounts, negative values, delete actions |
 | `warning`        | Amber      | `#F59E0B` | Pending payments, reminders, partial transactions             |
 | `fab`            | Blue       | `#2563EB` | Floating Action Button background                             |
 | `background`     | Light Gray | `#F6F7F9` | App background — reduces eye strain                           |
@@ -138,7 +138,7 @@ When `dashboard_mode = 'both'` the home dashboard hero area splits into two side
 | Panel           | Background | Amount Color | Label                           |
 | :-------------- | :--------- | :----------- | :------------------------------ |
 | **YOU RECEIVE** | `#F0FDF4`  | `#22C55E`    | Total receivable from customers |
-| **YOU OWE**     | `#FEF2F2`  | `#EF4444`    | Total payable to suppliers      |
+| **YOU OWE**     | `#FEF2F2`  | `#E74C3C`    | Total payable to suppliers      |
 
 Below the two panels a **Net Position row** displays: `receivables − payables` — green text if positive, red if negative.
 
@@ -165,7 +165,7 @@ colors: {
   primaryDark: '#16A34A',
   fab:         '#2563EB',
   success:     '#22C55E',
-  danger:      '#EF4444',
+  danger:      '#E74C3C',
   warning:     '#F59E0B',
   background:  '#F6F7F9',
   textPrimary: '#1C1C1E',
@@ -399,7 +399,7 @@ Animated slide-down notification for success and error feedback. Implemented in 
 | Position      | Top of screen, below status bar                |
 | Animation     | Slide-down (200ms easeOut), auto-dismiss at 3s |
 | Success color | `#22C55E` background, white text               |
-| Error color   | `#EF4444` background, white text               |
+| Error color   | `#E74C3C` background, white text               |
 | Border radius | 12dp                                           |
 | Shadow        | Soft elevation 4                               |
 
@@ -507,7 +507,7 @@ Every transaction row, balance card, and customer entry uses consistent color co
 | Scenario                       | Visual Treatment                                      |
 | :----------------------------- | :---------------------------------------------------- |
 | Customer paid in full          | Green amount text (`#22C55E`) + PAID chip             |
-| Customer has balance due       | Red amount text (`#EF4444`) + OVERDUE or PENDING chip |
+| Customer has balance due       | Red amount text (`#E74C3C`) + OVERDUE or PENDING chip |
 | Partial payment recorded       | Amber amount text (`#F59E0B`) + PARTIAL chip          |
 | My payment to supplier pending | Red balance gradient card (`#DC2626 → #B91C1C`)       |
 

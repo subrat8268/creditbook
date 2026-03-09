@@ -9,7 +9,7 @@ type StatusDotProps = {
 
 const DOT_COLOR: Record<Status, string> = {
   Paid: "#22C55E",
-  Pending: "#F39C12",
+  Pending: "#F59E0B",
   "Partially Paid": "#E74C3C",
 };
 

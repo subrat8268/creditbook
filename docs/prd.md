@@ -1,7 +1,7 @@
 # CreditBook – Product Requirements Document
 
-> **Version**: 1.1
-> **Last Updated**: March 8, 2026
+> **Version**: 1.2
+> **Last Updated**: March 9, 2026
 > **Status**: Active Development
 > **Owner**: CreditBook Product Team
 
@@ -340,8 +340,8 @@ Role maps to `dashboard_mode` on the `profiles` table and controls which net-pos
 
 - Header with back navigation and title "Financial Position"
 - **Customers Owe Me** card (green `#F0FDF4` background, `#22C55E` text): total receivables from all customers
-- **I Owe Suppliers** card (red `#FEF2F2` background, `#EF4444` text): total payables to all suppliers
-- **Net Position** row: `receivables − payables`; green if positive (`#22C55E`), red if negative (`#EF4444`)
+- **I Owe Suppliers** card (red `#FEF2F2` background, `#E74C3C` text): total payables to all suppliers
+- **Net Position** row: `receivables − payables`; green if positive (`#22C55E`), red if negative (`#E74C3C`)
 - Trend icons: `TrendingUp` (green) / `TrendingDown` (red) from `lucide-react-native`
 - Loading and error states handled gracefully
 
@@ -394,14 +394,14 @@ Full design system documentation is available in [`docs/design-system.md`](./des
 | `primary` (Green)         | `#22C55E` | Brand identity, CTAs, active navigation, confirmations |
 | `primary-dark`            | `#16A34A` | Hover / pressed state for primary green                |
 | `fab`                     | `#2563EB` | Floating Action Button                                 |
-| `success` (Green)         | `#2ECC71` | Money received, paid balance, positive state           |
+| `success` (Green)         | `#22C55E` | Money received, paid balance, positive state           |
 | `danger` (Red)            | `#E74C3C` | Money owed, overdue, negative state                    |
-| `warning` (Amber)         | `#F39C12` | Pending, partial, reminder state                       |
-| `background` (Light Gray) | `#F6F7FB` | App background                                         |
+| `warning` (Amber)         | `#F59E0B` | Pending, partial, reminder state                       |
+| `background` (Light Gray) | `#F6F7F9` | App background                                         |
 | `surface` (White)         | `#FFFFFF` | Cards, modals                                          |
 | `text-primary`            | `#1C1C1E` | Headings, body, financial values                       |
-| `text-secondary`          | `#8E8E93` | Labels, captions, metadata                             |
-| `divider`                 | `#E5E5EA` | Row separators, input borders                          |
+| `text-secondary`          | `#6B7280` | Labels, captions, metadata                             |
+| `divider`                 | `#E5E7EB` | Row separators, input borders                          |
 
 The color system encodes financial status visually — users can assess ledger health from a list view without reading individual balances.
 

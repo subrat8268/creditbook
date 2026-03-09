@@ -1,6 +1,6 @@
 # CreditBook — Project Architecture
 
-> **Last Updated**: March 8, 2026
+> **Last Updated**: March 9, 2026
 > **App Version**: 3.3
 > **Status**: Active Development
 
@@ -96,13 +96,9 @@ src/
 ```
 src/components/
 ├── BottomSheetForm.tsx            ← Generic bottom-sheet form wrapper (used in ProductsScreen)
-├── FloatingActionButton.tsx       ← Reusable FAB
 ├── ImagePickerField.tsx           ← Camera/gallery image picker input
-├── PdfPreviewModal.tsx            ← ⚠️ DEAD (no imports found anywhere)
-├── QuickAction.tsx                ← ⚠️ DEAD (no imports found anywhere)
-├── ScreenWrapper.tsx              ← Safe-area wrapper used by 5+ screens
+├── ScreenWrapper.tsx              ← Safe-area wrapper used by 5+ screens; uses SafeAreaView from react-native-safe-area-context
 ├── SearchablePickerModal.tsx      ← Full-screen picker (React Native Modal)
-├── SearchBar.tsx                  ← Shared search input
 ├── SubscriptionCard.tsx           ← Used only in ProfileScreen
 │
 ├── customers/
@@ -161,8 +157,10 @@ src/components/
 └── ui/
     ├── Button.tsx
     ├── Card.tsx
+    ├── FloatingActionButton.tsx    ← Moved from root components/ (P-27) — 5 importers
     ├── Input.tsx
     ├── Modal.tsx                   ← Wraps react-native-modal (legacy pattern)
+    ├── SearchBar.tsx               ← Moved from root components/ (P-27) — 5 importers
     └── StatusDot.tsx
 ```
 
@@ -220,7 +218,7 @@ src/utils/
 src/store/
 ├── authStore.ts
 ├── customersStore.ts
-├── dashboardStore.tsx     ← ⚠️ DEAD — useDashboardStore never imported outside its own file
+├── dashboardStore.tsx     ← ⚠️ CONFIRMED DEAD — `useDashboardStore` never imported; delete in v3.4 cleanup
 ├── languageStore.ts
 ├── orderStore.ts
 └── suppliersStore.ts
@@ -235,7 +233,7 @@ src/store/
 | **theme.ts**            | `src/utils/theme.ts`                     | `colors` (primary `#22C55E`, success, danger, warning, info, neutral), `dashboardPalette`, `spacing`. Single source of truth — 163 lines.                 |
 | **tailwind.config.js**  | root                                     | Reads from `theme.ts` via `require`. Maps `primary`, `danger`, `success`, `warning`, `info`, `textPrimary`, font family tokens.                           |
 | **dashboardUi.ts**      | `src/utils/dashboardUi.ts`               | Re-exports `dashboardPalette` from `theme.ts`. Adds `formatINR()` and `formatDashboardDate()`.                                                            |
-| **Toast.tsx**           | `src/components/feedback/Toast.tsx`      | Context: `ToastProvider` + `useToast()`. Hook exposes `show({ message, type, duration? })`. Slide-down animation. Success = `#22C55E`, Error = `#EF4444`. |
+| **Toast.tsx**           | `src/components/feedback/Toast.tsx`      | Context: `ToastProvider` + `useToast()`. Hook exposes `show({ message, type, duration? })`. Slide-down animation. Success = `#22C55E`, Error = `#E74C3C`. |
 | **EmptyState.tsx**      | `src/components/feedback/EmptyState.tsx` | Props: `message?` (legacy), `title?`, `description?`, `cta?`, `onCta?`. Icon: `CircleOff`. CTA button is green `#22C55E`.                                 |
 | **\_layout.tsx** (root) | `app/_layout.tsx`                        | Mounts `QueryClientProvider` → `ThemeProvider` → `GestureHandlerRootView` → `ToastProvider` → `Stack`. Handles auth guard + onboarding routing.           |
 | **DashboardScreen.tsx** | `src/screens/DashboardScreen.tsx`        | Reads `profile.dashboard_mode`. Renders split hero (`isBothMode`) or single (`isVendorMode`). Uses all 7 dashboard sub-components.                        |
@@ -275,6 +273,7 @@ app/(main)/profile/index.tsx           ← Profile tab (UserCircle icon)
 
 ```
 app/(main)/reports/index.tsx           ← Financial Position (linked from DashboardActionBar)
+app/(main)/reports/_layout.tsx         ← Layout file (created P-13 — prevents double header)
 app/(main)/export/index.tsx            ← Data export screen
 ```
 
@@ -456,13 +455,15 @@ All hooks live in `src/hooks/`:
 
 ### `src/components/ui/`
 
-| File            | Purpose                                        |
-| :-------------- | :--------------------------------------------- |
-| `Button.tsx`    | Reusable button (primary/secondary variants)   |
-| `Card.tsx`      | White card container                           |
-| `Input.tsx`     | Styled text input                              |
-| `Modal.tsx`     | `AppModal` wrapper around `react-native-modal` |
-| `StatusDot.tsx` | Colored indicator dot                          |
+| File                       | Purpose                                        |
+| :------------------------- | :--------------------------------------------- |
+| `Button.tsx`               | Reusable button (primary/secondary variants)   |
+| `Card.tsx`                 | White card container                           |
+| `FloatingActionButton.tsx` | Reusable FAB (moved from root — P-27)          |
+| `Input.tsx`                | Styled text input                              |
+| `Modal.tsx`                | `AppModal` wrapper around `react-native-modal` |
+| `SearchBar.tsx`            | Shared search input (moved from root — P-27)   |
+| `StatusDot.tsx`            | Colored indicator dot                          |
 
 ### `src/components/dashboard/`
 
@@ -482,11 +483,11 @@ All hooks live in `src/hooks/`:
 
 ### Dead Files (never imported)
 
-| File                                 | Reason                                                                                                                                                                                                                     |
-| :----------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/components/PdfPreviewModal.tsx` | No import found anywhere in the codebase                                                                                                                                                                                   |
-| `src/components/QuickAction.tsx`     | No import found; name only appears in i18n string keys                                                                                                                                                                     |
-| `src/store/dashboardStore.tsx`       | `useDashboardStore` is never imported; dashboard data flows through `useDashboard` → TanStack Query. The store's field names (`totalRevenue`, `outstandingAmount`) are also outdated vs. the current `DashboardData` shape |
+| File                                 | Reason                                                                                                                                                                                                                     | Status                                              |
+| :----------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------- |
+| `src/components/PdfPreviewModal.tsx` | No import found anywhere in the codebase                                                                                                                                                                                   | ✅ **Deleted** (P-10, March 8, 2026)                |
+| `src/components/QuickAction.tsx`     | No import found; name only appears in i18n string keys                                                                                                                                                                     | ✅ **Deleted** (P-10, March 8, 2026)                |
+| `src/store/dashboardStore.tsx`       | `useDashboardStore` is never imported; dashboard data flows through `useDashboard` → TanStack Query. The store's field names (`totalRevenue`, `outstandingAmount`) are also outdated vs. the current `DashboardData` shape | ⚠️ **Confirmed dead** — queued for deletion in v3.4 |
 
 ### Three Conflicting Modal Patterns
 
@@ -500,17 +501,17 @@ All hooks live in `src/hooks/`:
 
 ### Unorganized Root-Level Components
 
-The following files live at `src/components/` root instead of a domain subfolder:
+All multi-screen shared utilities have been moved to domain subfolders. Remaining root-level files:
 
-| File                        | Used By                                                                                                   |
-| :-------------------------- | :-------------------------------------------------------------------------------------------------------- |
-| `BottomSheetForm.tsx`       | `ProductsScreen.tsx`                                                                                      |
-| `FloatingActionButton.tsx`  | Multiple screens                                                                                          |
-| `ImagePickerField.tsx`      | Onboarding / profile screens                                                                              |
-| `ScreenWrapper.tsx`         | `SuppliersScreen`, `ProfileScreen`, `ProductsScreen`, `OrdersScreen`, `ExportScreen`, `CreateOrderScreen` |
-| `SearchablePickerModal.tsx` | Order creation flow                                                                                       |
-| `SearchBar.tsx`             | Multiple screens                                                                                          |
-| `SubscriptionCard.tsx`      | `ProfileScreen` only                                                                                      |
+| File                        | Used By                                                                                                   | Status                                                                |
+| :-------------------------- | :-------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------- |
+| `BottomSheetForm.tsx`       | `ProductsScreen.tsx`                                                                                      | Active; 1 importer — kept at root until second consumer warrants move |
+| `ImagePickerField.tsx`      | Onboarding / profile screens                                                                              | Active                                                                |
+| `ScreenWrapper.tsx`         | `SuppliersScreen`, `ProfileScreen`, `ProductsScreen`, `OrdersScreen`, `ExportScreen`, `CreateOrderScreen` | Active                                                                |
+| `SearchablePickerModal.tsx` | Order creation flow                                                                                       | Active                                                                |
+| `SubscriptionCard.tsx`      | `ProfileScreen` only                                                                                      | Active                                                                |
+
+> **P-27 (March 9, 2026):** `FloatingActionButton.tsx` and `SearchBar.tsx` were moved from root to `src/components/ui/`. All 10 import paths updated across 7 files.
 
 ### Inconsistent `src/screens/` Indirection Layer
 

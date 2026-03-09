@@ -1,7 +1,7 @@
 -- =============================================================================
 -- CreditBook App - Full Database Schema
--- Version: 1.7 (app v2.4)
--- Last Updated: March 2, 2026
+-- Version: 1.8 (app v3.0)
+-- Last Updated: March 9, 2026
 -- 
 -- Run this entire file in your Supabase SQL Editor to set up or reset the DB.
 -- For incremental migrations on an existing DB, see the ALTER TABLE statements
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   name TEXT,
   phone TEXT,
   role TEXT,
-  dashboard_mode TEXT,           -- 'vendor' | 'receiver'
+  dashboard_mode TEXT,           -- 'seller' | 'distributor' | 'both'
   onboarding_complete BOOLEAN NOT NULL DEFAULT FALSE,
 
   -- Business details
@@ -389,6 +389,18 @@ UPDATE profiles SET onboarding_complete = true WHERE created_at < NOW();
 
 -- v2.4 — Auto-create profile trigger for self-signup
 -- Run the handle_new_user function + trigger block above if not already applied.
+
+-- v3.0 — March 8-9, 2026 fixes (run in Supabase SQL Editor)
+-- Fix stale dashboard_mode values written by old role screen:
+ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_dashboard_mode_check;
+UPDATE profiles SET dashboard_mode = 'seller'      WHERE dashboard_mode IN ('vendor', 'retailer', 'user');
+UPDATE profiles SET dashboard_mode = 'distributor' WHERE dashboard_mode IN ('receiver', 'wholesaler');
+UPDATE profiles SET dashboard_mode = 'both'        WHERE dashboard_mode IS NULL OR dashboard_mode NOT IN ('seller', 'distributor', 'both');
+ALTER TABLE profiles ADD CONSTRAINT profiles_dashboard_mode_check
+  CHECK (dashboard_mode IN ('seller', 'distributor', 'both'));
+
+-- Supplier RLS: already correct in this schema; applied via SQL Editor March 8.
+-- Supplier indexes: already present above (idx_supplier_deliveries_supplier, etc.)
 
 -- =============================================================================
 -- v1.7 — SUPPLIER / DISTRIBUTOR SYSTEM

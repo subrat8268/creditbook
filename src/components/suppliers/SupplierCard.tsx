@@ -5,7 +5,7 @@ import { colors } from "../../utils/theme";
 
 const AVATAR_COLORS = [
   colors.danger.DEFAULT, // #E74C3C  red
-  colors.warning.DEFAULT, // #F39C12  amber/orange
+  colors.warning.DEFAULT, // #F59E0B  amber/orange
   colors.primary.DEFAULT, // #22C55E  green
   colors.info.DEFAULT, // #4F9CFF  blue
   "#9B59B6", // purple

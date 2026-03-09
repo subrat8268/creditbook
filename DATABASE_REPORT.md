@@ -1,9 +1,9 @@
 # CreditBook — Supabase Database Architecture Report
 
-> Generated: March 8, 2026  
+> Generated: March 9, 2026  
 > Source files scanned: `schema.sql`, `src/api/*.ts`, `src/types/*.ts`  
 > Supabase project URL sourced from: `EXPO_PUBLIC_SUPABASE_URL` env var  
-> Schema version: **1.7 (app v2.4)**
+> Schema version: **1.8 (app v3.0)**
 
 ---
 
@@ -417,18 +417,18 @@ USING (auth.uid() = user_id)
 
 ## Issues Summary
 
-| #   | Severity    | Table                                                                          | Issue                                                                                                                                                                             |
-| --- | ----------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | 🔴 Critical | `profiles`                                                                     | `dashboard_mode` DB constraint `('seller', 'distributor', 'both')` conflicts with TypeScript type which includes `"vendor"`, `"receiver"`, `"wholesaler"`, `"retailer"`, `"user"` |
-| 2   | 🟡 Medium   | `customers`                                                                    | `email` field in `CustomerDetail` type has no corresponding DB column — always `undefined`                                                                                        |
-| 3   | 🔴 Critical | `products`                                                                     | `fetchProducts` does `select("*")` — never joins `product_variants`; `variants` array always empty                                                                                |
-| 4   | 🔴 Critical | `product_variants`                                                             | Table defined in schema but **zero API queries** reference it                                                                                                                     |
-| 5   | 🟡 Medium   | `product_variants`                                                             | DB column `variant_name` vs TypeScript `ProductVariant.name` — field name mismatch                                                                                                |
-| 6   | 🟡 Low      | `orders`                                                                       | `balance_due` recomputed in app despite being a DB-generated column — duplicate logic                                                                                             |
-| 7   | 🔴 Critical | `orders`                                                                       | `fetchOrders` search filter references non-existent columns `customer_name` and `customer_phone` — **order search is broken**                                                     |
-| 8   | 🔴 Critical | `payments`                                                                     | `fetchPaymentsForExport` selects `reference` column — **column does not exist in schema, export will error**                                                                      |
-| 9   | 🟡 Low      | `payments`                                                                     | `Payment` TypeScript interface missing `created_at` field                                                                                                                         |
-| 10  | ✅ Fixed    | `suppliers`, `supplier_deliveries`, `supplier_delivery_items`, `payments_made` | RLS policies updated to `vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid())` — fixed March 8, 2026                                                                 |
+| #   | Severity | Table                                                                          | Issue                                                                                                                                                                |
+| --- | -------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | ✅ Fixed | `profiles`                                                                     | `dashboard_mode` values aligned: `MODE_MAP` in `role.tsx` writes `'seller'`/`'distributor'`. Stale rows migrated. DB CHECK constraint enforced. Fixed March 8, 2026. |
+| 2   | 🟡 Low   | `customers`                                                                    | `email` field in `CustomerDetail` type has no corresponding DB column — always `undefined`. Deferred (non-breaking).                                                 |
+| 3   | ✅ Fixed | `products`                                                                     | `fetchProducts` now joins `product_variants` explicitly. `variants` array populated. Fixed March 8, 2026.                                                            |
+| 4   | ✅ Fixed | `product_variants`                                                             | Table now fully queried via join in `fetchProducts`. Fixed March 8, 2026.                                                                                            |
+| 5   | ✅ Fixed | `product_variants`                                                             | `ProductVariant.name` → `variant_name` to match DB column. Fixed March 8, 2026.                                                                                      |
+| 6   | ✅ Fixed | `orders`                                                                       | Removed app-side `balance_due` recalculation — now reads `Number(o.balance_due)` from DB GENERATED column. Fixed March 8, 2026.                                      |
+| 7   | ✅ Fixed | `orders`                                                                       | `fetchOrders` search updated: `!inner` join on `customers`, `.or()` uses dot notation for `customers.name` / `customers.phone`. Fixed March 8, 2026.                 |
+| 8   | ✅ Fixed | `payments`                                                                     | `fetchPaymentsForExport` no longer selects non-existent `reference` column. `total_amount` added to join. Fixed March 8, 2026.                                       |
+| 9   | ✅ Fixed | `payments`                                                                     | `Payment` TypeScript interface updated: `created_at: string` added. Fixed March 8, 2026.                                                                             |
+| 10  | ✅ Fixed | `suppliers`, `supplier_deliveries`, `supplier_delivery_items`, `payments_made` | RLS policies updated to `vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid())`. Fixed March 8, 2026.                                                    |
 
 ---
 

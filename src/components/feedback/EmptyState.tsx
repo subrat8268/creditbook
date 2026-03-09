@@ -28,7 +28,7 @@ export default function EmptyState({
       {/* Icon circle — neutral.100 background */}
       <View
         className="w-[72px] h-[72px] rounded-full items-center justify-center mb-4"
-        style={{ backgroundColor: "#F6F7FB" }}
+        style={{ backgroundColor: "#F6F7F9" }}
       >
         <CircleOff size={36} color="#9CA3AF" strokeWidth={1.5} />
       </View>
@@ -43,7 +43,7 @@ export default function EmptyState({
       {sub ? (
         <Text
           className="text-[14px] text-center leading-5 mb-5"
-          style={{ color: "#8E8E93" }}
+          style={{ color: "#6B7280" }}
         >
           {sub}
         </Text>

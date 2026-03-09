@@ -13,10 +13,10 @@ import FloatingActionButton from "../components/ui/FloatingActionButton";
 import SearchBar from "../components/ui/SearchBar";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import {
-    useAddProduct,
-    useDeleteProduct,
-    useProducts,
-    useUpdateProduct,
+  useAddProduct,
+  useDeleteProduct,
+  useProducts,
+  useUpdateProduct,
 } from "../hooks/useProducts";
 import { useAuthStore } from "../store/authStore";
 
@@ -108,7 +108,9 @@ export default function ProductsScreen() {
         name: values.name,
         base_price: Number(values.base_price),
         image_url: mainImageUrl || null,
-        variants: processedVariants.length > 0 ? processedVariants : [],
+        variants: (processedVariants.length > 0
+          ? processedVariants
+          : []) as any,
       });
 
       setIsBottomSheetOpen(false);
@@ -152,7 +154,9 @@ export default function ProductsScreen() {
           name: values.name,
           base_price: Number(values.base_price),
           image_url: mainImageUrl || null,
-          variants: processedVariants.length > 0 ? processedVariants : [],
+          variants: (processedVariants.length > 0
+            ? processedVariants
+            : []) as any,
         },
       });
 
@@ -205,7 +209,7 @@ export default function ProductsScreen() {
         name={item.name}
         basePrice={item.base_price}
         variants={item.variants}
-        image={item.image_url || undefined}
+     
         onOptionsPress={() => handleOptionsPress(item)}
       />
     ),

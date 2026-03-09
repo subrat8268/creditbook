@@ -157,7 +157,7 @@ export const DashboardScreen = () => {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
-                backgroundColor: "#F6F7FB",
+                backgroundColor: "#F6F7F9",
                 borderRadius: 12,
                 paddingHorizontal: 16,
                 paddingVertical: 10,

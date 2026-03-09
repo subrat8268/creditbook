@@ -1,7 +1,7 @@
 # CreditBook UX Context
 
 > **Purpose**: This document provides complete UX context for AI UI generation tools (e.g., Google Stitch, Galileo, Uizard) and human designers onboarding to the CreditBook product.
-> **Last Updated**: March 8, 2026
+> **Last Updated**: March 9, 2026
 > **References**: `docs/prd.md`, `docs/design-system.md`, `docs/roadmap.md`, `README.md`
 
 ---
@@ -358,7 +358,7 @@ Every screen should support at least one of these goals:
 **Main UI components**:
 
 - **YOU RECEIVE panel** (green `#F0FDF4` background, `#22C55E` amount text): total positive customer balances
-- **YOU OWE panel** (red `#FEF2F2` background, `#EF4444` amount text): total outstanding supplier balances
+- **YOU OWE panel** (red `#FEF2F2` background, `#E74C3C` amount text): total outstanding supplier balances
 - **Net Position row** below both panels: `receivables − payables`; green if positive, red if negative
 - For `seller` or `distributor` mode, only the relevant single-card summary is shown (not the split layout)
 
@@ -378,7 +378,7 @@ Every screen should support at least one of these goals:
 
 - Header with back button (`ArrowLeft` from lucide-react-native) and title "Financial Position"
 - **Customers Owe Me** card: green background `#F0FDF4`, `#22C55E` amount, `TrendingUp` icon
-- **I Owe Suppliers** card: red background `#FEF2F2`, `#EF4444` amount, `TrendingDown` icon
+- **I Owe Suppliers** card: red background `#FEF2F2`, `#E74C3C` amount, `TrendingDown` icon
 - **Net Position** row: `TrendingUp`/`TrendingDown` icon based on sign; green if positive, red if negative
 - Loading spinner (`#22C55E`) and error state handled gracefully
 
@@ -463,7 +463,7 @@ Color is the primary communication channel for financial state — never rely on
 | State             | Color | Hex       | Used On                                                               |
 | :---------------- | :---- | :-------- | :-------------------------------------------------------------------- |
 | Paid / Received   | Green | `#22C55E` | Payment rows, PAID badge, positive balance amounts                    |
-| Owed / Overdue    | Red   | `#EF4444` | Bill rows, OVERDUE badge, red balance amounts, supplier balance cards |
+| Owed / Overdue    | Red   | `#E74C3C` | Bill rows, OVERDUE badge, red balance amounts, supplier balance cards |
 | Pending / Partial | Amber | `#F59E0B` | PENDING badge, amber balance amounts, partial payment states          |
 | Primary Action    | Green | `#22C55E` | FAB, active nav, primary buttons, confirmations                       |
 
@@ -559,7 +559,7 @@ Success and error feedback is delivered via the shared `Toast` component — nev
 | Position  | Slides in from top of screen, below status bar               |
 | Animation | Slide-down 200ms, auto-dismiss after 3s                      |
 | Success   | Green `#22C55E` background — payment recorded, save success  |
-| Error     | Red `#EF4444` background — network failure, validation error |
+| Error     | Red `#E74C3C` background — network failure, validation error |
 
 **Usage**: `useToast()` hook from `src/components/feedback/Toast.tsx`. `ToastProvider` wraps the root layout.
 
@@ -579,7 +579,7 @@ Success and error feedback is delivered via the shared `Toast` component — nev
 | `primary-dark`   | `#16A34A` | Hover / pressed state for primary green  |
 | `fab`            | `#2563EB` | Floating Action Button                   |
 | `success`        | `#22C55E` | Received money, paid state               |
-| `danger`         | `#EF4444` | Owed money, overdue state                |
+| `danger`         | `#E74C3C` | Owed money, overdue state                |
 | `warning`        | `#F59E0B` | Pending payments, partial state          |
 | `background`     | `#F6F7F9` | App background, search inputs            |
 | `surface`        | `#FFFFFF` | Cards, modals, panels                    |

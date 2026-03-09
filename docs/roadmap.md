@@ -1,9 +1,9 @@
 # CreditBook Product Roadmap
 
-> **Version**: 1.1
-> **Last Updated**: March 8, 2026
+> **Version**: 1.2
+> **Last Updated**: March 9, 2026
 > **Status**: Active Development
-> **Current Phase**: Phase 6.2 (complete) → Phase 7 (in progress)
+> **Current Phase**: Phase 6.3 (complete) → Phase 7 (in progress)
 
 ---
 
@@ -23,17 +23,18 @@ The product is built around three core outcomes:
 
 ## Roadmap Overview
 
-| Phase     | Title                                 | Status         | Key Deliverable                                                          |
-| :-------- | :------------------------------------ | :------------- | :----------------------------------------------------------------------- |
-| Phase 1   | Core Ledger MVP                       | ✅ Complete    | Customer credit tracking and balance management                          |
-| Phase 2   | Billing & Suppliers                   | ✅ Complete    | Itemized bills, supplier management, net position                        |
-| Phase 3   | Indian Billing Suite                  | ✅ Complete    | GST, sequential IDs, loading charge, WhatsApp reminders                  |
-| Phase 4   | Platform Features                     | ✅ Complete    | Onboarding, Sentry, i18n, CSV export, contacts import                    |
-| Phase 5   | Design System & Dashboard             | ✅ Complete    | Green (#22C55E) brand system, premium dashboard redesign                 |
-| Phase 6   | Customer UI Overhaul                  | ✅ Complete    | Transaction feed, payment modal, customer detail redesign                |
-| Phase 6.2 | UI Audit — Icons, Colors & Components | ✅ Complete    | Lucide migration, @gorhom/bottom-sheet, Toast, Financial Position screen |
-| Phase 7   | Growth & Monetisation                 | 🔄 In Progress | UPI, push notifications, analytics, premium tier                         |
-| Phase 8   | Financial Platform                    | 🗓 Planned     | Credit scoring, lending, automated bookkeeping                           |
+| Phase     | Title                                 | Status         | Key Deliverable                                                              |
+| :-------- | :------------------------------------ | :------------- | :--------------------------------------------------------------------------- |
+| Phase 1   | Core Ledger MVP                       | ✅ Complete    | Customer credit tracking and balance management                              |
+| Phase 2   | Billing & Suppliers                   | ✅ Complete    | Itemized bills, supplier management, net position                            |
+| Phase 3   | Indian Billing Suite                  | ✅ Complete    | GST, sequential IDs, loading charge, WhatsApp reminders                      |
+| Phase 4   | Platform Features                     | ✅ Complete    | Onboarding, Sentry, i18n, CSV export, contacts import                        |
+| Phase 5   | Design System & Dashboard             | ✅ Complete    | Green (#22C55E) brand system, premium dashboard redesign                     |
+| Phase 6   | Customer UI Overhaul                  | ✅ Complete    | Transaction feed, payment modal, customer detail redesign                    |
+| Phase 6.2 | UI Audit — Icons, Colors & Components | ✅ Complete    | Lucide migration, @gorhom/bottom-sheet, Toast, Financial Position screen     |
+| Phase 6.3 | Production Hardening                  | ✅ Complete    | FlatList perf, KeyboardAvoidingView, icon/data audit, component organisation |
+| Phase 7   | Growth & Monetisation                 | 🔄 In Progress | UPI, push notifications, analytics, premium tier                             |
+| Phase 8   | Financial Platform                    | 🗓 Planned     | Credit scoring, lending, automated bookkeeping                               |
 
 ---
 
@@ -257,7 +258,7 @@ The product is built around three core outcomes:
 | :---------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Lucide Icon Migration**     | Replaced all `@expo/vector-icons` (Ionicons, MaterialIcons) with `lucide-react-native` across ~35 files; package removed                              |
 | **@gorhom/bottom-sheet**      | Upgraded `RecordCustomerPaymentModal` and `RecordPaymentMadeModal` to `@gorhom/bottom-sheet` v5.2.6 (`snapPoints: ["65%"]` / `["62%"]`)               |
-| **Toast Component**           | Built animated `Toast.tsx` with `ToastProvider` / `useToast()` hook; success (green `#22C55E`) + error (red `#EF4444`); wired into root `_layout.tsx` |
+| **Toast Component**           | Built animated `Toast.tsx` with `ToastProvider` / `useToast()` hook; success (green `#22C55E`) + error (red `#E74C3C`); wired into root `_layout.tsx` |
 | **EmptyState Upgrade**        | Enhanced `EmptyState` component with `title`, `description`, `cta`, `onCta` props + `CircleOff` icon + green CTA button                               |
 | **Financial Position Screen** | New screen at `app/(main)/reports/index.tsx`; shows receivables, payables, and net position; linked from Dashboard "View Report"                      |
 | **Dashboard "Both" Mode**     | Split hero card for `dashboard_mode = 'both'`: green `#F0FDF4` YOU RECEIVE panel + red `#FEF2F2` YOU OWE panel + net position row                     |
@@ -275,6 +276,34 @@ The product is built around three core outcomes:
 [✓] feat: Build Financial Position screen at app/(main)/reports/index.tsx
 [✓] feat: Dashboard split hero card for dashboard_mode = 'both'
 [✓] fix: Lock primary color to #22C55E in theme.ts (light + dark variants)
+```
+
+---
+
+## Phase 6.3 — Production Hardening
+
+**Goal**: Performance, safety, and code-quality pass to bring all screens to production-ready quality.
+
+**Status**: ✅ Complete
+
+### Features
+
+| Feature                    | Description                                                                                                              |
+| :------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
+| **FlatList Performance**   | Added `getItemLayout`, `removeClippedSubviews`, `maxToRenderPerBatch`, `windowSize` to all 4 list screens                |
+| **KeyboardAvoidingView**   | Wrapped `CreateOrderScreen` body in `KeyboardAvoidingView` with platform-aware `behavior` prop                           |
+| **Icon & Data Audit**      | Confirmed zero `@expo/vector-icons` imports; confirmed zero PKR / +92 data; Sentry DSN verified                          |
+| **Component Organisation** | Moved `FloatingActionButton` and `SearchBar` from `src/components/` root into `src/components/ui/`; 10 importers updated |
+
+### GitHub Issues
+
+```
+[✓] perf: Add FlatList performance props to CustomerList, SupplierList, OrderList, ProductsScreen
+[✓] fix: Wrap CreateOrderScreen in KeyboardAvoidingView (platform-aware behavior)
+[✓] audit: Confirm zero @expo/vector-icons imports across full workspace
+[✓] audit: Confirm zero PKR / +92 / non-Indian data in entire codebase
+[✓] refactor: Move FloatingActionButton → src/components/ui/
+[✓] refactor: Move SearchBar → src/components/ui/
 ```
 
 ---
@@ -349,17 +378,18 @@ The product is built around three core outcomes:
 
 ## Milestones
 
-| Milestone                     | Description                                                               | Target     |
-| :---------------------------- | :------------------------------------------------------------------------ | :--------- |
-| **MVP Launch**                | Core ledger — customers, transactions, balance tracking, dashboard        | ✅ Shipped |
-| **Billing Launch**            | Itemized bills, PDF export, supplier management, net position             | ✅ Shipped |
-| **India Suite Launch**        | GST, sequential IDs, loading charge, WhatsApp reminders, overdue flagging | ✅ Shipped |
-| **Platform Launch**           | Onboarding, i18n, Sentry, CSV export, contacts import                     | ✅ Shipped |
-| **Design System Launch**      | Green (#22C55E) brand system, premium dashboard, unified theme            | ✅ Shipped |
-| **Customer UI Launch**        | Transaction feed, payment modal, Customer Detail redesign                 | ✅ Shipped |
-| **UI Audit Launch**           | Lucide icons, @gorhom/bottom-sheet, Toast, Financial Position screen      | ✅ Shipped |
-| **Growth Launch**             | OTP login, push notifications, WhatsApp Business API, premium tier        | 🔄 Q2 2026 |
-| **Financial Platform Launch** | Credit scoring, GST filing, lending integration                           | 🗓 Q4 2026 |
+| Milestone                       | Description                                                                  | Target     |
+| :------------------------------ | :--------------------------------------------------------------------------- | :--------- |
+| **MVP Launch**                  | Core ledger — customers, transactions, balance tracking, dashboard           | ✅ Shipped |
+| **Billing Launch**              | Itemized bills, PDF export, supplier management, net position                | ✅ Shipped |
+| **India Suite Launch**          | GST, sequential IDs, loading charge, WhatsApp reminders, overdue flagging    | ✅ Shipped |
+| **Platform Launch**             | Onboarding, i18n, Sentry, CSV export, contacts import                        | ✅ Shipped |
+| **Design System Launch**        | Green (#22C55E) brand system, premium dashboard, unified theme               | ✅ Shipped |
+| **Customer UI Launch**          | Transaction feed, payment modal, Customer Detail redesign                    | ✅ Shipped |
+| **UI Audit Launch**             | Lucide icons, @gorhom/bottom-sheet, Toast, Financial Position screen         | ✅ Shipped |
+| **Production Hardening Launch** | FlatList perf, KeyboardAvoidingView, icon/data audit, component organisation | ✅ Shipped |
+| **Growth Launch**               | OTP login, push notifications, WhatsApp Business API, premium tier           | 🔄 Q2 2026 |
+| **Financial Platform Launch**   | Credit scoring, GST filing, lending integration                              | 🗓 Q4 2026 |
 
 ---
 

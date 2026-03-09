@@ -107,7 +107,7 @@ export default function RecordCustomerPaymentModal({
         <Text className="text-xl font-bold text-[#1C1C1E] mb-1.5">
           Record Payment
         </Text>
-        <Text className="text-sm text-[#8E8E93] mb-5">
+        <Text className="text-sm text-[#6B7280] mb-5">
           Balance Due:{" "}
           <Text className="text-danger font-bold">
             \u20B9
@@ -120,12 +120,12 @@ export default function RecordCustomerPaymentModal({
           Amount Received
         </Text>
         <TextInput
-          className="border border-[#E5E5EA] rounded-xl px-4 py-3.5 text-lg font-bold text-[#1C1C1E] mb-5 bg-search"
+          className="border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-lg font-bold text-[#1C1C1E] mb-5 bg-search"
           value={amount}
           onChangeText={setAmount}
           keyboardType="decimal-pad"
           placeholder="\u20B9 0.00"
-          placeholderTextColor="#8E8E93"
+          placeholderTextColor="#6B7280"
         />
 
         {/* Mode chips */}
@@ -140,7 +140,7 @@ export default function RecordCustomerPaymentModal({
               className={`px-4 py-2 rounded-full border ${
                 mode === m
                   ? "bg-primary border-primary"
-                  : "bg-search border-[#E5E5EA]"
+                  : "bg-search border-[#E5E7EB]"
               }`}
             >
               <Text

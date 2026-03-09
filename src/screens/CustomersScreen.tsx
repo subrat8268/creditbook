@@ -123,7 +123,7 @@ export default function CustomersScreen() {
                 className={`px-5 py-[9px] rounded-[24px] border ${
                   active
                     ? "bg-primary border-primary"
-                    : "bg-search border-[#E5E5EA]"
+                    : "bg-search border-[#E5E7EB]"
                 }`}
               >
                 <Text

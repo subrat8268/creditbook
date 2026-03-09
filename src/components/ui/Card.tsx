@@ -18,7 +18,7 @@ const Card = ({ title, value, icon, className }: CardProps) => {
       )}
     >
       <View>
-        <Text className="mb-1" style={{ color: "#8E8E93" }}>
+        <Text className="mb-1" style={{ color: "#6B7280" }}>
           {title}
         </Text>
         <Text className="text-2xl font-semibold">{value}</Text>

@@ -15,10 +15,10 @@ export const colors = {
 
   // Semantic — Emotion-aware financial signals
   success: {
-    DEFAULT: "#2ECC71", // Credit In / Paid — relief, resolution
+    DEFAULT: "#22C55E", // Credit In / Paid — relief, resolution (matches primary)
     light: "#DCFCE7", // Paid chip background
     text: "#166534", // Paid chip label
-    dark: "#1A9950", // Pressed / dark
+    dark: "#16A34A", // Pressed / dark
   },
   danger: {
     DEFAULT: "#E74C3C", // Dues / Credit Out — urgency, delete
@@ -27,10 +27,10 @@ export const colors = {
     dark: "#B33226", // Pressed / dark
   },
   warning: {
-    DEFAULT: "#F39C12", // Pending / Reminder — attention, not alarm
+    DEFAULT: "#F59E0B", // Pending / Reminder — attention, not alarm
     light: "#FEF3C7", // Pending chip background
     text: "#92400E", // Pending chip label
-    dark: "#C27D0E", // Pressed / dark
+    dark: "#D97706", // Pressed / dark
   },
   info: {
     DEFAULT: "#4F9CFF", // Informational / partial state
@@ -41,13 +41,13 @@ export const colors = {
 
   // Neutrals — Soft, low-fatigue grays
   neutral: {
-    bg: "#F6F7FB", // App background — low-stress canvas
+    bg: "#F6F7F9", // App background — low-stress canvas
     surface: "#FFFFFF", // Card / modal surface
-    100: "#F6F7FB",
-    200: "#E5E5EA", // Dividers / borders
+    100: "#F6F7F9",
+    200: "#E5E7EB", // Dividers / borders
     300: "#C7C7CC",
     400: "#AEAEB2", // Muted labels, captions
-    500: "#8E8E93", // Secondary text
+    500: "#6B7280", // Secondary text
     600: "#636366", // Body text
     700: "#48484A",
     900: "#1C1C1E", // Primary text (near-black)
@@ -58,7 +58,7 @@ export const colors = {
     bg: "#22C55E22", // Translucent brand green icon backing
   },
   border: {
-    tabborder: "#E5E5EA",
+    tabborder: "#E5E7EB",
   },
 };
 

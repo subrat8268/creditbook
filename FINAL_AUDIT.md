@@ -1,6 +1,6 @@
 # CreditBook — Final Pre-Fix Audit Report
 
-> **Date:** March 8, 2026  
+> **Date:** March 9, 2026  
 > **Sources:** UI_AUDIT.md · DATABASE_REPORT.md · SCREEN_INVENTORY.md · ARCHITECTURE.md  
 > **Total issues:** 38 (8 Critical · 15 Major · 15 Minor)  
 > **Status:** DO NOT fix anything until issues are triaged and assigned.
@@ -541,7 +541,7 @@ These are visible inconsistencies that degrade the perceived quality of the UI b
 
 **File:** `src/components/ui/StatusDot.tsx`
 
-Replaced Tailwind class map with `DOT_COLOR` record using correct hex values: `Paid` → `#22C55E`, `Pending` → `#F39C12` (`warning.DEFAULT`), `Partially Paid` → `#E74C3C` (`danger.DEFAULT`). Both the pulsing `Animated.View` and the static `View` now use `style={{ backgroundColor: dotColor }}` instead of `className={...}`.
+Replaced Tailwind class map with `DOT_COLOR` record using correct hex values: `Paid` → `#22C55E`, `Pending` → `#F59E0B` (`warning.DEFAULT`), `Partially Paid` → `#E74C3C` (`danger.DEFAULT`). Both the pulsing `Animated.View` and the static `View` now use `style={{ backgroundColor: dotColor }}` instead of `className={...}`.
 
 ---
 
@@ -565,8 +565,8 @@ Replaced Tailwind class map with `DOT_COLOR` record using correct hex values: `P
 
 **File:** `src/components/feedback/EmptyState.tsx`
 
-- Icon bg: `#F3F4F6` (Tailwind gray-100) → `#F6F7FB` (neutral.100)
-- Sub-text: `#6B7280` (Tailwind gray-500) → `#8E8E93` (neutral.500)
+- Icon bg: `#F3F4F6` (Tailwind gray-100) → `#F6F7F9` (neutral.100, updated March 9 token sync)
+- Sub-text: `#6B7280` (neutral.500 — correct after March 9 token sync; was `#8E8E93` in original fix, then realigned)
 - CTA `borderRadius: 12` → `rounded-xl` (16px)
 - Fully migrated from `StyleSheet.create` to NativeWind `className` + `style` for raw values; `StyleSheet` import removed.
 
@@ -654,6 +654,47 @@ All four active FlatList surfaces now carry the full perf prop set:
 
 ---
 
+### ✅ P-24 — Safe Areas + Keyboard Handling — FIXED March 9, 2026
+
+**Files:** `src/screens/CreateOrderScreen.tsx` (fixed); `src/components/ScreenWrapper.tsx`, `app/(auth)/login.tsx`, `app/(auth)/onboarding/business.tsx` (already compliant)
+
+- `ScreenWrapper.tsx` — already imports `SafeAreaView` from `react-native-safe-area-context` ✅
+- `login.tsx` — already has `KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}` + `ScrollView keyboardShouldPersistTaps="handled"` ✅
+- `business.tsx` — same, already compliant ✅
+- `CreateOrderScreen.tsx` — **was missing `KeyboardAvoidingView`**. Added `KeyboardAvoidingView` + `Platform` to react-native imports; wrapped all body content inside `<KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>`. `@gorhom` pickers (CustomerPicker/ProductPicker/VariantPicker) render as overlays — unaffected.
+
+---
+
+### ✅ P-25 — Icon Final Audit — FIXED March 9, 2026
+
+**Scope:** `grep -rn "@expo/vector-icons" --include="*.tsx" --include="*.ts" src/ app/`
+
+Result: **0 matches** (exit code 1). `@expo/vector-icons` was fully removed in v3.3 and has not been re-introduced. `lucide-react-native` is the sole icon library across the entire codebase.
+
+---
+
+### ✅ P-26 — Indian Data Audit + Sentry Verification — FIXED March 9, 2026
+
+**Scope:** Pakistani phone codes, Pakistani names, PKR currency, brand typos, Sentry wiring
+
+- `grep "+92\|Zain Khan\|Fatima Ahmed\|Ali Salman\|Abdullah\|PKR\|CreditBoo[^k]"` → **0 matches**
+- `src/services/sentry.ts` — `initSentry()` calls `Sentry.init({ dsn: process.env.EXPO_PUBLIC_SENTRY_DSN, tracesSampleRate, debug, environment })`; guarded by `if (!dsn) return` for dev without project
+- `app/_layout.tsx` — `export default Sentry.wrap(RootLayout)` ✅; `initSentry()` called at module level before any component mounts ✅
+
+---
+
+### ✅ P-27 — Dead File Cleanup — FloatingActionButton, SearchBar — FIXED March 9, 2026
+
+**Files moved:** `src/components/FloatingActionButton.tsx` → `src/components/ui/FloatingActionButton.tsx`; `src/components/SearchBar.tsx` → `src/components/ui/SearchBar.tsx`
+
+**Import paths updated (7 files):** `CustomersScreen.tsx`, `SuppliersScreen.tsx`, `ProductsScreen.tsx`, `OrdersScreen.tsx`, `app/(main)/suppliers/[supplierId].tsx`, `src/components/picker/BottomSheetPicker.tsx`, `src/components/SearchablePickerModal.tsx`
+
+**BottomSheetForm.tsx** — 1 active importer (`ProductsScreen.tsx`); left in `src/components/` as-is per spec (active, not dead).
+
+`grep 'from.*components/FloatingActionButton\|from.*components/SearchBar'` → **0 matches** after migration.
+
+---
+
 ## Issue Count by Severity and Source
 
 | Severity    | UI     | Database | Navigation / Architecture | Total  |
@@ -692,3 +733,7 @@ All four active FlatList surfaces now carry the full perf prop set:
 | ~~20~~   | ~~P-21~~ ✅                                                                                                                                                       | ~~ProfileScreen: filled avatar, Seller/Distributor/Both toggle, sign out + ExportScreen back~~ **DONE**     | Fixed March 8, 2026 — initials avatar; mode values fixed; `handleSignOut` w/ supabase.auth.signOut(); ExportScreen ArrowLeft back         |
 | ~~21~~   | ~~P-22~~ ✅                                                                                                                                                       | ~~TanStack Query: complete cache invalidation audit across 4 financial mutation files~~ **DONE**            | Fixed March 8, 2026 — 5 missing invalidations added; dashboard now updates immediately on every financial mutation                        |
 | ~~22~~   | ~~P-23~~ ✅                                                                                                                                                       | ~~FlatList performance: useCallback renderItem, maxToRenderPerBatch, windowSize=5, getItemLayout~~ **DONE** | Fixed March 8, 2026 — CustomerList (88dp), SupplierList (80dp), OrderList (88dp), ProductsScreen (72dp) all fully optimised               |
+| ~~23~~   | ~~P-24~~ ✅                                                                                                                                                       | ~~Safe areas + keyboard: KeyboardAvoidingView in CreateOrderScreen~~ **DONE**                               | Fixed March 9, 2026 — `KeyboardAvoidingView` added; login.tsx + business.tsx already compliant; `ScreenWrapper` already uses correct SAV  |
+| ~~24~~   | ~~P-25~~ ✅                                                                                                                                                       | ~~Icon audit: 0 @expo/vector-icons remaining~~ **DONE**                                                     | Fixed March 9, 2026 — grep confirms 0 results; `lucide-react-native` is sole icon library                                                 |
+| ~~25~~   | ~~P-26~~ ✅                                                                                                                                                       | ~~Indian data audit + Sentry verification~~ **DONE**                                                        | Fixed March 9, 2026 — 0 Pakistani data; `sentry.ts` + `Sentry.wrap(RootLayout)` verified                                                  |
+| ~~26~~   | ~~P-27~~ ✅                                                                                                                                                       | ~~Dead file cleanup: FAB + SearchBar moved to ui/~~ **DONE**                                                | Fixed March 9, 2026 — both moved to `src/components/ui/`; 7 import paths updated; `BottomSheetForm` kept (1 active importer)              |
