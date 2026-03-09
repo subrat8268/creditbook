@@ -1,3 +1,4 @@
+import { colors } from "@/src/utils/theme";
 import { clsx } from "clsx";
 import React from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
@@ -46,6 +47,17 @@ export default function Button({
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.8}
+      style={
+        variant === "primary" && !disabled
+          ? {
+              shadowColor: "#22C55E",
+              shadowOffset: { width: 0, height: 10 },
+              shadowOpacity: 0.2,
+              shadowRadius: 15,
+              elevation: 8,
+            }
+          : undefined
+      }
     >
       {loading ? (
         <ActivityIndicator

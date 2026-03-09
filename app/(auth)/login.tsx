@@ -1,5 +1,5 @@
-import { useGoogleSignIn, useSignUp } from "@/src/hooks/useAuth";
-import { SignUpSchema } from "@/src/utils/schemas";
+import { useGoogleSignIn, useLogin } from "@/src/hooks/useAuth";
+import { LoginSchema } from "@/src/utils/schemas";
 import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { Formik } from "formik";
@@ -20,9 +20,9 @@ import Button from "../../src/components/ui/Button";
 import GoogleButton from "../../src/components/ui/GoogleButton";
 import Input from "../../src/components/ui/Input";
 
-export default function SignUpPage() {
+export default function LoginPage() {
   const router = useRouter();
-  const signUpMutation = useSignUp();
+  const loginMutation = useLogin();
   const googleSignIn = useGoogleSignIn();
   const [showPassword, setShowPassword] = useState(false);
 
@@ -37,47 +37,25 @@ export default function SignUpPage() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-1 px-6 pb-10 justify-center">
+        <View className="flex-1 px-6 pb-10">
           <AuthHeader
-            title="Create Account"
-            subtitle="Set up your CreditBook in 2 minutes"
+            title="Welcome Back"
+            subtitle="Sign in to your CreditBook"
           />
 
           <AuthCard>
             <Formik
-              initialValues={{
-                fullName: "",
-                email: "",
-                password: "",
-                confirmPassword: "",
-              }}
-              validationSchema={SignUpSchema}
-              onSubmit={(values) =>
-                signUpMutation.mutate({
-                  fullName: values.fullName,
-                  email: values.email,
-                  password: values.password,
-                })
-              }
+              initialValues={{ email: "", password: "" }}
+              validationSchema={LoginSchema}
+              onSubmit={(values) => loginMutation.mutate(values)}
             >
               {({ handleChange, handleSubmit, values, errors, touched }) => (
                 <>
                   <Text className="text-[13px] font-semibold text-textDark mb-2">
-                    Full Name
-                  </Text>
-                  <Input
-                    placeholder="Enter your full name"
-                    value={values.fullName}
-                    onChangeText={handleChange("fullName")}
-                    error={touched.fullName ? errors.fullName : undefined}
-                    variant="white"
-                  />
-
-                  <Text className="text-[13px] font-semibold text-textDark mb-2 mt-4">
                     Email Address
                   </Text>
                   <Input
-                    placeholder="email@example.com"
+                    placeholder="Enter your email address"
                     value={values.email}
                     onChangeText={handleChange("email")}
                     error={touched.email ? errors.email : undefined}
@@ -89,13 +67,15 @@ export default function SignUpPage() {
                     Password
                   </Text>
                   <Input
-                    placeholder="Min. 6 characters"
+                    placeholder="Enter your password"
                     value={values.password}
                     onChangeText={handleChange("password")}
+                    secureTextEntry={!showPassword}
                     error={touched.password ? errors.password : undefined}
                     variant="white"
                     icon={
                       <TouchableOpacity
+                        onPress={() => setShowPassword((p) => !p)}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                       >
                         {showPassword ? (
@@ -116,27 +96,19 @@ export default function SignUpPage() {
                     iconPosition="right"
                   />
 
-                  <Text className="text-[13px] font-semibold text-textDark mb-2 mt-4">
-                    Confirm Password
-                  </Text>
-                  <Input
-                    placeholder="Re-enter your password"
-                    value={values.confirmPassword}
-                    onChangeText={handleChange("confirmPassword")}
-                    secureTextEntry
-                    error={
-                      touched.confirmPassword
-                        ? errors.confirmPassword
-                        : undefined
-                    }
-                    variant="white"
-                  />
+                  <TouchableOpacity
+                    onPress={() => router.push("/(auth)/resetPassword" as any)}
+                    className="self-end mt-2.5 mb-5"
+                  >
+                    <Text className="text-primary text-sm font-medium">
+                      Forgot password?
+                    </Text>
+                  </TouchableOpacity>
 
                   <Button
-                    title="Create Account"
+                    title="Sign In"
                     onPress={handleSubmit}
-                    loading={signUpMutation.isPending}
-                    className="mt-5"
+                    loading={loginMutation.isPending}
                   />
 
                   <AuthDivider />
@@ -144,14 +116,14 @@ export default function SignUpPage() {
                   <GoogleButton
                     onPress={() => googleSignIn.mutate()}
                     isPending={googleSignIn.isPending}
-                    disabled={signUpMutation.isPending}
+                    disabled={loginMutation.isPending}
                   />
                 </>
               )}
             </Formik>
           </AuthCard>
 
-          {(signUpMutation.isError || googleSignIn.isError) && (
+          {(loginMutation.isError || googleSignIn.isError) && (
             <View
               className="flex-row items-center self-center gap-2 rounded-full px-4 py-3 mt-4"
               style={{
@@ -166,20 +138,20 @@ export default function SignUpPage() {
                 strokeWidth={2}
               />
               <Text className="text-danger-strong text-sm">
-                {(signUpMutation.error as any)?.message ??
+                {(loginMutation.error as any)?.message ??
                   (googleSignIn.error as any)?.message ??
-                  "Something went wrong. Please try again."}
+                  "Invalid email or password"}
               </Text>
             </View>
           )}
 
           <TouchableOpacity
-            onPress={() => router.replace("/(auth)/login")}
-            className="mt-4 mb-10"
+            onPress={() => router.push("/(auth)/signup" as any)}
+            className="mt-8"
           >
             <Text className="text-center text-textSecondary text-sm">
-              {"Already have an account? "}
-              <Text className="text-primary font-semibold">Log In</Text>
+              {"New to CreditBook? "}
+              <Text className="text-primary font-semibold">Sign Up</Text>
             </Text>
           </TouchableOpacity>
         </View>

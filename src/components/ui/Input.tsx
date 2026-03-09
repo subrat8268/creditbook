@@ -31,13 +31,13 @@ export default function Input({
   keyboardType = "default",
 }: Props) {
   const containerStyle = clsx(
-    "flex-row items-center border rounded-md px-3",
+    "flex-row items-center border rounded-xl px-4",
     variant === "neutral" ? "bg-neutral-200" : "bg-white",
     error ? "border-danger" : "border-neutral-300",
   );
 
   return (
-    <View className="mb-3 w-full">
+    <View className="w-full">
       {label && (
         <Text className="mb-1 text-sm text-textSecondary font-medium">
           {label}

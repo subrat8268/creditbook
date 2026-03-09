@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/src/utils/ThemeProvider";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SplashScreen, Stack } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
 import { StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -17,6 +18,10 @@ import { useLanguageStore } from "../src/store/languageStore";
 
 // Initialise Sentry as early as possible — before any component mounts
 initSentry();
+
+// Required for expo-web-browser OAuth redirect handling (noop on Android/iOS,
+// closes the auth session tab on web)
+WebBrowser.maybeCompleteAuthSession();
 
 const queryClient = new QueryClient();
 

@@ -3,7 +3,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import { loginApi, logoutApi, resetPasswordApi, signUpApi } from "../api/auth";
+import {
+  loginApi,
+  logoutApi,
+  resetPasswordApi,
+  signInWithGoogleApi,
+  signUpApi,
+} from "../api/auth";
 import { supabase } from "../services/supabase";
 import { useAuthStore } from "../store/authStore";
 import { LoginValues } from "../types/auth";
@@ -63,6 +69,41 @@ export function useLogin() {
   });
 }
 
+// 🔹 GOOGLE SIGN-IN MUTATION
+export function useGoogleSignIn() {
+  const { setUser, fetchProfile } = useAuthStore();
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: signInWithGoogleApi,
+    onSuccess: async (user) => {
+      if (user) setUser(user);
+      await AsyncStorage.setItem("hasSeenWelcome", "true");
+      // Retry fetchProfile — Google OAuth creates the profile row via DB trigger
+      // and it may not be committed immediately
+      let retries = 3;
+      while (retries > 0) {
+        await fetchProfile();
+        const { profile } = useAuthStore.getState();
+        if (profile) break;
+        await new Promise((r) => setTimeout(r, 600));
+        retries--;
+      }
+      const { profile } = useAuthStore.getState();
+      if (profile && !profile.onboarding_complete) {
+        router.replace("/(auth)/onboarding/role" as any);
+      } else {
+        router.replace("/(main)/dashboard");
+      }
+    },
+    onError: (error: any) => {
+      // Cancelled by user — suppress noisy console error
+      if (error?.message?.includes("cancelled")) return;
+      console.error("Google sign-in failed:", error.message);
+    },
+  });
+}
+
 // 🔹 SIGN UP MUTATION
 function friendlySignUpError(message: string): string {
   const msg = message.toLowerCase();
@@ -88,8 +129,11 @@ export function useSignUp() {
   const router = useRouter();
 
   return useMutation({
-    mutationFn: (values: { email: string; password: string }) =>
-      signUpApi(values),
+    mutationFn: (values: {
+      email: string;
+      password: string;
+      fullName: string;
+    }) => signUpApi(values),
     onSuccess: async (user) => {
       setUser(user);
       await AsyncStorage.setItem("hasSeenWelcome", "true");

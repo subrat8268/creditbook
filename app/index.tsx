@@ -33,7 +33,7 @@ export default function WelcomePage() {
 
   const handleStart = async () => {
     await AsyncStorage.setItem("hasSeenWelcome", "true");
-    router.replace("/(auth)/login");
+    router.push("/(auth)/login");
   };
 
   return (
@@ -103,7 +103,7 @@ export default function WelcomePage() {
         Already have an account?{" "}
         <Text
           className="text-primary font-bold"
-          onPress={() => router.replace("/(auth)/login")}
+          onPress={() => router.push("/(auth)/login")}
         >
           Log In
         </Text>

@@ -1,5 +1,6 @@
 import { useAuthStore } from "@/src/store/authStore";
 import { dashboardPalette as C } from "@/src/utils/dashboardUi";
+import { colors } from "@/src/utils/theme";
 import { Bell, Settings } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 

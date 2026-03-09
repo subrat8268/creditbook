@@ -37,6 +37,12 @@ export default function AuthLayout() {
             title: "Reset Password",
           }}
         />
+        <Stack.Screen
+          name="onboarding"
+          options={{
+            title: "Select Role",
+          }}
+        />
       </Stack>
     </View>
   );

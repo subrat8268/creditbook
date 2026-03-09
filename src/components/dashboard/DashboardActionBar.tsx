@@ -1,4 +1,5 @@
 import { dashboardPalette as C } from "@/src/utils/dashboardUi";
+import { colors } from "@/src/utils/theme";
 import { FileText, Send } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 

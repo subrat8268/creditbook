@@ -2,9 +2,9 @@ import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Check, Store, User, Users } from "lucide-react-native";
+import { Briefcase, Check, Store, Truck } from "lucide-react-native";
 import { ComponentType, useState } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 type Role = "retailer" | "wholesaler" | "small-business";
 
@@ -13,38 +13,37 @@ interface RoleCard {
   Icon: ComponentType<{ size: number; color: string; strokeWidth?: number }>;
   title: string;
   subtitle: string;
-  accentColor: string;
-  image: any;
-  bannerBg: string;
+  iconColor: string;
+  iconBg: string;
 }
 
 const ROLES: RoleCard[] = [
   {
     role: "retailer",
     Icon: Store,
-    title: "Retailer / Shopkeeper",
-    subtitle: "I sell goods directly to customers in my shop or online.",
-    accentColor: colors.primary.dark,
-    image: require("../../../assets/images/role-retailer.png"),
-    bannerBg: colors.success.light,
+    title: "Retailer",
+    subtitle:
+      "Kirana store, medical shop, clothing — sell to local customers on credit",
+    iconColor: "#22C55E",
+    iconBg: "#DCFCE7",
   },
   {
     role: "wholesaler",
-    Icon: Users,
-    title: "Wholesaler / Distributor",
-    subtitle: "I buy in bulk from suppliers and sell to other retailers.",
-    accentColor: colors.info.dark,
-    image: require("../../../assets/images/role-wholesaler.png"),
-    bannerBg: colors.info.light,
+    Icon: Truck,
+    title: "Wholesaler",
+    subtitle:
+      "Distributor, FMCG supplier — manage bulk deliveries and large credit cycles",
+    iconColor: "#F59E0B",
+    iconBg: "#FEF3C7",
   },
   {
     role: "small-business",
-    Icon: User,
-    title: "Small Business Owner",
-    subtitle: "I run a small business and want to track sales and credit.",
-    accentColor: colors.warning.dark,
-    image: require("../../../assets/images/role-user.png"),
-    bannerBg: colors.warning.light,
+    Icon: Briefcase,
+    title: "Small Business",
+    subtitle:
+      "Auto repair, tiffin service, pharmacy — track service charges and payments",
+    iconColor: "#3B82F6",
+    iconBg: "#DBEAFE",
   },
 ];
 
@@ -103,37 +102,6 @@ export default function OnboardingRole() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.neutral.bg }}>
-      {/* ── Header ── */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          paddingTop: 56,
-          paddingHorizontal: 20,
-          paddingBottom: 12,
-          backgroundColor: colors.neutral.bg,
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <ArrowLeft size={22} color={colors.neutral[900]} strokeWidth={2} />
-        </TouchableOpacity>
-        <Text
-          style={{
-            flex: 1,
-            textAlign: "center",
-            fontSize: 16,
-            fontWeight: "600",
-            color: colors.neutral[900],
-            marginRight: 22, // offset for back arrow width
-          }}
-        >
-          Select your role
-        </Text>
-      </View>
-
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
@@ -141,154 +109,111 @@ export default function OnboardingRole() {
         {/* ── Title ── */}
         <Text
           style={{
-            fontSize: 30,
+            fontSize: 26,
             fontWeight: "800",
             color: colors.neutral[900],
-            marginTop: 20,
-            marginBottom: 8,
-            lineHeight: 38,
+            marginTop: 24,
+            marginBottom: 6,
           }}
         >
-          How do you do{"\n"}business?
+          {"What's your business?"}
         </Text>
         <Text
           style={{
-            fontSize: 15,
+            fontSize: 14,
             color: colors.neutral[500],
-            lineHeight: 22,
             marginBottom: 28,
           }}
         >
-          Choose the option that best describes your business to get a
-          personalized experience.
+          {"We'll set up CreditBook to match your work"}
         </Text>
 
         {/* ── Role cards ── */}
-        <View style={{ gap: 16 }}>
+        <View style={{ gap: 14 }}>
           {ROLES.map((item) => {
             const isActive = selected === item.role;
             return (
               <TouchableOpacity
                 key={item.role}
                 onPress={() => setSelected(item.role)}
-                activeOpacity={0.9}
+                activeOpacity={0.85}
               >
                 <View
                   style={{
                     backgroundColor: colors.white,
-                    borderRadius: 20,
-                    overflow: "hidden",
-                    borderWidth: isActive ? 2.5 : 1.5,
-                    borderColor: isActive
-                      ? item.accentColor
-                      : colors.neutral[200],
-                    // shadow
+                    borderRadius: 16,
+                    borderWidth: isActive ? 2 : 1.5,
+                    borderColor: isActive ? "#22C55E" : colors.neutral[200],
+                    padding: 16,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 14,
                     shadowColor: colors.black,
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.06,
-                    shadowRadius: 8,
-                    elevation: 3,
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.04,
+                    shadowRadius: 4,
+                    elevation: 2,
                   }}
                 >
-                  {/* Image banner */}
-                  {item.image ? (
-                    <Image
-                      source={item.image}
-                      style={{ width: "100%", height: 160 }}
-                      resizeMode="cover"
+                  {/* Icon badge */}
+                  <View
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 10,
+                      backgroundColor: item.iconBg,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <item.Icon
+                      size={22}
+                      color={item.iconColor}
+                      strokeWidth={2}
                     />
-                  ) : (
-                    // Placeholder — remove once image is added
-                    <View
+                  </View>
+
+                  {/* Text */}
+                  <View style={{ flex: 1 }}>
+                    <Text
                       style={{
-                        width: "100%",
-                        height: 160,
-                        backgroundColor: item.bannerBg,
-                        alignItems: "center",
-                        justifyContent: "center",
+                        fontSize: 16,
+                        fontWeight: "700",
+                        color: colors.neutral[900],
+                        marginBottom: 3,
                       }}
                     >
-                      <item.Icon
-                        size={56}
-                        color={item.accentColor + "99"}
-                        strokeWidth={1.2}
-                      />
-                    </View>
-                  )}
-
-                  {/* Card body */}
-                  <View style={{ padding: 18 }}>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginBottom: 8,
-                        gap: 10,
-                      }}
-                    >
-                      {/* Icon badge */}
-                      <View
-                        style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: 8,
-                          backgroundColor: item.accentColor + "18",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <item.Icon
-                          size={20}
-                          color={item.accentColor}
-                          strokeWidth={1.8}
-                        />
-                      </View>
-
-                      <Text
-                        style={{
-                          fontSize: 17,
-                          fontWeight: "700",
-                          color: colors.neutral[900],
-                          flex: 1,
-                        }}
-                      >
-                        {item.title}
-                      </Text>
-
-                      {/* Selection circle */}
-                      <View
-                        style={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: 12,
-                          backgroundColor: isActive
-                            ? item.accentColor
-                            : colors.neutral.bg,
-                          borderWidth: isActive ? 0 : 1.5,
-                          borderColor: colors.neutral[300],
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        {isActive && (
-                          <Check
-                            size={14}
-                            color={colors.white}
-                            strokeWidth={3}
-                          />
-                        )}
-                      </View>
-                    </View>
-
+                      {item.title}
+                    </Text>
                     <Text
                       style={{
                         fontSize: 13,
                         color: colors.neutral[500],
-                        lineHeight: 19,
+                        lineHeight: 18,
                       }}
                     >
                       {item.subtitle}
                     </Text>
+                  </View>
+
+                  {/* Check circle */}
+                  <View
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: 12,
+                      backgroundColor: isActive ? "#22C55E" : colors.white,
+                      borderWidth: isActive ? 0 : 1.5,
+                      borderColor: colors.neutral[300],
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {isActive && (
+                      <Check size={14} color={colors.white} strokeWidth={3} />
+                    )}
                   </View>
                 </View>
               </TouchableOpacity>
@@ -320,26 +245,24 @@ export default function OnboardingRole() {
           </View>
         )}
 
-        {/* ── CTA ── */}
+        {/* ── Continue button ── */}
         <TouchableOpacity
           onPress={handleContinue}
           disabled={!selected || loading}
           activeOpacity={0.85}
           style={{
-            marginTop: 28,
+            marginTop: 32,
             backgroundColor:
-              selected && !loading
-                ? colors.primary.DEFAULT
-                : colors.neutral[300],
+              selected && !loading ? "#22C55E" : colors.neutral[300],
             borderRadius: 50,
-            paddingVertical: 18,
+            paddingVertical: 17,
             alignItems: "center",
           }}
         >
           <Text
             style={{ color: colors.white, fontSize: 16, fontWeight: "700" }}
           >
-            {loading ? "Saving…" : "Start using CreditBook →"}
+            {loading ? "Saving…" : "Continue"}
           </Text>
         </TouchableOpacity>
       </ScrollView>

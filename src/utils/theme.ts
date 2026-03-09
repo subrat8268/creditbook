@@ -52,7 +52,7 @@ export const colors = {
     surface: "#FFFFFF", // Card / modal surface
     100: "#F6F7F9",
     200: "#E5E7EB", // Dividers / borders
-    300: "#C7C7CC",
+    300: "#E2E8F0",
     400: "#AEAEB2", // Muted labels, captions
     500: "#6B7280", // Secondary text
     600: "#636366", // Body text
@@ -136,6 +136,8 @@ export const radius = {
   md: 6,
   lg: 10,
   xl: 16,
+  "2xl": 20,
+  "3xl": 24,
   full: 9999,
 };
 
