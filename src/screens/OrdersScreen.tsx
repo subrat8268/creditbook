@@ -92,11 +92,11 @@ export default function OrdersScreen() {
           <BottomSheetBackdrop {...props} pressBehavior="close" />
         )}
         enablePanDownToClose
-        backgroundStyle={{ backgroundColor: "#fff", borderRadius: 24 }}
-        handleIndicatorStyle={{ backgroundColor: "#ccc", width: 40 }}
+        backgroundStyle={{ backgroundColor: colors.white, borderRadius: 24 }}
+        handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
       >
         <BottomSheetView className="p-5">
-          <Text className="text-lg font-semibold mb-3 text-gray-900">
+          <Text className="text-lg font-semibold mb-3 text-textDark">
             Filter by Status
           </Text>
           {filters.filters.map((item) => {
@@ -109,12 +109,12 @@ export default function OrdersScreen() {
               >
                 <Text
                   className={`text-base ${
-                    active ? "text-green-600 font-semibold" : "text-gray-700"
+                    active ? "text-green-600 font-semibold" : "text-textPrimary"
                   }`}
                 >
                   {item}
                 </Text>
-                {active && <Check size={18} color="#16a34a" />}
+                {active && <Check size={18} color={colors.primary.dark} />}
               </TouchableOpacity>
             );
           })}
@@ -130,11 +130,11 @@ export default function OrdersScreen() {
           <BottomSheetBackdrop {...props} pressBehavior="close" />
         )}
         enablePanDownToClose
-        backgroundStyle={{ backgroundColor: "#fff", borderRadius: 24 }}
-        handleIndicatorStyle={{ backgroundColor: "#ccc", width: 40 }}
+        backgroundStyle={{ backgroundColor: colors.white, borderRadius: 24 }}
+        handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
       >
         <BottomSheetView className="p-5">
-          <Text className="text-lg font-semibold mb-3 text-gray-900">
+          <Text className="text-lg font-semibold mb-3 text-textDark">
             Sort by
           </Text>
           {filters.sortOptions.map((option) => {
@@ -147,12 +147,12 @@ export default function OrdersScreen() {
               >
                 <Text
                   className={`text-base ${
-                    active ? "text-green-600 font-semibold" : "text-gray-700"
+                    active ? "text-green-600 font-semibold" : "text-textPrimary"
                   }`}
                 >
                   {option.label}
                 </Text>
-                {active && <Check size={18} color="#16a34a" />}
+                {active && <Check size={18} color={colors.primary.dark} />}
               </TouchableOpacity>
             );
           })}

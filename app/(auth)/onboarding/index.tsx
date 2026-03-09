@@ -1,19 +1,19 @@
-// Step 2 of 4 — Phone number
 import OnboardingProgress from "@/src/components/onboarding/OnboardingProgress";
 import Button from "@/src/components/ui/Button";
 import Input from "@/src/components/ui/Input";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
+import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { Phone } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    View,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  View,
 } from "react-native";
 
 export default function OnboardingPhone() {
@@ -67,7 +67,7 @@ export default function OnboardingPhone() {
         <View className="flex-1 bg-white px-6 pt-12 pb-8">
           {/* Logo */}
           <Image
-            source={require("../../../assets/images/greenlogo.png")}
+            source={require("../../../assets/images/logo.png")}
             className="w-40 mb-8 self-center"
             resizeMode="contain"
           />
@@ -95,7 +95,9 @@ export default function OnboardingPhone() {
               setError(null);
             }}
             keyboardType="numeric"
-            icon={<Phone size={20} color="#6B7280" strokeWidth={1.8} />}
+            icon={
+              <Phone size={20} color={colors.neutral[500]} strokeWidth={1.8} />
+            }
             iconPosition="left"
             error={error ?? undefined}
           />

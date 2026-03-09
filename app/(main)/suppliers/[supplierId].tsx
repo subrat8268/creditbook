@@ -39,7 +39,7 @@ export default function SupplierDetailScreen() {
       <View className="rounded-lg p-4 border border-neutral-300 gap-3 mb-4">
         <View className="flex-row items-center gap-4">
           <View className="w-14 h-14 rounded-full bg-amber-100 items-center justify-center">
-            <Building2 size={28} color="#d97706" strokeWidth={1.8} />
+            <Building2 size={28} color={colors.warning.dark} strokeWidth={1.8} />
           </View>
           <View className="flex-1">
             <Text className="text-2xl text-neutral-900 font-inter-bold">
@@ -82,13 +82,13 @@ export default function SupplierDetailScreen() {
       </View>
 
       {/* Balance Owed */}
-      <View className="flex gap-2 border border-red-200 bg-red-50 rounded-lg p-4 mb-4">
+      <View className="flex gap-2 border border-danger-light bg-danger-bg rounded-lg p-4 mb-4">
         <Text className="text-xl font-inter-semibold text-neutral-900">
           Balance You Owe
         </Text>
         <Text
           className={`text-3xl font-inter-bold ${
-            supplier.totalOwed > 0 ? "text-red-600" : "text-green-600"
+            supplier.totalOwed > 0 ? "text-danger-strong" : "text-green-600"
           }`}
         >
           ₹ {supplier.totalOwed.toLocaleString("en-IN")}

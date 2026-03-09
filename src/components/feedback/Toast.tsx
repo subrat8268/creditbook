@@ -7,6 +7,7 @@
  *
  * Or mount <ToastContainer /> near your root and use the context.
  */
+import { colors } from "@/src/utils/theme";
 import { CheckCircle, XCircle } from "lucide-react-native";
 import React, {
     createContext,
@@ -94,7 +95,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   );
 
   const isSuccess = toast?.type !== "error";
-  const bg = isSuccess ? "#22C55E" : "#E74C3C";
+  const bg = isSuccess ? colors.success.DEFAULT : colors.danger.DEFAULT;
 
   return (
     <ToastContext.Provider value={{ show }}>
@@ -109,9 +110,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           pointerEvents="none"
         >
           {isSuccess ? (
-            <CheckCircle size={18} color="#fff" strokeWidth={2.5} />
+            <CheckCircle size={18} color={colors.white} strokeWidth={2.5} />
           ) : (
-            <XCircle size={18} color="#fff" strokeWidth={2.5} />
+            <XCircle size={18} color={colors.white} strokeWidth={2.5} />
           )}
           <Text style={styles.message}>{toast.message}</Text>
         </Animated.View>
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 18,
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 10,
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
   },
   message: {
     flex: 1,
-    color: "#fff",
+    color: colors.white,
     fontSize: 14,
     fontWeight: "600",
     lineHeight: 20,

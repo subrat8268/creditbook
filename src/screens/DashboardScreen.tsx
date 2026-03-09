@@ -14,6 +14,7 @@ import { useAddCustomer } from "../hooks/useCustomer";
 import { useDashboard } from "../hooks/useDashboard";
 import { useAuthStore } from "../store/authStore";
 import { dashboardPalette as C, formatINR } from "../utils/dashboardUi";
+import { colors } from "../utils/theme";
 
 // ─────────────── Main Screen ────────────
 export const DashboardScreen = () => {
@@ -77,7 +78,7 @@ export const DashboardScreen = () => {
               borderRadius: 24,
               padding: 20,
               marginBottom: 12,
-              shadowColor: "#000",
+              shadowColor: colors.black,
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.07,
               shadowRadius: 12,
@@ -90,7 +91,7 @@ export const DashboardScreen = () => {
               <View
                 style={{
                   flex: 1,
-                  backgroundColor: "#F0FDF4",
+                  backgroundColor: C.receivePanelBg,
                   borderRadius: 16,
                   padding: 16,
                 }}
@@ -99,7 +100,7 @@ export const DashboardScreen = () => {
                   style={{
                     fontSize: 10,
                     letterSpacing: 1,
-                    color: "#16A34A",
+                    color: colors.primary.dark,
                     fontWeight: "700",
                     marginBottom: 6,
                   }}
@@ -110,7 +111,7 @@ export const DashboardScreen = () => {
                   style={{
                     fontSize: 22,
                     fontWeight: "800",
-                    color: "#16A34A",
+                    color: colors.primary.dark,
                     letterSpacing: -0.3,
                   }}
                 >
@@ -122,7 +123,7 @@ export const DashboardScreen = () => {
               <View
                 style={{
                   flex: 1,
-                  backgroundColor: "#FEF2F2",
+                  backgroundColor: C.owePanelBg,
                   borderRadius: 16,
                   padding: 16,
                 }}
@@ -131,7 +132,7 @@ export const DashboardScreen = () => {
                   style={{
                     fontSize: 10,
                     letterSpacing: 1,
-                    color: "#DC2626",
+                    color: C.dashboardRed,
                     fontWeight: "700",
                     marginBottom: 6,
                   }}
@@ -142,7 +143,7 @@ export const DashboardScreen = () => {
                   style={{
                     fontSize: 22,
                     fontWeight: "800",
-                    color: "#DC2626",
+                    color: C.dashboardRed,
                     letterSpacing: -0.3,
                   }}
                 >
@@ -157,7 +158,7 @@ export const DashboardScreen = () => {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
-                backgroundColor: "#F6F7F9",
+                backgroundColor: C.bg,
                 borderRadius: 12,
                 paddingHorizontal: 16,
                 paddingVertical: 10,
@@ -167,7 +168,7 @@ export const DashboardScreen = () => {
                 style={{
                   fontSize: 13,
                   fontWeight: "600",
-                  color: "#636366",
+                  color: C.body,
                   letterSpacing: 0.4,
                 }}
               >
@@ -177,7 +178,10 @@ export const DashboardScreen = () => {
                 style={{
                   fontSize: 18,
                   fontWeight: "800",
-                  color: data.netPosition >= 0 ? "#16A34A" : "#DC2626",
+                  color:
+                    data.netPosition >= 0
+                      ? colors.primary.dark
+                      : C.dashboardRed,
                   letterSpacing: -0.3,
                 }}
               >
@@ -224,7 +228,7 @@ export const DashboardScreen = () => {
         }}
         onPress={() => router.push("/orders/createOrderScreen")}
       >
-        <Plus size={26} color="#fff" strokeWidth={2.5} />
+        <Plus size={26} color={C.white} strokeWidth={2.5} />
       </Pressable>
 
       <NewCustomerModal

@@ -19,10 +19,10 @@ const AVATAR_COLORS = [
   colors.warning.DEFAULT, // #F59E0B  amber/orange
   colors.primary.DEFAULT, // #22C55E  green
   colors.info.DEFAULT, // #4F9CFF  blue
-  "#9B59B6", // purple — nearest semantic fit
-  "#E91E8C", // pink    — nearest semantic fit
-  "#00BCD4", // teal    — nearest semantic fit
-  "#FF5722", // deep orange — nearest semantic fit
+  "#9B59B6", // purple — decorative avatar only
+  "#E91E8C", // pink   — decorative avatar only
+  "#00BCD4", // teal   — decorative avatar only
+  "#FF5722", // deep orange — decorative avatar only
 ] as const;
 
 function getAvatarColor(name: string): string {
@@ -81,10 +81,10 @@ const STATUS_STYLES: Record<
 };
 
 const AMOUNT_COLOR: Record<CustomerStatus, string> = {
-  Overdue: "#E74C3C",
-  Pending: "#F59E0B",
-  Paid: "#1C1C1E",
-  Advance: "#1C1C1E",
+  Overdue: colors.danger.DEFAULT,
+  Pending: colors.warning.DEFAULT,
+  Paid: colors.neutral[900],
+  Advance: colors.neutral[900],
 };
 
 // --- Component ---

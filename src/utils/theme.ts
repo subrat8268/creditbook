@@ -16,24 +16,31 @@ export const colors = {
   // Semantic — Emotion-aware financial signals
   success: {
     DEFAULT: "#22C55E", // Credit In / Paid — relief, resolution (matches primary)
-    light: "#DCFCE7", // Paid chip background
+    bg: "#F0FDF4", // Panel/section background (green-50)
+    light: "#DCFCE7", // Paid chip background (green-100)
     text: "#166534", // Paid chip label
     dark: "#16A34A", // Pressed / dark
+    gradient: "#4ADE80", // Gradient end — subscription / active state cards
   },
   danger: {
     DEFAULT: "#E74C3C", // Dues / Credit Out — urgency, delete
+    bg: "#FEF2F2", // Panel/section background (red-50)
     light: "#FEE2E2", // Overdue chip background / danger surface
     text: "#991B1B", // Overdue chip label
     dark: "#B33226", // Pressed / dark
+    strong: "#DC2626", // Dashboard-level alert red (gradient start)
+    gradient: "#F87171", // Gradient end — unsubscribed / expired state cards
   },
   warning: {
     DEFAULT: "#F59E0B", // Pending / Reminder — attention, not alarm
+    bg: "#FFFBEB", // Panel/section background (amber-50)
     light: "#FEF3C7", // Pending chip background
     text: "#92400E", // Pending chip label
     dark: "#D97706", // Pressed / dark
   },
   info: {
     DEFAULT: "#4F9CFF", // Informational / partial state
+    bg: "#EFF6FF", // Panel/section background (blue-50)
     light: "#EAF0FB", // Partial chip background
     text: "#0369A1", // Partial chip label
     dark: "#2563EB", // Pressed / dark
@@ -70,6 +77,11 @@ export const dashboardPalette = {
   bg: colors.neutral.bg,
   white: colors.white,
   heroDecor: "#F5ECD8", // Warm cream blob on hero card
+
+  // Dashboard "Both" mode — split hero panels
+  receivePanelBg: colors.success.bg, // #F0FDF4 — YOU RECEIVE panel
+  owePanelBg: colors.danger.bg, // #FEF2F2 — YOU OWE panel
+  dashboardRed: colors.danger.strong, // #DC2626 — gradient & alert red
 
   // Hero card text
   heroLabel: colors.neutral[500],

@@ -21,7 +21,7 @@ export default function DashboardHeroCard({
         padding: 28,
         marginBottom: 12,
         overflow: "hidden",
-        shadowColor: "#000",
+        shadowColor: colors.black,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.07,
         shadowRadius: 12,

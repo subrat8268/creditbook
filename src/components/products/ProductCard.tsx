@@ -1,4 +1,5 @@
 import { ProductVariant } from "@/src/api/products";
+import { colors } from "@/src/utils/theme";
 import { Image } from "expo-image";
 import { EllipsisVertical, Package } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -35,7 +36,11 @@ export default function ProductCard({
             />
           ) : (
             <View className="w-12 h-12 rounded-lg bg-neutral-200 mr-3 items-center justify-center">
-              <Package size={24} color="#666" strokeWidth={1.5} />
+              <Package
+                size={24}
+                color={colors.neutral[600]}
+                strokeWidth={1.5}
+              />
             </View>
           )}
           <View className="flex-1">
@@ -48,7 +53,11 @@ export default function ProductCard({
           </View>
         </View>
         <TouchableOpacity onPress={onOptionsPress}>
-          <EllipsisVertical size={20} color="#999" strokeWidth={2} />
+          <EllipsisVertical
+            size={20}
+            color={colors.neutral[400]}
+            strokeWidth={2}
+          />
         </TouchableOpacity>
       </View>
       <View className="w-full">

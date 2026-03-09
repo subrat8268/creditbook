@@ -48,13 +48,13 @@ export default function DashboardHeader({
           width: 40,
           height: 40,
           borderRadius: 20,
-          backgroundColor: "#22C55E",
+          backgroundColor: colors.primary.DEFAULT,
           alignItems: "center",
           justifyContent: "center",
           marginRight: 12,
         }}
       >
-        <Text style={{ fontSize: 14, fontWeight: "700", color: "#FFFFFF" }}>
+        <Text style={{ fontSize: 14, fontWeight: "700", color: colors.white }}>
           {initials}
         </Text>
       </View>
@@ -76,7 +76,7 @@ export default function DashboardHeader({
           alignItems: "center",
           justifyContent: "center",
           marginRight: 8,
-          shadowColor: "#000",
+          shadowColor: colors.black,
           shadowOffset: { width: 0, height: 1 },
           shadowOpacity: 0.06,
           shadowRadius: 4,
@@ -85,7 +85,7 @@ export default function DashboardHeader({
         onPress={onPressNotifications}
       >
         <View style={{ position: "relative" }}>
-          <Bell size={22} color="#1C1C1E" strokeWidth={1.75} />
+          <Bell size={22} color={colors.neutral[900]} strokeWidth={1.75} />
           {overdueCount > 0 && (
             <View
               style={{
@@ -95,7 +95,7 @@ export default function DashboardHeader({
                 width: 8,
                 height: 8,
                 borderRadius: 4,
-                backgroundColor: "#E74C3C",
+                backgroundColor: colors.danger.DEFAULT,
               }}
             />
           )}
@@ -109,7 +109,7 @@ export default function DashboardHeader({
           backgroundColor: C.white,
           alignItems: "center",
           justifyContent: "center",
-          shadowColor: "#000",
+          shadowColor: colors.black,
           shadowOffset: { width: 0, height: 1 },
           shadowOpacity: 0.06,
           shadowRadius: 4,

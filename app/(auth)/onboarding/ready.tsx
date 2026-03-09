@@ -2,25 +2,26 @@ import OnboardingProgress from "@/src/components/onboarding/OnboardingProgress";
 import Button from "@/src/components/ui/Button";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
+import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import {
-    BadgeCheck,
-    Building2,
-    CheckCircle2,
-    Circle,
-    Info,
-    Phone,
-    QrCode,
-    Receipt,
-    Store,
+  BadgeCheck,
+  Building2,
+  CheckCircle2,
+  Circle,
+  Info,
+  Phone,
+  QrCode,
+  Receipt,
+  Store,
 } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 function ShimmerChip() {
@@ -50,7 +51,7 @@ function ShimmerChip() {
         height: 32,
         width: 200,
         borderRadius: 999,
-        backgroundColor: "#E5E7EB",
+        backgroundColor: colors.neutral[200],
       }}
     />
   );
@@ -131,7 +132,11 @@ export default function OnboardingReady() {
         {/* Celebration heading */}
         <View className="items-center mt-8 mb-6">
           <View className="w-20 h-20 rounded-full bg-green-100 items-center justify-center mb-4">
-            <BadgeCheck size={48} color="#16a34a" strokeWidth={1.8} />
+            <BadgeCheck
+              size={48}
+              color={colors.primary.dark}
+              strokeWidth={1.8}
+            />
           </View>
           <Text className="text-3xl font-inter-bold text-neutral-900 text-center">
             You are all set!
@@ -149,21 +154,21 @@ export default function OnboardingReady() {
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: "#F0FDF4",
+                  backgroundColor: colors.success.bg,
                   borderWidth: 1,
-                  borderColor: "#BBF7D0",
+                  borderColor: colors.success.light,
                   borderRadius: 999,
                   paddingHorizontal: 16,
                   paddingVertical: 8,
                   gap: 6,
                 }}
               >
-                <Store size={15} color="#16A34A" strokeWidth={2} />
+                <Store size={15} color={colors.primary.dark} strokeWidth={2} />
                 <Text
                   style={{
                     fontSize: 14,
                     fontWeight: "600",
-                    color: "#15803D",
+                    color: colors.success.dark,
                   }}
                   numberOfLines={1}
                 >
@@ -181,7 +186,11 @@ export default function OnboardingReady() {
           {checks.map((item) => (
             <View key={item.label} className="flex-row items-center gap-3">
               <View className="w-9 h-9 rounded-full bg-white border border-neutral-200 items-center justify-center">
-                <item.Icon size={18} color="#374151" strokeWidth={1.8} />
+                <item.Icon
+                  size={18}
+                  color={colors.neutral[700]}
+                  strokeWidth={1.8}
+                />
               </View>
               <View className="flex-1">
                 <Text className="text-xs text-neutral-400 font-inter">
@@ -192,9 +201,17 @@ export default function OnboardingReady() {
                 </Text>
               </View>
               {item.ok ? (
-                <CheckCircle2 size={18} color="#16a34a" strokeWidth={2} />
+                <CheckCircle2
+                  size={18}
+                  color={colors.primary.dark}
+                  strokeWidth={2}
+                />
               ) : (
-                <Circle size={18} color="#d1d5db" strokeWidth={1.5} />
+                <Circle
+                  size={18}
+                  color={colors.neutral[300]}
+                  strokeWidth={1.5}
+                />
               )}
             </View>
           ))}
@@ -202,7 +219,7 @@ export default function OnboardingReady() {
 
         {/* Bank details nudge */}
         <View className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8 flex-row gap-3 items-start">
-          <Info size={20} color="#d97706" strokeWidth={2} />
+          <Info size={20} color={colors.warning.dark} strokeWidth={2} />
           <Text className="text-sm text-amber-700 font-inter flex-1">
             <Text className="font-inter-semibold">Add bank details</Text> in
             Profile to show IFSC & account number on PDF bills — required for

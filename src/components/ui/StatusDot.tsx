@@ -1,3 +1,4 @@
+import { colors } from "@/src/utils/theme";
 import { useEffect, useRef } from "react";
 import { Animated, View } from "react-native";
 
@@ -8,9 +9,9 @@ type StatusDotProps = {
 };
 
 const DOT_COLOR: Record<Status, string> = {
-  Paid: "#22C55E",
-  Pending: "#F59E0B",
-  "Partially Paid": "#E74C3C",
+  Paid: colors.success.DEFAULT,
+  Pending: colors.warning.DEFAULT,
+  "Partially Paid": colors.danger.DEFAULT,
 };
 
 export default function StatusDot({ status }: StatusDotProps) {

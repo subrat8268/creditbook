@@ -1,5 +1,6 @@
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
+import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { ArrowLeft, Check, Store, User, Users } from "lucide-react-native";
 import { ComponentType, useState } from "react";
@@ -23,27 +24,27 @@ const ROLES: RoleCard[] = [
     Icon: Store,
     title: "Retailer / Shopkeeper",
     subtitle: "I sell goods directly to customers in my shop or online.",
-    accentColor: "#16a34a",
+    accentColor: colors.primary.dark,
     image: require("../../../assets/images/role-retailer.png"),
-    bannerBg: "#bbf7d0",
+    bannerBg: colors.success.light,
   },
   {
     role: "wholesaler",
     Icon: Users,
     title: "Wholesaler / Distributor",
     subtitle: "I buy in bulk from suppliers and sell to other retailers.",
-    accentColor: "#2563eb",
+    accentColor: colors.info.dark,
     image: require("../../../assets/images/role-wholesaler.png"),
-    bannerBg: "#bfdbfe",
+    bannerBg: colors.info.light,
   },
   {
     role: "small-business",
     Icon: User,
     title: "Small Business Owner",
     subtitle: "I run a small business and want to track sales and credit.",
-    accentColor: "#d97706",
+    accentColor: colors.warning.dark,
     image: require("../../../assets/images/role-user.png"),
-    bannerBg: "#fde68a",
+    bannerBg: colors.warning.light,
   },
 ];
 
@@ -101,7 +102,7 @@ export default function OnboardingRole() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f5f5f0" }}>
+    <View style={{ flex: 1, backgroundColor: colors.neutral.bg }}>
       {/* ── Header ── */}
       <View
         style={{
@@ -110,14 +111,14 @@ export default function OnboardingRole() {
           paddingTop: 56,
           paddingHorizontal: 20,
           paddingBottom: 12,
-          backgroundColor: "#f5f5f0",
+          backgroundColor: colors.neutral.bg,
         }}
       >
         <TouchableOpacity
           onPress={() => router.back()}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
-          <ArrowLeft size={22} color="#111827" strokeWidth={2} />
+          <ArrowLeft size={22} color={colors.neutral[900]} strokeWidth={2} />
         </TouchableOpacity>
         <Text
           style={{
@@ -125,7 +126,7 @@ export default function OnboardingRole() {
             textAlign: "center",
             fontSize: 16,
             fontWeight: "600",
-            color: "#111827",
+            color: colors.neutral[900],
             marginRight: 22, // offset for back arrow width
           }}
         >
@@ -142,7 +143,7 @@ export default function OnboardingRole() {
           style={{
             fontSize: 30,
             fontWeight: "800",
-            color: "#0f172a",
+            color: colors.neutral[900],
             marginTop: 20,
             marginBottom: 8,
             lineHeight: 38,
@@ -153,7 +154,7 @@ export default function OnboardingRole() {
         <Text
           style={{
             fontSize: 15,
-            color: "#64748b",
+            color: colors.neutral[500],
             lineHeight: 22,
             marginBottom: 28,
           }}
@@ -174,13 +175,15 @@ export default function OnboardingRole() {
               >
                 <View
                   style={{
-                    backgroundColor: "#ffffff",
+                    backgroundColor: colors.white,
                     borderRadius: 20,
                     overflow: "hidden",
                     borderWidth: isActive ? 2.5 : 1.5,
-                    borderColor: isActive ? item.accentColor : "#e2e8f0",
+                    borderColor: isActive
+                      ? item.accentColor
+                      : colors.neutral[200],
                     // shadow
-                    shadowColor: "#000",
+                    shadowColor: colors.black,
                     shadowOffset: { width: 0, height: 2 },
                     shadowOpacity: 0.06,
                     shadowRadius: 8,
@@ -245,7 +248,7 @@ export default function OnboardingRole() {
                         style={{
                           fontSize: 17,
                           fontWeight: "700",
-                          color: "#0f172a",
+                          color: colors.neutral[900],
                           flex: 1,
                         }}
                       >
@@ -260,15 +263,19 @@ export default function OnboardingRole() {
                           borderRadius: 12,
                           backgroundColor: isActive
                             ? item.accentColor
-                            : "#f1f5f9",
+                            : colors.neutral.bg,
                           borderWidth: isActive ? 0 : 1.5,
-                          borderColor: "#cbd5e1",
+                          borderColor: colors.neutral[300],
                           alignItems: "center",
                           justifyContent: "center",
                         }}
                       >
                         {isActive && (
-                          <Check size={14} color="#ffffff" strokeWidth={3} />
+                          <Check
+                            size={14}
+                            color={colors.white}
+                            strokeWidth={3}
+                          />
                         )}
                       </View>
                     </View>
@@ -276,7 +283,7 @@ export default function OnboardingRole() {
                     <Text
                       style={{
                         fontSize: 13,
-                        color: "#64748b",
+                        color: colors.neutral[500],
                         lineHeight: 19,
                       }}
                     >
@@ -294,15 +301,19 @@ export default function OnboardingRole() {
           <View
             style={{
               marginTop: 16,
-              backgroundColor: "#fef2f2",
+              backgroundColor: colors.danger.bg,
               borderWidth: 1,
-              borderColor: "#fecaca",
+              borderColor: colors.danger.light,
               borderRadius: 10,
               padding: 12,
             }}
           >
             <Text
-              style={{ color: "#dc2626", fontSize: 13, textAlign: "center" }}
+              style={{
+                color: colors.danger.strong,
+                fontSize: 13,
+                textAlign: "center",
+              }}
             >
               {error}
             </Text>
@@ -316,13 +327,18 @@ export default function OnboardingRole() {
           activeOpacity={0.85}
           style={{
             marginTop: 28,
-            backgroundColor: selected && !loading ? "#22c55e" : "#d1d5db",
+            backgroundColor:
+              selected && !loading
+                ? colors.primary.DEFAULT
+                : colors.neutral[300],
             borderRadius: 50,
             paddingVertical: 18,
             alignItems: "center",
           }}
         >
-          <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "700" }}>
+          <Text
+            style={{ color: colors.white, fontSize: 16, fontWeight: "700" }}
+          >
             {loading ? "Saving…" : "Start using CreditBook →"}
           </Text>
         </TouchableOpacity>

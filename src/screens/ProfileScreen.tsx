@@ -6,15 +6,16 @@ import Loader from "@/src/components/feedback/Loader";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { useLanguageStore } from "@/src/store/languageStore";
+import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { ChevronRight, Download } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import {
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 const getInitials = (name?: string | null): string => {
@@ -58,29 +59,22 @@ export default function ProfileScreen() {
   return (
     <ScreenWrapper>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Text className="text-2xl font-bold text-gray-900 mb-6">
+        <Text className="text-2xl font-bold text-textDark mb-6">
           {t("profile.title")}
         </Text>
 
         {/* Profile Avatar */}
         <View style={{ alignItems: "center", marginBottom: 24 }}>
-          <View
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: 36,
-              backgroundColor: "#22C55E",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text style={{ color: "#FFFFFF", fontSize: 22, fontWeight: "700" }}>
+          <View className="w-[72px] h-[72px] rounded-full bg-primary items-center justify-center">
+            <Text
+              style={{ color: colors.white, fontSize: 22, fontWeight: "700" }}
+            >
               {getInitials(profile.business_name)}
             </Text>
           </View>
           {profile.business_name ? (
             <Text
-              className="mt-2 text-base font-bold text-gray-900"
+              className="mt-2 text-base font-bold text-textDark"
               numberOfLines={1}
             >
               {profile.business_name}
@@ -107,60 +101,60 @@ export default function ProfileScreen() {
         />
 
         {/* Business Fields */}
-        <Text className="mt-3 font-semibold text-gray-900 mb-1">
+        <Text className="mt-3 font-semibold text-textDark mb-1">
           {t("profile.businessName")}
         </Text>
         <TextInput
-          className="p-3 bg-gray-100 rounded-xl mb-4"
+          className="p-3 bg-background rounded-xl mb-4"
           value={profile.business_name ?? ""}
           onChangeText={(t) => updateField("business_name", t)}
         />
 
-        <Text className="font-semibold text-gray-900 mb-1">
+        <Text className="font-semibold text-textDark mb-1">
           {t("profile.businessAddress")}
         </Text>
         <TextInput
-          className="p-3 bg-gray-100 rounded-xl mb-4"
+          className="p-3 bg-background rounded-xl mb-4"
           multiline
           value={profile.business_address ?? ""}
           onChangeText={(t) => updateField("business_address", t)}
         />
 
-        <Text className="font-semibold text-gray-900 mb-1">
+        <Text className="font-semibold text-textDark mb-1">
           {t("profile.gstin")}
         </Text>
         <TextInput
-          className="p-3 bg-gray-100 rounded-xl mb-4"
+          className="p-3 bg-background rounded-xl mb-4"
           value={profile.gstin ?? ""}
           onChangeText={(t) => updateField("gstin", t)}
         />
 
-        <Text className="font-semibold text-gray-900 mb-1">
+        <Text className="font-semibold text-textDark mb-1">
           {t("profile.upiId")}
         </Text>
         <TextInput
-          className="p-3 bg-gray-100 rounded-xl mb-8"
+          className="p-3 bg-background rounded-xl mb-8"
           value={profile.upi_id ?? ""}
           onChangeText={(t) => updateField("upi_id", t)}
         />
 
         {/* Bill Settings */}
         <View className="mb-2">
-          <Text className="text-lg font-bold text-gray-900">
+          <Text className="text-lg font-bold text-textDark">
             {t("profile.billSettings")}
           </Text>
-          <Text className="text-xs text-gray-500 mt-0.5">
+          <Text className="text-xs text-textSecondary mt-0.5">
             {t("profile.billSettingsDesc")}
           </Text>
         </View>
 
-        <Text className="font-semibold text-gray-900 mb-1 mt-3">
+        <Text className="font-semibold text-textDark mb-1 mt-3">
           {t("profile.billNumberPrefix")}
         </Text>
         <TextInput
-          className="p-3 bg-gray-100 rounded-xl mb-8"
+          className="p-3 bg-background rounded-xl mb-8"
           placeholder="e.g. INV, BILL, CB"
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={colors.neutral[400]}
           autoCapitalize="characters"
           maxLength={10}
           value={profile.bill_number_prefix ?? "INV"}
@@ -180,33 +174,33 @@ export default function ProfileScreen() {
 
         {/* Bank Account Details */}
         <View className="mb-2 mt-2">
-          <Text className="text-lg font-bold text-gray-900">
+          <Text className="text-lg font-bold text-textDark">
             {t("profile.bankDetails")}
           </Text>
-          <Text className="text-xs text-gray-500 mt-0.5">
+          <Text className="text-xs text-textSecondary mt-0.5">
             {t("profile.bankDetailsDesc")}
           </Text>
         </View>
 
-        <Text className="font-semibold text-gray-900 mb-1 mt-3">
+        <Text className="font-semibold text-textDark mb-1 mt-3">
           {t("profile.bankName")}
         </Text>
         <TextInput
-          className="p-3 bg-gray-100 rounded-xl mb-4"
+          className="p-3 bg-background rounded-xl mb-4"
           placeholder="e.g. State Bank of India"
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={colors.neutral[400]}
           value={profile.bank_name ?? ""}
           onEndEditing={(e) => updateField("bank_name", e.nativeEvent.text)}
           onChangeText={(t) => setProfile({ ...profile!, bank_name: t })}
         />
 
-        <Text className="font-semibold text-gray-900 mb-1">
+        <Text className="font-semibold text-textDark mb-1">
           {t("profile.accountNumber")}
         </Text>
         <TextInput
-          className="p-3 bg-gray-100 rounded-xl mb-4"
+          className="p-3 bg-background rounded-xl mb-4"
           placeholder="e.g. 00112233445566"
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={colors.neutral[400]}
           keyboardType="numeric"
           value={profile.account_number ?? ""}
           onEndEditing={(e) =>
@@ -215,13 +209,13 @@ export default function ProfileScreen() {
           onChangeText={(t) => setProfile({ ...profile!, account_number: t })}
         />
 
-        <Text className="font-semibold text-gray-900 mb-1">
+        <Text className="font-semibold text-textDark mb-1">
           {t("profile.ifscCode")}
         </Text>
         <TextInput
-          className="p-3 bg-gray-100 rounded-xl mb-8"
+          className="p-3 bg-background rounded-xl mb-8"
           placeholder="e.g. SBIN0001234"
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={colors.neutral[400]}
           autoCapitalize="characters"
           value={profile.ifsc_code ?? ""}
           onEndEditing={(e) =>
@@ -234,10 +228,10 @@ export default function ProfileScreen() {
 
         {/* Dashboard Mode */}
         <View className="mb-2 mt-2">
-          <Text className="text-lg font-bold text-gray-900">
+          <Text className="text-lg font-bold text-textDark">
             {t("profile.dashboardMode")}
           </Text>
-          <Text className="text-xs text-gray-500 mt-0.5">
+          <Text className="text-xs text-textSecondary mt-0.5">
             {t("profile.dashboardModeDesc")}
           </Text>
         </View>
@@ -258,12 +252,12 @@ export default function ProfileScreen() {
                 className={`flex-1 py-3 rounded-xl border items-center ${
                   isActive
                     ? "bg-primary border-primary"
-                    : "bg-gray-100 border-gray-200"
+                    : "bg-background border-gray-200"
                 }`}
               >
                 <Text
                   className={`font-semibold text-sm ${
-                    isActive ? "text-white" : "text-gray-600"
+                    isActive ? "text-white" : "text-textPrimary"
                   }`}
                 >
                   {label}
@@ -275,10 +269,10 @@ export default function ProfileScreen() {
 
         {/* Language Toggle */}
         <View className="mb-2 mt-2">
-          <Text className="text-lg font-bold text-gray-900">
+          <Text className="text-lg font-bold text-textDark">
             {t("profile.language")}
           </Text>
-          <Text className="text-xs text-gray-500 mt-0.5">
+          <Text className="text-xs text-textSecondary mt-0.5">
             {t("profile.languageDesc")}
           </Text>
         </View>
@@ -295,12 +289,12 @@ export default function ProfileScreen() {
                 className={`flex-1 py-3 rounded-xl border items-center ${
                   isActive
                     ? "bg-primary border-primary"
-                    : "bg-gray-100 border-gray-200"
+                    : "bg-background border-gray-200"
                 }`}
               >
                 <Text
                   className={`font-semibold text-sm ${
-                    isActive ? "text-white" : "text-gray-600"
+                    isActive ? "text-white" : "text-textPrimary"
                   }`}
                 >
                   {label}
@@ -312,29 +306,29 @@ export default function ProfileScreen() {
 
         {/* Export Data */}
         <TouchableOpacity
-          className="bg-green-50 border border-green-200 py-3 px-4 rounded-xl mb-3 flex-row items-center justify-between"
+          className="bg-success-bg border border-success-light py-3 px-4 rounded-xl mb-3 flex-row items-center justify-between"
           onPress={() => router.push("/(main)/export" as any)}
         >
           <View className="flex-row items-center gap-3">
-            <Download size={20} color="#16a34a" strokeWidth={2} />
+            <Download size={20} color={colors.primary.dark} strokeWidth={2} />
             <View>
-              <Text className="font-semibold text-green-800">
+              <Text className="font-semibold text-success-text">
                 {t("export.title")}
               </Text>
-              <Text className="text-xs text-green-700">
+              <Text className="text-xs text-primary-dark">
                 {t("export.profileDesc")}
               </Text>
             </View>
           </View>
-          <ChevronRight size={18} color="#16a34a" strokeWidth={2} />
+          <ChevronRight size={18} color={colors.primary.dark} strokeWidth={2} />
         </TouchableOpacity>
 
         {/* Logout */}
         <TouchableOpacity
-          className="bg-red-100 border border-red-300 py-3 rounded-xl"
+          className="bg-danger-light border border-danger-dark py-3 rounded-xl"
           onPress={handleSignOut}
         >
-          <Text className="text-red-700 text-center font-semibold">
+          <Text className="text-danger-text text-center font-semibold">
             {t("common.logout")}
           </Text>
         </TouchableOpacity>

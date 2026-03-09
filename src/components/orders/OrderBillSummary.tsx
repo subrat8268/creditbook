@@ -59,7 +59,7 @@ export default function OrderBillSummary({
       {/* Loading Charge + Tax inputs */}
       <View className="flex-row gap-3 mb-3">
         <View className="flex-1 flex-row items-center">
-          <Text className="text-sm font-inter-medium text-gray-600 flex-1">
+          <Text className="text-sm font-inter-medium text-textPrimary flex-1">
             Loading ₹
           </Text>
           <TextInput
@@ -71,7 +71,7 @@ export default function OrderBillSummary({
           />
         </View>
         <View className="flex-1 flex-row items-center">
-          <Text className="text-sm font-inter-medium text-gray-600 flex-1">
+          <Text className="text-sm font-inter-medium text-textPrimary flex-1">
             GST %
           </Text>
           <TextInput
@@ -88,8 +88,8 @@ export default function OrderBillSummary({
       <View className="mb-3 gap-y-1.5">
         {/* Items */}
         <View className="flex-row justify-between">
-          <Text className="text-sm text-gray-500">Today's Items</Text>
-          <Text className="text-sm text-gray-700">
+          <Text className="text-sm text-textSecondary">Today's Items</Text>
+          <Text className="text-sm text-textPrimary">
             ₹{itemsTotal.toLocaleString("en-IN")}
           </Text>
         </View>
@@ -97,8 +97,8 @@ export default function OrderBillSummary({
         {/* Tax row — only if taxPercent > 0 */}
         {taxAmount > 0 && (
           <View className="flex-row justify-between">
-            <Text className="text-sm text-gray-500">GST ({taxPercent}%)</Text>
-            <Text className="text-sm text-gray-700">
+            <Text className="text-sm text-textSecondary">GST ({taxPercent}%)</Text>
+            <Text className="text-sm text-textPrimary">
               ₹{taxAmount.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
             </Text>
           </View>
@@ -107,8 +107,8 @@ export default function OrderBillSummary({
         {/* Loading charge row — only if > 0 */}
         {loadingCharge > 0 && (
           <View className="flex-row justify-between">
-            <Text className="text-sm text-gray-500">Loading Charge</Text>
-            <Text className="text-sm text-gray-700">
+            <Text className="text-sm text-textSecondary">Loading Charge</Text>
+            <Text className="text-sm text-textPrimary">
               ₹{loadingCharge.toLocaleString("en-IN")}
             </Text>
           </View>
@@ -117,8 +117,8 @@ export default function OrderBillSummary({
         {/* Today's subtotal — only show when there's a previous balance */}
         {previousBalance > 0 && (
           <View className="flex-row justify-between">
-            <Text className="text-sm text-gray-500">Today's Total</Text>
-            <Text className="text-sm font-inter-medium text-gray-800">
+            <Text className="text-sm text-textSecondary">Today's Total</Text>
+            <Text className="text-sm font-inter-medium text-textDark">
               ₹{todayTotal.toLocaleString("en-IN")}
             </Text>
           </View>
@@ -128,16 +128,16 @@ export default function OrderBillSummary({
         <View className="flex-row justify-between items-center">
           <Text
             className="text-sm font-inter-medium"
-            style={{ color: "#E74C3C" }}
+            style={{ color: colors.danger.DEFAULT }}
           >
             Previous Balance
           </Text>
           {isFetchingBalance ? (
-            <ActivityIndicator size="small" color="#E74C3C" />
+            <ActivityIndicator size="small" color={colors.danger.DEFAULT} />
           ) : (
             <Text
               className="text-sm font-inter-semibold"
-              style={{ color: "#E74C3C" }}
+              style={{ color: colors.danger.DEFAULT }}
             >
               ₹{previousBalance.toLocaleString("en-IN")}
             </Text>
@@ -149,16 +149,16 @@ export default function OrderBillSummary({
 
         {/* Grand Total */}
         <View className="flex-row justify-between items-center">
-          <Text style={{ fontSize: 15, fontWeight: "700", color: "#1C1C1E" }}>
+          <Text style={{ fontSize: 15, fontWeight: "700", color: colors.neutral[900] }}>
             Grand Total
           </Text>
-          <Text style={{ fontSize: 28, fontWeight: "700", color: "#1C1C1E" }}>
+          <Text style={{ fontSize: 28, fontWeight: "700", color: colors.neutral[900] }}>
             ₹{grandTotal.toLocaleString("en-IN")}
           </Text>
         </View>
 
         {previousBalance > 0 && (
-          <Text className="text-xs text-gray-400 text-right">
+          <Text className="text-xs text-textMuted text-right">
             Today ₹{todayTotal.toLocaleString("en-IN")} + Prev ₹
             {previousBalance.toLocaleString("en-IN")}
           </Text>
@@ -180,7 +180,7 @@ export default function OrderBillSummary({
           onPress={onSendBill}
           className="flex-1 bg-green-600 py-3 rounded-xl flex-row justify-center items-center"
         >
-          <MessageSquare size={20} color="#fff" strokeWidth={2} />
+          <MessageSquare size={20} color={colors.white} strokeWidth={2} />
           <Text className="text-white text-center font-inter-semibold text-base ml-2">
             Send Bill
           </Text>

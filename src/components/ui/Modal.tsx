@@ -1,3 +1,4 @@
+import { colors } from "@/src/utils/theme";
 import { X } from "lucide-react-native";
 import React from "react";
 import {
@@ -44,7 +45,7 @@ export default function AppModal({
               <Text className="text-lg font-inter-semibold">{title}</Text>
             )}
             <TouchableOpacity onPress={onClose}>
-              <X size={22} color="#374151" strokeWidth={2} />
+              <X size={22} color={colors.neutral[700]} strokeWidth={2} />
             </TouchableOpacity>
           </View>
           {children}

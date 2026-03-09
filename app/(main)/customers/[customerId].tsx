@@ -4,6 +4,7 @@ import Loader from "@/src/components/feedback/Loader";
 import { useCustomerDetail } from "@/src/hooks/useCustomer";
 import { useAuthStore } from "@/src/store/authStore";
 import { Transaction } from "@/src/types/customer";
+import { colors } from "@/src/utils/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Print from "expo-print";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -91,7 +92,7 @@ function buildStatementHtml(
   const rows = transactions
     .map((tx) => {
       const sign = tx.type === "payment" ? "+" : "";
-      const color = tx.type === "payment" ? "#2ECC71" : "#E74C3C";
+      const color = tx.type === "payment" ? colors.success.DEFAULT : colors.danger.DEFAULT;
       const label =
         tx.type === "bill"
           ? `Invoice ${tx.billNumber ?? ""}`
@@ -134,10 +135,10 @@ const MODE_LABEL: Record<string, string> = {
 
 function TransactionRow({ tx }: { tx: Transaction }) {
   const isPayment = tx.type === "payment";
-  const borderColor = isPayment ? "#2ECC71" : "#E74C3C";
-  const iconBg = isPayment ? "#EDFAF4" : "#FFF0EE";
-  const iconColor = isPayment ? "#2ECC71" : "#E74C3C";
-  const amountColor = isPayment ? "#2ECC71" : "#E74C3C";
+  const borderColor = isPayment ? colors.success.DEFAULT : colors.danger.DEFAULT;
+  const iconBg = isPayment ? colors.success.bg : colors.danger.bg;
+  const iconColor = isPayment ? colors.success.DEFAULT : colors.danger.DEFAULT;
+  const amountColor = isPayment ? colors.success.DEFAULT : colors.danger.DEFAULT;
   const title = isPayment
     ? "Payment Received"
     : `Invoice${tx.billNumber ? ` #${tx.billNumber}` : ""}`;
@@ -151,7 +152,7 @@ function TransactionRow({ tx }: { tx: Transaction }) {
       className={`bg-white rounded-[14px] px-3.5 py-3.5 mb-[10px] border-l-4`}
       style={{
         borderLeftColor: borderColor,
-        shadowColor: "#000",
+        shadowColor: colors.black,
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.04,
         shadowRadius: 4,
@@ -170,9 +171,9 @@ function TransactionRow({ tx }: { tx: Transaction }) {
           )}
         </View>
         <View className="flex-1">
-          <Text className="text-sm font-bold text-[#1C1C1E]">{title}</Text>
+          <Text className="text-sm font-bold text-textDark">{title}</Text>
           {subtitle ? (
-            <Text className="text-xs text-[#8E8E93] mt-px">{subtitle}</Text>
+            <Text className="text-xs text-textMuted mt-px">{subtitle}</Text>
           ) : null}
         </View>
         <Text
@@ -184,10 +185,10 @@ function TransactionRow({ tx }: { tx: Transaction }) {
         </Text>
       </View>
       <View className="flex-row justify-between mt-[10px] pl-[50px]">
-        <Text className="text-xs text-[#8E8E93]">
+        <Text className="text-xs text-textMuted">
           {formatTime(tx.created_at)}
         </Text>
-        <Text className="text-xs text-[#636366] font-semibold">
+        <Text className="text-xs text-textPrimary font-semibold">
           Bal: {formatINR(tx.runningBalance)}
         </Text>
       </View>
@@ -282,25 +283,25 @@ export default function CustomerDetailScreen() {
 
   return (
     <SafeAreaView
-      className="flex-1 bg-[#F6F7FB]"
+      className="flex-1 bg-background"
       edges={["top", "left", "right", "bottom"]}
     >
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* ── Header ── */}
-      <View className="flex-row items-center px-4 py-3 bg-white border-b border-[#F0F0F5]">
+      <View className="flex-row items-center px-4 py-3 bg-white border-b border-border">
         <TouchableOpacity onPress={() => router.back()} className="p-1 mr-2">
-          <ArrowLeft size={24} color="#1C1C1E" strokeWidth={2} />
+          <ArrowLeft size={24} color={colors.neutral[900]} strokeWidth={2} />
         </TouchableOpacity>
         <View className="flex-1">
           <Text
-            className="text-[17px] font-bold text-[#1C1C1E]"
+            className="text-[17px] font-bold text-textDark"
             numberOfLines={1}
           >
             {customer.name}
           </Text>
           {getLastActiveLabel(customer.lastActiveAt) ? (
-            <Text className="text-xs text-[#8E8E93] mt-px">
+            <Text className="text-xs text-textMuted mt-px">
               {getLastActiveLabel(customer.lastActiveAt)}
             </Text>
           ) : null}
@@ -310,13 +311,13 @@ export default function CustomerDetailScreen() {
             className="w-[38px] h-[38px] rounded-full bg-search items-center justify-center"
             onPress={downloadStatement}
           >
-            <FileText size={20} color="#22C55E" strokeWidth={2} />
+            <FileText size={20} color={colors.primary.DEFAULT} strokeWidth={2} />
           </TouchableOpacity>
           <TouchableOpacity
             className="w-[38px] h-[38px] rounded-full bg-search items-center justify-center"
             onPress={callCustomer}
           >
-            <Phone size={20} color="#2ECC71" strokeWidth={2} />
+            <Phone size={20} color={colors.success.DEFAULT} strokeWidth={2} />
           </TouchableOpacity>
         </View>
       </View>
@@ -330,8 +331,8 @@ export default function CustomerDetailScreen() {
         <LinearGradient
           colors={
             customer.outstandingBalance === 0
-              ? ["#22C55E", "#16A34A"]
-              : ["#C0392B", "#7B1010"]
+              ? [colors.primary.DEFAULT, colors.primary.dark]
+              : [colors.danger.DEFAULT, colors.danger.dark]
           }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -404,7 +405,7 @@ export default function CustomerDetailScreen() {
           <TouchableOpacity
             className="flex-1 bg-white rounded-2xl py-[18px] items-center gap-2"
             style={{
-              shadowColor: "#000",
+              shadowColor: colors.black,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.05,
               shadowRadius: 6,
@@ -420,11 +421,11 @@ export default function CustomerDetailScreen() {
           >
             <View
               className="w-11 h-11 rounded-full items-center justify-center"
-              style={{ backgroundColor: "#FFF0EE" }}
+              style={{ backgroundColor: colors.danger.bg }}
             >
-              <Plus size={22} color="#E74C3C" strokeWidth={2.5} />
+              <Plus size={22} color={colors.danger.DEFAULT} strokeWidth={2.5} />
             </View>
-            <Text className="text-[13px] font-semibold text-[#1C1C1E]">
+            <Text className="text-[13px] font-semibold text-textDark">
               New Bill
             </Text>
           </TouchableOpacity>
@@ -432,7 +433,7 @@ export default function CustomerDetailScreen() {
           <TouchableOpacity
             className="flex-1 bg-white rounded-2xl py-[18px] items-center gap-2"
             style={{
-              shadowColor: "#000",
+              shadowColor: colors.black,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.05,
               shadowRadius: 6,
@@ -452,11 +453,11 @@ export default function CustomerDetailScreen() {
           >
             <View
               className="w-11 h-11 rounded-full items-center justify-center"
-              style={{ backgroundColor: "#EDFAF4" }}
+              style={{ backgroundColor: colors.success.bg }}
             >
-              <Banknote size={22} color="#2ECC71" strokeWidth={2} />
+              <Banknote size={22} color={colors.success.DEFAULT} strokeWidth={2} />
             </View>
-            <Text className="text-[13px] font-semibold text-[#1C1C1E]">
+            <Text className="text-[13px] font-semibold text-textDark">
               Received
             </Text>
           </TouchableOpacity>
@@ -464,7 +465,7 @@ export default function CustomerDetailScreen() {
           <TouchableOpacity
             className="flex-1 bg-white rounded-2xl py-[18px] items-center gap-2"
             style={{
-              shadowColor: "#000",
+              shadowColor: colors.black,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.05,
               shadowRadius: 6,
@@ -475,11 +476,11 @@ export default function CustomerDetailScreen() {
           >
             <View
               className="w-11 h-11 rounded-full items-center justify-center"
-              style={{ backgroundColor: "#DCFCE7" }}
+              style={{ backgroundColor: colors.success.light }}
             >
-              <MessageCircle size={22} color="#22C55E" strokeWidth={2} />
+              <MessageCircle size={22} color={colors.primary.DEFAULT} strokeWidth={2} />
             </View>
-            <Text className="text-[13px] font-semibold text-[#1C1C1E]">
+            <Text className="text-[13px] font-semibold text-textDark">
               Send Reminder
             </Text>
           </TouchableOpacity>
@@ -488,12 +489,12 @@ export default function CustomerDetailScreen() {
         {/* ── Transactions ── */}
         <View className="mx-4 mt-6">
           <View className="flex-row justify-between items-center mb-3.5">
-            <Text className="text-xl font-bold text-[#1C1C1E]">
+            <Text className="text-xl font-bold text-textDark">
               Transactions
             </Text>
             <TouchableOpacity className="flex-row items-center gap-1">
               <Text className="text-sm font-semibold text-danger">Filter</Text>
-              <Filter size={14} color="#E74C3C" strokeWidth={2} />
+              <Filter size={14} color={colors.danger.DEFAULT} strokeWidth={2} />
             </TouchableOpacity>
           </View>
 
@@ -504,13 +505,13 @@ export default function CustomerDetailScreen() {
                 key={f}
                 onPress={() => setTxFilter(f)}
                 className={`px-4 py-2 rounded-full ${
-                  txFilter === f ? "bg-[#1C1C1E]" : "bg-[#EEEEEE]"
+                  txFilter === f ? "bg-textDark" : "bg-border"
                 }`}
                 activeOpacity={0.75}
               >
                 <Text
                   className={`text-[13px] font-semibold ${
-                    txFilter === f ? "text-white" : "text-[#636366]"
+                    txFilter === f ? "text-white" : "text-textPrimary"
                   }`}
                 >
                   {f}
@@ -522,8 +523,8 @@ export default function CustomerDetailScreen() {
           {/* Rows */}
           {listItems.length === 0 ? (
             <View className="items-center py-10 gap-[10px]">
-              <Receipt size={40} color="#C7C7CC" strokeWidth={1.2} />
-              <Text className="text-sm text-[#8E8E93]">
+              <Receipt size={40} color={colors.neutral[300]} strokeWidth={1.2} />
+              <Text className="text-sm text-textMuted">
                 No transactions yet
               </Text>
             </View>
@@ -534,13 +535,13 @@ export default function CustomerDetailScreen() {
                   key={item.key}
                   className="flex-row items-center my-3 gap-2"
                 >
-                  <View className="flex-1 h-px bg-[#E5E5EA]" />
-                  <View className="bg-[#EEEEEE] rounded-xl px-3 py-1">
-                    <Text className="text-xs font-semibold text-[#636366]">
+                  <View className="flex-1 h-px bg-border" />
+                  <View className="bg-border rounded-xl px-3 py-1">
+                    <Text className="text-xs font-semibold text-textPrimary">
                       {item.label}
                     </Text>
                   </View>
-                  <View className="flex-1 h-px bg-[#E5E5EA]" />
+                  <View className="flex-1 h-px bg-border" />
                 </View>
               ) : (
                 <TransactionRow key={item.key} tx={item.data} />
@@ -551,16 +552,16 @@ export default function CustomerDetailScreen() {
       </ScrollView>
 
       {/* ── Download Statement Footer ── */}
-      <View className="px-6 py-4 bg-white border-t border-[#F0F0F5]">
+      <View className="px-6 py-4 bg-white border-t border-border">
         <TouchableOpacity
-          className={`flex-row items-center justify-center gap-2 bg-[#1C1C1E] rounded-[30px] py-4 ${
+          className={`flex-row items-center justify-center gap-2 bg-textDark rounded-[30px] py-4 ${
             exporting ? "opacity-60" : ""
           }`}
           onPress={downloadStatement}
           disabled={exporting}
           activeOpacity={0.85}
         >
-          <Download size={18} color="#fff" strokeWidth={2} />
+          <Download size={18} color={colors.white} strokeWidth={2} />
           <Text className="text-[15px] font-bold text-white">
             {exporting ? "Generating…" : "Download Statement"}
           </Text>

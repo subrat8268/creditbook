@@ -65,7 +65,9 @@ export default function SupplierCard({ supplier, onPress }: Props) {
             marginRight: 12,
           }}
         >
-          <Text style={{ color: "#FFFFFF", fontWeight: "700", fontSize: 16 }}>
+          <Text
+            style={{ color: colors.white, fontWeight: "700", fontSize: 16 }}
+          >
             {initials}
           </Text>
         </View>

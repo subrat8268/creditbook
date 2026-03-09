@@ -32,7 +32,7 @@ export default function SignUpPage() {
         <View className="px-6 py-4 flex-1 justify-start bg-white">
           {/* Logo */}
           <Image
-            source={require("../../assets/images/greenlogo.png")}
+            source={require("../../assets/images/logo.png")}
             className="w-60 mt-3 mb-5 self-center"
             resizeMode="contain"
           />
@@ -66,7 +66,7 @@ export default function SignUpPage() {
                   onChangeText={handleChange("email")}
                   error={touched.email ? errors.email : undefined}
                   keyboardType="email-address"
-                  icon={<Mail size={20} color="#6B7280" strokeWidth={1.8} />}
+                  icon={<Mail size={20} color={colors.neutral[500]} strokeWidth={1.8} />}
                   iconPosition="left"
                 />
 
@@ -80,7 +80,7 @@ export default function SignUpPage() {
                   onChangeText={handleChange("password")}
                   secureTextEntry
                   error={touched.password ? errors.password : undefined}
-                  icon={<Lock size={20} color="#6B7280" strokeWidth={1.8} />}
+                  icon={<Lock size={20} color={colors.neutral[500]} strokeWidth={1.8} />}
                   iconPosition="left"
                 />
 
@@ -97,21 +97,21 @@ export default function SignUpPage() {
                     touched.confirmPassword ? errors.confirmPassword : undefined
                   }
                   icon={
-                    <ShieldCheck size={20} color="#6B7280" strokeWidth={1.8} />
+                    <ShieldCheck size={20} color={colors.neutral[500]} strokeWidth={1.8} />
                   }
                   iconPosition="left"
                 />
 
                 {/* Server error */}
                 {signUpMutation.isError && (
-                  <View className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-2 mt-1 flex-row items-start gap-2">
+                  <View className="bg-danger-bg border border-danger-light rounded-lg px-4 py-3 mb-2 mt-1 flex-row items-start gap-2">
                     <AlertCircle
                       size={16}
-                      color="#dc2626"
+                      color={colors.danger.strong}
                       strokeWidth={2}
                       style={{ marginTop: 1 }}
                     />
-                    <Text className="text-red-600 text-sm flex-1">
+                    <Text className="text-danger-strong text-sm flex-1">
                       {(signUpMutation.error as any)?.message ||
                         "Sign up failed. Please try again."}
                     </Text>

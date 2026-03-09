@@ -140,7 +140,7 @@ export default function ContactsPickerModal({
             {t("customers:importContacts")}
           </Text>
           <TouchableOpacity onPress={onClose} hitSlop={8}>
-            <X size={24} color="#6B7280" strokeWidth={2} />
+            <X size={24} color={colors.neutral[500]} strokeWidth={2} />
           </TouchableOpacity>
         </View>
 
@@ -173,13 +173,13 @@ export default function ContactsPickerModal({
         {/* Body states */}
         {status === "loading" && (
           <View className="items-center justify-center py-16">
-            <ActivityIndicator size="large" color="#2563EB" />
+            <ActivityIndicator size="large" color={colors.info.dark} />
           </View>
         )}
 
         {status === "denied" && (
           <View className="items-center justify-center py-16 px-8">
-            <AlertCircle size={48} color="#EF4444" strokeWidth={1.5} />
+            <AlertCircle size={48} color={colors.danger.DEFAULT} strokeWidth={1.5} />
             <Text className="text-center text-textSecondary mt-3 leading-5">
               {t("customers:permissionDenied")}
             </Text>
@@ -188,7 +188,7 @@ export default function ContactsPickerModal({
 
         {status === "ready" && filtered.length === 0 && (
           <View className="items-center justify-center py-16">
-            <Users size={48} color="#9CA3AF" strokeWidth={1.5} />
+            <Users size={48} color={colors.neutral[400]} strokeWidth={1.5} />
             <Text className="text-textSecondary mt-3">
               {t("customers:noContactsFound")}
             </Text>

@@ -85,7 +85,7 @@ export default function RecordPaymentMadeModal({
       onClose={onClose}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
-      handleIndicatorStyle={{ backgroundColor: "#D1D5DB", width: 40 }}
+      handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
       backgroundStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
     >
       <BottomSheetScrollView

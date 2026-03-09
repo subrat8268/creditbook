@@ -1,3 +1,4 @@
+import { colors } from "@/src/utils/theme";
 import { clsx } from "clsx";
 import React from "react";
 import { Text, TextInput, View } from "react-native";
@@ -32,13 +33,15 @@ export default function Input({
   const containerStyle = clsx(
     "flex-row items-center border rounded-md px-3",
     variant === "neutral" ? "bg-neutral-200" : "bg-white",
-    error ? "border-danger" : "border-neutral-300"
+    error ? "border-danger" : "border-neutral-300",
   );
 
   return (
     <View className="mb-3 w-full">
       {label && (
-        <Text className="mb-1 text-sm text-gray-600 font-medium">{label}</Text>
+        <Text className="mb-1 text-sm text-textSecondary font-medium">
+          {label}
+        </Text>
       )}
 
       <View className={containerStyle} style={{ height }}>
@@ -53,10 +56,10 @@ export default function Input({
             onChangeText={onChangeText}
             secureTextEntry={secureTextEntry}
             keyboardType={keyboardType}
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.neutral[400]}
             style={{
               flex: 1,
-              color: "#111827",
+              color: colors.neutral[900],
               fontSize: 16,
               paddingVertical: 0, // ✅ ensures true vertical centering
             }}

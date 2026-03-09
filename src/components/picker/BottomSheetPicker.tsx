@@ -74,13 +74,13 @@ export default function BottomSheetPicker<T>({
       onClose={onClose}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
-      handleIndicatorStyle={{ backgroundColor: "#D1D5DB", width: 40 }}
+      handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
       backgroundStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
     >
       <View className="flex-row justify-between items-center px-4 py-2 border-b border-gray-200 bg-white">
-        <Text className="text-lg font-semibold text-gray-900">{title}</Text>
+        <Text className="text-lg font-semibold text-textDark">{title}</Text>
         <TouchableOpacity onPress={handleClose}>
-          <X size={20} color="#222" strokeWidth={2} />
+          <X size={20} color={colors.neutral[900]} strokeWidth={2} />
         </TouchableOpacity>
       </View>
 

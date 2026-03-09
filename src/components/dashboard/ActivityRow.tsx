@@ -46,7 +46,7 @@ export default function ActivityRow({ item }: Props) {
         alignItems: "center",
         gap: 14,
         marginBottom: 10,
-        shadowColor: "#000",
+        shadowColor: colors.black,
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.04,
         shadowRadius: 4,
@@ -66,7 +66,7 @@ export default function ActivityRow({ item }: Props) {
       >
         <Text
           style={{
-            color: "#FFFFFF",
+            color: colors.white,
             fontWeight: "bold",
             fontSize: 13,
           }}
@@ -97,7 +97,7 @@ export default function ActivityRow({ item }: Props) {
           style={{
             fontSize: 14,
             fontWeight: "700",
-            color: isPaid ? "#059669" : C.heading,
+            color: isPaid ? colors.success.dark : C.heading,
           }}
         >
           {isPaid ? "+" : ""}

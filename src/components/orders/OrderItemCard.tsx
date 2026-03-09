@@ -24,12 +24,12 @@ export default function OrderItemCard({
       {/* Left side: Product info */}
       <View className="flex-1">
         <View className="flex-row items-center">
-          <Text className="font-inter-medium text-gray-800">{name}</Text>
+          <Text className="font-inter-medium text-textDark">{name}</Text>
           {variantName && variantName !== "Base" && (
-            <Text className="text-gray-500"> ({variantName})</Text>
+            <Text className="text-textSecondary"> ({variantName})</Text>
           )}
         </View>
-        <Text className="text-gray-500 text-sm">₹{price}</Text>
+        <Text className="text-textSecondary text-sm">₹{price}</Text>
       </View>
 
       {/* Middle: Quantity controls */}
@@ -44,7 +44,7 @@ export default function OrderItemCard({
           }}
           className="bg-gray-200 p-2 rounded-full"
         >
-          <Minus size={18} color="#374151" strokeWidth={2.5} />
+          <Minus size={18} color={colors.neutral[700]} strokeWidth={2.5} />
         </TouchableOpacity>
 
         <Text className="mx-3 text-base font-inter-medium">{quantity}</Text>
@@ -53,12 +53,12 @@ export default function OrderItemCard({
           onPress={() => onUpdateQuantity(quantity + 1)}
           className="bg-gray-200 p-2 rounded-full"
         >
-          <Plus size={18} color="#374151" strokeWidth={2.5} />
+          <Plus size={18} color={colors.neutral[700]} strokeWidth={2.5} />
         </TouchableOpacity>
       </View>
 
       {/* Right side: Total */}
-      <Text className="ml-4 font-inter-semibold text-gray-800">
+      <Text className="ml-4 font-inter-semibold text-textDark">
         ₹{price * quantity}
       </Text>
     </View>

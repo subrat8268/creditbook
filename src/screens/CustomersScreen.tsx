@@ -123,12 +123,12 @@ export default function CustomersScreen() {
                 className={`px-5 py-[9px] rounded-[24px] border ${
                   active
                     ? "bg-primary border-primary"
-                    : "bg-search border-[#E5E7EB]"
+                    : "bg-search border-border"
                 }`}
               >
                 <Text
                   className={`text-sm font-medium ${
-                    active ? "text-white font-bold" : "text-[#636366]"
+                    active ? "text-white font-bold" : "text-textPrimary"
                   }`}
                 >
                   {f}
@@ -140,7 +140,7 @@ export default function CustomersScreen() {
       </View>
 
       {/* ── Divider ── */}
-      <View className="h-px bg-[#F0F0F5] mt-1" />
+      <View className="h-px bg-background mt-1" />
 
       {/* ── Customer list (full-width) ── */}
       <CustomerList

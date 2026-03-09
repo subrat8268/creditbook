@@ -137,14 +137,14 @@ export default function BottomSheetForm<T extends Record<string, any>>({
       snapPoints={snapPoints}
       enablePanDownToClose
       onChange={handleSheetChange}
-      handleIndicatorStyle={{ backgroundColor: "#D1D5DB", width: 40 }}
+      handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
       backgroundStyle={{
         borderTopLeftRadius: 28,
         borderTopRightRadius: 28,
         backgroundColor: "white",
-        shadowColor: "#000",
+        shadowColor: colors.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 4,
@@ -154,9 +154,9 @@ export default function BottomSheetForm<T extends Record<string, any>>({
       <BottomSheetScrollView style={{ flex: 1 }}>
         {/* Header */}
         <View className="flex-row items-center justify-between px-6 py-3">
-          <Text className="text-xl font-semibold text-[#12121C]">{title}</Text>
+          <Text className="text-xl font-semibold text-textDark">{title}</Text>
           <Pressable onPress={onClose} disabled={isSubmitting}>
-            <X size={22} color="#6B6B80" strokeWidth={2} />
+            <X size={22} color={colors.neutral[600]} strokeWidth={2} />
           </Pressable>
         </View>
 
@@ -208,7 +208,7 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                       const imageUri = values[field.name];
                       return (
                         <View key={field.name} className="mb-3">
-                          <Text className="text-sm font-medium text-[#12121C] mb-1">
+                          <Text className="text-sm font-medium text-textDark mb-1">
                             {field.label}
                           </Text>
                           <Pressable
@@ -216,7 +216,7 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                               handlePickImage(setFieldValue, field.name)
                             }
                             disabled={isSubmitting}
-                            className="border border-dashed border-[#9CA3AF] rounded-lg py-3 items-center justify-center"
+                            className="border border-dashed border-border rounded-lg py-3 items-center justify-center"
                           >
                             {imageUri ? (
                               <Text className="text-green-600">
@@ -251,7 +251,7 @@ export default function BottomSheetForm<T extends Record<string, any>>({
 
                     return (
                       <View key={field.name} className="mb-3">
-                        <Text className="text-sm font-medium text-[#12121C] mb-1">
+                        <Text className="text-sm font-medium text-textDark mb-1">
                           {field.label}
                         </Text>
                         <Input
@@ -287,9 +287,9 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                         }
                       }}
                       disabled={isSubmitting}
-                      className="border border-dashed border-[#16A34A] rounded-xl py-3 mt-3 items-center justify-center"
+                      className="border border-dashed border-primary-dark rounded-xl py-3 mt-3 items-center justify-center"
                     >
-                      <Text className="text-[#16A34A] font-medium">
+                      <Text className="text-primary-dark font-medium">
                         + Add Variant (Optional)
                       </Text>
                     </Pressable>
@@ -299,7 +299,7 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                   {variantFields && showVariants && (
                     <View className="mt-4">
                       <View className="flex-row justify-between items-center mb-2">
-                        <Text className="text-lg font-semibold text-[#12121C]">
+                        <Text className="text-lg font-semibold text-textDark">
                           Variants (Optional)
                         </Text>
                         <Pressable
@@ -322,10 +322,10 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                               (variant: any, index: number) => (
                                 <View
                                   key={index}
-                                  className="border border-[#E5E7EB] rounded-xl p-3 mb-3"
+                                  className="border border-border rounded-xl p-3 mb-3"
                                 >
                                   <View className="flex-row justify-between items-center mb-2">
-                                    <Text className="font-medium text-[#111827]">
+                                    <Text className="font-medium text-textDark">
                                       Variant {index + 1}
                                     </Text>
                                     {values.variants.length > 1 && (
@@ -335,7 +335,7 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                                       >
                                         <Trash2
                                           size={18}
-                                          color="#EF4444"
+                                          color={colors.danger.DEFAULT}
                                           strokeWidth={2}
                                         />
                                       </Pressable>
@@ -349,7 +349,7 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                                     if (vf.isImagePicker) {
                                       return (
                                         <View key={vf.name} className="mb-2">
-                                          <Text className="text-sm font-medium text-[#12121C] mb-1">
+                                          <Text className="text-sm font-medium text-textDark mb-1">
                                             {vf.label}
                                           </Text>
                                           <Pressable
@@ -360,7 +360,7 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                                               )
                                             }
                                             disabled={isSubmitting}
-                                            className="border border-dashed border-[#9CA3AF] rounded-lg py-3 items-center justify-center"
+                                            className="border border-dashed border-border rounded-lg py-3 items-center justify-center"
                                           >
                                             <Text className="text-gray-500">
                                               {value
@@ -393,7 +393,7 @@ export default function BottomSheetForm<T extends Record<string, any>>({
 
                                     return (
                                       <View key={vf.name} className="mb-2">
-                                        <Text className="text-sm font-medium text-[#12121C] mb-1">
+                                        <Text className="text-sm font-medium text-textDark mb-1">
                                           {vf.label}
                                         </Text>
                                         <TextInput
@@ -407,8 +407,8 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                                               : "default"
                                           }
                                           editable={!isSubmitting}
-                                          className="border border-[#E5E7EB] rounded-lg px-3 py-2 text-base text-[#12121C]"
-                                          placeholderTextColor="#9CA3AF"
+                                          className="border border-border rounded-lg px-3 py-2 text-base text-textDark"
+                                          placeholderTextColor={colors.neutral[400]}
                                         />
                                       </View>
                                     );
@@ -427,11 +427,11 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                                 )
                               }
                               disabled={isSubmitting}
-                              className="border border-dashed border-[#16A34A] rounded-xl py-2 mt-1 flex-row items-center justify-center"
+                              className="border border-dashed border-primary-dark rounded-xl py-2 mt-1 flex-row items-center justify-center"
                               icon={
                                 <PlusCircle
                                   size={20}
-                                  color="#16A34A"
+                                  color={colors.primary.dark}
                                   strokeWidth={2}
                                 />
                               }
@@ -447,7 +447,7 @@ export default function BottomSheetForm<T extends Record<string, any>>({
                     onPress={() => handleSubmit()}
                     title={isSubmitting ? "Saving..." : "Save"}
                     disabled={isSubmitting}
-                    className="bg-[#16A34A] rounded-xl py-3 my-5"
+                    className="bg-primary-dark rounded-xl py-3 my-5"
                     icon={
                       isSubmitting ? (
                         <ActivityIndicator color="white" size="small" />

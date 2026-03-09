@@ -253,7 +253,7 @@ export default function ProductsScreen() {
         ListEmptyComponent={
           !isLoading && !error ? (
             <View className="items-center mt-10">
-              <Package size={40} color="#9CA3AF" strokeWidth={1.2} />
+              <Package size={40} color={colors.neutral[400]} strokeWidth={1.2} />
               <Text className="text-neutral-500 mt-2">No products found</Text>
             </View>
           ) : null

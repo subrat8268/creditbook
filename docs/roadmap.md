@@ -1,17 +1,15 @@
 # CreditBook Product Roadmap
 
-> **Version**: 1.2
+> **Version**: 1.3
 > **Last Updated**: March 9, 2026
 > **Status**: Active Development
-> **Current Phase**: Phase 6.3 (complete) → Phase 7 (in progress)
+> **Current Phase**: Phase 6.4 complete → Phase 7 in progress
 
 ---
 
 ## Vision
 
 > CreditBook aims to become the simplest and most trusted digital ledger for small businesses, replacing traditional khata books with a mobile-first fintech experience.
-
-The product is built around three core outcomes:
 
 | Outcome                        | What It Means                                                           |
 | :----------------------------- | :---------------------------------------------------------------------- |
@@ -33,18 +31,15 @@ The product is built around three core outcomes:
 | Phase 6   | Customer UI Overhaul                  | ✅ Complete    | Transaction feed, payment modal, customer detail redesign                    |
 | Phase 6.2 | UI Audit — Icons, Colors & Components | ✅ Complete    | Lucide migration, @gorhom/bottom-sheet, Toast, Financial Position screen     |
 | Phase 6.3 | Production Hardening                  | ✅ Complete    | FlatList perf, KeyboardAvoidingView, icon/data audit, component organisation |
+| Phase 6.4 | Production Bug Fix & Signoff          | ✅ Complete    | 27-item audit: DB/RLS bugs, broken search, export crash, UI token fixes      |
 | Phase 7   | Growth & Monetisation                 | 🔄 In Progress | UPI, push notifications, analytics, premium tier                             |
 | Phase 8   | Financial Platform                    | 🗓 Planned     | Credit scoring, lending, automated bookkeeping                               |
 
 ---
 
-## Phase 1 — Core Ledger MVP
+## Phase 1 — Core Ledger MVP ✅ Complete
 
 **Goal**: Launch the minimum viable credit ledger — enough for a shop owner to replace their physical khata book on day one.
-
-**Status**: ✅ Complete
-
-### Features
 
 | Feature                   | Description                                                                  |
 | :------------------------ | :--------------------------------------------------------------------------- |
@@ -54,30 +49,11 @@ The product is built around three core outcomes:
 | **Dashboard Summary**     | Show total receivable and a summary of recent activity                       |
 | **Authentication**        | Secure sign-in with Supabase Auth; per-vendor data isolation via RLS         |
 
-### GitHub Issues
-
-```
-[ ] feat: Create customers table schema with RLS policies
-[ ] feat: Implement customer CRUD API (create, update, delete, list)
-[ ] feat: Build customer list screen with search
-[ ] feat: Build customer detail screen with transaction history
-[ ] feat: Implement transaction recording flow (credit / payment)
-[ ] feat: Implement automatic balance calculation logic
-[ ] feat: Build dashboard summary cards (total receivable, recent activity)
-[ ] feat: Set up Supabase Auth with email login
-[ ] feat: Implement vendor-scoped data isolation (RLS)
-[ ] feat: Root layout auth guard (redirect unauthenticated users)
-```
-
 ---
 
-## Phase 2 — Billing & Suppliers
+## Phase 2 — Billing & Suppliers ✅ Complete
 
 **Goal**: Expand beyond simple credit entries to professional bill generation and supplier-side balance tracking.
-
-**Status**: ✅ Complete
-
-### Features
 
 | Feature                       | Description                                                          |
 | :---------------------------- | :------------------------------------------------------------------- |
@@ -88,30 +64,11 @@ The product is built around three core outcomes:
 | **Net Position Dashboard**    | Single-screen view of receivables vs payables vs net position        |
 | **Transaction History**       | Chronological activity log per customer with running balance         |
 
-### GitHub Issues
-
-```
-[ ] feat: Create suppliers, supplier_deliveries, supplier_delivery_items, payments_made schemas
-[ ] feat: Supplier CRUD API and list screen
-[ ] feat: Build supplier detail screen (balance card, delivery history, bank details)
-[ ] feat: Implement Record Delivery modal (itemized rows, loading charge, advance paid)
-[ ] feat: Implement Record Payment Made modal (amount, mode, notes)
-[ ] feat: Build bill creation screen (product search, cart, rate editing)
-[ ] feat: Implement PDF generation via expo-print
-[ ] feat: Net position dashboard — Customers Owe Me / I Owe Suppliers / Net Position cards
-[ ] feat: Dashboard mode toggle in Profile (Seller / Distributor / Both)
-[ ] feat: Transaction history feed with running balance
-```
-
 ---
 
-## Phase 3 — Indian Billing Suite
+## Phase 3 — Indian Billing Suite ✅ Complete
 
 **Goal**: Localise the billing product for Indian market requirements — GST, sequential bill numbering, loading charges, and WhatsApp reminders.
-
-**Status**: ✅ Complete
-
-### Features
 
 | Feature                       | Description                                                                                   |
 | :---------------------------- | :-------------------------------------------------------------------------------------------- |
@@ -125,32 +82,11 @@ The product is built around three core outcomes:
 | **Overdue Flagging**          | Flag customers with unpaid balance older than 30 days; surface on dashboard and customer list |
 | **Payment Mode Expansion**    | Support Cash / UPI / NEFT / Demand Draft / Cheque                                             |
 
-### GitHub Issues
-
-```
-[ ] feat: Implement get_next_bill_number RPC with custom prefix support
-[ ] feat: Add UNIQUE(vendor_id, bill_number) constraint
-[ ] feat: Add tax_percent and loading_charge fields to orders table
-[ ] feat: Add previous_balance snapshot logic to order creation
-[ ] feat: Add bank_name, account_number, ifsc_code to profiles table
-[ ] feat: Embed bank details and UPI QR in PDF template
-[ ] feat: Build WhatsApp reminder deep link (pre-filled message with balance)
-[ ] feat: Implement overdue detection logic (balance_due > 0 AND last_order > 30 days ago)
-[ ] feat: Overdue badge on CustomerCard
-[ ] feat: Overdue warning banner on Customer Detail screen
-[ ] feat: Overdue count card on Dashboard
-[ ] feat: Expand payment_mode CHECK constraint to 5 modes
-```
-
 ---
 
-## Phase 4 — Platform Features
+## Phase 4 — Platform Features ✅ Complete
 
 **Goal**: Add engagement, reliability, and data portability features to convert casual users into daily-active power users.
-
-**Status**: ✅ Complete
-
-### Features
 
 | Feature                    | Description                                                                                             |
 | :------------------------- | :------------------------------------------------------------------------------------------------------ |
@@ -161,63 +97,25 @@ The product is built around three core outcomes:
 | **CSV Data Export**        | Export orders, payments, customers, and suppliers as CSV; share via native sheet                        |
 | **Contacts Import**        | Import customers from device phone book via `expo-contacts`; multi-select, bulk add, duplicate skipping |
 
-### GitHub Issues
-
-```
-[ ] feat: Build 3-step onboarding flow (phone → business → ready)
-[ ] feat: Add onboarding_complete flag to profiles; root layout routing guard
-[ ] feat: Build role selection screen (Retailer / Wholesaler / Small Business)
-[ ] feat: Integrate @sentry/react-native with DSN env var
-[ ] feat: Set up i18next with EN and HI translation files (10 namespaces)
-[ ] feat: Add language toggle chip in Profile screen with AsyncStorage persistence
-[ ] feat: Build ExportScreen with date range filter and 4 export buttons
-[ ] feat: Implement toCsv<T>() builder and shareCsv() utility
-[ ] feat: Build ContactsPickerModal (expo-contacts, multi-select, search, select-all)
-[ ] feat: Add Import Customers FAB on Customers screen
-```
-
 ---
 
-## Phase 5 — Design System & Dashboard
+## Phase 5 — Design System & Dashboard ✅ Complete
 
 **Goal**: Establish a unified design system and premium UI across the application.
-
-**Status**: ✅ Complete
-
-### Features
 
 | Feature                  | Description                                                                                              |
 | :----------------------- | :------------------------------------------------------------------------------------------------------- |
 | **Unified Theme**        | `theme.ts` as single source of truth — colors, spacing, typography, radius                               |
-| **Green Brand System**   | `#22C55E` primary, semantic green/red/amber tokens, iOS-style neutral scale                              |
+| **Green Brand System**   | `#22C55E` primary, semantic green/red/amber/info tokens, iOS-style neutral scale                         |
 | **Premium Dashboard**    | Gradient hero card, View Report/Remind action bar, stat cards, activity feed                             |
 | **Dashboard Components** | 7 extracted components: Header, HeroCard, ActionBar, StatCards, RecentActivity, ActivityRow, StatusBadge |
 | **Premium Tab Bar**      | White background, `#22C55E` active tint, shadow, 64dp height                                             |
-| **DB Trigger Fix**       | `handle_new_user` inserts `name = ''` to satisfy NOT NULL on profiles                                    |
-
-### GitHub Issues
-
-```
-[ ] feat: Create theme.ts with full color system, spacing, and typography tokens
-[ ] feat: Create dashboardUi.ts as thin re-export + formatter utilities
-[ ] feat: Redesign Dashboard screen with gradient hero card and activity feed
-[ ] feat: Extract 7 dashboard components into src/components/dashboard/
-[ ] feat: Extend dashboard API (activeBuyers, recentActivity with status resolution)
-[ ] feat: Apply premium tab bar styling (white bg, green tint, shadow, 64dp)
-[ ] feat: Build role selection screen with image banner cards
-[ ] fix: Update handle_new_user DB trigger to insert name = '' (NOT NULL fix)
-[ ] feat: Extend auth.ts types for wholesaler / retailer / small-business dashboard_mode values
-```
 
 ---
 
-## Phase 6 — Customer UI Overhaul
+## Phase 6 — Customer UI Overhaul ✅ Complete
 
 **Goal**: Rebuild the customer-facing surfaces to match the design system and deliver a premium transaction experience.
-
-**Status**: ✅ Complete
-
-### Features
 
 | Feature                      | Description                                                                                        |
 | :--------------------------- | :------------------------------------------------------------------------------------------------- |
@@ -226,131 +124,152 @@ The product is built around three core outcomes:
 | **Transaction Feed**         | Merged bills + payments timeline, forward-pass running balance, newest-first display               |
 | **Record Payment Modal**     | Bottom-sheet — amount input, 5 payment mode chips, Partial / Mark Full Paid actions                |
 | **Download Statement**       | PDF generation + `expo-sharing` for full customer transaction history                              |
-| **Navigation Fixes**         | Edge-to-edge tab bar height fix; Customer Detail status bar overlap fix                            |
-| **NativeWind Conversion**    | All 4 customer files converted from StyleSheet to NativeWind `className`                           |
-
-### GitHub Issues
-
-```
-[ ] feat: Add Transaction type to customer.ts (type, amount, runningBalance, billNumber, status, paymentMode)
-[ ] feat: Rewrite fetchCustomerDetail — merge orders + payments, forward-pass balance, newest-first
-[ ] feat: Build RecordCustomerPaymentModal (amount input, 5 mode chips, partial/full paid)
-[ ] feat: Redesign [customerId].tsx — hero card, action cards, transaction feed, date groups
-[ ] feat: Add Download Statement footer with expo-print + expo-sharing
-[ ] feat: Redesign CustomerCard — initials avatar, color-coded balance, status badge
-[ ] feat: Add filter tabs to CustomersScreen (All / Overdue / Paid / Pending)
-[ ] fix: Tab bar height for edge-to-edge Android (useSafeAreaInsets + insets.bottom)
-[ ] fix: Customer Detail status bar overlap (SafeAreaView edges include 'top')
-[ ] refactor: Convert CustomerCard, CustomersScreen, RecordCustomerPaymentModal, [customerId].tsx to NativeWind
-```
 
 ---
 
-## Phase 6.2 — UI Audit: Icons, Colors & Components
+## Phase 6.2 — UI Audit: Icons, Colors & Components ✅ Complete
 
-**Goal**: Complete the visual and component quality bar set by Phase 5 — migrate all icons to `lucide-react-native`, harden payment modals with `@gorhom/bottom-sheet`, add Toast feedback, upgrade EmptyState, and ship the dedicated Financial Position screen.
+**Goal**: Complete the visual and component quality bar — migrate all icons to `lucide-react-native`, harden payment modals, add Toast feedback.
 
-**Status**: ✅ Complete
-
-### Features
-
-| Feature                       | Description                                                                                                                                           |
-| :---------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Lucide Icon Migration**     | Replaced all `@expo/vector-icons` (Ionicons, MaterialIcons) with `lucide-react-native` across ~35 files; package removed                              |
-| **@gorhom/bottom-sheet**      | Upgraded `RecordCustomerPaymentModal` and `RecordPaymentMadeModal` to `@gorhom/bottom-sheet` v5.2.6 (`snapPoints: ["65%"]` / `["62%"]`)               |
-| **Toast Component**           | Built animated `Toast.tsx` with `ToastProvider` / `useToast()` hook; success (green `#22C55E`) + error (red `#E74C3C`); wired into root `_layout.tsx` |
-| **EmptyState Upgrade**        | Enhanced `EmptyState` component with `title`, `description`, `cta`, `onCta` props + `CircleOff` icon + green CTA button                               |
-| **Financial Position Screen** | New screen at `app/(main)/reports/index.tsx`; shows receivables, payables, and net position; linked from Dashboard "View Report"                      |
-| **Dashboard "Both" Mode**     | Split hero card for `dashboard_mode = 'both'`: green `#F0FDF4` YOU RECEIVE panel + red `#FEF2F2` YOU OWE panel + net position row                     |
-| **Primary Color Lock**        | `theme.ts` primary locked to `#22C55E`; `primary.light = "#DCFCE7"`, `primary.dark = "#16A34A"` applied consistently                                  |
-
-### GitHub Issues
-
-```
-[✓] refactor: Replace all @expo/vector-icons with lucide-react-native (~35 files)
-[✓] feat: Upgrade RecordCustomerPaymentModal to @gorhom/bottom-sheet v5.2.6
-[✓] feat: Upgrade RecordPaymentMadeModal to @gorhom/bottom-sheet v5.2.6
-[✓] feat: Build Toast.tsx with ToastProvider and useToast hook
-[✓] feat: Wire ToastProvider into app/_layout.tsx root layout
-[✓] feat: Upgrade EmptyState with title/description/cta/onCta props
-[✓] feat: Build Financial Position screen at app/(main)/reports/index.tsx
-[✓] feat: Dashboard split hero card for dashboard_mode = 'both'
-[✓] fix: Lock primary color to #22C55E in theme.ts (light + dark variants)
-```
+| Feature                       | Description                                                                                                              |
+| :---------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
+| **Lucide Icon Migration**     | Replaced all `@expo/vector-icons` with `lucide-react-native` across ~35 files; package removed                           |
+| **@gorhom/bottom-sheet**      | Upgraded `RecordCustomerPaymentModal` and `RecordPaymentMadeModal` to v5.2.6                                             |
+| **Toast Component**           | Built `Toast.tsx` with `ToastProvider` / `useToast()` hook; success (green) + error (red); wired into root `_layout.tsx` |
+| **EmptyState Upgrade**        | Enhanced with `title`, `description`, `cta`, `onCta` props + `CircleOff` icon + green CTA button                         |
+| **Financial Position Screen** | New screen at `app/(main)/reports/index.tsx`; shows receivables, payables, and net position                              |
+| **Dashboard "Both" Mode**     | Split hero card: green `#F0FDF4` YOU RECEIVE panel + red `#FEF2F2` YOU OWE panel + net position row                      |
 
 ---
 
-## Phase 6.3 — Production Hardening
+## Phase 6.3 — Production Hardening ✅ Complete
 
 **Goal**: Performance, safety, and code-quality pass to bring all screens to production-ready quality.
 
-**Status**: ✅ Complete
-
-### Features
-
-| Feature                    | Description                                                                                                              |
-| :------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
-| **FlatList Performance**   | Added `getItemLayout`, `removeClippedSubviews`, `maxToRenderPerBatch`, `windowSize` to all 4 list screens                |
-| **KeyboardAvoidingView**   | Wrapped `CreateOrderScreen` body in `KeyboardAvoidingView` with platform-aware `behavior` prop                           |
-| **Icon & Data Audit**      | Confirmed zero `@expo/vector-icons` imports; confirmed zero PKR / +92 data; Sentry DSN verified                          |
-| **Component Organisation** | Moved `FloatingActionButton` and `SearchBar` from `src/components/` root into `src/components/ui/`; 10 importers updated |
-
-### GitHub Issues
-
-```
-[✓] perf: Add FlatList performance props to CustomerList, SupplierList, OrderList, ProductsScreen
-[✓] fix: Wrap CreateOrderScreen in KeyboardAvoidingView (platform-aware behavior)
-[✓] audit: Confirm zero @expo/vector-icons imports across full workspace
-[✓] audit: Confirm zero PKR / +92 / non-Indian data in entire codebase
-[✓] refactor: Move FloatingActionButton → src/components/ui/
-[✓] refactor: Move SearchBar → src/components/ui/
-```
+| Feature                    | Description                                                                                                |
+| :------------------------- | :--------------------------------------------------------------------------------------------------------- |
+| **FlatList Performance**   | Added `getItemLayout`, `removeClippedSubviews`, `maxToRenderPerBatch`, `windowSize` to all 4 list screens  |
+| **KeyboardAvoidingView**   | Wrapped `CreateOrderScreen` body in `KeyboardAvoidingView` with platform-aware `behavior` prop             |
+| **Icon & Data Audit**      | Confirmed zero `@expo/vector-icons` imports; confirmed zero PKR / +92 data; Sentry DSN verified            |
+| **Component Organisation** | Moved `FloatingActionButton` and `SearchBar` from root into `src/components/ui/`; all import paths updated |
 
 ---
 
-## Phase 7 — Growth & Monetisation
+## Phase 6.4 — Production Bug Fix & Signoff ✅ Complete
+
+**Goal**: Fix all 38 real codebase bugs discovered by audit (8 critical, 15 major, 15 minor). All 27 prompt-tracked items resolved. Pending: device verification on target hardware (Pixel 4a).
+
+**Audit source**: `FINAL_AUDIT.md` — generated March 9, 2026 from scan of `schema.sql`, `src/api/*.ts`, `src/types/*.ts`, all screen and component files.
+
+### Database Fixes (P01–P05)
+
+| ID  | Fix                                                                                                              | Status |
+| :-- | :--------------------------------------------------------------------------------------------------------------- | :----- |
+| P01 | Fixed 4 supplier table RLS policies (broken `vendor_id = auth.uid()` → join-through-profiles)                    | ✅     |
+| P02 | Aligned `dashboard_mode` DB constraint with TypeScript types and onboarding write                                | ✅     |
+| P03 | Fixed `fetchProducts` to join `product_variants`; aligned `variant_name` field name                              | ✅     |
+| P04 | Fixed `fetchOrders` search (`!inner` join + dot notation); removed nonexistent `reference` column                | ✅     |
+| P05 | Added 3 missing indexes: `supplier_deliveries(supplier_id)`, `payments_made(supplier_id)`, `payments(vendor_id)` | ✅     |
+
+### Logic Fixes (P06–P09)
+
+| ID  | Fix                                                                                                 | Status |
+| :-- | :-------------------------------------------------------------------------------------------------- | :----- |
+| P06 | Added Overdue (red) and Partially Paid (blue) chips to `OrderList` `STATUS_STYLES` map              | ✅     |
+| P07 | Fixed `Button.tsx` outline spinner: `color="#000"` → `color="#22C55E"`; `rounded-md` → `rounded-xl` | ✅     |
+| P08 | Migrated `RecordDeliveryModal` from RN built-in Modal to `@gorhom/bottom-sheet` v5                  | ✅     |
+| P09 | Fixed `RecordPaymentMadeModal` validation: `>= balanceOwed` → `> balanceOwed`                       | ✅     |
+
+### Architecture Fixes (P10–P13)
+
+| ID  | Fix                                                                                          | Status |
+| :-- | :------------------------------------------------------------------------------------------- | :----- |
+| P10 | Deleted 3 dead files: `PdfPreviewModal.tsx`, `QuickAction.tsx`, `dashboardStore.tsx`         | ✅     |
+| P11 | Replaced raw `TouchableOpacity` in both payment modals with `Button.tsx`; unified chip shape | ✅     |
+| P12 | Added active-state styling to `FilterBar` chips; replaced all `gray-*` Tailwind with tokens  | ✅     |
+| P13 | Created `app/(main)/reports/_layout.tsx` with `headerShown: false`                           | ✅     |
+
+### Design Token Fixes (P14–P17)
+
+| ID  | Fix                                                                                                    | Status |
+| :-- | :----------------------------------------------------------------------------------------------------- | :----- |
+| P14 | `CustomerCard`: fixed all 3 status chip colors and Paid text to `success.text` (`#166534`)             | ✅     |
+| P15 | `SupplierCard`: added initials avatar (matching `CustomerCard`); replaced all amber with theme tokens  | ✅     |
+| P16 | `EmptyState`: migrated `StyleSheet` → NativeWind; fixed icon bg to `#F6F7F9`. `Toast`: error `#E74C3C` | ✅     |
+| P17 | `StatusDot`: replaced `bg-yellow-500` / `bg-red-500` with inline theme values. `AppModal`: `slideInUp` | ✅     |
+
+### Screen Fixes (P18–P21)
+
+| ID  | Fix                                                                                                      | Status |
+| :-- | :------------------------------------------------------------------------------------------------------- | :----- |
+| P18 | `DashboardHeader`: time-based greeting, initials avatar, overdue bell red dot                            | ✅     |
+| P19 | `CustomerDetail`: exact "Send Reminder" label, `MODE_LABEL` map, ₹0 balance → green "ALL SETTLED" hero   | ✅     |
+| P20 | `CreateOrderScreen`: Grand Total `fontSize: 28`, Previous Balance red, formula verified clean            | ✅     |
+| P21 | `ProfileScreen`: filled green avatar, mode toggle Seller/Distributor/Both order, `ExportScreen` back btn | ✅     |
+
+### Cross-Cutting Fixes (P22–P27)
+
+| ID  | Fix                                                                                            | Status |
+| :-- | :--------------------------------------------------------------------------------------------- | :----- |
+| P22 | Added 5 missing `invalidateQueries` across 4 mutation files; dashboard now updates immediately | ✅     |
+| P23 | `FlatList` full optimisation: `useCallback`, `getItemLayout`, all perf props on 4 lists        | ✅     |
+| P24 | `KeyboardAvoidingView` in `CreateOrderScreen`; login + business already compliant              | ✅     |
+| P25 | Confirmed zero `@expo/vector-icons` imports — `lucide-react-native` is sole icon library       | ✅     |
+| P26 | Confirmed zero Pakistani data; `sentry.ts` + `Sentry.wrap(RootLayout)` verified                | ✅     |
+| P27 | `FloatingActionButton` + `SearchBar` moved to `src/components/ui/`; 7 import paths updated     | ✅     |
+
+### Deferred to v3.5 (non-breaking)
+
+| ID        | Issue                                                        | Reason                                        |
+| :-------- | :----------------------------------------------------------- | :-------------------------------------------- |
+| M-01      | `NewProductModal` / `AppModal` still uses react-native-modal | Full modal consolidation is a larger refactor |
+| M-04      | Export screen not in tab bar                                 | UX decision pending                           |
+| M-05–M-08 | Architecture cleanup items (screens indirection, etc.)       | Non-breaking; queued for v3.5                 |
+| N-12      | `heroDecor` orphaned color in `theme.ts`                     | Cosmetic; no user impact                      |
+| N-14      | Payment mode chip border token mismatch                      | Cosmetic                                      |
+| N-15      | `Button.tsx` corner radius inconsistency                     | Cosmetic                                      |
+
+---
+
+## Phase 7 — Growth & Monetisation 🔄 In Progress
 
 **Goal**: Drive retention through engagement features and introduce the premium subscription tier.
 
-**Status**: 🔄 In Progress
+**Pre-requisite completed**: Phase 6.4 production signoff. All critical bugs resolved before Phase 7 work begins.
 
 ### Features
 
-| Feature                      | Priority | Description                                                      |
-| :--------------------------- | :------- | :--------------------------------------------------------------- |
-| **Phone OTP Login**          | High     | Replace email/password with mobile OTP for frictionless signup   |
-| **WhatsApp Business API**    | High     | Auto-send bill to customer on creation via WhatsApp Business API |
-| **Push Notifications**       | High     | Overdue payment alerts and transaction confirmations             |
-| **Inventory Stock Tracking** | Medium   | Track stock levels per product; surface low-stock alerts         |
-| **Staff Accounts**           | Medium   | Role-based access (Owner / Billing Staff / View-Only)            |
-| **Premium Subscription**     | Medium   | ₹149–₹199/month for multi-user, analytics, custom branding       |
-| **Cloud Backup & Restore**   | Medium   | Manual and scheduled backup to Google Drive or Supabase storage  |
-| **Online Storefront**        | Low      | Shareable product catalog link for customer-facing orders        |
+| Feature                      | Priority | Description                                                                   | Dependency          |
+| :--------------------------- | :------- | :---------------------------------------------------------------------------- | :------------------ |
+| **Phone OTP Login**          | High     | Replace email/password with mobile OTP (Supabase Phone Auth via Twilio/MSG91) | None                |
+| **WhatsApp Business API**    | High     | Auto-send PDF bill to customer on creation via WhatsApp Business API          | None                |
+| **Push Notifications (FCM)** | High     | Overdue payment alerts and transaction confirmations via Firebase             | None                |
+| **Premium Subscription**     | Medium   | ₹149–₹199/month via Razorpay; multi-user, analytics, no watermark             | None                |
+| **Inventory Stock Tracking** | Medium   | `stock_quantity` on products; low-stock alert banner                          | P03 variants fix ✅ |
+| **Staff Accounts**           | Medium   | Role-based access: Owner / Billing Staff / View-Only                          | None                |
+| **Cloud Backup & Restore**   | Medium   | Export full dataset to Google Drive or Supabase Storage                       | None                |
+| **Online Storefront**        | Low      | Shareable product catalog with WhatsApp order CTA                             | None                |
 
 ### GitHub Issues
 
 ```
 [ ] feat: Integrate Supabase Phone Auth (OTP via Twilio or MSG91)
-[ ] feat: WhatsApp Business API integration — auto-send PDF on bill creation
-[ ] feat: Push notification service (FCM) — overdue alerts and payment confirmations
+[ ] feat: WhatsApp Business API — auto-send PDF on bill creation
+[ ] feat: Push notifications (FCM) — overdue alerts + payment confirmations
 [ ] feat: Add stock_quantity field to products table; update on order creation
 [ ] feat: Low-stock alert banner on Products screen and Dashboard
 [ ] feat: Staff accounts — invite by phone; role-based tab/action visibility
-[ ] feat: Build SubscriptionScreen with plan comparison and Razorpay/IAP integration
+[ ] feat: Build SubscriptionScreen with Razorpay/IAP integration
 [ ] feat: Gate premium features behind subscription check
-[ ] feat: Implement Cloud Backup — export full dataset to Google Drive
-[ ] feat: Build Online Storefront — public product page with WhatsApp order CTA
+[ ] feat: Cloud Backup — export full dataset to Google Drive
+[ ] feat: Online Storefront — public product page with WhatsApp order CTA
 ```
 
 ---
 
-## Phase 8 — Financial Platform
+## Phase 8 — Financial Platform 🗓 Planned
 
 **Goal**: Leverage CreditBook's transaction data to build advanced financial tools and expand into lending and bookkeeping.
-
-**Status**: 🗓 Planned
-
-### Features
 
 | Feature                          | Description                                                                                     |
 | :------------------------------- | :---------------------------------------------------------------------------------------------- |
@@ -361,35 +280,23 @@ The product is built around three core outcomes:
 | **Business Financing**           | Offer working capital loans underwritten by CreditBook transaction data                         |
 | **Lending Partner Integrations** | API integration with NBFCs and fintech lenders for embedded credit                              |
 
-### GitHub Issues
-
-```
-[ ] research: Define credit scoring model inputs (payment frequency, overdue rate, average balance)
-[ ] feat: Build credit score calculation service (rules-based v1)
-[ ] feat: Display customer credit badge on Customer Detail screen
-[ ] research: Evaluate ML framework for payment prediction (TensorFlow Lite / server-side inference)
-[ ] feat: Build transaction auto-categorisation engine
-[ ] feat: GST report export (GSTR-1 compatible CSV)
-[ ] research: Lending partner evaluation (NBFCs, Fintech APIs)
-[ ] feat: Loan eligibility check flow within app
-```
-
 ---
 
 ## Milestones
 
-| Milestone                       | Description                                                                  | Target     |
-| :------------------------------ | :--------------------------------------------------------------------------- | :--------- |
-| **MVP Launch**                  | Core ledger — customers, transactions, balance tracking, dashboard           | ✅ Shipped |
-| **Billing Launch**              | Itemized bills, PDF export, supplier management, net position                | ✅ Shipped |
-| **India Suite Launch**          | GST, sequential IDs, loading charge, WhatsApp reminders, overdue flagging    | ✅ Shipped |
-| **Platform Launch**             | Onboarding, i18n, Sentry, CSV export, contacts import                        | ✅ Shipped |
-| **Design System Launch**        | Green (#22C55E) brand system, premium dashboard, unified theme               | ✅ Shipped |
-| **Customer UI Launch**          | Transaction feed, payment modal, Customer Detail redesign                    | ✅ Shipped |
-| **UI Audit Launch**             | Lucide icons, @gorhom/bottom-sheet, Toast, Financial Position screen         | ✅ Shipped |
-| **Production Hardening Launch** | FlatList perf, KeyboardAvoidingView, icon/data audit, component organisation | ✅ Shipped |
-| **Growth Launch**               | OTP login, push notifications, WhatsApp Business API, premium tier           | 🔄 Q2 2026 |
-| **Financial Platform Launch**   | Credit scoring, GST filing, lending integration                              | 🗓 Q4 2026 |
+| Milestone                       | Description                                                                             | Status                         |
+| :------------------------------ | :-------------------------------------------------------------------------------------- | :----------------------------- |
+| **MVP Launch**                  | Core ledger — customers, transactions, balance tracking, dashboard                      | ✅ Shipped                     |
+| **Billing Launch**              | Itemized bills, PDF export, supplier management, net position                           | ✅ Shipped                     |
+| **India Suite Launch**          | GST, sequential IDs, loading charge, WhatsApp reminders, overdue flagging               | ✅ Shipped                     |
+| **Platform Launch**             | Onboarding, i18n, Sentry, CSV export, contacts import                                   | ✅ Shipped                     |
+| **Design System Launch**        | Green (#22C55E) brand system, premium dashboard, unified theme                          | ✅ Shipped                     |
+| **Customer UI Launch**          | Transaction feed, payment modal, Customer Detail redesign                               | ✅ Shipped                     |
+| **UI Audit Launch**             | Lucide icons, @gorhom/bottom-sheet, Toast, Financial Position screen                    | ✅ Shipped                     |
+| **Production Hardening Launch** | FlatList perf, KeyboardAvoidingView, icon/data audit, component organisation            | ✅ Shipped                     |
+| **Production Signoff**          | All 27 audit items resolved; app submitted for TestFlight / Play Store Internal Testing | ⏳ Device verification pending |
+| **Growth Launch**               | OTP login, push notifications, WhatsApp Business API, premium tier                      | 🔄 Q2 2026                     |
+| **Financial Platform Launch**   | Credit scoring, GST filing, lending integration                                         | 🗓 Q4 2026                     |
 
 ---
 
@@ -418,8 +325,8 @@ CreditBook's long-term goal is to become the **financial operating system for sm
 | **Year 3**  | Business financing — working capital loans underwritten by CreditBook data    |
 | **Year 4+** | Automated bookkeeping — P&L, GST filing, accountant and ERP integrations      |
 
-India has approximately **63 million MSMEs**, most of which manage credit manually. CreditBook is positioned to become the default tool for informal credit management before expanding into the broader financial services stack that serves these businesses.
+India has approximately **63 million MSMEs**, most of which manage credit manually. CreditBook is positioned to become the default tool for informal credit management before expanding into the broader financial services stack.
 
 ---
 
-_This roadmap is a living document. Phase boundaries and feature priorities are updated as user research, retention data, and business context evolve. All phase completions are reflected in [`docs/prd.md`](./prd.md) and [`README.md`](../README.md)._
+_This roadmap is a living document. Phase boundaries and feature priorities are updated as user research, retention data, and business context evolve._

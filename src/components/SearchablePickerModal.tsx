@@ -47,11 +47,11 @@ export default function SearchablePickerModal<T extends Item>({
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#F9FAFB" }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.neutral.surface }}>
         <View className="flex-row items-center justify-between p-4 border-b border-gray-200 bg-white">
           <Text className="text-xl font-inter-bold">{title}</Text>
           <TouchableOpacity onPress={onClose}>
-            <X size={26} color="#374151" strokeWidth={2} />
+            <X size={26} color={colors.neutral[700]} strokeWidth={2} />
           </TouchableOpacity>
         </View>
 

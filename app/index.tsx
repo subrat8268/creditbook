@@ -1,22 +1,30 @@
-import Button from "@/src/components/ui/Button";
+import { colors } from "@/src/utils/theme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import {
-    Image,
-    Platform,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { Eye, ShieldCheck, WifiOff, Zap } from "lucide-react-native";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const VALUE_CHIPS = [
-  "📒  Credit Ledger",
-  "🧾  Quick Bills",
-  "🚚  Supplier Tracking",
-  "📊  Daily Reports",
+const FEATURE_CHIPS = [
+  {
+    icon: (
+      <Zap
+        size={14}
+        color={colors.primary.dark}
+        strokeWidth={2.2}
+        fill={colors.primary.dark}
+      />
+    ),
+    label: "Fast Entry",
+  },
+  {
+    icon: <Eye size={14} color={colors.primary.dark} strokeWidth={2} />,
+    label: "Always Visible",
+  },
+  {
+    icon: <WifiOff size={14} color={colors.primary.dark} strokeWidth={2} />,
+    label: "Works Offline",
+  },
 ];
 
 export default function WelcomePage() {
@@ -29,143 +37,85 @@ export default function WelcomePage() {
   };
 
   return (
-    <LinearGradient colors={["#F0FDF4", "#FFFFFF"]} style={styles.gradient}>
-      {/* Upper area — logo + illustration */}
-      <View style={[styles.upper, { paddingTop: insets.top + 24 }]}>
-        {/* Logo */}
-        <Image
-          source={require("../assets/images/logo.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+    <View
+      className="flex-1 bg-white items-center px-6"
+      style={{ paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 }}
+    >
+      {/* Logo */}
+      <Image
+        source={require("../assets/images/logo.png")}
+        className="w-36"
+        resizeMode="contain"
+      />
 
-        {/* Illustration */}
+      {/* Illustration */}
+      <View className="w-[342px] h-[260px] items-center justify-center">
         <Image
-          source={require("../assets/images/shop.png")}
-          style={styles.illustration}
+          source={require("../assets/images/welcome.png")}
+          className="w-[342px] h-[260px]"
           resizeMode="contain"
         />
       </View>
 
-      {/* Bottom card */}
-      <View style={[styles.card, { paddingBottom: 40 + insets.bottom }]}>
-        {/* Title */}
-        <Text style={styles.title}>Welcome to CreditBook!</Text>
+      {/* Tagline */}
+      <Text className="text-xl font-bold text-gray-900 text-center leading-[30px] mb-5 -tracking-[0.3px]">
+        Track Credit. Get Paid Faster.
+      </Text>
 
-        {/* Subtitle */}
-        <Text style={styles.subtitle}>
-          Your seamless partner for managing customer ledgers and growing your
-          business.
+      {/* Feature chips */}
+      <View className="flex-row gap-2.5 justify-center flex-wrap">
+        {FEATURE_CHIPS.map((chip) => (
+          <View
+            key={chip.label}
+            className="flex-row items-center gap-1 bg-primary-light border border-success-light rounded-full px-3.5 py-[7px]"
+          >
+            {chip.icon}
+            <Text className="text-[13px] font-semibold text-primary-dark">
+              {chip.label}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Spacer */}
+      <View className="flex-1" />
+
+      {/* CTA button */}
+      <TouchableOpacity
+        className="w-full bg-primary rounded-[14px] h-14 items-center justify-center mb-4"
+        style={{
+          shadowColor: colors.primary.DEFAULT,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 4,
+        }}
+        onPress={handleStart}
+        activeOpacity={0.85}
+      >
+        <Text className="text-[17px] font-bold text-white tracking-wide">
+          Get Started →
         </Text>
+      </TouchableOpacity>
 
-        {/* Value chips */}
-        <View style={styles.chipsRow}>
-          {VALUE_CHIPS.map((chip) => (
-            <View key={chip} style={styles.chip}>
-              <Text style={styles.chipText}>{chip}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* CTA */}
-        <Button title="Get Started" className="w-full" onPress={handleStart} />
-
-        {/* Login link */}
-        <TouchableOpacity
+      {/* Login link */}
+      <Text className="text-sm text-textSecondary text-center mb-5">
+        Already have an account?{" "}
+        <Text
+          className="text-primary font-bold"
           onPress={() => router.replace("/(auth)/login")}
-          activeOpacity={0.7}
         >
-          <Text style={styles.loginLink}>
-            Already have an account?{" "}
-            <Text style={styles.loginLinkBold}>Log in</Text>
-          </Text>
-        </TouchableOpacity>
+          Log In
+        </Text>
+      </Text>
+
+      {/* Security badge */}
+      <View className="flex-row items-center gap-1">
+        <ShieldCheck size={13} color={colors.neutral[400]} strokeWidth={2} />
+        <Text className="text-[11px] text-gray-400 font-semibold tracking-widest">
+          SECURE &amp; ENCRYPTED
+        </Text>
       </View>
-    </LinearGradient>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
-  upper: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logo: {
-    width: 160,
-    height: 56,
-  },
-  illustration: {
-    width: "100%",
-    height: undefined,
-    aspectRatio: 1.4,
-    marginTop: -16,
-  },
-  card: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingTop: 28,
-    paddingHorizontal: 24,
-    ...Platform.select({
-      android: { elevation: 8 },
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-      },
-    }),
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#111827",
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#6B7280",
-    textAlign: "center",
-    lineHeight: 20,
-    marginBottom: 20,
-  },
-  chipsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    justifyContent: "center",
-    marginBottom: 24,
-  },
-  chip: {
-    backgroundColor: "#F0FDF4",
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  chipText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#16A34A",
-  },
-  loginLink: {
-    fontSize: 13,
-    color: "#9CA3AF",
-    textAlign: "center",
-    marginTop: 16,
-  },
-  loginLinkBold: {
-    color: "#22C55E",
-    fontWeight: "700",
-  },
-});

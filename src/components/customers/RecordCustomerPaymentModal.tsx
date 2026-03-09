@@ -98,16 +98,16 @@ export default function RecordCustomerPaymentModal({
       onClose={onClose}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
-      handleIndicatorStyle={{ backgroundColor: "#D1D5DB", width: 40 }}
+      handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
       backgroundStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
     >
       <BottomSheetView
         style={{ paddingHorizontal: 24, paddingBottom: 40, paddingTop: 8 }}
       >
-        <Text className="text-xl font-bold text-[#1C1C1E] mb-1.5">
+        <Text className="text-xl font-bold text-textDark mb-1.5">
           Record Payment
         </Text>
-        <Text className="text-sm text-[#6B7280] mb-5">
+        <Text className="text-sm text-textSecondary mb-5">
           Balance Due:{" "}
           <Text className="text-danger font-bold">
             \u20B9
@@ -116,20 +116,20 @@ export default function RecordCustomerPaymentModal({
         </Text>
 
         {/* Amount input */}
-        <Text className="text-[13px] text-[#636366] font-semibold mb-2">
+        <Text className="text-[13px] text-textPrimary font-semibold mb-2">
           Amount Received
         </Text>
         <TextInput
-          className="border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-lg font-bold text-[#1C1C1E] mb-5 bg-search"
+          className="border border-border rounded-xl px-4 py-3.5 text-lg font-bold text-textDark mb-5 bg-search"
           value={amount}
           onChangeText={setAmount}
           keyboardType="decimal-pad"
           placeholder="\u20B9 0.00"
-          placeholderTextColor="#6B7280"
+          placeholderTextColor={colors.neutral[500]}
         />
 
         {/* Mode chips */}
-        <Text className="text-[13px] text-[#636366] font-semibold mb-2">
+        <Text className="text-[13px] text-textPrimary font-semibold mb-2">
           Payment Mode
         </Text>
         <View className="flex-row flex-wrap gap-2 mb-7">
@@ -140,12 +140,12 @@ export default function RecordCustomerPaymentModal({
               className={`px-4 py-2 rounded-full border ${
                 mode === m
                   ? "bg-primary border-primary"
-                  : "bg-search border-[#E5E7EB]"
+                  : "bg-search border-border"
               }`}
             >
               <Text
                 className={`text-[13px] font-semibold ${
-                  mode === m ? "text-white" : "text-[#636366]"
+                  mode === m ? "text-white" : "text-textPrimary"
                 }`}
               >
                 {m}

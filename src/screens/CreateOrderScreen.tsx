@@ -6,15 +6,15 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pencil } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
-    Alert,
-    FlatList,
-    KeyboardAvoidingView,
-    Linking,
-    Platform,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { getCustomerPreviousBalance } from "../api/orders";
 import CustomerPicker from "../components/picker/CustomerPicker";
@@ -23,6 +23,7 @@ import VariantPicker from "../components/picker/VariantPicker";
 import { useCreateOrder } from "../hooks/useOrders";
 import { useAuthStore } from "../store/authStore";
 import { BillItem, generateBillPdf } from "../utils/generateBillPdf";
+import { colors } from "../utils/theme";
 import { uploadPdfToSupabase } from "../utils/uploadPdfToSupabase";
 
 interface CartItem {
@@ -36,10 +37,10 @@ interface CartItem {
 }
 
 const AVATAR_COLORS = [
-  "#EF4444",
+  colors.danger.DEFAULT,
   "#F97316",
   "#EAB308",
-  "#22C55E",
+  colors.primary.DEFAULT,
   "#14B8A6",
   "#3B82F6",
   "#8B5CF6",
@@ -332,8 +333,12 @@ export default function CreateOrderScreen() {
               </Text>
             </View>
           ) : (
-            <View style={[styles.avatar, { backgroundColor: "#E5E7EB" }]}>
-              <Text style={[styles.avatarText, { color: "#9CA3AF" }]}>?</Text>
+            <View
+              style={[styles.avatar, { backgroundColor: colors.neutral[200] }]}
+            >
+              <Text style={[styles.avatarText, { color: colors.neutral[400] }]}>
+                ?
+              </Text>
             </View>
           )}
 
@@ -343,7 +348,7 @@ export default function CreateOrderScreen() {
           </Text>
 
           {/* Edit icon */}
-          <Pencil size={16} color="#9CA3AF" strokeWidth={2} />
+          <Pencil size={16} color={colors.neutral[400]} strokeWidth={2} />
         </TouchableOpacity>
 
         {/* Payment reminder button — shown only when previous balance > 0 */}
@@ -366,7 +371,9 @@ export default function CreateOrderScreen() {
           className="p-4 border rounded-xl mb-4 bg-white"
           onPress={() => setProductPickerVisible(true)}
         >
-          <Text className="font-inter-medium text-gray-700">Add Products</Text>
+          <Text className="font-inter-medium text-textPrimary">
+            Add Products
+          </Text>
         </TouchableOpacity>
 
         {/* Cart */}
@@ -385,7 +392,7 @@ export default function CreateOrderScreen() {
             />
           )}
           ListEmptyComponent={
-            <Text className="text-center text-gray-400 mt-4">
+            <Text className="text-center text-textMuted mt-4">
               No products added yet
             </Text>
           }
@@ -466,10 +473,10 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: colors.neutral[200],
     borderRadius: 12,
     marginBottom: 16,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.white,
   },
   avatar: {
     width: 36,
@@ -480,7 +487,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   avatarText: {
-    color: "#FFFFFF",
+    color: colors.white,
     fontWeight: "700",
     fontSize: 13,
   },
@@ -488,6 +495,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     fontWeight: "600",
-    color: "#1C1C1E",
+    color: colors.neutral[900],
   },
 });

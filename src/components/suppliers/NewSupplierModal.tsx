@@ -85,7 +85,7 @@ export default function NewSupplierModal({
           <Text className="text-lg font-inter-semibold">Add Supplier</Text>
           <TouchableOpacity onPress={handleSubmit} disabled={loading}>
             {loading ? (
-              <ActivityIndicator size="small" color="#2563EB" />
+              <ActivityIndicator size="small" color={colors.info.dark} />
             ) : (
               <Text className="text-primary font-inter-semibold text-base">
                 Save

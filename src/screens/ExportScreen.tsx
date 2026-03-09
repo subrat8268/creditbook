@@ -28,6 +28,7 @@ import {
 import ScreenWrapper from "../components/ScreenWrapper";
 import { useAuthStore } from "../store/authStore";
 import { shareCsv, toCsv } from "../utils/exportCsv";
+import { colors } from "../utils/theme";
 
 type ExportType = "orders" | "payments" | "customers" | "suppliers";
 
@@ -117,8 +118,8 @@ export default function ExportScreen() {
       label: t("export.orders"),
       desc: t("export.ordersDesc"),
       Icon: Receipt,
-      color: "#16a34a",
-      bg: "#f0fdf4",
+      color: colors.primary.dark,
+      bg: colors.success.bg,
       hasDateFilter: true,
     },
     {
@@ -126,8 +127,8 @@ export default function ExportScreen() {
       label: t("export.payments"),
       desc: t("export.paymentsDesc"),
       Icon: Banknote,
-      color: "#2563eb",
-      bg: "#eff6ff",
+      color: colors.info.dark,
+      bg: colors.info.bg,
       hasDateFilter: true,
     },
     {
@@ -135,8 +136,8 @@ export default function ExportScreen() {
       label: t("export.customers"),
       desc: t("export.customersDesc"),
       Icon: Users,
-      color: "#7c3aed",
-      bg: "#f5f3ff",
+      color: "#7c3aed", // purple — decorative only, not a financial state
+      bg: "#f5f3ff", // purple-50 — decorative only
       hasDateFilter: false,
     },
     {
@@ -144,8 +145,8 @@ export default function ExportScreen() {
       label: t("export.suppliers"),
       desc: t("export.suppliersDesc"),
       Icon: Store,
-      color: "#dc2626",
-      bg: "#fef2f2",
+      color: colors.danger.strong,
+      bg: colors.danger.bg,
       hasDateFilter: true,
     },
   ];
@@ -158,29 +159,29 @@ export default function ExportScreen() {
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           className="mb-4 self-start"
         >
-          <ArrowLeft size={22} color="#1C1C1E" strokeWidth={1.75} />
+          <ArrowLeft size={22} color={colors.neutral[900]} strokeWidth={1.75} />
         </TouchableOpacity>
-        <Text className="text-2xl font-bold text-gray-900 mb-1">
+        <Text className="text-2xl font-bold text-textDark mb-1">
           {t("export.title")}
         </Text>
-        <Text className="text-sm text-gray-500 mb-6">
+        <Text className="text-sm text-textSecondary mb-6">
           {t("export.subtitle")}
         </Text>
 
         {/* Date Range Filter */}
-        <View className="bg-gray-50 border border-gray-200 rounded-2xl p-4 mb-6">
-          <Text className="font-semibold text-gray-800 mb-3">
+        <View className="bg-background border border-border rounded-2xl p-4 mb-6">
+          <Text className="font-semibold text-textDark mb-3">
             {t("export.dateRange")}
           </Text>
           <View className="flex-row gap-3">
             <View className="flex-1">
-              <Text className="text-xs text-gray-500 mb-1">
+              <Text className="text-xs text-textSecondary mb-1">
                 {t("export.from")}
               </Text>
               <TextInput
-                className="bg-white border border-gray-200 rounded-xl p-3 text-gray-900"
+                className="bg-surface border border-border rounded-xl p-3 text-textDark"
                 placeholder="YYYY-MM-DD"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.neutral[400]}
                 value={fromDate}
                 onChangeText={setFromDate}
                 keyboardType="numeric"
@@ -188,13 +189,13 @@ export default function ExportScreen() {
               />
             </View>
             <View className="flex-1">
-              <Text className="text-xs text-gray-500 mb-1">
+              <Text className="text-xs text-textSecondary mb-1">
                 {t("export.to")}
               </Text>
               <TextInput
-                className="bg-white border border-gray-200 rounded-xl p-3 text-gray-900"
+                className="bg-surface border border-border rounded-xl p-3 text-textDark"
                 placeholder="YYYY-MM-DD"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.neutral[400]}
                 value={toDate}
                 onChangeText={setToDate}
                 keyboardType="numeric"
@@ -202,13 +203,13 @@ export default function ExportScreen() {
               />
             </View>
           </View>
-          <Text className="text-xs text-gray-400 mt-2">
+          <Text className="text-xs text-textMuted mt-2">
             {t("export.dateHint")}
           </Text>
         </View>
 
         {/* Export Buttons */}
-        <Text className="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">
+        <Text className="font-semibold text-textSecondary mb-3 text-sm uppercase tracking-wide">
           {t("export.selectReport")}
         </Text>
 
@@ -220,7 +221,7 @@ export default function ExportScreen() {
               disabled={loading !== null}
               activeOpacity={0.75}
               style={{ backgroundColor: btn.bg }}
-              className="rounded-2xl border border-gray-100 p-4 flex-row items-center"
+              className="rounded-2xl border border-border p-4 flex-row items-center"
             >
               {/* Icon */}
               <View
@@ -232,10 +233,10 @@ export default function ExportScreen() {
 
               {/* Text */}
               <View className="flex-1">
-                <Text className="font-semibold text-gray-900 text-base">
+                <Text className="font-semibold text-textDark text-base">
                   {btn.label}
                 </Text>
-                <Text className="text-xs text-gray-500 mt-0.5">
+                <Text className="text-xs text-textSecondary mt-0.5">
                   {btn.desc}
                   {btn.hasDateFilter && (fromDate || toDate)
                     ? ` · ${t("export.filtered")}`
@@ -253,7 +254,7 @@ export default function ExportScreen() {
           ))}
         </View>
 
-        <Text className="text-xs text-center text-gray-400 mt-8 mb-4">
+        <Text className="text-xs text-center text-textMuted mt-8 mb-4">
           {t("export.footer")}
         </Text>
       </ScrollView>

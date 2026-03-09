@@ -1,24 +1,14 @@
-/**
- * Financial Position Screen
- *
- * Shows a clear breakdown of:
- *  - Total Customers Owe Me (receivables)
- *  - Total I Owe Suppliers (payables)
- *  - Net Position (receivables − payables)
- *
- * Accessible from DashboardActionBar → "View Report" or any
- * deep-link to /(main)/reports
- */
+import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { ArrowLeft, TrendingDown, TrendingUp } from "lucide-react-native";
 import {
-    ActivityIndicator,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDashboard } from "../../../src/hooks/useDashboard";
@@ -36,12 +26,12 @@ export default function FinancialPositionScreen() {
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F6F7FB" />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.neutral.bg} />
 
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <ArrowLeft size={22} color="#1C1C1E" strokeWidth={2} />
+          <ArrowLeft size={22} color={colors.neutral[900]} strokeWidth={2} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Financial Position</Text>
         <View style={{ width: 40 }} />
@@ -49,7 +39,7 @@ export default function FinancialPositionScreen() {
 
       {isLoading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color="#22C55E" />
+          <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
         </View>
       ) : isError || !data ? (
         <View style={styles.center}>
@@ -66,13 +56,21 @@ export default function FinancialPositionScreen() {
           <View
             style={[
               styles.heroCard,
-              { backgroundColor: isPositive ? "#F0FDF4" : "#FEF2F2" },
+              {
+                backgroundColor: isPositive
+                  ? colors.success.bg
+                  : colors.danger.bg,
+              },
             ]}
           >
             <Text
               style={[
                 styles.heroLabel,
-                { color: isPositive ? "#16A34A" : "#DC2626" },
+                {
+                  color: isPositive
+                    ? colors.primary.dark
+                    : colors.danger.strong,
+                },
               ]}
             >
               NET POSITION
@@ -80,7 +78,11 @@ export default function FinancialPositionScreen() {
             <Text
               style={[
                 styles.heroAmount,
-                { color: isPositive ? "#16A34A" : "#DC2626" },
+                {
+                  color: isPositive
+                    ? colors.primary.dark
+                    : colors.danger.strong,
+                },
               ]}
             >
               {isPositive ? "+" : ""}
@@ -88,14 +90,26 @@ export default function FinancialPositionScreen() {
             </Text>
             <View style={styles.heroRow}>
               {isPositive ? (
-                <TrendingUp size={16} color="#16A34A" strokeWidth={2} />
+                <TrendingUp
+                  size={16}
+                  color={colors.primary.dark}
+                  strokeWidth={2}
+                />
               ) : (
-                <TrendingDown size={16} color="#DC2626" strokeWidth={2} />
+                <TrendingDown
+                  size={16}
+                  color={colors.danger.strong}
+                  strokeWidth={2}
+                />
               )}
               <Text
                 style={[
                   styles.heroSub,
-                  { color: isPositive ? "#16A34A" : "#DC2626" },
+                  {
+                    color: isPositive
+                      ? colors.primary.dark
+                      : colors.danger.strong,
+                  },
                 ]}
               >
                 {isPositive
@@ -108,10 +122,15 @@ export default function FinancialPositionScreen() {
           {/* Receivables card */}
           <View style={styles.card}>
             <View style={styles.cardRow}>
-              <View style={[styles.dot, { backgroundColor: "#22C55E" }]} />
+              <View
+                style={[
+                  styles.dot,
+                  { backgroundColor: colors.primary.DEFAULT },
+                ]}
+              />
               <Text style={styles.cardLabel}>Customers Owe Me</Text>
             </View>
-            <Text style={[styles.cardAmount, { color: "#16A34A" }]}>
+            <Text style={[styles.cardAmount, { color: colors.primary.dark }]}>
               {formatINR(data.customersOweMe)}
             </Text>
             <Text style={styles.cardCaption}>
@@ -122,17 +141,19 @@ export default function FinancialPositionScreen() {
             <ProgressBar
               value={data.customersOweMe}
               total={data.customersOweMe + data.iOweSuppliers}
-              color="#22C55E"
+              color={colors.primary.DEFAULT}
             />
           </View>
 
           {/* Payables card */}
           <View style={styles.card}>
             <View style={styles.cardRow}>
-              <View style={[styles.dot, { backgroundColor: "#EF4444" }]} />
+              <View
+                style={[styles.dot, { backgroundColor: colors.danger.DEFAULT }]}
+              />
               <Text style={styles.cardLabel}>I Owe Suppliers</Text>
             </View>
-            <Text style={[styles.cardAmount, { color: "#DC2626" }]}>
+            <Text style={[styles.cardAmount, { color: colors.danger.strong }]}>
               {formatINR(data.iOweSuppliers)}
             </Text>
             <Text style={styles.cardCaption}>
@@ -141,7 +162,7 @@ export default function FinancialPositionScreen() {
             <ProgressBar
               value={data.iOweSuppliers}
               total={data.customersOweMe + data.iOweSuppliers}
-              color="#EF4444"
+              color={colors.danger.DEFAULT}
             />
           </View>
 
@@ -151,19 +172,19 @@ export default function FinancialPositionScreen() {
               label="Overdue Customers"
               value={data.overdueCustomers}
               unit="accounts"
-              color="#F97316"
+              color={colors.warning.DEFAULT}
             />
             <View style={styles.divider} />
             <BreakdownRow
               label="Net Receivable"
               value={formatINR(data.customersOweMe)}
-              color="#16A34A"
+              color={colors.primary.dark}
             />
             <View style={styles.divider} />
             <BreakdownRow
               label="Net Payable"
               value={formatINR(data.iOweSuppliers)}
-              color="#DC2626"
+              color={colors.danger.strong}
             />
           </View>
         </ScrollView>
@@ -222,16 +243,16 @@ function BreakdownRow({
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#F6F7FB" },
+  root: { flex: 1, backgroundColor: colors.neutral.bg },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 14,
-    backgroundColor: "#F6F7FB",
+    backgroundColor: colors.neutral.bg,
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E5EA",
+    borderBottomColor: colors.neutral[200],
   },
   backBtn: {
     width: 40,
@@ -239,9 +260,9 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "center",
   },
-  headerTitle: { fontSize: 17, fontWeight: "700", color: "#1C1C1E" },
+  headerTitle: { fontSize: 17, fontWeight: "700", color: colors.neutral[900] },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  errorText: { fontSize: 14, color: "#8E8E93" },
+  errorText: { fontSize: 14, color: colors.neutral[400] },
   scroll: { padding: 20, gap: 14, paddingBottom: 48 },
   heroCard: { borderRadius: 20, padding: 24, marginBottom: 2 },
   heroLabel: {
@@ -259,10 +280,10 @@ const styles = StyleSheet.create({
   heroRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   heroSub: { fontSize: 13, fontWeight: "600" },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     borderRadius: 16,
     padding: 20,
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -275,32 +296,32 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   dot: { width: 10, height: 10, borderRadius: 5 },
-  cardLabel: { fontSize: 14, fontWeight: "600", color: "#636366" },
+  cardLabel: { fontSize: 14, fontWeight: "600", color: colors.neutral[600] },
   cardAmount: {
     fontSize: 28,
     fontWeight: "800",
     letterSpacing: -0.4,
     marginBottom: 4,
   },
-  cardCaption: { fontSize: 12, color: "#8E8E93", marginBottom: 12 },
+  cardCaption: { fontSize: 12, color: colors.neutral[400], marginBottom: 12 },
   breakdownCard: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     borderRadius: 16,
     paddingHorizontal: 20,
     paddingVertical: 4,
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
   },
-  divider: { height: 1, backgroundColor: "#F0F0F5" },
+  divider: { height: 1, backgroundColor: colors.neutral.bg },
 });
 
 const pb = StyleSheet.create({
   track: {
     height: 6,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: colors.neutral.bg,
     borderRadius: 3,
     overflow: "hidden",
   },
@@ -314,6 +335,6 @@ const bd = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 14,
   },
-  label: { fontSize: 14, color: "#636366", fontWeight: "500" },
+  label: { fontSize: 14, color: colors.neutral[600], fontWeight: "500" },
   value: { fontSize: 15, fontWeight: "700" },
 });

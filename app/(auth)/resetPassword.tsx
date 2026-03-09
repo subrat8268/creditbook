@@ -23,8 +23,8 @@ export default function ResetPasswordPage() {
   if (resetMutation.isSuccess) {
     return (
       <View className="flex-1 bg-white justify-center items-center px-6">
-        <View className="w-20 h-20 rounded-full bg-green-100 items-center justify-center mb-6">
-          <MailOpen size={40} color="#16a34a" strokeWidth={1.5} />
+        <View className="w-20 h-20 rounded-full bg-success-light items-center justify-center mb-6">
+          <MailOpen size={40} color={colors.primary.dark} strokeWidth={1.5} />
         </View>
         <Text className="text-2xl font-bold text-neutral-900 text-center mb-2">
           Check Your Inbox!
@@ -55,14 +55,14 @@ export default function ResetPasswordPage() {
         <View className="px-6 py-4 flex-1 justify-start bg-white">
           {/* Logo */}
           <Image
-            source={require("../../assets/images/greenlogo.png")}
+            source={require("../../assets/images/logo.png")}
             className="w-60 mt-3 mb-5 self-center"
             resizeMode="contain"
           />
 
           {/* Lock icon */}
-          <View className="w-16 h-16 rounded-full bg-green-100 items-center justify-center self-center mb-5">
-            <LockOpen size={32} color="#16a34a" strokeWidth={1.5} />
+          <View className="w-16 h-16 rounded-full bg-success-light items-center justify-center self-center mb-5">
+            <LockOpen size={32} color={colors.primary.dark} strokeWidth={1.5} />
           </View>
 
           <Text className="text-h1 font-bold text-neutral-900 mb-1">
@@ -88,14 +88,14 @@ export default function ResetPasswordPage() {
                   onChangeText={handleChange("email")}
                   error={touched.email ? errors.email : undefined}
                   keyboardType="email-address"
-                  icon={<Mail size={20} color="#6B7280" strokeWidth={1.8} />}
+                  icon={<Mail size={20} color={colors.neutral[500]} strokeWidth={1.8} />}
                   iconPosition="left"
                 />
 
                 {/* Server error */}
                 {resetMutation.isError && (
-                  <View className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-2">
-                    <Text className="text-red-600 text-sm text-center">
+                  <View className="bg-danger-bg border border-danger-light rounded-lg px-4 py-3 mb-2">
+                    <Text className="text-danger-strong text-sm text-center">
                       {(resetMutation.error as any)?.message ||
                         "Something went wrong. Please try again."}
                     </Text>

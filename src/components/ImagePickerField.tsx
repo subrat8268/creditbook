@@ -1,3 +1,4 @@
+import { colors } from "@/src/utils/theme";
 import * as ImagePicker from "expo-image-picker";
 import { Camera } from "lucide-react-native";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
@@ -40,7 +41,7 @@ export default function ImagePickerField({
 
   return (
     <View className="mb-4">
-      <Text className="text-gray-700 font-medium mb-2">{label}</Text>
+      <Text className="text-textPrimary font-medium mb-2">{label}</Text>
 
       <Pressable
         onPress={pick}
@@ -54,7 +55,7 @@ export default function ImagePickerField({
         ) : showInitials ? (
           <Text style={styles.initialsText}>{getInitials(name!)}</Text>
         ) : (
-          <Camera size={30} color="#6B7280" strokeWidth={1.8} />
+          <Camera size={30} color={colors.neutral[500]} strokeWidth={1.8} />
         )}
       </Pressable>
     </View>
@@ -71,13 +72,13 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   initialsContainer: {
-    backgroundColor: "#22C55E",
+    backgroundColor: colors.primary.DEFAULT,
   },
   cameraContainer: {
-    backgroundColor: "#F3F4F6",
+    backgroundColor: colors.neutral.bg,
   },
   initialsText: {
-    color: "#FFFFFF",
+    color: colors.white,
     fontWeight: "bold",
     fontSize: 22,
   },

@@ -1,3 +1,4 @@
+import { colors } from "@/src/utils/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
@@ -6,8 +7,8 @@ export default function SubscriptionCard({ profile }: any) {
   const { isSubscribed, daysRemaining, subscription_plan } = profile;
 
   const gradientColors: readonly [string, string, ...string[]] = isSubscribed
-    ? ["#16A34A", "#4ADE80"]
-    : ["#EF4444", "#F87171"];
+    ? [colors.success.dark, colors.success.gradient]
+    : [colors.danger.DEFAULT, colors.danger.gradient];
 
   return (
     <Animated.View

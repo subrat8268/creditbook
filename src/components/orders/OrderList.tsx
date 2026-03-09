@@ -1,6 +1,7 @@
 import { Order } from "@/src/api/orders";
 import { useOrderStore } from "@/src/store/orderStore";
 import { daysSince } from "@/src/utils/helper";
+import { colors } from "@/src/utils/theme";
 import { useCallback } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import EmptyState from "../feedback/EmptyState";
@@ -10,10 +11,22 @@ const STATUS_STYLES: Record<
   string,
   { bg: string; text: string; label: string }
 > = {
-  Paid: { bg: "#DCFCE7", text: "#16A34A", label: "PAID" },
-  "Partially Paid": { bg: "#EFF6FF", text: "#1D4ED8", label: "PARTIAL" },
-  Pending: { bg: "#FEF3C7", text: "#D97706", label: "PENDING" },
-  Overdue: { bg: "#FEE2E2", text: "#DC2626", label: "OVERDUE" },
+  Paid: { bg: colors.success.light, text: colors.success.dark, label: "PAID" },
+  "Partially Paid": {
+    bg: colors.info.light,
+    text: colors.info.dark,
+    label: "PARTIAL",
+  },
+  Pending: {
+    bg: colors.warning.light,
+    text: colors.warning.dark,
+    label: "PENDING",
+  },
+  Overdue: {
+    bg: colors.danger.light,
+    text: colors.danger.DEFAULT,
+    label: "OVERDUE",
+  },
 };
 
 interface Props {

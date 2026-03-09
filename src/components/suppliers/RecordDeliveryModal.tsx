@@ -180,7 +180,7 @@ export default function RecordDeliveryModal({
               </Text>
               {items.length > 1 && (
                 <TouchableOpacity onPress={() => removeItem(idx)}>
-                  <Trash2 size={18} color="#e11d48" strokeWidth={2} />
+                  <Trash2 size={18} color={colors.danger.DEFAULT} strokeWidth={2} />
                 </TouchableOpacity>
               )}
             </View>
@@ -234,7 +234,7 @@ export default function RecordDeliveryModal({
           onPress={addItem}
           className="flex-row items-center gap-2 py-2 mb-4"
         >
-          <PlusCircle size={20} color="#2563EB" strokeWidth={2} />
+          <PlusCircle size={20} color={colors.info.dark} strokeWidth={2} />
           <Text className="text-primary font-inter-medium">Add Item</Text>
         </TouchableOpacity>
 
@@ -310,10 +310,10 @@ export default function RecordDeliveryModal({
                 </Text>
               </View>
               <View className="flex-row justify-between">
-                <Text className="text-red-600 font-inter-semibold">
+                <Text className="text-danger-strong font-inter-semibold">
                   Balance Owed
                 </Text>
-                <Text className="text-red-600 font-inter-bold text-base">
+                <Text className="text-danger-strong font-inter-bold text-base">
                   ₹{Math.max(0, balanceAfter).toLocaleString("en-IN")}
                 </Text>
               </View>

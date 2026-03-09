@@ -4,16 +4,17 @@ import Button from "@/src/components/ui/Button";
 import Input from "@/src/components/ui/Input";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
+import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function OnboardingBusiness() {
@@ -217,13 +218,13 @@ export default function OnboardingBusiness() {
 const styles = StyleSheet.create({
   optionalBadge: {
     marginLeft: 8,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: colors.neutral.bg,
     borderRadius: 999,
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
   optionalText: {
     fontSize: 11,
-    color: "#6B7280",
+    color: colors.neutral[500],
   },
 });

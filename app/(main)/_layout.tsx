@@ -1,10 +1,11 @@
+import { colors } from "@/src/utils/theme";
 import { Tabs } from "expo-router";
 import { FileText, House, Truck, UserCircle, Users } from "lucide-react-native";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const ACTIVE = "#22C55E";
-const INACTIVE = "#9CA3AF";
+const ACTIVE = colors.primary.DEFAULT;
+const INACTIVE = colors.neutral[400];
 
 const CustomHeader = () => (
   <View className="bg-white flex-1 border-b border-default" />
@@ -26,11 +27,11 @@ export default function TabLayout() {
         tabBarActiveTintColor: ACTIVE,
         tabBarInactiveTintColor: INACTIVE,
         tabBarStyle: {
-          backgroundColor: "#FFFFFF",
+          backgroundColor: colors.white,
           borderTopWidth: 1,
-          borderTopColor: "#E5E7EB",
+          borderTopColor: colors.neutral[200],
           elevation: 4,
-          shadowColor: "#000",
+          shadowColor: colors.black,
           shadowOffset: { width: 0, height: -1 },
           shadowOpacity: 0.08,
           shadowRadius: 4,
