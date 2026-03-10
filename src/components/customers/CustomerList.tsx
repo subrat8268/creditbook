@@ -1,10 +1,40 @@
 import { Customer } from "@/src/api/customers";
+import { BookOpen, Plus, UserPlus } from "lucide-react-native";
 import { useCallback } from "react";
-import { FlatList, RefreshControl } from "react-native";
+import { FlatList, RefreshControl, View } from "react-native";
+import { colors } from "../../utils/theme";
 import EmptyState from "../feedback/EmptyState";
 import ErrorState from "../feedback/ErrorState";
 import Loader from "../feedback/Loader"; // assume these generic feedback components exist
 import CustomerCard from "./CustomerCard";
+
+// ── Customer-specific empty state icon: open book + green plus badge ──────────
+const CustomerEmptyIcon = (
+  <View style={{ width: 64, height: 64 }}>
+    <BookOpen size={64} color={colors.primary.DEFAULT} strokeWidth={1.5} />
+    <View
+      style={{
+        position: "absolute",
+        top: -4,
+        right: -6,
+        width: 22,
+        height: 22,
+        borderRadius: 11,
+        backgroundColor: colors.primary.DEFAULT,
+        alignItems: "center",
+        justifyContent: "center",
+        borderWidth: 2,
+        borderColor: "#FFFFFF",
+      }}
+    >
+      <Plus size={11} color="#FFFFFF" strokeWidth={3} />
+    </View>
+  </View>
+);
+
+const CustomerEmptyCtaIcon = (
+  <UserPlus size={18} color="#FFFFFF" strokeWidth={2} />
+);
 
 export type CustomerFilter = "All" | "Overdue" | "Paid" | "Pending";
 
@@ -73,10 +103,14 @@ export default function CustomerList({
       }
       ListEmptyComponent={
         <EmptyState
-          title="No customers yet"
-          description="Add your first customer and start tracking credit easily."
+          title="Your customer list is empty"
+          description="Add your first customer to start tracking credit"
+          icon={CustomerEmptyIcon}
+          iconBgColor={colors.success.bg}
+          iconSize={112}
           cta={onAddCustomer ? "Add Customer" : undefined}
           onCta={onAddCustomer}
+          ctaIcon={onAddCustomer ? CustomerEmptyCtaIcon : undefined}
         />
       }
       ListFooterComponent={
