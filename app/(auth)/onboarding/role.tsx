@@ -1,6 +1,5 @@
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
-import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { Briefcase, Check, Store, Truck } from "lucide-react-native";
 import { ComponentType, useState } from "react";
@@ -92,7 +91,7 @@ export default function OnboardingRole() {
           });
       }
 
-      router.replace("/(auth)/onboarding" as any);
+      router.replace("/(auth)/onboarding/business" as any);
     } catch (e: any) {
       setError(e.message ?? "Something went wrong.");
     } finally {
@@ -101,35 +100,21 @@ export default function OnboardingRole() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.neutral.bg }}>
+    <View className="flex-1 bg-background">
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
         {/* ── Title ── */}
-        <Text
-          style={{
-            fontSize: 26,
-            fontWeight: "800",
-            color: colors.neutral[900],
-            marginTop: 24,
-            marginBottom: 6,
-          }}
-        >
+        <Text className="text-2xl font-extrabold text-textDark mt-6 mb-1.5">
           {"What's your business?"}
         </Text>
-        <Text
-          style={{
-            fontSize: 14,
-            color: colors.neutral[500],
-            marginBottom: 28,
-          }}
-        >
+        <Text className="text-sm text-textSecondary mb-7">
           {"We'll set up CreditBook to match your work"}
         </Text>
 
         {/* ── Role cards ── */}
-        <View style={{ gap: 14 }}>
+        <View className="gap-3.5">
           {ROLES.map((item) => {
             const isActive = selected === item.role;
             return (
@@ -139,16 +124,11 @@ export default function OnboardingRole() {
                 activeOpacity={0.85}
               >
                 <View
+                  className="bg-white rounded-2xl p-4 flex-row items-center gap-3.5"
                   style={{
-                    backgroundColor: colors.white,
-                    borderRadius: 16,
                     borderWidth: isActive ? 2 : 1.5,
-                    borderColor: isActive ? "#22C55E" : colors.neutral[200],
-                    padding: 16,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 14,
-                    shadowColor: colors.black,
+                    borderColor: isActive ? "#22C55E" : "#E5E7EB",
+                    shadowColor: "#000",
                     shadowOffset: { width: 0, height: 1 },
                     shadowOpacity: 0.04,
                     shadowRadius: 4,
@@ -157,62 +137,33 @@ export default function OnboardingRole() {
                 >
                   {/* Icon badge */}
                   <View
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 10,
-                      backgroundColor: item.iconBg,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
+                    className="w-11 h-11 rounded-[10px] items-center justify-center shrink-0"
+                    style={{ backgroundColor: item.iconBg }}
                   >
-                    <item.Icon
-                      size={22}
-                      color={item.iconColor}
-                      strokeWidth={2}
-                    />
+                    <item.Icon size={22} color={item.iconColor} strokeWidth={2} />
                   </View>
 
                   {/* Text */}
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontWeight: "700",
-                        color: colors.neutral[900],
-                        marginBottom: 3,
-                      }}
-                    >
+                  <View className="flex-1">
+                    <Text className="text-base font-bold text-textDark mb-0.5">
                       {item.title}
                     </Text>
-                    <Text
-                      style={{
-                        fontSize: 13,
-                        color: colors.neutral[500],
-                        lineHeight: 18,
-                      }}
-                    >
+                    <Text className="text-[13px] text-textSecondary leading-[18px]">
                       {item.subtitle}
                     </Text>
                   </View>
 
                   {/* Check circle */}
                   <View
+                    className="w-6 h-6 rounded-full items-center justify-center shrink-0"
                     style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: 12,
-                      backgroundColor: isActive ? "#22C55E" : colors.white,
+                      backgroundColor: isActive ? "#22C55E" : "#FFFFFF",
                       borderWidth: isActive ? 0 : 1.5,
-                      borderColor: colors.neutral[300],
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
+                      borderColor: "#D1D5DB",
                     }}
                   >
                     {isActive && (
-                      <Check size={14} color={colors.white} strokeWidth={3} />
+                      <Check size={14} color="#FFFFFF" strokeWidth={3} />
                     )}
                   </View>
                 </View>
@@ -223,23 +174,8 @@ export default function OnboardingRole() {
 
         {/* ── Error ── */}
         {error && (
-          <View
-            style={{
-              marginTop: 16,
-              backgroundColor: colors.danger.bg,
-              borderWidth: 1,
-              borderColor: colors.danger.light,
-              borderRadius: 10,
-              padding: 12,
-            }}
-          >
-            <Text
-              style={{
-                color: colors.danger.strong,
-                fontSize: 13,
-                textAlign: "center",
-              }}
-            >
+          <View className="mt-4 bg-danger-bg border border-danger-light rounded-xl p-3">
+            <Text className="text-danger-strong text-[13px] text-center">
               {error}
             </Text>
           </View>
@@ -250,18 +186,11 @@ export default function OnboardingRole() {
           onPress={handleContinue}
           disabled={!selected || loading}
           activeOpacity={0.85}
-          style={{
-            marginTop: 32,
-            backgroundColor:
-              selected && !loading ? "#22C55E" : colors.neutral[300],
-            borderRadius: 50,
-            paddingVertical: 17,
-            alignItems: "center",
-          }}
+          className={`mt-8 rounded-full py-[17px] items-center ${
+            selected && !loading ? "bg-primary" : "bg-neutral-300"
+          }`}
         >
-          <Text
-            style={{ color: colors.white, fontSize: 16, fontWeight: "700" }}
-          >
+          <Text className="text-white text-base font-bold">
             {loading ? "Saving…" : "Continue"}
           </Text>
         </TouchableOpacity>

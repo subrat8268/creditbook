@@ -29,7 +29,7 @@ export default function SignUpPage() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1, backgroundColor: colors.neutral.bg }}
+      className="flex-1 bg-background"
       keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
     >
       <ScrollView
@@ -153,12 +153,7 @@ export default function SignUpPage() {
 
           {(signUpMutation.isError || googleSignIn.isError) && (
             <View
-              className="flex-row items-center self-center gap-2 rounded-full px-4 py-3 mt-4"
-              style={{
-                backgroundColor: "#FEF2F2",
-                borderWidth: 1,
-                borderColor: "#FECACA",
-              }}
+              className="flex-row items-center self-center gap-2 rounded-full px-4 py-3 mt-4 bg-danger-bg border border-red-200"
             >
               <AlertCircle
                 size={16}

@@ -1,68 +1,16 @@
-import OnboardingProgress from "@/src/components/onboarding/OnboardingProgress";
-import Button from "@/src/components/ui/Button";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
-import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
-import {
-  BadgeCheck,
-  Building2,
-  CheckCircle2,
-  Circle,
-  Info,
-  Phone,
-  QrCode,
-  Receipt,
-  Store,
-} from "lucide-react-native";
-import { useEffect, useRef, useState } from "react";
-import {
-  Animated,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-
-function ShimmerChip() {
-  const opacity = useRef(new Animated.Value(0.4)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 700,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0.4,
-          duration: 700,
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-  }, [opacity]);
-
-  return (
-    <Animated.View
-      style={{
-        opacity,
-        height: 32,
-        width: 200,
-        borderRadius: 999,
-        backgroundColor: colors.neutral[200],
-      }}
-    />
-  );
-}
+import { CalendarDays, CheckCircle2 } from "lucide-react-native";
+import { useState } from "react";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 
 export default function OnboardingReady() {
   const router = useRouter();
   const { user, profile, setProfile } = useAuthStore();
-  const [loading, setLoading] = useState<"bill" | "dashboard" | null>(null);
+  const [loading, setLoading] = useState<"customer" | "dashboard" | null>(null);
 
-  const completeOnboarding = async (next: "bill" | "dashboard") => {
+  const completeOnboarding = async (next: "customer" | "dashboard") => {
     if (!user) return;
     setLoading(next);
     try {
@@ -73,8 +21,8 @@ export default function OnboardingReady() {
       if (dbErr) throw dbErr;
       const current = useAuthStore.getState().profile;
       if (current) setProfile({ ...current, onboarding_complete: true });
-      if (next === "bill") {
-        router.replace("/(main)/orders/create");
+      if (next === "customer") {
+        router.replace("/(main)/customers" as any);
       } else {
         router.replace("/(main)/dashboard");
       }
@@ -85,166 +33,101 @@ export default function OnboardingReady() {
     }
   };
 
-  const checks = [
-    {
-      Icon: Phone,
-      label: "Phone number",
-      value: profile?.phone ? `+91 ${profile.phone}` : "—",
-      ok: !!profile?.phone,
-    },
-    {
-      Icon: Building2,
-      label: "Business name",
-      value: profile?.business_name ?? "—",
-      ok: !!profile?.business_name,
-    },
-    {
-      Icon: Receipt,
-      label: "Bill prefix",
-      value: profile?.bill_number_prefix ?? "INV",
-      ok: true,
-    },
-    {
-      Icon: QrCode,
-      label: "UPI ID",
-      value: profile?.upi_id ?? "Not set",
-      ok: !!profile?.upi_id,
-    },
-  ];
+  const businessLabel = `${profile?.business_name ?? "Business Name"} ${profile?.bill_number_prefix ?? "INV"}-`;
 
   return (
-    <ScrollView
-      contentContainerStyle={{ flexGrow: 1 }}
-      showsVerticalScrollIndicator={false}
-    >
-      <View className="flex-1 bg-white px-6 pt-12 pb-10">
-        {/* Back */}
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="mb-6 self-start"
-        >
-          <Text className="text-primary font-inter-medium text-sm">← Back</Text>
-        </TouchableOpacity>
+    <View className="flex-1 bg-background">
+      {/* ── Main content — centred vertically ── */}
+      <View className="flex-1 items-center justify-center px-8">
+        {/* Check circle + illustration stack */}
+        <View className="items-center mb-8">
+          {/* Green filled circle with check */}
+          <View
+            className="w-20 h-20 rounded-full bg-primary items-center justify-center"
+            style={{
+              zIndex: 2,
+              shadowColor: "#22C55E",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.35,
+              shadowRadius: 10,
+              elevation: 6,
+            }}
+          >
+            <CheckCircle2 size={44} color="#FFFFFF" strokeWidth={2.2} />
+          </View>
 
-        {/* Progress */}
-        <OnboardingProgress current={4} />
-
-        {/* Celebration heading */}
-        <View className="items-center mt-8 mb-6">
-          <View className="w-20 h-20 rounded-full bg-green-100 items-center justify-center mb-4">
-            <BadgeCheck
-              size={48}
-              color={colors.primary.dark}
-              strokeWidth={1.8}
+          {/* Shopkeeper illustration — overlaps below the circle */}
+          <View
+            className="w-[88px] h-[88px] rounded-full bg-neutral-100 items-center justify-center overflow-hidden"
+            style={{ marginTop: -16 }}
+          >
+            <Image
+              source={require("../../../../assets/images/role-user.png")}
+              style={{ width: 80, height: 80 }}
+              resizeMode="contain"
             />
           </View>
-          <Text className="text-3xl font-inter-bold text-neutral-900 text-center">
-            You are all set!
-          </Text>
-          <Text className="text-neutral-500 font-inter text-center mt-2">
-            CreditBook is ready. Here is what you have configured:
-          </Text>
+        </View>
 
-          {/* Business identity chip */}
-          <View className="mt-5">
-            {!profile ? (
-              <ShimmerChip />
-            ) : (
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  backgroundColor: colors.success.bg,
-                  borderWidth: 1,
-                  borderColor: colors.success.light,
-                  borderRadius: 999,
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  gap: 6,
-                }}
-              >
-                <Store size={15} color={colors.primary.dark} strokeWidth={2} />
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: "600",
-                    color: colors.success.dark,
-                  }}
-                  numberOfLines={1}
-                >
-                  {profile.business_name ?? "Your Business"}
-                  {" • "}
-                  {profile.bill_number_prefix ?? "INV"}-
-                </Text>
-              </View>
-            )}
+        {/* Title */}
+        <Text className="text-2xl font-extrabold text-textDark text-center mb-3">
+          You're all set!
+        </Text>
+
+        {/* Subtitle */}
+        <Text className="text-[15px] text-textSecondary text-center leading-[22px] mb-7">
+          CreditBook is ready to replace your khata book. Start by adding your
+          first customer.
+        </Text>
+
+        {/* Info chips */}
+        <View className="flex-row flex-wrap gap-2.5 justify-center">
+          {/* Business + prefix chip */}
+          <View className="flex-row items-center gap-1.5 border-[1.5px] border-primary rounded-full px-3.5 py-[7px] bg-white">
+            <CalendarDays size={14} color="#22C55E" strokeWidth={2} />
+            <Text
+              className="text-[13px] font-semibold text-primary"
+              numberOfLines={1}
+            >
+              {businessLabel}
+            </Text>
+          </View>
+
+          {/* Ledger ready chip */}
+          <View className="flex-row items-center gap-1.5 border-[1.5px] border-primary rounded-full px-3.5 py-[7px] bg-white">
+            <CheckCircle2 size={14} color="#22C55E" strokeWidth={2.5} />
+            <Text className="text-[13px] font-semibold text-primary">
+              Ledger ready
+            </Text>
           </View>
         </View>
+      </View>
 
-        {/* Setup summary */}
-        <View className="bg-neutral-50 rounded-xl p-4 mb-6 gap-3">
-          {checks.map((item) => (
-            <View key={item.label} className="flex-row items-center gap-3">
-              <View className="w-9 h-9 rounded-full bg-white border border-neutral-200 items-center justify-center">
-                <item.Icon
-                  size={18}
-                  color={colors.neutral[700]}
-                  strokeWidth={1.8}
-                />
-              </View>
-              <View className="flex-1">
-                <Text className="text-xs text-neutral-400 font-inter">
-                  {item.label}
-                </Text>
-                <Text className="text-sm font-inter-medium text-neutral-800">
-                  {item.value}
-                </Text>
-              </View>
-              {item.ok ? (
-                <CheckCircle2
-                  size={18}
-                  color={colors.primary.dark}
-                  strokeWidth={2}
-                />
-              ) : (
-                <Circle
-                  size={18}
-                  color={colors.neutral[300]}
-                  strokeWidth={1.5}
-                />
-              )}
-            </View>
-          ))}
-        </View>
-
-        {/* Bank details nudge */}
-        <View className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8 flex-row gap-3 items-start">
-          <Info size={20} color={colors.warning.dark} strokeWidth={2} />
-          <Text className="text-sm text-amber-700 font-inter flex-1">
-            <Text className="font-inter-semibold">Add bank details</Text> in
-            Profile to show IFSC & account number on PDF bills — required for
-            NEFT/RTGS payments from customers.
-          </Text>
-        </View>
-
-        {/* CTAs */}
-        <Button
-          title="📄  Create My First Bill"
-          onPress={() => completeOnboarding("bill")}
-          loading={loading === "bill"}
+      {/* ── Bottom actions ── */}
+      <View className="px-6 pb-10">
+        <TouchableOpacity
+          onPress={() => completeOnboarding("customer")}
           disabled={loading !== null}
-        />
+          activeOpacity={0.85}
+          className={`rounded-full py-[17px] items-center ${
+            loading !== null ? "bg-neutral-300" : "bg-primary"
+          }`}
+        >
+          <Text className="text-white text-base font-bold">
+            {loading === "customer" ? "Loading…" : "Add Your First Customer"}
+          </Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => completeOnboarding("dashboard")}
           disabled={loading !== null}
-          className="mt-4 py-3 items-center"
+          className="items-center mt-4 py-1"
         >
-          <Text className="text-primary font-inter-semibold text-base">
-            {loading === "dashboard" ? "Loading…" : "Go to Dashboard →"}
+          <Text className="text-sm font-semibold text-primary underline">
+            {loading === "dashboard" ? "Loading…" : "Go to Dashboard"}
           </Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 }

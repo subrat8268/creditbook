@@ -1,0 +1,199 @@
+// Step 4 of onboarding — Business Setup (Step 2 of 2) — Bank Details
+import { supabase } from "@/src/services/supabase";
+import { useAuthStore } from "@/src/store/authStore";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+export default function OnboardingBank() {
+  const router = useRouter();
+  const { user, profile, setProfile } = useAuthStore();
+
+  const [upiId, setUpiId] = useState(profile?.upi_id ?? "");
+  const [bankName, setBankName] = useState(profile?.bank_name ?? "");
+  const [accountNumber, setAccountNumber] = useState(
+    profile?.account_number ?? "",
+  );
+  const [ifscCode, setIfscCode] = useState(profile?.ifsc_code ?? "");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleContinue = async () => {
+    if (!user) return;
+    setError(null);
+    setLoading(true);
+    try {
+      // Only include fields that have a value — columns have NOT NULL constraints
+      const updates: Record<string, string> = {};
+      if (upiId.trim()) updates.upi_id = upiId.trim();
+      if (bankName.trim()) updates.bank_name = bankName.trim();
+      if (accountNumber.trim()) updates.account_number = accountNumber.trim();
+      if (ifscCode.trim()) updates.ifsc_code = ifscCode.trim().toUpperCase();
+
+      if (Object.keys(updates).length > 0) {
+        const { error: dbErr } = await supabase
+          .from("profiles")
+          .update(updates)
+          .eq("user_id", user.id);
+        if (dbErr) throw dbErr;
+        const current = useAuthStore.getState().profile;
+        if (current) setProfile({ ...current, ...updates });
+      }
+
+      router.push("/(auth)/onboarding/ready" as any);
+    } catch (e: any) {
+      setError(e.message ?? "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSkip = () => {
+    router.push("/(auth)/onboarding/ready" as any);
+  };
+
+  const OptionalBadge = () => (
+    <View className="bg-neutral-100 rounded-md px-2 py-0.5 ml-2">
+      <Text className="text-[11px] font-semibold text-textSecondary uppercase tracking-wide">
+        OPTIONAL
+      </Text>
+    </View>
+  );
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <ScrollView
+        className="flex-1 bg-background"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── Progress ── */}
+        <View className="mt-5 mb-6">
+          <Text className="text-[13px] text-textSecondary mb-2">Step 2 of 2</Text>
+          <View className="flex-row gap-1.5">
+            <View className="flex-1 h-1 rounded-full bg-primary" />
+            <View className="flex-1 h-1 rounded-full bg-primary" />
+          </View>
+        </View>
+
+        {/* ── Heading ── */}
+        <Text className="text-2xl font-extrabold text-textDark mb-1">
+          Add bank details
+        </Text>
+        <Text className="text-sm text-textSecondary mb-6">
+          These appear on your invoices for easy payment.
+        </Text>
+
+        {/* ── Card ── */}
+        <View
+          className="bg-white rounded-2xl p-5"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.05,
+            shadowRadius: 4,
+            elevation: 2,
+          }}
+        >
+          {/* UPI ID */}
+          <View className="flex-row items-center mb-2">
+            <Text className="text-sm font-semibold text-neutral-800">UPI ID</Text>
+            <OptionalBadge />
+          </View>
+          <TextInput
+            placeholder="e.g. sharma@upi"
+            placeholderTextColor="#AEAEB2"
+            value={upiId}
+            onChangeText={setUpiId}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            className="border-[1.5px] border-border rounded-xl px-3.5 py-3 text-[15px] text-textDark bg-white"
+          />
+
+          {/* Bank Name */}
+          <View className="flex-row items-center mt-5 mb-2">
+            <Text className="text-sm font-semibold text-neutral-800">Bank Name</Text>
+            <OptionalBadge />
+          </View>
+          <TextInput
+            placeholder="e.g. State Bank of India"
+            placeholderTextColor="#AEAEB2"
+            value={bankName}
+            onChangeText={setBankName}
+            className="border-[1.5px] border-border rounded-xl px-3.5 py-3 text-[15px] text-textDark bg-white"
+          />
+
+          {/* Account Number */}
+          <View className="flex-row items-center mt-5 mb-2">
+            <Text className="text-sm font-semibold text-neutral-800">Account Number</Text>
+            <OptionalBadge />
+          </View>
+          <TextInput
+            placeholder="e.g. 00112233445566"
+            placeholderTextColor="#AEAEB2"
+            value={accountNumber}
+            onChangeText={setAccountNumber}
+            keyboardType="numeric"
+            className="border-[1.5px] border-border rounded-xl px-3.5 py-3 text-[15px] text-textDark bg-white"
+          />
+
+          {/* IFSC Code */}
+          <View className="flex-row items-center mt-5 mb-2">
+            <Text className="text-sm font-semibold text-neutral-800">IFSC Code</Text>
+            <OptionalBadge />
+          </View>
+          <TextInput
+            placeholder="e.g. SBIN0001234"
+            placeholderTextColor="#AEAEB2"
+            value={ifscCode}
+            onChangeText={(t) => setIfscCode(t.toUpperCase())}
+            autoCapitalize="characters"
+            className="border-[1.5px] border-border rounded-xl px-3.5 py-3 text-[15px] text-textDark bg-white"
+          />
+        </View>
+
+        {/* ── Error ── */}
+        {error && (
+          <Text className="text-danger-strong text-[13px] mt-3 text-center">
+            {error}
+          </Text>
+        )}
+
+        {/* ── CTA ── */}
+        <TouchableOpacity
+          onPress={handleContinue}
+          disabled={loading}
+          activeOpacity={0.85}
+          className={`mt-8 rounded-full py-[17px] items-center ${
+            loading ? "bg-neutral-300" : "bg-primary"
+          }`}
+        >
+          <Text className="text-white text-base font-bold">
+            {loading ? "Saving…" : "Continue →"}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={handleSkip}
+          className="items-center mt-4 py-1.5"
+        >
+          <Text className="text-textSecondary text-sm font-medium">
+            Skip for now
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
