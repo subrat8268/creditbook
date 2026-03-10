@@ -10,6 +10,7 @@ export interface Supplier {
   ifsc_code?: string;
   created_at: string;
   balanceOwed?: number; // computed on fetch
+  lastDeliveryAt?: string; // ISO date of most recent delivery, computed on fetch
 }
 
 export interface SupplierDeliveryItem {

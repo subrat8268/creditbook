@@ -1,8 +1,8 @@
 import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
-import ScreenWrapper from "../components/ScreenWrapper";
+import { Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import NewSupplierModal from "../components/suppliers/NewSupplierModal";
 import SupplierList from "../components/suppliers/SupplierList";
 import FloatingActionButton from "../components/ui/FloatingActionButton";
@@ -11,6 +11,7 @@ import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { useAddSupplier, useSuppliers } from "../hooks/useSuppliers";
 import { useAuthStore } from "../store/authStore";
 import { useSuppliersStore } from "../store/suppliersStore";
+import { colors } from "../utils/theme";
 
 export default function SuppliersScreen() {
   const { profile } = useAuthStore();
@@ -60,14 +61,43 @@ export default function SuppliersScreen() {
 
   const handlePressSupplier = (supplierId: string) => {
     router.push({
-      pathname: `/suppliers/${supplierId}`,
+      pathname: "/suppliers/[supplierId]" as any,
       params: { supplierId },
     });
   };
 
+  const totalOwed = suppliers.reduce((sum, s) => sum + (s.balanceOwed ?? 0), 0);
+
   return (
-    <ScreenWrapper>
-      <View className="mb-4">
+    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-white">
+      {/* ── Header ── */}
+      <View
+        className="flex-row items-center justify-between px-5 pt-2 pb-4 border-b"
+        style={{ borderBottomColor: colors.neutral[200] }}
+      >
+        <Text
+          className="font-bold"
+          style={{ fontSize: 28, color: colors.neutral[900] }}
+        >
+          Suppliers
+        </Text>
+        {totalOwed > 0 && (
+          <View
+            className="rounded-full px-3 py-[5px]"
+            style={{ backgroundColor: colors.danger.light }}
+          >
+            <Text
+              className="font-bold text-[13px]"
+              style={{ color: colors.danger.DEFAULT }}
+            >
+              I Owe: ₹{totalOwed.toLocaleString("en-IN")}
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* ── Search ── */}
+      <View className="px-5 pt-4 pb-2">
         <SearchBar
           value={search}
           onChangeText={setSearch}
@@ -75,17 +105,20 @@ export default function SuppliersScreen() {
         />
       </View>
 
-      <SupplierList
-        suppliers={suppliers}
-        isLoading={isLoading}
-        error={error}
-        onRefresh={onRefresh}
-        refreshing={refreshing}
-        onEndReached={handleEndReached}
-        isFetchingNextPage={isFetchingNextPage}
-        onPressSupplier={handlePressSupplier}
-        onAddSupplier={() => setIsModalOpen(true)}
-      />
+      {/* ── List ── */}
+      <View className="flex-1">
+        <SupplierList
+          suppliers={suppliers}
+          isLoading={isLoading}
+          error={error}
+          onRefresh={onRefresh}
+          refreshing={refreshing}
+          onEndReached={handleEndReached}
+          isFetchingNextPage={isFetchingNextPage}
+          onPressSupplier={handlePressSupplier}
+          onAddSupplier={() => setIsModalOpen(true)}
+        />
+      </View>
 
       <FloatingActionButton onPress={() => setIsModalOpen(true)} />
 
@@ -95,6 +128,6 @@ export default function SuppliersScreen() {
         onSubmit={handleAddSupplier}
         loading={addSupplierMutation.isPending}
       />
-    </ScreenWrapper>
+    </SafeAreaView>
   );
 }

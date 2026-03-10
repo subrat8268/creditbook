@@ -33,6 +33,10 @@ export default function SuppliersLayout() {
   return (
     <Stack
       screenOptions={({ route }) => {
+        // index renders its own header (Suppliers + I Owe pill)
+        if (route.name === "index") {
+          return { headerShown: false };
+        }
         const config =
           screenConfig[route.name as keyof typeof screenConfig] ||
           screenConfig.index;

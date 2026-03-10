@@ -1,33 +1,91 @@
-import { ChevronRight } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
+import { daysSince, formatRelativeActivity } from "../../utils/helper";
+
 import { Supplier } from "../../types/supplier";
 import { colors } from "../../utils/theme";
 
-const AVATAR_COLORS = [
-  colors.danger.DEFAULT, // #E74C3C  red
-  colors.warning.DEFAULT, // #F59E0B  amber/orange
-  colors.primary.DEFAULT, // #22C55E  green
-  colors.info.DEFAULT, // #4F9CFF  blue
-  "#9B59B6", // purple
-  "#E91E8C", // pink
-  "#00BCD4", // teal
-  "#FF5722", // deep orange
+// ── Avatar helpers — soft pastel bg + dark text (supplier visual identity) ───
+const AVATAR_BG = [
+  colors.warning.light, // amber-100  — warm financial tone
+  colors.success.light, // green-100
+  colors.info.light, // blue-100
+  colors.danger.light, // red-100
+  "#EDE9FE", // purple-100
+  "#FCE7F3", // pink-100
+  "#CCFBF1", // teal-100
+  "#FFF7ED", // orange-100
 ] as const;
 
-function getAvatarColor(name: string): string {
-  const sum = name.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-  return AVATAR_COLORS[sum % AVATAR_COLORS.length];
+const AVATAR_TEXT = [
+  colors.warning.dark, // #D97706
+  colors.primary.dark, // #16A34A
+  colors.info.dark, // #2563EB
+  colors.danger.dark, // #B33226
+  "#6D28D9", // purple-700
+  "#9D174D", // pink-800
+  "#0F766E", // teal-700
+  "#C2410C", // orange-700
+] as const;
+
+function getAvatarIdx(name: string): number {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash) % AVATAR_BG.length;
 }
 
 function getInitials(name: string): string {
-  return name
-    .trim()
-    .split(" ")
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
+  const parts = name.trim().split(" ").filter(Boolean);
+  if (parts.length >= 2)
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return name.substring(0, 2).toUpperCase();
 }
 
+// ── Status helpers ────────────────────────────────────────────────────────────
+type SupplierStatus = "Overdue" | "Pending" | "Paid";
+
+/** OVERDUE if balance > 0 and last delivery is >= 5 days ago; PENDING if balance > 0 but recent */
+function getStatus(balance: number, lastDeliveryAt?: string): SupplierStatus {
+  if (balance === 0) return "Paid";
+  const days = lastDeliveryAt ? daysSince(lastDeliveryAt) : 0;
+  return days >= 5 ? "Overdue" : "Pending";
+}
+
+const STATUS_CONFIG: Record<
+  SupplierStatus,
+  {
+    label: string;
+    text: string;
+    border: string;
+    bg: string;
+    amountColor: string;
+  }
+> = {
+  Overdue: {
+    label: "OVERDUE",
+    text: colors.danger.text,
+    border: colors.danger.DEFAULT,
+    bg: colors.danger.light,
+    amountColor: colors.danger.DEFAULT,
+  },
+  Pending: {
+    label: "PENDING",
+    text: colors.warning.text,
+    border: colors.warning.DEFAULT,
+    bg: colors.warning.light,
+    amountColor: colors.warning.DEFAULT,
+  },
+  Paid: {
+    label: "PAID",
+    text: colors.success.text,
+    border: colors.primary.DEFAULT,
+    bg: colors.success.light,
+    amountColor: colors.neutral[900],
+  },
+};
+
+// ── Component ─────────────────────────────────────────────────────────────────
 type Props = {
   supplier: Supplier;
   onPress?: () => void;
@@ -35,77 +93,59 @@ type Props = {
 
 export default function SupplierCard({ supplier, onPress }: Props) {
   const balance = supplier.balanceOwed ?? 0;
-  const avatarColor = getAvatarColor(supplier.name);
+  const idx = getAvatarIdx(supplier.name);
   const initials = getInitials(supplier.name);
-
-  const balanceBadge =
-    balance > 0
-      ? {
-          bg: colors.danger.light,
-          text: colors.danger.DEFAULT,
-          label: "PENDING",
-        }
-      : { bg: colors.success.light, text: colors.success.text, label: "PAID" };
+  const status = getStatus(balance, supplier.lastDeliveryAt);
+  const { label, text, border, bg, amountColor } = STATUS_CONFIG[status];
 
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="flex-row items-center justify-between bg-white border border-neutral-300 py-4 px-4 rounded-xl mb-3 shadow-sm"
+      activeOpacity={0.7}
+      className="flex-row items-center bg-white px-5 py-[15px] border-b border-light"
     >
-      <View className="flex-row items-center flex-1">
-        {/* Initials avatar — consistent with CustomerCard pattern */}
-        <View
-          style={{
-            width: 48,
-            height: 48,
-            borderRadius: 24,
-            backgroundColor: avatarColor,
-            alignItems: "center",
-            justifyContent: "center",
-            marginRight: 12,
-          }}
+      {/* Avatar — pastel bg, dark initials */}
+      <View
+        className="w-[52px] h-[52px] rounded-full mr-[14px] items-center justify-center"
+        style={{ backgroundColor: AVATAR_BG[idx] }}
+      >
+        <Text
+          className="text-[17px] font-bold tracking-[0.3px]"
+          style={{ color: AVATAR_TEXT[idx] }}
         >
-          <Text className="text-white font-bold text-base">{initials}</Text>
-        </View>
-
-        <View className="flex-1">
-          <Text className="font-inter-semibold text-neutral-900">
-            {supplier.name}
-          </Text>
-          {supplier.phone ? (
-            <Text className="text-neutral-500 text-sm font-inter">
-              {supplier.phone}
-            </Text>
-          ) : null}
-          {supplier.basket_mark ? (
-            <Text className="text-neutral-400 text-xs font-inter">
-              Mark: {supplier.basket_mark}
-            </Text>
-          ) : null}
-        </View>
+          {initials}
+        </Text>
       </View>
 
-      <View className="items-end gap-1">
-        <View
-          style={{ backgroundColor: balanceBadge.bg }}
-          className="px-2 py-1 rounded-lg"
+      {/* Name + Last delivery */}
+      <View className="flex-1 mr-[10px]">
+        <Text
+          className="text-[15px] font-semibold mb-[3px] text-textDark"
+          numberOfLines={1}
         >
-          {balance > 0 && (
-            <Text
-              className="font-inter-semibold text-sm"
-              style={{ color: balanceBadge.text }}
-            >
-              ₹{balance.toLocaleString("en-IN")}
-            </Text>
-          )}
+          {supplier.name}
+        </Text>
+        <Text className="text-[13px] text-textSecondary">
+          Last delivery: {formatRelativeActivity(supplier.lastDeliveryAt)}
+        </Text>
+      </View>
+
+      {/* Amount + Status badge */}
+      <View className="items-end gap-[5px]">
+        <Text className="text-[16px] font-bold" style={{ color: amountColor }}>
+          ₹{balance > 0 ? balance.toLocaleString("en-IN") : "0"}
+        </Text>
+        <View
+          className="border rounded-[6px] px-2 py-[3px]"
+          style={{ borderColor: border, backgroundColor: bg }}
+        >
           <Text
-            className="text-xs font-inter text-right"
-            style={{ color: balanceBadge.text }}
+            className="text-[11px] font-bold tracking-[0.4px]"
+            style={{ color: text }}
           >
-            {balance > 0 ? "You owe" : balanceBadge.label}
+            {label}
           </Text>
         </View>
-        <ChevronRight size={16} color={colors.neutral[400]} strokeWidth={2} />
       </View>
     </TouchableOpacity>
   );

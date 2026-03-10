@@ -1,9 +1,9 @@
 import { supabase } from "../services/supabase";
 import {
-    Supplier,
-    SupplierDelivery,
-    SupplierDeliveryItem,
-    SupplierDetail,
+  Supplier,
+  SupplierDelivery,
+  SupplierDeliveryItem,
+  SupplierDetail,
 } from "../types/supplier";
 
 export const PAGE_SIZE = 10;
@@ -37,7 +37,7 @@ export async function fetchSuppliers(
   const [{ data: deliveries }, { data: payments }] = await Promise.all([
     supabase
       .from("supplier_deliveries")
-      .select("supplier_id, total_amount")
+      .select("supplier_id, total_amount, delivery_date")
       .eq("vendor_id", vendorId)
       .in("supplier_id", ids),
     supabase
@@ -49,10 +49,18 @@ export async function fetchSuppliers(
 
   const totals: Record<string, number> = {};
   const paid: Record<string, number> = {};
+  const lastDelivery: Record<string, string> = {};
 
   for (const d of deliveries ?? []) {
     totals[d.supplier_id] =
       (totals[d.supplier_id] ?? 0) + Number(d.total_amount);
+    // Track most-recent delivery date per supplier
+    if (
+      !lastDelivery[d.supplier_id] ||
+      d.delivery_date > lastDelivery[d.supplier_id]
+    ) {
+      lastDelivery[d.supplier_id] = d.delivery_date;
+    }
   }
   for (const p of payments ?? []) {
     paid[p.supplier_id] = (paid[p.supplier_id] ?? 0) + Number(p.amount);
@@ -62,6 +70,7 @@ export async function fetchSuppliers(
     .map((s) => ({
       ...s,
       balanceOwed: Math.max(0, (totals[s.id] ?? 0) - (paid[s.id] ?? 0)),
+      lastDeliveryAt: lastDelivery[s.id] ?? undefined,
     }))
     .sort((a, b) => (b.balanceOwed ?? 0) - (a.balanceOwed ?? 0)); // highest owed first
 }
