@@ -20,8 +20,11 @@ export interface DashboardData {
   customersOweMe: number;
   iOweSuppliers: number;
   netPosition: number;
-  // New
+  // Seller mode
   activeBuyers: number;
+  // Distributor mode
+  activeSuppliers: number;
+  overduePayments: number;
   recentActivity: RecentActivityItem[];
 }
 
@@ -58,6 +61,8 @@ export async function getDashboardData(
       iOweSuppliers: 0,
       netPosition: 0,
       activeBuyers: 0,
+      activeSuppliers: 0,
+      overduePayments: 0,
       recentActivity: [],
     };
 
@@ -102,7 +107,7 @@ export async function getDashboardData(
   const [{ data: deliveries }, { data: paymentsMade }] = await Promise.all([
     supabase
       .from("supplier_deliveries")
-      .select("total_amount")
+      .select("total_amount, supplier_id, created_at")
       .eq("vendor_id", vendorId),
     supabase.from("payments_made").select("amount").eq("vendor_id", vendorId),
   ]);
@@ -117,6 +122,14 @@ export async function getDashboardData(
   );
   const iOweSuppliers = Math.max(0, totalDeliveries - totalPaidToSuppliers);
   const netPosition = customersOweMe - iOweSuppliers;
+
+  // Distributor stats — distinct active suppliers + overdue supplier deliveries
+  const activeSuppliers = new Set(
+    (deliveries ?? []).map((d: any) => d.supplier_id).filter(Boolean),
+  ).size;
+  const overduePayments = (deliveries ?? []).filter(
+    (d: any) => new Date(d.created_at) < thirtyDaysAgo,
+  ).length;
 
   // Recent activity — last 5 orders with customer name
   const { data: recentOrders } = await supabase
@@ -176,6 +189,8 @@ export async function getDashboardData(
     iOweSuppliers,
     netPosition,
     activeBuyers,
+    activeSuppliers,
+    overduePayments,
     recentActivity,
   };
 }

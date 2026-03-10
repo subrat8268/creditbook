@@ -123,11 +123,21 @@ export const DashboardScreen = () => {
           </View>
         ) : (
           <DashboardHeroCard
+            variant={isDistributor ? "distributor" : "seller"}
             label={heroLabel}
             amount={heroAmount}
-            onViewReport={() => router.push("/(main)/reports" as any)}
-            onSendReminder={() => {
-              // TODO(v3.6): bulk WhatsApp reminder via Business API
+            subInfo={
+              isDistributor
+                ? `${data.activeSuppliers} active supplier${data.activeSuppliers !== 1 ? "s" : ""}`
+                : undefined
+            }
+            onPrimaryAction={() =>
+              isDistributor
+                ? router.push("/(main)/suppliers" as any)
+                : router.push("/(main)/reports" as any)
+            }
+            onSecondaryAction={() => {
+              // TODO(v3.6): distributor → RecordDeliverySheet; seller → WhatsApp bulk reminder
             }}
           />
         )}
@@ -140,13 +150,25 @@ export const DashboardScreen = () => {
         )}
 
         <DashboardStatCards
-          activeBuyers={data.activeBuyers}
-          overdueCustomers={data.overdueCustomers}
+          mode={isDistributor ? "distributor" : "seller"}
+          primaryCount={
+            isDistributor ? data.activeSuppliers : data.activeBuyers
+          }
+          overdueCount={
+            isDistributor ? data.overduePayments : data.overdueCustomers
+          }
         />
 
         <DashboardRecentActivity
           items={data.recentActivity}
-          onViewAll={() => router.push("/(main)/orders" as any)}
+          isSupplier={isDistributor}
+          onViewAll={() =>
+            router.push(
+              isDistributor
+                ? ("/(main)/suppliers" as any)
+                : ("/(main)/orders" as any),
+            )
+          }
         />
       </ScrollView>
 

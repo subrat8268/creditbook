@@ -1,6 +1,7 @@
 import { RecentActivityItem } from "@/src/api/dashboard";
 import { formatDashboardDate, formatINR } from "@/src/utils/dashboardUi";
 import { colors } from "@/src/utils/theme";
+import { Store } from "lucide-react-native";
 import { Text, View } from "react-native";
 import StatusBadge from "./StatusBadge";
 
@@ -26,9 +27,13 @@ function getAvatarColor(name: string): string {
   return AVATAR_COLORS[sum % 8];
 }
 
-type Props = { item: RecentActivityItem };
+type Props = {
+  item: RecentActivityItem;
+  /** When true: renders a gray Store icon avatar instead of color-initials circle */
+  isSupplier?: boolean;
+};
 
-export default function ActivityRow({ item }: Props) {
+export default function ActivityRow({ item, isSupplier = false }: Props) {
   const initials = getInitials(item.name || "?");
   const avatarColor = getAvatarColor(item.name || "?");
   const isPaid = item.status === "Paid";
@@ -46,13 +51,22 @@ export default function ActivityRow({ item }: Props) {
         elevation: 2,
       }}
     >
-      {/* Initials avatar — dynamic bg color stays inline */}
-      <View
-        className="w-9 h-9 rounded-full items-center justify-center"
-        style={{ backgroundColor: avatarColor }}
-      >
-        <Text className="text-white font-bold text-[13px]">{initials}</Text>
-      </View>
+      {/* Avatar — supplier: gray icon square | customer: colored initials circle */}
+      {isSupplier ? (
+        <View
+          className="w-9 h-9 rounded-xl items-center justify-center"
+          style={{ backgroundColor: colors.neutral[100] }}
+        >
+          <Store size={18} color={colors.neutral[500]} strokeWidth={1.75} />
+        </View>
+      ) : (
+        <View
+          className="w-9 h-9 rounded-full items-center justify-center"
+          style={{ backgroundColor: avatarColor }}
+        >
+          <Text className="text-white font-bold text-[13px]">{initials}</Text>
+        </View>
+      )}
 
       <View className="flex-1">
         <Text

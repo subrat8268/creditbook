@@ -1,44 +1,78 @@
 import { formatINR } from "@/src/utils/dashboardUi";
 import { colors } from "@/src/utils/theme";
-import { BarChart2, Smartphone } from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { BarChart2, Smartphone, Truck, Users2 } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
-// ─── Props ────────────────────────────────────────────────────────────────────
-// weekDelta: positive = up vs last week, negative = down, undefined = hide row
+// ─── Types ────────────────────────────────────────────────────────────────────
+// variant "seller"      → solid red hero, "View Report" + "Send Reminder"
+// variant "distributor" → pink gradient hero, "View Suppliers" + "Record Delivery"
+type Variant = "seller" | "distributor";
+
 type Props = {
+  variant?: Variant;
   label: string;
   amount: number;
+  /** Short sub-info line below the amount, e.g. "4 active suppliers" */
+  subInfo?: string;
+  /** weekDelta > 0 = ↑, < 0 = ↓, undefined = hide row */
   weekDelta?: number;
-  onViewReport?: () => void;
-  onSendReminder?: () => void;
+  onPrimaryAction?: () => void;
+  onSecondaryAction?: () => void;
 };
 
-// ─── DashboardHeroCard ────────────────────────────────────────────────────────
-// Red hero card shown in seller and distributor modes.
-// Action buttons are embedded inside the card (not a separate ActionBar below).
+// ─── Variant config ───────────────────────────────────────────────────────────
+const SELLER_CONFIG = {
+  primary: { icon: BarChart2, label: "View Report" },
+  secondary: { icon: Smartphone, label: "Send Reminder" },
+} as const;
+
+const DISTRIBUTOR_CONFIG = {
+  primary: { icon: Users2, label: "View Suppliers →" },
+  secondary: { icon: Truck, label: "Record Delivery" },
+} as const;
+
+// Distributor gradient: deep crimson-rose → magenta-rose
+const DISTRIBUTOR_GRADIENT: readonly [string, string] = ["#B91C6A", "#E8336E"];
+
+// ─── DashboardHeroCard ───────────────────────────────────────────────────────
 export default function DashboardHeroCard({
+  variant = "seller",
   label,
   amount,
+  subInfo,
   weekDelta,
-  onViewReport,
-  onSendReminder,
+  onPrimaryAction,
+  onSecondaryAction,
 }: Props) {
+  const isDistributor = variant === "distributor";
+  const config = isDistributor ? DISTRIBUTOR_CONFIG : SELLER_CONFIG;
+
   const showDelta = weekDelta !== undefined && weekDelta !== 0;
   const deltaUp = (weekDelta ?? 0) >= 0;
 
-  return (
-    <View
-      className="rounded-3xl p-6 mb-3"
-      style={{
-        backgroundColor: colors.danger.DEFAULT, // #E74C3C — red hero
-        shadowColor: colors.danger.dark,
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.35,
-        shadowRadius: 16,
-        elevation: 8,
-      }}
-    >
-      {/* Label — small all-caps, semi-transparent white */}
+  const PrimaryIcon = config.primary.icon;
+  const SecondaryIcon = config.secondary.icon;
+
+  // ── Inner content — shared between both variants ──────────────────────────
+  const content = (
+    <>
+      {/* Decorative circle blob — distributor only */}
+      {isDistributor && (
+        <View
+          style={{
+            position: "absolute",
+            top: -40,
+            right: -40,
+            width: 160,
+            height: 160,
+            borderRadius: 80,
+            backgroundColor: "rgba(255,255,255,0.12)",
+          }}
+        />
+      )}
+
+      {/* Label */}
       <Text
         className="text-[11px] font-bold tracking-[1.6px] mb-2.5"
         style={{ color: "rgba(255,255,255,0.75)" }}
@@ -54,50 +88,98 @@ export default function DashboardHeroCard({
         {formatINR(amount)}
       </Text>
 
-      {/* Trend row — only rendered when weekDelta is provided */}
+      {/* Sub-info line — e.g. "4 active suppliers" */}
+      {subInfo && (
+        <Text
+          className="text-[13px] mb-0.5"
+          style={{ color: "rgba(255,255,255,0.82)" }}
+        >
+          {subInfo}
+        </Text>
+      )}
+
+      {/* Trend row */}
       <View className="mb-4">
         {showDelta && (
-          <View className="flex-row items-center gap-1 mt-1">
-            <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 13 }}>
-              {deltaUp ? "↑" : "↓"} {formatINR(Math.abs(weekDelta!))} from last
-              week
-            </Text>
-          </View>
+          <Text
+            className="text-[13px] mt-1"
+            style={{ color: "rgba(255,255,255,0.85)" }}
+          >
+            {deltaUp ? "↑" : "↓"} {formatINR(Math.abs(weekDelta!))} this week
+          </Text>
         )}
       </View>
 
-      {/* Action buttons — semi-transparent white on red bg */}
+      {/* Action buttons */}
       <View className="flex-row gap-3">
         <TouchableOpacity
           className="flex-1 flex-row items-center justify-center gap-2 py-3 rounded-xl"
           style={{ backgroundColor: "rgba(255,255,255,0.22)" }}
-          onPress={onViewReport}
+          onPress={onPrimaryAction}
           activeOpacity={0.72}
         >
-          <BarChart2 size={17} color={colors.white} strokeWidth={2} />
+          <PrimaryIcon size={17} color={colors.white} strokeWidth={2} />
           <Text
             className="text-sm font-semibold"
             style={{ color: colors.white }}
           >
-            View Report
+            {config.primary.label}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           className="flex-1 flex-row items-center justify-center gap-2 py-3 rounded-xl"
           style={{ backgroundColor: "rgba(255,255,255,0.22)" }}
-          onPress={onSendReminder}
+          onPress={onSecondaryAction}
           activeOpacity={0.72}
         >
-          <Smartphone size={17} color={colors.white} strokeWidth={2} />
+          <SecondaryIcon size={17} color={colors.white} strokeWidth={2} />
           <Text
             className="text-sm font-semibold"
             style={{ color: colors.white }}
           >
-            Send Reminder
+            {config.secondary.label}
           </Text>
         </TouchableOpacity>
       </View>
+    </>
+  );
+
+  // ── Distributor → LinearGradient wrapper ───────────────────────────────────
+  if (isDistributor) {
+    return (
+      <LinearGradient
+        colors={DISTRIBUTOR_GRADIENT}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        className="rounded-3xl p-6 mb-3 overflow-hidden"
+        style={{
+          shadowColor: "#B91C6A",
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.35,
+          shadowRadius: 16,
+          elevation: 8,
+        }}
+      >
+        {content}
+      </LinearGradient>
+    );
+  }
+
+  // ── Seller → solid red View wrapper ───────────────────────────────────────
+  return (
+    <View
+      className="rounded-3xl p-6 mb-3"
+      style={{
+        backgroundColor: colors.danger.DEFAULT,
+        shadowColor: colors.danger.dark,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.35,
+        shadowRadius: 16,
+        elevation: 8,
+      }}
+    >
+      {content}
     </View>
   );
 }
