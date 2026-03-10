@@ -1,8 +1,8 @@
 # CreditBook — Project Architecture
 
-> **Last Updated**: March 9, 2026
-> **App Version**: 3.4
-> **Status**: Production code complete — pending device verification
+> **Last Updated**: March 10, 2026
+> **App Version**: 3.5
+> **Status**: Auth hardening complete (v3.4–3.5) — pending device verification
 
 ---
 
@@ -29,12 +29,14 @@
 app/
 ├── _layout.tsx                   ← Root layout (QueryClient, ToastProvider, auth guard, Sentry.wrap)
 ├── index.tsx                     ← Welcome / splash route
+├── profile-error.tsx             ← Profile fetch failure route (re-exports AuthProfileErrorScreen)  ← v3.4
 │
 ├── (auth)/
 │   ├── _layout.tsx
 │   ├── login.tsx
 │   ├── signup.tsx
 │   ├── resetPassword.tsx
+│   ├── set-new-password.tsx          ← Password recovery form (Formik, Yup, eye-toggle, signOut on success)  ← v3.4
 │   └── onboarding/
 │       ├── _layout.tsx
 │       ├── index.tsx             ← Step 1: Phone / intro
@@ -85,7 +87,10 @@ src/
 │   └── sync/
 ├── hooks/         ← TanStack Query + utility hooks
 ├── i18n/          ← EN + HI translation files
+├── lib/           ← Low-level adapters (← v3.4)
+│   └── secureStorage.ts  ← expo-secure-store chunked adapter (≤1800B/chunk); Supabase storage impl
 ├── screens/       ← Screen-level components (consumed by app/ routes)
+│   └── AuthProfileErrorScreen.tsx  ← Dead-state recovery UI: Retry + Logout  (← v3.4)
 ├── services/      ← supabase.ts, sentry.ts
 ├── store/         ← Zustand stores
 ├── types/         ← TypeScript interfaces
@@ -121,7 +126,7 @@ src/components/
 ├── feedback/
 │   ├── EmptyState.tsx             ← NativeWind; title/description/cta/onCta; CircleOff icon
 │   ├── ErrorState.tsx
-│   ├── Loader.tsx
+│   ├── Loader.tsx                 ← Delayed "Loading your profile…" hint after 2 s  (← v3.5)
 │   └── Toast.tsx                  ← ToastProvider + useToast(); success (#22C55E) / error (#E74C3C)
 │
 ├── onboarding/
@@ -198,16 +203,18 @@ src/screens/
 
 ### Auth Screens (`app/(auth)/`)
 
-| Screen         | File                                 | Pattern |
-| :------------- | :----------------------------------- | :------ |
-| Welcome        | `app/index.tsx`                      | Inline  |
-| Login          | `app/(auth)/login.tsx`               | Inline  |
-| Signup         | `app/(auth)/signup.tsx`              | Inline  |
-| Reset Password | `app/(auth)/resetPassword.tsx`       | Inline  |
-| Onboarding 1   | `app/(auth)/onboarding/index.tsx`    | Inline  |
-| Onboarding 2   | `app/(auth)/onboarding/business.tsx` | Inline  |
-| Onboarding 3   | `app/(auth)/onboarding/ready.tsx`    | Inline  |
-| Role Selection | `app/(auth)/onboarding/role.tsx`     | Inline  |
+| Screen           | File                                                               | Pattern   |
+| :--------------- | :----------------------------------------------------------------- | :-------- |
+| Welcome          | `app/index.tsx`                                                    | Inline    |
+| Login            | `app/(auth)/login.tsx`                                             | Inline    |
+| Signup           | `app/(auth)/signup.tsx`                                            | Inline    |
+| Reset Password   | `app/(auth)/resetPassword.tsx`                                     | Inline    |
+| Set New Password | `app/(auth)/set-new-password.tsx`                                  | Inline    |
+| Profile Error    | `app/profile-error.tsx` → `src/screens/AuthProfileErrorScreen.tsx` | Delegated |
+| Onboarding 1     | `app/(auth)/onboarding/index.tsx`                                  | Inline    |
+| Onboarding 2     | `app/(auth)/onboarding/business.tsx`                               | Inline    |
+| Onboarding 3     | `app/(auth)/onboarding/ready.tsx`                                  | Inline    |
+| Role Selection   | `app/(auth)/onboarding/role.tsx`                                   | Inline    |
 
 ### Main Screens (`app/(main)/`)
 
@@ -251,32 +258,71 @@ src/screens/
 
 ## 5. Zustand Stores
 
-| Store                   | File                               | Purpose                                           | Status     |
-| :---------------------- | :--------------------------------- | :------------------------------------------------ | :--------- |
-| `useAuthStore`          | `src/store/authStore.ts`           | Authenticated user profile, vendor ID             | ✅ Active  |
-| `useLanguageStore`      | `src/store/languageStore.ts`       | Language toggle (EN/HI), AsyncStorage persistence | ✅ Active  |
-| `useOrderStore`         | `src/store/orderStore.ts`          | Draft order state during bill creation            | ✅ Active  |
-| `useCustomersStore`     | `src/store/customersStore.ts`      | Customer list local cache                         | ✅ Active  |
-| `useSuppliersStore`     | `src/store/suppliersStore.ts`      | Supplier list local cache                         | ✅ Active  |
-| ~~`useDashboardStore`~~ | ~~`src/store/dashboardStore.tsx`~~ | ~~Unused — never imported~~ — **Deleted (P-10)**  | ❌ Deleted |
+| Store                   | File                               | Purpose                                                                                                                     | Status     |
+| :---------------------- | :--------------------------------- | :-------------------------------------------------------------------------------------------------------------------------- | :--------- |
+| `useAuthStore`          | `src/store/authStore.ts`           | Authenticated user + profile; `isRecoveryMode` flag; `_fetchInProgress` closure gate; atomic `setUser`; `setRecoveryMode()` | ✅ Active  |
+| `useLanguageStore`      | `src/store/languageStore.ts`       | Language toggle (EN/HI), AsyncStorage persistence                                                                           | ✅ Active  |
+| `useOrderStore`         | `src/store/orderStore.ts`          | Draft order state during bill creation                                                                                      | ✅ Active  |
+| `useCustomersStore`     | `src/store/customersStore.ts`      | Customer list local cache                                                                                                   | ✅ Active  |
+| `useSuppliersStore`     | `src/store/suppliersStore.ts`      | Supplier list local cache                                                                                                   | ✅ Active  |
+| ~~`useDashboardStore`~~ | ~~`src/store/dashboardStore.tsx`~~ | ~~Unused — never imported~~ — **Deleted (P-10)**                                                                            | ❌ Deleted |
+
+### `useAuthStore` Architecture (v3.4)
+
+```typescript
+// Factory pattern — private closure guard prevents double HTTP fetch
+create<AuthState>((set, get) => {
+  let _fetchInProgress = false; // NOT in public state — avoids self-deadlock
+  return {
+    isRecoveryMode: false, // Pins root layout to set-new-password screen
+    setRecoveryMode: (v) => set({ isRecoveryMode: v }),
+    setUser: (user) => {
+      if (user)
+        set({ user, loading: true }); // ATOMIC — no intermediate state flash
+      else set({ user: null, profile: null, loading: false });
+    },
+    fetchProfile: async () => {
+      if (_fetchInProgress) {
+        /* subscribe to loading=false then resolve */ return;
+      }
+      _fetchInProgress = true;
+      // … supabase query + upsert fallback …
+      // finally: _fetchInProgress = false; set({ loading: false });
+    },
+  };
+});
+```
+
+**Auth State Machine (8 states)**
+
+| State                     | Condition                                                            | Screen                                  |
+| :------------------------ | :------------------------------------------------------------------- | :-------------------------------------- |
+| `INITIALIZING`            | `!fontsLoaded \|\| loading \|\| (user && profileLoading)`            | `<Loader />`                            |
+| `UNAUTHENTICATED_WELCOME` | `!isRecoveryMode && !user && showWelcome`                            | `app/index.tsx`                         |
+| `UNAUTHENTICATED_LOGIN`   | `!isRecoveryMode && !user && !showWelcome`                           | `(auth)/login`                          |
+| `PROFILE_ERROR`           | `!isRecoveryMode && user && !profile && !profileLoading`             | `profile-error`                         |
+| `ONBOARDING`              | `!isRecoveryMode && user && profile && !profile.onboarding_complete` | `(auth)/onboarding`                     |
+| `AUTHENTICATED`           | `!isRecoveryMode && user && profile && onboarding_complete === true` | `(main)/dashboard`                      |
+| `PASSWORD_RECOVERY`       | `isRecoveryMode === true` (any other user/profile state)             | `(auth)/set-new-password`               |
+| `PROFILE_LOADING`         | `user && profileLoading`                                             | `<Loader />` (shared with INITIALIZING) |
 
 ---
 
 ## 6. TanStack Query Hooks
 
-| Hook                                         | File                   | Purpose                                                            |
-| :------------------------------------------- | :--------------------- | :----------------------------------------------------------------- |
-| `useDashboard(vendorId)`                     | `useDashboard.ts`      | Dashboard summary data — invalidated by all financial mutations    |
-| `useCustomers(vendorId, page, search)`       | `useCustomers.ts`      | Paginated customer list                                            |
-| `useCustomerDetail(customerId)`              | `useCustomerDetail.ts` | Full customer detail + transaction feed                            |
-| `useOrders(vendorId, page, filters, search)` | `useOrders.ts`         | Paginated order list with search (customer join fixed — P-04)      |
-| `useOrderDetail(orderId)`                    | `useOrderDetail.ts`    | Single order + payment history                                     |
-| `useProducts(vendorId, page, search)`        | `useProducts.ts`       | Paginated product list; variants joined (P-03)                     |
-| `useSuppliers(vendorId, page, search)`       | `useSuppliers.ts`      | Paginated supplier list                                            |
-| `useSupplierDetail(supplierId)`              | `useSupplierDetail.ts` | Single supplier + delivery history                                 |
-| `useFontsLoader()`                           | `useFontsLoader.ts`    | Loads Inter font family                                            |
-| `useLogin()`                                 | `useLogin.ts`          | Wraps `loginApi` + `useAuthStore.setUser`                          |
-| `useAuth()`                                  | `useAuth.ts`           | Sets up `supabase.auth.onAuthStateChange` — mounted in root layout |
+| Hook                                         | File                   | Purpose                                                                                                      |
+| :------------------------------------------- | :--------------------- | :----------------------------------------------------------------------------------------------------------- |
+| `useDashboard(vendorId)`                     | `useDashboard.ts`      | Dashboard summary data — invalidated by all financial mutations                                              |
+| `useCustomers(vendorId, page, search)`       | `useCustomers.ts`      | Paginated customer list                                                                                      |
+| `useCustomerDetail(customerId)`              | `useCustomerDetail.ts` | Full customer detail + transaction feed                                                                      |
+| `useOrders(vendorId, page, filters, search)` | `useOrders.ts`         | Paginated order list with search (customer join fixed — P-04)                                                |
+| `useOrderDetail(orderId)`                    | `useOrderDetail.ts`    | Single order + payment history                                                                               |
+| `useProducts(vendorId, page, search)`        | `useProducts.ts`       | Paginated product list; variants joined (P-03)                                                               |
+| `useSuppliers(vendorId, page, search)`       | `useSuppliers.ts`      | Paginated supplier list                                                                                      |
+| `useSupplierDetail(supplierId)`              | `useSupplierDetail.ts` | Single supplier + delivery history                                                                           |
+| `useFontsLoader()`                           | `useFontsLoader.ts`    | Loads Inter font family                                                                                      |
+| `useLogin()`                                 | `useLogin.ts`          | Wraps `loginApi`; `await fetchProfile()`; routes based on profile state                                      |
+| `useAuth()`                                  | `useAuth.ts`           | Sets up `supabase.auth.onAuthStateChange`; `PASSWORD_RECOVERY` sets `isRecoveryMode`; mounted in root layout |
 
 ### Cache Invalidation Matrix (P-22)
 
@@ -323,7 +369,7 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
 
 ### `auth.ts`
 
-- `loginApi(values)`, `signUpApi(values)`, `resetPasswordApi(email)`, `logoutApi()`
+- `loginApi(values)`, `signUpApi(values)`, `resetPasswordApi(email)` _(now passes `redirectTo: Linking.createURL("/")` — v3.5)_, `logoutApi()`
 
 ### `customers.ts`
 
@@ -363,12 +409,12 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
 
 ### `src/components/feedback/`
 
-| File             | Purpose                                                                   |
-| :--------------- | :------------------------------------------------------------------------ |
-| `EmptyState.tsx` | Empty list/screen state with optional CTA — NativeWind, icon bg `#F6F7F9` |
-| `ErrorState.tsx` | Error screen state                                                        |
-| `Loader.tsx`     | Full-screen loading spinner                                               |
-| `Toast.tsx`      | `ToastProvider` + `useToast()` — success `#22C55E` / error `#E74C3C`      |
+| File             | Purpose                                                                       |
+| :--------------- | :---------------------------------------------------------------------------- |
+| `EmptyState.tsx` | Empty list/screen state with optional CTA — NativeWind, icon bg `#F6F7F9`     |
+| `ErrorState.tsx` | Error screen state                                                            |
+| `Loader.tsx`     | Full-screen loading spinner; shows `"Loading your profile…"` after 2 s (v3.5) |
+| `Toast.tsx`      | `ToastProvider` + `useToast()` — success `#22C55E` / error `#E74C3C`          |
 
 ### `src/components/ui/`
 
@@ -398,7 +444,18 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
 
 ## 10. Known Architecture Notes
 
-### Deferred Items (v3.5)
+### Auth System (v3.4–3.5)
+
+| Topic                         | Detail                                                                                                                                                                                            |
+| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Session storage               | `expo-secure-store` via `src/lib/secureStorage.ts` chunked adapter replaces `AsyncStorage` for JWT tokens                                                                                         |
+| `isRecoveryMode` guard        | Root layout top-priority guard added in v3.5; overrides all other 5 Stack guards when true                                                                                                        |
+| `_fetchInProgress` gate       | Private closure variable in authStore factory; not in public state — avoids deadlock with `loading: true` pre-set by `setUser`                                                                    |
+| `PASSWORD_RECOVERY` isolation | Handler does not call `setUser()` — Supabase internal recovery session is sufficient for `updateUser()`. Calling `setUser` would populate profile and route to dashboard before the user can type |
+| Auth breadcrumbs              | Sentry `addBreadcrumb` fires at: `auth_login_success`, `google_oauth_start`, `google_oauth_success`, `signup_success`, `onboarding_complete`, `logout`                                            |
+| `hasSeenWelcome` on logout    | Intentionally deleted on every logout for re-engagement on next launch (documented in `useLogout.onSuccess`)                                                                                      |
+
+### Deferred Items (v3.6)
 
 | Issue     | Detail                                                                                                                                                                                 |
 | :-------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -420,4 +477,4 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
 
 ---
 
-_This document reflects the codebase state as of Phase 6.4 completion (March 9, 2026). Update whenever screens, stores, API functions, or components are added or removed._
+_This document reflects the codebase state as of v3.5 (March 10, 2026). Update whenever screens, stores, API functions, or components are added or removed._

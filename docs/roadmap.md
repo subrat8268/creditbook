@@ -1,9 +1,9 @@
 # CreditBook Product Roadmap
 
-> **Version**: 1.3
-> **Last Updated**: March 9, 2026
+> **Version**: 1.4
+> **Last Updated**: March 10, 2026
 > **Status**: Active Development
-> **Current Phase**: Phase 6.4 complete → Phase 7 in progress
+> **Current Phase**: Phase 6.5 complete → Phase 7 in progress
 
 ---
 
@@ -21,19 +21,20 @@
 
 ## Roadmap Overview
 
-| Phase     | Title                                 | Status         | Key Deliverable                                                              |
-| :-------- | :------------------------------------ | :------------- | :--------------------------------------------------------------------------- |
-| Phase 1   | Core Ledger MVP                       | ✅ Complete    | Customer credit tracking and balance management                              |
-| Phase 2   | Billing & Suppliers                   | ✅ Complete    | Itemized bills, supplier management, net position                            |
-| Phase 3   | Indian Billing Suite                  | ✅ Complete    | GST, sequential IDs, loading charge, WhatsApp reminders                      |
-| Phase 4   | Platform Features                     | ✅ Complete    | Onboarding, Sentry, i18n, CSV export, contacts import                        |
-| Phase 5   | Design System & Dashboard             | ✅ Complete    | Green (#22C55E) brand system, premium dashboard redesign                     |
-| Phase 6   | Customer UI Overhaul                  | ✅ Complete    | Transaction feed, payment modal, customer detail redesign                    |
-| Phase 6.2 | UI Audit — Icons, Colors & Components | ✅ Complete    | Lucide migration, @gorhom/bottom-sheet, Toast, Financial Position screen     |
-| Phase 6.3 | Production Hardening                  | ✅ Complete    | FlatList perf, KeyboardAvoidingView, icon/data audit, component organisation |
-| Phase 6.4 | Production Bug Fix & Signoff          | ✅ Complete    | 27-item audit: DB/RLS bugs, broken search, export crash, UI token fixes      |
-| Phase 7   | Growth & Monetisation                 | 🔄 In Progress | UPI, push notifications, analytics, premium tier                             |
-| Phase 8   | Financial Platform                    | 🗓 Planned     | Credit scoring, lending, automated bookkeeping                               |
+| Phase     | Title                                 | Status         | Key Deliverable                                                                            |
+| :-------- | :------------------------------------ | :------------- | :----------------------------------------------------------------------------------------- |
+| Phase 1   | Core Ledger MVP                       | ✅ Complete    | Customer credit tracking and balance management                                            |
+| Phase 2   | Billing & Suppliers                   | ✅ Complete    | Itemized bills, supplier management, net position                                          |
+| Phase 3   | Indian Billing Suite                  | ✅ Complete    | GST, sequential IDs, loading charge, WhatsApp reminders                                    |
+| Phase 4   | Platform Features                     | ✅ Complete    | Onboarding, Sentry, i18n, CSV export, contacts import                                      |
+| Phase 5   | Design System & Dashboard             | ✅ Complete    | Green (#22C55E) brand system, premium dashboard redesign                                   |
+| Phase 6   | Customer UI Overhaul                  | ✅ Complete    | Transaction feed, payment modal, customer detail redesign                                  |
+| Phase 6.2 | UI Audit — Icons, Colors & Components | ✅ Complete    | Lucide migration, @gorhom/bottom-sheet, Toast, Financial Position screen                   |
+| Phase 6.3 | Production Hardening                  | ✅ Complete    | FlatList perf, KeyboardAvoidingView, icon/data audit, component organisation               |
+| Phase 6.4 | Production Bug Fix & Signoff          | ✅ Complete    | 27-item audit: DB/RLS bugs, broken search, export crash, UI token fixes                    |
+| Phase 6.5 | Auth Hardening Sprint                 | ✅ Complete    | Password recovery race fix, secure storage, state machine compliance, 9 QA issues resolved |
+| Phase 7   | Growth & Monetisation                 | 🔄 In Progress | UPI, push notifications, analytics, premium tier                                           |
+| Phase 8   | Financial Platform                    | 🗓 Planned     | Credit scoring, lending, automated bookkeeping                                             |
 
 ---
 
@@ -231,11 +232,62 @@
 
 ---
 
+## Phase 6.5 — Auth Hardening Sprint ✅ Complete
+
+**Goal**: Comprehensive QA audit of the authentication system followed by resolution of all identified issues — covering security, reliability, UX, and navigation correctness.
+
+**Audit methodology**: Simulated 8 real user journeys through the 8-state auth machine (INITIALISING → UNAUTHENTICATED_WELCOME → UNAUTHENTICATED_LOGIN → PROFILE_LOADING → PROFILE_ERROR → ONBOARDING → AUTHENTICATED → PASSWORD_RECOVERY). Produced 1 FAIL and 8 WARN findings, all resolved.
+
+### Security & Reliability Fixes
+
+| ID      | Fix                                                                                                   | Status |
+| :------ | :---------------------------------------------------------------------------------------------------- | :----- |
+| FAIL-01 | `isRecoveryMode` flag in authStore; top-priority Stack.Screen prevents dashboard evicting recovery    | ✅     |
+| C1      | `AuthProfileErrorScreen` + `profile-error` route — dead-state recovery with Retry and Logout          | ✅     |
+| C4      | `set-new-password.tsx` + `PASSWORD_RECOVERY` Supabase event handler + `redirectTo: Linking.createURL` | ✅     |
+| C5      | Google OAuth `createMinimalProfile()` + 3 × 600 ms retry loop for DB trigger race                     | ✅     |
+| B1      | `src/lib/secureStorage.ts` — chunked expo-secure-store adapter; JWT no longer in AsyncStorage         | ✅     |
+| WARN-06 | `signOut()` + `setRecoveryMode(false)` before `router.replace(login)` prevents dashboard flash        | ✅     |
+| WARN-08 | `redirectTo: Linking.createURL("/")` added to `resetPasswordForEmail`                                 | ✅     |
+
+### State Machine Compliance Fixes
+
+| ID  | Fix                                                                                                    | Status |
+| :-- | :----------------------------------------------------------------------------------------------------- | :----- |
+| V1  | Atomic `setUser` — single `set({ user, loading: true })` eliminates intermediate PROFILE_ERROR flicker | ✅     |
+| V2  | `_fetchInProgress` closure gate in authStore factory — no duplicate HTTP fetch on hot reload           | ✅     |
+| V3  | `useLogin.onSuccess` null-profile guard routes to `/profile-error` instead of crashing                 | ✅     |
+| R1  | `SIGNED_IN` handler checks `isRecoveryMode` before triggering profile fetch                            | ✅     |
+| R2  | `USER_UPDATED` race eliminated by `signOut()` in `set-new-password.tsx` before navigation              | ✅     |
+
+### Monitoring & UX Fixes
+
+| ID      | Fix                                                                              | Status |
+| :------ | :------------------------------------------------------------------------------- | :----- |
+| B6      | 6 Sentry `addBreadcrumb` calls across 6 auth transitions                         | ✅     |
+| WARN-01 | `useSignUp.onSuccess` null-profile fallback routes to `/profile-error`           | ✅     |
+| WARN-02 | `google_oauth_start` breadcrumb moved to `mutationFn` (fires before OAuth)       | ✅     |
+| WARN-03 | `hasSeenWelcome` AsyncStorage deletion documented in `useLogout.onSuccess`       | ✅     |
+| WARN-04 | Signup confirm-password eye-toggle (`showConfirmPassword` state in `signup.tsx`) | ✅     |
+| WARN-05 | `Loader.tsx` 2-second `setTimeout` shows "Loading your profile…" hint            | ✅     |
+| WARN-09 | `router.push` (not `replace`) in `role.tsx` preserves back-stack                 | ✅     |
+
+### New Files Added
+
+| File                                     | Purpose                                                                          |
+| :--------------------------------------- | :------------------------------------------------------------------------------- |
+| `src/lib/secureStorage.ts`               | Chunked expo-secure-store adapter (1800-byte chunks, backwards-compatible)       |
+| `src/screens/AuthProfileErrorScreen.tsx` | Dead-state recovery UI: Retry + Logout for PROFILE_ERROR state                   |
+| `app/profile-error.tsx`                  | Route wrapper for `AuthProfileErrorScreen`                                       |
+| `app/(auth)/set-new-password.tsx`        | Password recovery form (Formik + Yup); calls `setRecoveryMode(false)` on success |
+
+---
+
 ## Phase 7 — Growth & Monetisation 🔄 In Progress
 
 **Goal**: Drive retention through engagement features and introduce the premium subscription tier.
 
-**Pre-requisite completed**: Phase 6.4 production signoff. All critical bugs resolved before Phase 7 work begins.
+**Pre-requisite completed**: Phase 6.4 production signoff + Phase 6.5 auth hardening. All critical bugs and auth vulnerabilities resolved before Phase 7 work begins.
 
 ### Features
 
@@ -284,19 +336,21 @@
 
 ## Milestones
 
-| Milestone                       | Description                                                                             | Status                         |
-| :------------------------------ | :-------------------------------------------------------------------------------------- | :----------------------------- |
-| **MVP Launch**                  | Core ledger — customers, transactions, balance tracking, dashboard                      | ✅ Shipped                     |
-| **Billing Launch**              | Itemized bills, PDF export, supplier management, net position                           | ✅ Shipped                     |
-| **India Suite Launch**          | GST, sequential IDs, loading charge, WhatsApp reminders, overdue flagging               | ✅ Shipped                     |
-| **Platform Launch**             | Onboarding, i18n, Sentry, CSV export, contacts import                                   | ✅ Shipped                     |
-| **Design System Launch**        | Green (#22C55E) brand system, premium dashboard, unified theme                          | ✅ Shipped                     |
-| **Customer UI Launch**          | Transaction feed, payment modal, Customer Detail redesign                               | ✅ Shipped                     |
-| **UI Audit Launch**             | Lucide icons, @gorhom/bottom-sheet, Toast, Financial Position screen                    | ✅ Shipped                     |
-| **Production Hardening Launch** | FlatList perf, KeyboardAvoidingView, icon/data audit, component organisation            | ✅ Shipped                     |
-| **Production Signoff**          | All 27 audit items resolved; app submitted for TestFlight / Play Store Internal Testing | ⏳ Device verification pending |
-| **Growth Launch**               | OTP login, push notifications, WhatsApp Business API, premium tier                      | 🔄 Q2 2026                     |
-| **Financial Platform Launch**   | Credit scoring, GST filing, lending integration                                         | 🗓 Q4 2026                     |
+| Milestone                       | Description                                                                                           | Status     |
+| :------------------------------ | :---------------------------------------------------------------------------------------------------- | :--------- |
+| **MVP Launch**                  | Core ledger — customers, transactions, balance tracking, dashboard                                    | ✅ Shipped |
+| **Billing Launch**              | Itemized bills, PDF export, supplier management, net position                                         | ✅ Shipped |
+| **India Suite Launch**          | GST, sequential IDs, loading charge, WhatsApp reminders, overdue flagging                             | ✅ Shipped |
+| **Platform Launch**             | Onboarding, i18n, Sentry, CSV export, contacts import                                                 | ✅ Shipped |
+| **Design System Launch**        | Green (#22C55E) brand system, premium dashboard, unified theme                                        | ✅ Shipped |
+| **Customer UI Launch**          | Transaction feed, payment modal, Customer Detail redesign                                             | ✅ Shipped |
+| **UI Audit Launch**             | Lucide icons, @gorhom/bottom-sheet, Toast, Financial Position screen                                  | ✅ Shipped |
+| **Production Hardening Launch** | FlatList perf, KeyboardAvoidingView, icon/data audit, component organisation                          | ✅ Shipped |
+| **Production Signoff**          | All 27-item audit resolved; app submitted for TestFlight / Play Store Internal Testing                | ✅ Shipped |
+| **Auth Hardening**              | 9 QA issues resolved; password recovery race fixed; secure JWT storage; full state machine compliance | ✅ Shipped |
+| **Device Verification**         | P01–P38 sign-off checklist run on target hardware (Pixel 4a + iPhone)                                 | ⏳ Pending |
+| **Growth Launch**               | OTP login, push notifications, WhatsApp Business API, premium tier                                    | 🔄 Q2 2026 |
+| **Financial Platform Launch**   | Credit scoring, GST filing, lending integration                                                       | 🗓 Q4 2026 |
 
 ---
 

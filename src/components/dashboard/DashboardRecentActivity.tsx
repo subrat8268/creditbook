@@ -14,7 +14,7 @@ export default function DashboardRecentActivity({ items, onViewAll }: Props) {
       <View className="flex-row justify-between items-center mb-3.5">
         <Text className="text-lg font-bold text-textDark">Recent Activity</Text>
         <TouchableOpacity onPress={onViewAll}>
-          <Text className="text-sm font-semibold text-primary">View All</Text>
+          <Text className="text-sm font-semibold text-primary">See All</Text>
         </TouchableOpacity>
       </View>
 

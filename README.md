@@ -1,7 +1,7 @@
 # CreditBook App - Complete Project Documentation
 
-> **Last Updated**: March 8, 2026
-> **Version**: 3.3
+> **Last Updated**: March 10, 2026
+> **Version**: 3.5
 > **Status**: Active Development
 > **Target Market**: Indian SMBs (Retailers, Wholesalers, Distributors)
 
@@ -132,19 +132,20 @@ This section contains the deep technical details required for an AI or developer
 
 ### 4.1 Tech Stack
 
-| Layer             | Technology                  | Rationale                                                 |
-| :---------------- | :-------------------------- | :-------------------------------------------------------- |
-| **App Framework** | **React Native 19.1**       | Cross-platform (iOS/Android), high performance.           |
-| **Routing**       | **Expo Router 6.0**         | File-based routing, deep linking support.                 |
-| **Styling**       | **NativeWind 4.2**          | Tailwind CSS utility classes for rapid UI dev.            |
-| **Backend / DB**  | **Supabase**                | PostgreSQL, Auth, Realtime, Edge Functions.               |
-| **State Mgmt**    | **Zustand**                 | Lightweight global state (Auth, User Profile).            |
-| **Server State**  | **TanStack Query**          | Caching, optimistic updates, infinite scroll.             |
-| **PDF Engine**    | **expo-print**              | Robust HTML-to-PDF generation.                            |
-| **i18n**          | **i18next + react-i18next** | EN/HI language toggle with AsyncStorage persistence. v2.2 |
-| **Crash Reports** | **@sentry/react-native**    | Error tracking + crash reporting (free tier). v2.1        |
-| **Contacts**      | **expo-contacts**           | Import customers from phone contacts. v2.4                |
-| **File System**   | **expo-file-system/legacy** | CSV export — write to device cache, share sheet. v2.3     |
+| Layer              | Technology                  | Rationale                                                                            |
+| :----------------- | :-------------------------- | :----------------------------------------------------------------------------------- |
+| **App Framework**  | **React Native 19.1**       | Cross-platform (iOS/Android), high performance.                                      |
+| **Routing**        | **Expo Router 6.0**         | File-based routing, deep linking support.                                            |
+| **Styling**        | **NativeWind 4.2**          | Tailwind CSS utility classes for rapid UI dev.                                       |
+| **Backend / DB**   | **Supabase**                | PostgreSQL, Auth, Realtime, Edge Functions.                                          |
+| **State Mgmt**     | **Zustand**                 | Lightweight global state (Auth, User Profile).                                       |
+| **Server State**   | **TanStack Query**          | Caching, optimistic updates, infinite scroll.                                        |
+| **PDF Engine**     | **expo-print**              | Robust HTML-to-PDF generation.                                                       |
+| **i18n**           | **i18next + react-i18next** | EN/HI language toggle with AsyncStorage persistence. v2.2                            |
+| **Crash Reports**  | **@sentry/react-native**    | Error tracking + crash reporting (free tier). v2.1                                   |
+| **Contacts**       | **expo-contacts**           | Import customers from phone contacts. v2.4                                           |
+| **File System**    | **expo-file-system/legacy** | CSV export — write to device cache, share sheet. v2.3                                |
+| **Secure Storage** | **expo-secure-store**       | JWT session tokens stored in iOS Keychain / Android Keystore (chunked adapter). v3.4 |
 
 ### 4.2 Project Structure
 
@@ -152,8 +153,10 @@ This section contains the deep technical details required for an AI or developer
 /
 ├── app/                  # Expo Router Pages
 │   ├── (auth)/           # Login, Register, Recover (Unprotected)
-│   │   └── onboarding/   # 3-step onboarding + role selection    ← v2.0 / v3.0
-│   │       └── role.tsx  # Role picker: Wholesaler / Retailer / Small Business ← v3.0
+│   │   ├── set-new-password.tsx  # Password recovery form (Formik, eye-toggle)   ← v3.4
+│   │   └── onboarding/           # 3-step onboarding + role selection    ← v2.0 / v3.0
+│   │       └── role.tsx          # Role picker: Wholesaler / Retailer / Small Business ← v3.0
+│   ├── profile-error.tsx  # Shown when user exists but profile fetch failed    ← v3.4
 │   ├── (main)/           # Main App (Protected)
 │   │   ├── customers/    # Customer List & Detail Pages
 │   │   ├── orders/       # Order Management & Creation
@@ -201,7 +204,10 @@ This section contains the deep technical details required for an AI or developer
 │   │   ├── en.ts         # English translations (10 namespaces)
 │   │   ├── hi.ts         # Hindi translations (10 namespaces)
 │   │   └── index.ts      # i18next config + language init
+│   ├── lib/
+│   │   └── secureStorage.ts  # expo-secure-store chunked adapter (≤1800 bytes/chunk) ← v3.4
 │   ├── screens/
+│   │   ├── AuthProfileErrorScreen.tsx  # Profile fetch failure UI (Retry + Logout) ← v3.4
 │   │   ├── SuppliersScreen.tsx    ← v1.7
 │   │   ├── ExportScreen.tsx       # Date-range filter + 4 export buttons ← v2.3
 │   │   └── ...           # Dashboard, Customers, Orders, Products, Profile
@@ -210,7 +216,7 @@ This section contains the deep technical details required for an AI or developer
 │   ├── store/
 │   │   ├── suppliersStore.ts      ← v1.7
 │   │   ├── languageStore.ts       # Language toggle, AsyncStorage persist ← v2.2
-│   │   └── ...           # authStore, orderStore, customersStore, dashboardStore
+│   │   └── ...           # authStore (+ isRecoveryMode, _fetchInProgress gate) ← v3.4
 │   ├── types/
 │   │   ├── supplier.ts   # Supplier, SupplierDetail, SupplierDelivery  ← v1.7
 │   │   └── customer.ts   # Customer, CustomerDetail, Transaction          ← v3.1
@@ -575,6 +581,21 @@ Specific adaptations for the Indian market implemented in the app:
   - [x] **Financial Position screen** added at `app/(main)/reports/index.tsx` — hero net-position card, Customers Owe Me vs I Owe Suppliers progress bars, breakdown rows.
   - [x] **Dashboard "both" mode** fixed — split hero card with green YOU RECEIVE panel + red YOU OWE panel + net position row.
   - [x] `ActivityIndicator` spinner color updated to green `#22C55E` in `RecordCustomerPaymentModal`.
+- [x] **Phase 6.5: Auth Hardening Sprint (v3.4–v3.5 Completed)**
+  - [x] Full auth architecture audit: 5 critical issues (C1–C5), 2 improvements (I1–I2), 2 best practices (B1, B6) identified and fixed.
+  - [x] State machine compliance audit: 3 violations (V1–V3) + 2 race conditions (R1–R2) identified and fixed.
+  - [x] QA audit: 9 issues (1 FAIL, 8 WARN) from real user scenario simulation. All fixed.
+  - [x] `isRecoveryMode` store flag: pins root layout to set-new-password screen so no guard evicts it during PASSWORD_RECOVERY flow.
+  - [x] `expo-secure-store` chunked adapter: JWT tokens moved from AsyncStorage to device Keychain/Keystore.
+  - [x] Sentry breadcrumbs added at all major auth transitions (login, signup, google OAuth, onboarding complete, logout).
+  - [x] `AuthProfileErrorScreen` with Retry + Logout; `profile-error` as dedicated Expo Router route.
+  - [x] `set-new-password.tsx` full password recovery form with Formik + Yup + eye-toggles.
+  - [x] `createMinimalProfile()` fallback for Google OAuth when DB trigger races the insert.
+  - [x] `_fetchInProgress` closure gate in `authStore` prevents double HTTP profile fetches.
+  - [x] `resetPasswordForEmail` now passes `redirectTo: Linking.createURL("/")` for correct deep-link.
+  - [x] Confirm password field in signup and set-new-password screens both have eye-toggles.
+  - [x] Onboarding `role.tsx` uses `router.push` (not `replace`) to business, preserving back-stack.
+  - [x] `Loader.tsx` shows delayed "Loading your profile…" hint after 2 s for slow-profile UX.
 - [~] **Phase 7: Growth — In Progress**
   - [ ] WhatsApp Business API (auto-send bill on creation).
   - [ ] Push notifications for overdue payments.
@@ -589,7 +610,44 @@ Specific adaptations for the Indian market implemented in the app:
 
 ## 9. Recent Updates & Changelog
 
-### v3.3 — Icon Migration & Component Polish (Current)
+### v3.5 — QA Auth Hardening: 9 Fixes (Current)
+
+- **FIX (FAIL-01 / WARN-07)**: **`isRecoveryMode` guard** — `authStore` now holds `isRecoveryMode: boolean` + `setRecoveryMode(v)`. Root `_layout.tsx` adds a top-priority `{isRecoveryMode && <Stack.Screen name="(auth)/set-new-password" />}` guard; all other 5 guards wrapped with `!isRecoveryMode`. Ensures password-recovery screen is never evicted by dashboard/onboarding guard even when a full session + profile are present. `PASSWORD_RECOVERY` handler in `useAuth` calls `setRecoveryMode(true)`.
+- **FIX (WARN-06)**: `set-new-password.tsx` now calls `setRecoveryMode(false)` + `supabase.auth.signOut()` before routing to login. Prevents `USER_UPDATED → fetchProfile → dashboard` race.
+- **FIX (WARN-08)**: `resetPasswordForEmail` now passes `{ redirectTo: Linking.createURL("/") }` so the recovery email link deep-links into the app on iOS and Android (was opening a browser page).
+- **FIX (WARN-01)**: `useSignUp.onSuccess` now checks `profile === null` after all retries and routes to `/profile-error` instead of silently navigating to broken onboarding. Consistent with `useLogin` behavior.
+- **FIX (WARN-02)**: `google_oauth_start` Sentry breadcrumb moved into `mutationFn` (fires before `openAuthSessionAsync`), not `onSuccess`. Renamed correctly.
+- **FIX (WARN-04)**: Confirm password field in `signup.tsx` now has an eye-toggle (was hardcoded `secureTextEntry`); consistent with all other password fields.
+- **FIX (WARN-09)**: `role.tsx` now uses `router.push` (not `router.replace`) to navigate to Business step; Role screen is preserved in the back-stack so back-navigation during onboarding works correctly.
+- **FIX (WARN-05)**: `Loader.tsx` upgraded — after 2 s with no explicit `message` prop, shows `"Loading your profile…"` hint automatically; prevents indefinite blank spinner during slow profile fetches.
+- **DOCS (WARN-03)**: `useLogout.onSuccess` now includes an explicit comment explaining the intentional `AsyncStorage.removeItem("hasSeenWelcome")` deletion for re-engagement on next launch.
+- **FILES**: `app/_layout.tsx`, `src/store/authStore.ts`, `src/hooks/useAuth.ts`, `app/(auth)/set-new-password.tsx`, `src/api/auth.ts`, `app/(auth)/signup.tsx`, `app/(auth)/onboarding/role.tsx`, `src/components/feedback/Loader.tsx`.
+
+---
+
+### v3.4 — Auth Architecture Audit & Hardening
+
+- **NEW**: **`AuthProfileErrorScreen`** (`src/screens/AuthProfileErrorScreen.tsx`) + `app/profile-error.tsx` route — shown when `user && !profile && !profileLoading` (dead state, previously blank screen). Provides AlertTriangle icon, Retry button calling `fetchProfile()`, and Logout button. Registered as a `Stack.Screen` in root `_layout.tsx` (C1 fix).
+- **NEW**: **`app/(auth)/set-new-password.tsx`** — full password recovery form with Formik + Yup; both fields eye-toggle; calls `supabase.auth.updateUser({ password })`; routes to login on success (C4 fix).
+- **NEW**: **`src/lib/secureStorage.ts`** — Supabase-compatible `AsyncStorageLike` adapter using `expo-secure-store` with 1800-byte chunking (under iOS 2048-byte Keychain limit). Backwards-compatible: non-numeric stored values treated as legacy plaintext (B1 fix).
+- **MOD**: **`src/services/supabase.ts`** — JWT storage changed from `AsyncStorage` to `secureStorage` (B1 fix).
+- **MOD**: **`src/store/authStore.ts`** — converted to factory pattern `create<AuthState>((set, get) => { let _fetchInProgress = false; ... })`. `setUser` writes `{ user, loading: true }` in a single atomic `set()` call (R1 fix). `_fetchInProgress` closure gate prevents double HTTP calls (I2 fix). `logout` sets `{ user: null, profile: null }` only; does not duplicate `onAuthStateChange(SIGNED_OUT)`.
+- **MOD**: **`src/hooks/useAuth.ts`** (multiple sub-fixes):
+  - `PASSWORD_RECOVERY` handler: no longer calls `setUser()` — only routes to `set-new-password` (V2 fix). `setRecoveryMode(true)` added in v3.5.
+  - `useLogin.onSuccess`: calls `await fetchProfile()` before navigation; if `profile === null` routes to `/profile-error`; else branches on `onboarding_complete` (V3 + I1 fix).
+  - `useGoogleSignIn`: retry loop (3 × 600 ms) + `createMinimalProfile()` fallback + `await fetchProfile()` re-read; routes to onboarding if no profile (C5 fix).
+  - `useLogout.onSuccess`: `setUser(null)` removed (R2 fix); `onAuthStateChange(SIGNED_OUT)` is sole state writer.
+  - Sentry `addBreadcrumb` added for `auth_login_success`, `google_oauth_start`, `google_oauth_success`, `signup_success`, `onboarding_complete`, `logout` (B6 fix).
+- **MOD**: **`app/_layout.tsx`** — removed auto-retry `useEffect` that was re-calling `fetchProfile` on every render (V1 fix). Splash screen condition corrected to `(!user || !profileLoading)`. Added `profile-error` Stack.Screen.
+- **MOD**: **`app/(auth)/signup.tsx`** — confirm password field and password field both have `secureTextEntry={!showPassword}`, functional `onPress`, and `accessibilityLabel` (C2 fix).
+- **MOD**: **`app/(auth)/onboarding/ready.tsx`** — `catch` block now calls `show({ message, type: "error" })` via `useToast` (C3 fix); Sentry breadcrumb `onboarding_complete` added after `setProfile`.
+- **MOD**: **`app/(auth)/_layout.tsx`** — added `set-new-password` Stack.Screen (C4 fix).
+- **FILES CREATED**: `src/screens/AuthProfileErrorScreen.tsx`, `app/profile-error.tsx`, `app/(auth)/set-new-password.tsx`, `src/lib/secureStorage.ts`.
+- **FILES MODIFIED**: `app/_layout.tsx`, `app/(auth)/_layout.tsx`, `app/(auth)/signup.tsx`, `app/(auth)/onboarding/ready.tsx`, `src/hooks/useAuth.ts`, `src/store/authStore.ts`, `src/services/supabase.ts`.
+
+---
+
+### v3.3 — Icon Migration & Component Polish
 
 - **COMPLETE**: **`@expo/vector-icons` fully removed** from entire codebase. All ~35 files migrated to `lucide-react-native`. Zero Ionicons/Feather imports remain.
 - **Affected files**: `signup.tsx`, `onboarding/index.tsx`, `ExportScreen.tsx`, `ImagePickerField.tsx`, `NewProductModal.tsx`, `PaymentHistory.tsx`, `OrderItemCard.tsx`, `OrderBillSummary.tsx`, `DashboardStatCards.tsx`, `DashboardRecentActivity.tsx`, `DashboardHeader.tsx`, `ContactsPickerModal.tsx`, `BottomSheetForm.tsx`, and 20+ more from the previous session.
@@ -740,7 +798,9 @@ Specific adaptations for the Indian market implemented in the app:
 **Document History**
 
 | Version | Date | Author | Notes |
-| :------ | :----------- | :----------- | :-------------------------------------------------------------------------------------------- || **3.3** | Mar 8, 2026 | AI Assistant | Icon migration complete: @expo/vector-icons fully removed, all ~35 files migrated to lucide-react-native |
+| :------ | :----------- | :----------- | :-------------------------------------------------------------------------------------------- || **3.5** | Mar 10, 2026 | AI Assistant | QA auth hardening: 9 issues fixed (FAIL-01, WARN-01–WARN-09) — isRecoveryMode guard, password recovery race, redirectTo, confirm-password toggle, delayed loader hint, back-stack fix |
+| **3.4** | Mar 10, 2026 | AI Assistant | Full auth hardening: C1–C5 critical fixes, V1–V3 state machine violations, R1–R2 race conditions, I1–I2 improvements, B1 (expo-secure-store), B6 (Sentry breadcrumbs), 8 new/modified files |
+| **3.3** | Mar 8, 2026 | AI Assistant | Icon migration complete: @expo/vector-icons fully removed, all ~35 files migrated to lucide-react-native |
 | **3.2** | Mar 8, 2026 | AI Assistant | UI audit: green primary color, Toast, Financial Position screen, bottom-sheet modals, EmptyState upgrade, CustomerCard palette, dashboard "both" fix |
 | **3.1** | Mar 5, 2026 | AI Assistant | Brand & design system docs rewrite: identity, color system, UX language, UI structure, patterns, typography || **3.0** | Mar 3, 2026 | AI Assistant | Design system overhaul: green palette, unified theme.ts, dashboard redesign, 7 UI components |
 | **2.4** | Mar 2, 2026 | AI Assistant | Import customers from phone contacts (expo-contacts, multi-select picker) |

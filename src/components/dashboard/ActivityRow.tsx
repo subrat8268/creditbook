@@ -1,5 +1,6 @@
 import { RecentActivityItem } from "@/src/api/dashboard";
 import { formatDashboardDate, formatINR } from "@/src/utils/dashboardUi";
+import { colors } from "@/src/utils/theme";
 import { Text, View } from "react-native";
 import StatusBadge from "./StatusBadge";
 
@@ -31,6 +32,8 @@ export default function ActivityRow({ item }: Props) {
   const initials = getInitials(item.name || "?");
   const avatarColor = getAvatarColor(item.name || "?");
   const isPaid = item.status === "Paid";
+  // Money received (payment) → green +; outstanding bill → red −
+  const isIncoming = item.type === "payment";
 
   return (
     <View
@@ -66,9 +69,9 @@ export default function ActivityRow({ item }: Props) {
       <View className="items-end gap-1">
         <Text
           className="text-sm font-bold"
-          style={{ color: isPaid ? "#16A34A" : "#22C55E" }}
+          style={{ color: isIncoming ? "#16A34A" : colors.danger.DEFAULT }}
         >
-          {isPaid ? "+" : ""}
+          {isIncoming ? "+" : "−"}
           {formatINR(item.amount)}
         </Text>
         <StatusBadge status={item.status} />

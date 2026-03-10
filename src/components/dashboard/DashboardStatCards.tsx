@@ -1,11 +1,16 @@
-import { AlertTriangle, Users } from "lucide-react-native";
+import { colors } from "@/src/utils/theme";
 import { Text, View } from "react-native";
 
+// ─── Props ────────────────────────────────────────────────────────────────────
 type Props = {
   activeBuyers: number;
   overdueCustomers: number;
 };
 
+// ─── DashboardStatCards ───────────────────────────────────────────────────────
+// Two-column summary strip below the hero card.
+// Layout: LABEL (caps) → BIG NUMBER → descriptor (small muted text)
+// Overdue count is rendered in danger red to signal urgency at a glance.
 export default function DashboardStatCards({
   activeBuyers,
   overdueCustomers,
@@ -23,20 +28,24 @@ export default function DashboardStatCards({
           elevation: 2,
         }}
       >
-        <View className="flex-row justify-between items-start">
-          <Text className="text-[28px] font-extrabold text-textDark">
-            {activeBuyers}
-          </Text>
-          <View className="w-[38px] h-[38px] rounded-xl bg-primary-light items-center justify-center">
-            <Users size={20} color="#22C55E" strokeWidth={1.8} />
-          </View>
-        </View>
-        <Text className="text-[13px] text-textPrimary mt-1.5">
-          Active Buyers
+        <Text
+          className="text-[10px] tracking-widest font-bold mb-2"
+          style={{ color: colors.neutral[500] }}
+        >
+          ACTIVE BUYERS
+        </Text>
+        <Text
+          className="font-extrabold leading-none mb-1.5"
+          style={{ color: colors.neutral[900], fontSize: 32 }}
+        >
+          {activeBuyers}
+        </Text>
+        <Text className="text-[12px]" style={{ color: colors.neutral[500] }}>
+          customers
         </Text>
       </View>
 
-      {/* Overdue Accounts */}
+      {/* Overdue */}
       <View
         className="flex-1 bg-white rounded-[20px] p-[18px]"
         style={{
@@ -47,16 +56,20 @@ export default function DashboardStatCards({
           elevation: 2,
         }}
       >
-        <View className="flex-row justify-between items-start">
-          <Text className="text-[28px] font-extrabold text-textDark">
-            {overdueCustomers}
-          </Text>
-          <View className="w-[38px] h-[38px] rounded-xl bg-danger-light items-center justify-center">
-            <AlertTriangle size={20} color="#E74C3C" strokeWidth={1.8} />
-          </View>
-        </View>
-        <Text className="text-[13px] text-textPrimary mt-1.5">
-          Overdue Accounts
+        <Text
+          className="text-[10px] tracking-widest font-bold mb-2"
+          style={{ color: colors.neutral[500] }}
+        >
+          OVERDUE
+        </Text>
+        <Text
+          className="font-extrabold leading-none mb-1.5"
+          style={{ color: colors.danger.DEFAULT, fontSize: 32 }}
+        >
+          {overdueCustomers}
+        </Text>
+        <Text className="text-[12px]" style={{ color: colors.neutral[500] }}>
+          need follow-up
         </Text>
       </View>
     </View>

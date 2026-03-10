@@ -33,8 +33,8 @@ function RootLayout() {
   const {
     user,
     profile,
-    fetchProfile,
     loading: profileLoading,
+    isRecoveryMode,
   } = useAuthStore();
   const loadLanguage = useLanguageStore((s) => s.loadLanguage);
   const [loading, setLoading] = useState(true);
@@ -54,14 +54,6 @@ function RootLayout() {
     init();
   }, []);
 
-  // setUser now calls fetchProfile internally, so no separate effect needed.
-  // We still watch for edge cases where user appears without triggering setUser.
-  useEffect(() => {
-    if (user && !profile && !profileLoading) {
-      fetchProfile();
-    }
-  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
-
   useEffect(() => {
     if (fontsLoaded && !loading && (!user || !profileLoading)) {
       SplashScreen.hideAsync();
@@ -77,19 +69,41 @@ function RootLayout() {
         <GestureHandlerRootView style={{ flex: 1 }}>
           <ToastProvider>
             <Stack screenOptions={{ headerShown: false }}>
+              {/* Highest priority: password recovery mode — shown regardless of
+                  user/profile state so the set-new-password screen is never
+                  replaced by the dashboard or onboarding guard mid-flow. */}
+              {isRecoveryMode && (
+                <Stack.Screen name="(auth)/set-new-password" />
+              )}
+
               {/* Not logged in: show welcome or login */}
-              {!user && showWelcome && <Stack.Screen name="index" />}
-              {!user && !showWelcome && <Stack.Screen name="(auth)/login" />}
+              {!isRecoveryMode && !user && showWelcome && (
+                <Stack.Screen name="index" />
+              )}
+              {!isRecoveryMode && !user && !showWelcome && (
+                <Stack.Screen name="(auth)/login" />
+              )}
+
+              {/* Logged in: session valid but profile fetch failed — prevents blank screen */}
+              {!isRecoveryMode && user && !profile && !profileLoading && (
+                <Stack.Screen name="profile-error" />
+              )}
 
               {/* Logged in: onboarding not completed (false / null / undefined) */}
-              {user && profile && !profile.onboarding_complete && (
-                <Stack.Screen name="(auth)/onboarding" />
-              )}
+              {!isRecoveryMode &&
+                user &&
+                profile &&
+                !profile.onboarding_complete && (
+                  <Stack.Screen name="(auth)/onboarding" />
+                )}
 
               {/* Logged in: onboarding done → main app */}
-              {user && profile && profile.onboarding_complete === true && (
-                <Stack.Screen name="(main)/dashboard" />
-              )}
+              {!isRecoveryMode &&
+                user &&
+                profile &&
+                profile.onboarding_complete === true && (
+                  <Stack.Screen name="(main)/dashboard" />
+                )}
             </Stack>
             <StatusBar barStyle="dark-content" />
           </ToastProvider>

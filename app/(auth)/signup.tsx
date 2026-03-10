@@ -25,6 +25,7 @@ export default function SignUpPage() {
   const signUpMutation = useSignUp();
   const googleSignIn = useGoogleSignIn();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
     <KeyboardAvoidingView
@@ -92,11 +93,14 @@ export default function SignUpPage() {
                     placeholder="Min. 6 characters"
                     value={values.password}
                     onChangeText={handleChange("password")}
+                    secureTextEntry={!showPassword}
                     error={touched.password ? errors.password : undefined}
                     variant="white"
                     icon={
                       <TouchableOpacity
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        onPress={() => setShowPassword((prev) => !prev)}
+                        accessibilityLabel="Toggle password visibility"
                       >
                         {showPassword ? (
                           <EyeOff
@@ -123,13 +127,35 @@ export default function SignUpPage() {
                     placeholder="Re-enter your password"
                     value={values.confirmPassword}
                     onChangeText={handleChange("confirmPassword")}
-                    secureTextEntry
+                    secureTextEntry={!showConfirmPassword}
                     error={
                       touched.confirmPassword
                         ? errors.confirmPassword
                         : undefined
                     }
                     variant="white"
+                    icon={
+                      <TouchableOpacity
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        onPress={() => setShowConfirmPassword((p) => !p)}
+                        accessibilityLabel="Toggle confirm password visibility"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff
+                            size={20}
+                            color={colors.neutral[400]}
+                            strokeWidth={1.8}
+                          />
+                        ) : (
+                          <Eye
+                            size={20}
+                            color={colors.neutral[400]}
+                            strokeWidth={1.8}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    }
+                    iconPosition="right"
                   />
 
                   <Button
@@ -152,9 +178,7 @@ export default function SignUpPage() {
           </AuthCard>
 
           {(signUpMutation.isError || googleSignIn.isError) && (
-            <View
-              className="flex-row items-center self-center gap-2 rounded-full px-4 py-3 mt-4 bg-danger-bg border border-red-200"
-            >
+            <View className="flex-row items-center self-center gap-2 rounded-full px-4 py-3 mt-4 bg-danger-bg border border-red-200">
               <AlertCircle
                 size={16}
                 color={colors.danger.strong}

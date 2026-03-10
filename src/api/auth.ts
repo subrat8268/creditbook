@@ -89,7 +89,12 @@ export async function signInWithGoogleApi() {
 }
 
 export async function resetPasswordApi(email: string) {
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  // redirectTo must match an entry in Supabase Dashboard → Auth → URL Configuration
+  // → Redirect URLs (e.g. "exp://" or a custom scheme like "creditbook://").
+  // Without this the recovery link opens a browser page instead of the app.
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: Linking.createURL("/"),
+  });
   if (error) throw new Error(error.message);
 }
 

@@ -47,7 +47,8 @@ export const DashboardScreen = () => {
   const isDistributor = mode === "distributor";
 
   const heroAmount = isSellerMode ? data.customersOweMe : data.iOweSuppliers;
-  const heroLabel = isSellerMode ? "YOU WILL RECEIVE" : "YOU OWE";
+  // Label is written as the customer reads it, not in abstract financial terms
+  const heroLabel = isSellerMode ? "CUSTOMERS OWE YOU" : "YOU OWE SUPPLIERS";
 
   const businessName = profile.business_name ?? profile.name ?? "My Business";
   const roleLabel =
@@ -121,12 +122,22 @@ export const DashboardScreen = () => {
             </View>
           </View>
         ) : (
-          <DashboardHeroCard label={heroLabel} amount={heroAmount} />
+          <DashboardHeroCard
+            label={heroLabel}
+            amount={heroAmount}
+            onViewReport={() => router.push("/(main)/reports" as any)}
+            onSendReminder={() => {
+              // TODO(v3.6): bulk WhatsApp reminder via Business API
+            }}
+          />
         )}
 
-        <DashboardActionBar
-          onViewReport={() => router.push("/(main)/reports" as any)}
-        />
+        {/* ActionBar only shown in "both" mode — seller/distributor use embedded buttons */}
+        {isBothMode && (
+          <DashboardActionBar
+            onViewReport={() => router.push("/(main)/reports" as any)}
+          />
+        )}
 
         <DashboardStatCards
           activeBuyers={data.activeBuyers}

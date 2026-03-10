@@ -1,7 +1,7 @@
 # CreditBook — Production Sign-Off Checklist
 
-> **Last Updated**: March 9, 2026
-> **Version**: 3.3
+> **Last Updated**: March 10, 2026
+> **Version**: 3.5
 > **Purpose**: Every checkbox must pass before submitting to TestFlight or Play Store Internal Testing.
 > **Verify on device** (Android mid-range — Pixel 4a target).
 
@@ -67,7 +67,11 @@ grep -rn "@expo/vector-icons" --include="*.tsx" --include="*.ts" src/ app/
 grep -rn "+92\|Zain Khan\|Fatima Ahmed\|PKR" --include="*.tsx" --include="*.ts" src/ app/
 # Expected: no output (exit code 1)
 
-# 4. Lint clean
+# 4. Confirm AsyncStorage removed from Supabase client (secure storage only)
+grep -n "AsyncStorage" src/services/supabase.ts
+# Expected: no output — secureStorage adapter must be the only storage option
+
+# 5. Lint clean
 npx eslint src/ app/ --ext .ts,.tsx
 ```
 
@@ -85,18 +89,41 @@ npx eslint src/ app/ --ext .ts,.tsx
 8. **Export** — Profile → Export → "Payments" → CSV file shares successfully (P04)
 9. **Dashboard greeting** — Check greeting matches time of day; overdue badge on bell (P18)
 10. **Sign out + sign in** — Sign out → Sign in → Correct dashboard mode renders (P02)
+11. **Password reset (unauth)** — Forgot password → email link → `set-new-password` screen opens → update works → redirected to login (P28)
+12. **Password reset (auth)** — While logged in, open recovery link → `set-new-password` screen shows (NOT dashboard) → update works (P29, P30)
+13. **Slow network — loader hint** — Throttle to 3G → wait 3 seconds → "Loading your profile…" text appears under spinner (P36)
+14. **Profile error retry** — Simulate DB failure → profile-error screen shows → Retry button attempts re-fetch → success routes to dashboard (P32)
+15. **Onboarding back navigation** — Role selection → Continue → Business screen → tap Back → returns to Role screen (P38)
+
+---
+
+## Auth Hardening Checklist (v3.4–3.5)
+
+| #   | ID  | Requirement                                                                                                             | Code Status                                                                                         | Category |
+| --- | --- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | -------- |
+| ☐   | P28 | Password reset link from email opens `set-new-password` screen (not browser page). Tested on real device.               | ✅ C4 — `set-new-password.tsx` + `PASSWORD_RECOVERY` handler + `redirectTo: Linking.createURL("/")` | Auth     |
+| ☐   | P29 | Password reset works for users who have a valid existing session (auto-refresh). Screen not evicted by dashboard guard. | ✅ FAIL-01 — `isRecoveryMode` top-priority Stack.Screen in root layout                              | Auth     |
+| ☐   | P30 | After password update: user sees login screen (not dashboard). No dashboard flash before login.                         | ✅ WARN-06 — `setRecoveryMode(false)` + `supabase.auth.signOut()` before `router.replace`           | Auth     |
+| ☐   | P31 | Google OAuth: DB trigger race → app creates minimal profile and routes to onboarding.                                   | ✅ C5 — `createMinimalProfile()` + retry loop (3 × 600 ms) in `useGoogleSignIn`                     | Auth     |
+| ☐   | P32 | Login with missing profile row → profile-error screen shows Retry and Logout buttons.                                   | ✅ C1 + V3 — `AuthProfileErrorScreen`; `profile-error` Stack.Screen; null-profile guard             | Auth     |
+| ☐   | P33 | Signup with all 3 profile-fetch retries failing → profile-error screen (not broken onboarding).                         | ✅ WARN-01 — null profile check added to `useSignUp.onSuccess`                                      | Auth     |
+| ☐   | P34 | JWT tokens in Keychain/Keystore. `grep "AsyncStorage" src/services/supabase.ts` → 0 results.                            | ✅ B1 — `src/lib/secureStorage.ts`; `supabase.ts` `storage: secureStorage`                          | Security |
+| ☐   | P35 | Sentry breadcrumbs fired at: login, signup, google_oauth, onboarding_complete, logout.                                  | ✅ B6 — `Sentry.addBreadcrumb` in `useAuth.ts` + `ready.tsx`                                        | Monitor  |
+| ☐   | P36 | `Loader` shows "Loading your profile…" after 2 s on slow network.                                                       | ✅ WARN-05 — 2-second `setTimeout` `useEffect` in `Loader.tsx`                                      | UX       |
+| ☐   | P37 | Signup confirm-password has eye-toggle matching all other password fields.                                              | ✅ WARN-04 — `showConfirmPassword` state + icon in `signup.tsx`                                     | UX       |
+| ☐   | P38 | Back from Business step during onboarding returns to Role screen.                                                       | ✅ WARN-09 — `router.push` (not `replace`) in `role.tsx`                                            | UX       |
 
 ---
 
 ## Open / Deferred Items
 
-These items are tracked in `FINAL_AUDIT.md` and deferred to the next release:
+These items are non-blocking and deferred to v3.6:
 
 | ID        | Issue                                                                                          | Reason deferred                                   |
 | --------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------- |
 | M-01      | Modal library consolidation (`NewProductModal` still uses `react-native-modal` via `AppModal`) | Non-breaking; full migration is a larger refactor |
 | M-04      | Export screen not in tab bar                                                                   | UX decision pending                               |
-| M-05–M-08 | Architecture cleanup items                                                                     | Non-breaking; queued for v3.4                     |
+| M-05–M-08 | Architecture cleanup items                                                                     | Non-breaking; queued for v3.6                     |
 | M-12–M-14 | Additional architecture items                                                                  | Non-breaking                                      |
 | N-12      | `heroDecor` orphaned color                                                                     | Cosmetic; no user impact                          |
 | N-14      | Payment mode chip border token mismatch                                                        | Cosmetic                                          |
@@ -104,4 +131,4 @@ These items are tracked in `FINAL_AUDIT.md` and deferred to the next release:
 
 ---
 
-_Sign off on each device test by ticking the checkbox. All 26 items must be ✅ before production release._
+_Sign off on each device test by ticking the checkbox. All P01–P38 items (38 total) must be ✅ before production release._

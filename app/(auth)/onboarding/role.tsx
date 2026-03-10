@@ -46,8 +46,6 @@ const ROLES: RoleCard[] = [
   },
 ];
 
-// Maps each selectable role to the canonical dashboard_mode stored in DB
-// DB CHECK constraint: dashboard_mode IN ('seller', 'distributor', 'both')
 const MODE_MAP = {
   retailer: "seller",
   wholesaler: "distributor",
@@ -91,7 +89,7 @@ export default function OnboardingRole() {
           });
       }
 
-      router.replace("/(auth)/onboarding/business" as any);
+      router.push("/(auth)/onboarding/business" as any);
     } catch (e: any) {
       setError(e.message ?? "Something went wrong.");
     } finally {
@@ -140,7 +138,11 @@ export default function OnboardingRole() {
                     className="w-11 h-11 rounded-[10px] items-center justify-center shrink-0"
                     style={{ backgroundColor: item.iconBg }}
                   >
-                    <item.Icon size={22} color={item.iconColor} strokeWidth={2} />
+                    <item.Icon
+                      size={22}
+                      color={item.iconColor}
+                      strokeWidth={2}
+                    />
                   </View>
 
                   {/* Text */}

@@ -1,16 +1,17 @@
 import { useResetPassword } from "@/src/hooks/useAuth";
 import { ResetPasswordSchema } from "@/src/utils/schemas";
+import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { Formik } from "formik";
 import { LockOpen, Mail, MailOpen } from "lucide-react-native";
 import {
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Button from "../../src/components/ui/Button";
 import Input from "../../src/components/ui/Input";
@@ -88,7 +89,13 @@ export default function ResetPasswordPage() {
                   onChangeText={handleChange("email")}
                   error={touched.email ? errors.email : undefined}
                   keyboardType="email-address"
-                  icon={<Mail size={20} color={colors.neutral[500]} strokeWidth={1.8} />}
+                  icon={
+                    <Mail
+                      size={20}
+                      color={colors.neutral[500]}
+                      strokeWidth={1.8}
+                    />
+                  }
                   iconPosition="left"
                 />
 

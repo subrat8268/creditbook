@@ -73,7 +73,9 @@ export default function OnboardingBusiness() {
       >
         {/* ── Progress ── */}
         <View className="mt-5 mb-6">
-          <Text className="text-[13px] text-textSecondary mb-2">Step 1 of 2</Text>
+          <Text className="text-[13px] text-textSecondary mb-2">
+            Step 1 of 2
+          </Text>
           <View className="flex-row gap-1.5">
             <View className="flex-1 h-1 rounded-full bg-primary" />
             <View className="flex-1 h-1 rounded-full bg-neutral-200" />
@@ -120,7 +122,9 @@ export default function OnboardingBusiness() {
 
           {/* GSTIN */}
           <View className="flex-row items-center mt-5 mb-2 gap-2">
-            <Text className="text-sm font-semibold text-neutral-800">GSTIN</Text>
+            <Text className="text-sm font-semibold text-neutral-800">
+              GSTIN
+            </Text>
             <View className="bg-neutral-100 rounded-md px-2 py-0.5">
               <Text className="text-[11px] font-semibold text-textSecondary uppercase tracking-wide">
                 OPTIONAL

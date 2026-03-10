@@ -4,13 +4,13 @@ import { useAuthStore } from "@/src/store/authStore";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function OnboardingBank() {
@@ -81,7 +81,9 @@ export default function OnboardingBank() {
       >
         {/* ── Progress ── */}
         <View className="mt-5 mb-6">
-          <Text className="text-[13px] text-textSecondary mb-2">Step 2 of 2</Text>
+          <Text className="text-[13px] text-textSecondary mb-2">
+            Step 2 of 2
+          </Text>
           <View className="flex-row gap-1.5">
             <View className="flex-1 h-1 rounded-full bg-primary" />
             <View className="flex-1 h-1 rounded-full bg-primary" />
@@ -109,7 +111,9 @@ export default function OnboardingBank() {
         >
           {/* UPI ID */}
           <View className="flex-row items-center mb-2">
-            <Text className="text-sm font-semibold text-neutral-800">UPI ID</Text>
+            <Text className="text-sm font-semibold text-neutral-800">
+              UPI ID
+            </Text>
             <OptionalBadge />
           </View>
           <TextInput
@@ -124,7 +128,9 @@ export default function OnboardingBank() {
 
           {/* Bank Name */}
           <View className="flex-row items-center mt-5 mb-2">
-            <Text className="text-sm font-semibold text-neutral-800">Bank Name</Text>
+            <Text className="text-sm font-semibold text-neutral-800">
+              Bank Name
+            </Text>
             <OptionalBadge />
           </View>
           <TextInput
@@ -137,7 +143,9 @@ export default function OnboardingBank() {
 
           {/* Account Number */}
           <View className="flex-row items-center mt-5 mb-2">
-            <Text className="text-sm font-semibold text-neutral-800">Account Number</Text>
+            <Text className="text-sm font-semibold text-neutral-800">
+              Account Number
+            </Text>
             <OptionalBadge />
           </View>
           <TextInput
@@ -151,7 +159,9 @@ export default function OnboardingBank() {
 
           {/* IFSC Code */}
           <View className="flex-row items-center mt-5 mb-2">
-            <Text className="text-sm font-semibold text-neutral-800">IFSC Code</Text>
+            <Text className="text-sm font-semibold text-neutral-800">
+              IFSC Code
+            </Text>
             <OptionalBadge />
           </View>
           <TextInput

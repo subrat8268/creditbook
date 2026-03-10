@@ -97,7 +97,9 @@ export default function OrderBillSummary({
         {/* Tax row — only if taxPercent > 0 */}
         {taxAmount > 0 && (
           <View className="flex-row justify-between">
-            <Text className="text-sm text-textSecondary">GST ({taxPercent}%)</Text>
+            <Text className="text-sm text-textSecondary">
+              GST ({taxPercent}%)
+            </Text>
             <Text className="text-sm text-textPrimary">
               ₹{taxAmount.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
             </Text>
@@ -126,17 +128,13 @@ export default function OrderBillSummary({
 
         {/* Previous balance */}
         <View className="flex-row justify-between items-center">
-          <Text
-            className="text-sm font-inter-medium text-danger"
-          >
+          <Text className="text-sm font-inter-medium text-danger">
             Previous Balance
           </Text>
           {isFetchingBalance ? (
             <ActivityIndicator size="small" color="#E74C3C" />
           ) : (
-            <Text
-              className="text-sm font-inter-semibold text-danger"
-            >
+            <Text className="text-sm font-inter-semibold text-danger">
               ₹{previousBalance.toLocaleString("en-IN")}
             </Text>
           )}

@@ -136,9 +136,7 @@ export default function CustomerCard({
         >
           {name}
         </Text>
-        <Text className="text-[13px] text-textSecondary">
-          {phone}
-        </Text>
+        <Text className="text-[13px] text-textSecondary">{phone}</Text>
       </View>
 
       {/* Amount + Badge */}

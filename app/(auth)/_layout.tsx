@@ -46,6 +46,17 @@ export default function AuthLayout() {
             headerBackground: CustomHeader,
           }}
         />
+        <Stack.Screen
+          name="set-new-password"
+          options={{
+            headerShown: true,
+            title: "Set New Password",
+            headerTitleAlign: "center",
+            headerShadowVisible: false,
+            headerTitleStyle: { fontWeight: "600", fontSize: 18 },
+            headerBackground: CustomHeader,
+          }}
+        />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
       </Stack>
     </View>

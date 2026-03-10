@@ -65,9 +65,7 @@ export default function SupplierCard({ supplier, onPress }: Props) {
             marginRight: 12,
           }}
         >
-          <Text className="text-white font-bold text-base">
-            {initials}
-          </Text>
+          <Text className="text-white font-bold text-base">{initials}</Text>
         </View>
 
         <View className="flex-1">
