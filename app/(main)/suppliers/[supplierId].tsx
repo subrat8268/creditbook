@@ -497,6 +497,7 @@ export default function SupplierDetailScreen() {
           balanceOwed={supplier.totalOwed}
           onClose={() => setPaymentModalOpen(false)}
           loading={recordPayment.isPending}
+          supplierName={supplier.name}
           onSubmit={async (data) => {
             await recordPayment.mutateAsync(data);
             setPaymentModalOpen(false);
