@@ -1,3 +1,4 @@
+import { colors } from "@/src/utils/theme";
 import { Pencil, Trash2, X } from "lucide-react-native";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
 

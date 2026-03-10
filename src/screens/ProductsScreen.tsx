@@ -9,6 +9,7 @@ import NewProductModal, {
 import ProductActionsModal from "../components/products/ProductActionsModal";
 import ProductCard from "../components/products/ProductCard";
 import ScreenWrapper from "../components/ScreenWrapper";
+import ConfirmModal from "../components/ui/ConfirmModal";
 import FloatingActionButton from "../components/ui/FloatingActionButton";
 import SearchBar from "../components/ui/SearchBar";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
@@ -32,6 +33,7 @@ export default function ProductsScreen() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const {
     data: products,
@@ -86,11 +88,17 @@ export default function ProductsScreen() {
     if (!selectedProduct) return;
     try {
       await deleteProductMutation.mutateAsync(selectedProduct.id);
-      setIsActionsOpen(false);
+      setShowDeleteConfirm(false);
       setSelectedProduct(null);
     } catch (err: any) {
       console.error("Failed to delete product:", err.message);
     }
+  };
+
+  // Close actions menu and open the delete confirmation sheet
+  const handleRequestDelete = () => {
+    setIsActionsOpen(false);
+    setTimeout(() => setShowDeleteConfirm(true), 300);
   };
 
   const onRefresh = useCallback(async () => {
@@ -124,7 +132,7 @@ export default function ProductsScreen() {
         onOptionsPress={() => handleOptionsPress(item)}
       />
     ),
-     
+
     [],
   );
 
@@ -204,7 +212,20 @@ export default function ProductsScreen() {
         visible={isActionsOpen}
         onClose={() => setIsActionsOpen(false)}
         onEdit={handleEditPress}
-        onDelete={handleDeleteProduct}
+        onDelete={handleRequestDelete}
+      />
+
+      <ConfirmModal
+        visible={showDeleteConfirm}
+        title="Delete Product?"
+        message="Are you sure you want to delete this product? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={handleDeleteProduct}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setSelectedProduct(null);
+        }}
+        loading={deleteProductMutation.isPending}
       />
     </ScreenWrapper>
   );
