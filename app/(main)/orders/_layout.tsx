@@ -47,7 +47,7 @@ export default function OrdersLayout() {
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="[orderId]" options={{ title: "Order Details" }} />
-      <Stack.Screen name="create" options={{ title: "New Order" }} />
+      <Stack.Screen name="create" options={{ headerShown: false }} />
     </Stack>
   );
 }

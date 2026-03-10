@@ -1,21 +1,28 @@
-import ScreenWrapper from "@/src/components/ScreenWrapper";
 import Loader from "@/src/components/feedback/Loader";
 import OrderSummary from "@/src/components/orders/OrderBillSummary";
 import OrderItemCard from "@/src/components/orders/OrderItemCard";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { Pencil } from "lucide-react-native";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import {
+  ArrowLeft,
+  Barcode,
+  CircleCheck,
+  CirclePlus,
+  Eye,
+  Pencil,
+  Search,
+} from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
   Alert,
-  FlatList,
   KeyboardAvoidingView,
   Linking,
   Platform,
-  StyleSheet,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { getCustomerPreviousBalance } from "../api/orders";
 import CustomerPicker from "../components/picker/CustomerPicker";
 import ProductPicker from "../components/picker/ProductPicker";
@@ -89,7 +96,7 @@ export default function CreateOrderScreen() {
         setIsFetchingBalance(true);
         const balance = await getCustomerPreviousBalance(customer.id, vendorId);
         setPreviousBalance(balance);
-      } catch (e) {
+      } catch {
         setPreviousBalance(0);
       } finally {
         setIsFetchingBalance(false);
@@ -120,25 +127,6 @@ export default function CreateOrderScreen() {
     () => todayTotal + previousBalance,
     [todayTotal, previousBalance],
   );
-
-  // ── Payment reminder via WhatsApp ──────────────────────────
-  const handleSendReminder = async () => {
-    if (!selectedCustomer) return;
-    const phone = selectedCustomer.phone.replace(/[^0-9]/g, "");
-    const amount = previousBalance.toLocaleString("en-IN");
-    const message =
-      `Dear ${selectedCustomer.name}, you have an outstanding balance of ₹${amount}. ` +
-      `Kindly settle at the earliest. — ${profile?.business_name || "Your Store"}`;
-    const waUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`;
-    try {
-      await Linking.openURL(waUrl);
-    } catch {
-      Alert.alert(
-        "Error",
-        "Unable to open WhatsApp. Please ensure it is installed.",
-      );
-    }
-  };
 
   const addToCart = (
     productId: string,
@@ -306,195 +294,363 @@ export default function CreateOrderScreen() {
     }
   };
 
+  // Generate a display invoice reference (actual number assigned on save)
+  const invoiceRef = useMemo(
+    () =>
+      `${profile?.bill_number_prefix || "INV"}-${String(Date.now()).slice(-3)}`,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
   if (loading || !profile) return <Loader />;
 
   return (
-    <ScreenWrapper>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <SafeAreaView
+        className="flex-1"
+        style={{ backgroundColor: colors.neutral[100] }}
       >
-        {/* Customer */}
-        <TouchableOpacity
-          style={styles.customerRow}
-          onPress={() => setCustomerPickerVisible(true)}
-          activeOpacity={0.75}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
         >
-          {/* Avatar */}
-          {selectedCustomer ? (
-            <View
-              style={[
-                styles.avatar,
-                { backgroundColor: getAvatarColor(selectedCustomer.name) },
-              ]}
-            >
-              <Text style={styles.avatarText}>
-                {getInitials(selectedCustomer.name)}
-              </Text>
-            </View>
-          ) : (
-            <View
-              style={[styles.avatar, { backgroundColor: colors.neutral[200] }]}
-            >
-              <Text style={[styles.avatarText, { color: colors.neutral[400] }]}>
-                ?
-              </Text>
-            </View>
-          )}
-
-          {/* Name */}
-          <Text style={styles.customerName} numberOfLines={1}>
-            {selectedCustomer ? selectedCustomer.name : "Select Customer"}
-          </Text>
-
-          {/* Edit icon */}
-          <Pencil size={16} color={colors.neutral[400]} strokeWidth={2} />
-        </TouchableOpacity>
-
-        {/* Payment reminder button — shown only when previous balance > 0 */}
-        {selectedCustomer && previousBalance > 0 && !isFetchingBalance && (
-          <TouchableOpacity
-            className="flex-row items-center gap-2 px-4 py-2.5 mb-3 bg-amber-50 border border-amber-300 rounded-xl"
-            onPress={handleSendReminder}
-          >
-            <Text className="text-amber-700 font-inter-medium text-sm flex-1">
-              🔔 Send payment reminder to {selectedCustomer.name}
-            </Text>
-            <Text className="text-amber-700 text-xs font-inter-semibold">
-              ₹{previousBalance.toLocaleString("en-IN")} due
-            </Text>
-          </TouchableOpacity>
-        )}
-
-        {/* Product */}
-        <TouchableOpacity
-          className="p-4 border rounded-xl mb-4 bg-white"
-          onPress={() => setProductPickerVisible(true)}
-        >
-          <Text className="font-inter-medium text-textPrimary">
-            Add Products
-          </Text>
-        </TouchableOpacity>
-
-        {/* Cart */}
-        <FlatList
-          data={cart}
-          keyExtractor={(item) => item.key}
-          renderItem={({ item }) => (
-            <OrderItemCard
-              id={item.id}
-              name={item.name}
-              variantName={item.variantName}
-              price={item.price}
-              quantity={item.quantity}
-              onRemove={() => handleRemoveProduct(item.key)}
-              onUpdateQuantity={(qty) => handleUpdateQuantity(item.key, qty)}
-            />
-          )}
-          ListEmptyComponent={
-            <Text className="text-center text-textMuted mt-4">
-              No products added yet
-            </Text>
-          }
-          contentContainerStyle={{ paddingBottom: 280 }}
-        />
-
-        {/* Summary */}
-        <OrderSummary
-          itemsTotal={itemsTotal}
-          loadingCharge={loadingCharge}
-          taxPercent={taxPercent}
-          taxAmount={taxAmount}
-          previousBalance={previousBalance}
-          grandTotal={grandTotal}
-          onSave={handleSaveOrder}
-          onSendBill={handleSendBill}
-          onLoadingChargeChange={setLoadingCharge}
-          onTaxChange={setTaxPercent}
-          isFetchingBalance={isFetchingBalance}
-        />
-
-        {/* Customer Picker */}
-        <CustomerPicker
-          visible={isCustomerPickerVisible}
-          onClose={() => setCustomerPickerVisible(false)}
-          selectedCustomer={selectedCustomer}
-          setSelectedCustomer={handleSelectCustomer}
-          vendorId={vendorId!}
-        />
-
-        {/* Product Picker */}
-        <ProductPicker
-          visible={isProductPickerVisible}
-          onClose={() => setProductPickerVisible(false)}
-          vendorId={vendorId!}
-          addToCart={addToCart}
-          setVariantSelection={(product: any) => {
-            setSelectedProduct(product);
-            setProductPickerVisible(false); // close product picker
-            // open variant picker after small delay
-            setTimeout(() => setVariantPickerVisible(true), 300);
-          }}
-        />
-
-        {/* Variant Picker */}
-        {selectedProduct && (
-          <VariantPicker
-            visible={isVariantPickerVisible}
-            product={selectedProduct}
-            onSelect={(variantId, variantName, price) => {
-              addToCart(
-                selectedProduct.id,
-                selectedProduct.name,
-                price,
-                variantId ?? undefined,
-                variantName,
-              );
-              setTimeout(() => {
-                setVariantPickerVisible(false);
-                setSelectedProduct(null);
-              }, 50);
+          {/* ── Custom Header ── */}
+          <View
+            className="flex-row items-center px-4 py-3"
+            style={{
+              backgroundColor: colors.white,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.neutral[100],
             }}
-            onClose={() => {
-              setVariantPickerVisible(false);
-              setSelectedProduct(null);
+          >
+            <TouchableOpacity
+              onPress={() => router.back()}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              className="mr-3"
+            >
+              <ArrowLeft
+                size={22}
+                color={colors.neutral[900]}
+                strokeWidth={2.2}
+              />
+            </TouchableOpacity>
+            <Text
+              className="flex-1 text-[18px] font-bold"
+              style={{ color: colors.neutral[900] }}
+            >
+              New Bill
+            </Text>
+            {/* INV pill */}
+            <View
+              className="px-3 py-1 rounded-full border"
+              style={{
+                borderColor: colors.primary.DEFAULT,
+                backgroundColor: colors.primary.light ?? "#DCFCE7",
+              }}
+            >
+              <Text
+                className="text-[13px] font-bold"
+                style={{ color: colors.primary.DEFAULT }}
+              >
+                {invoiceRef}
+              </Text>
+            </View>
+          </View>
+
+          {/* ── Scrollable content ── */}
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 12 }}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* ── Customer card ── */}
+            <TouchableOpacity
+              activeOpacity={0.75}
+              onPress={() => setCustomerPickerVisible(true)}
+              className="rounded-2xl overflow-hidden"
+              style={{
+                backgroundColor: colors.white,
+                borderWidth: 1,
+                borderColor: colors.neutral[100],
+              }}
+            >
+              <View className="flex-row items-center px-4 py-3">
+                {/* Avatar */}
+                <View
+                  className="rounded-full items-center justify-center mr-3"
+                  style={{
+                    width: 52,
+                    height: 52,
+                    backgroundColor: selectedCustomer
+                      ? getAvatarColor(selectedCustomer.name)
+                      : colors.neutral[200],
+                  }}
+                >
+                  <Text
+                    className="font-bold text-white"
+                    style={{ fontSize: 17 }}
+                  >
+                    {selectedCustomer
+                      ? getInitials(selectedCustomer.name)
+                      : "?"}
+                  </Text>
+                </View>
+
+                {/* Name + subtitle */}
+                <View className="flex-1">
+                  <Text
+                    className="text-[16px] font-bold"
+                    style={{ color: colors.neutral[900] }}
+                    numberOfLines={1}
+                  >
+                    {selectedCustomer
+                      ? selectedCustomer.name
+                      : "Select Customer"}
+                  </Text>
+                  {selectedCustomer?.customer_type ? (
+                    <Text
+                      className="text-sm"
+                      style={{ color: colors.neutral[500] }}
+                    >
+                      {selectedCustomer.customer_type}
+                    </Text>
+                  ) : (
+                    <Text
+                      className="text-sm"
+                      style={{ color: colors.neutral[400] }}
+                    >
+                      Tap to select
+                    </Text>
+                  )}
+                </View>
+
+                {/* Edit icon */}
+                <Pencil
+                  size={18}
+                  color={colors.primary.DEFAULT}
+                  strokeWidth={2}
+                />
+              </View>
+
+              {/* Previous balance warning row */}
+              {selectedCustomer &&
+                previousBalance > 0 &&
+                !isFetchingBalance && (
+                  <View
+                    className="flex-row items-center gap-2 px-4 py-2"
+                    style={{ backgroundColor: colors.danger.bg ?? "#FEF2F2" }}
+                  >
+                    <Text
+                      style={{ color: colors.danger.DEFAULT, fontSize: 13 }}
+                    >
+                      ⚠️ 
+                    </Text>
+                    <Text
+                      className="text-[13px] font-semibold"
+                      style={{ color: colors.danger.DEFAULT }}
+                    >
+                      Previous Balance: ₹
+                      {previousBalance.toLocaleString("en-IN")}
+                    </Text>
+                  </View>
+                )}
+            </TouchableOpacity>
+
+            {/* ── Items card ── */}
+            <View
+              className="rounded-2xl overflow-hidden"
+              style={{
+                backgroundColor: colors.white,
+                borderWidth: 1,
+                borderColor: colors.neutral[100],
+              }}
+            >
+              <View className="px-4 pt-4 pb-2">
+                <Text
+                  className="text-[15px] font-bold mb-3"
+                  style={{ color: colors.neutral[900] }}
+                >
+                  Items
+                </Text>
+
+                {/* Search bar (opens product picker) */}
+                <TouchableOpacity
+                  onPress={() => setProductPickerVisible(true)}
+                  activeOpacity={0.7}
+                  className="flex-row items-center rounded-xl px-3 py-2.5 mb-3"
+                  style={{ backgroundColor: colors.neutral[100] }}
+                >
+                  <Search
+                    size={16}
+                    color={colors.neutral[400]}
+                    strokeWidth={2}
+                  />
+                  <Text
+                    className="flex-1 ml-2 text-[14px]"
+                    style={{ color: colors.neutral[400] }}
+                  >
+                    Search products...
+                  </Text>
+                  <Barcode
+                    size={18}
+                    color={colors.neutral[400]}
+                    strokeWidth={1.5}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Item rows */}
+              {cart.length > 0 ? (
+                <View className="px-4">
+                  {cart.map((item, idx) => (
+                    <View key={item.key}>
+                      {idx > 0 && (
+                        <View
+                          className="h-px mb-4"
+                          style={{ backgroundColor: colors.neutral[100] }}
+                        />
+                      )}
+                      <OrderItemCard
+                        id={item.id}
+                        name={item.name}
+                        variantName={item.variantName}
+                        price={item.price}
+                        quantity={item.quantity}
+                        onRemove={() => handleRemoveProduct(item.key)}
+                        onUpdateQuantity={(qty) =>
+                          handleUpdateQuantity(item.key, qty)
+                        }
+                      />
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+
+              {/* Add Product dashed button */}
+              <TouchableOpacity
+                onPress={() => setProductPickerVisible(true)}
+                activeOpacity={0.7}
+                className="flex-row items-center justify-center py-3.5 mx-4 mb-4 rounded-xl"
+                style={{
+                  borderWidth: 1.5,
+                  borderStyle: "dashed",
+                  borderColor: colors.primary.DEFAULT,
+                }}
+              >
+                <CirclePlus
+                  size={16}
+                  color={colors.primary.DEFAULT}
+                  strokeWidth={2}
+                />
+                <Text
+                  className="ml-1.5 text-[14px] font-semibold"
+                  style={{ color: colors.primary.DEFAULT }}
+                >
+                  Add Product
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* ── Other Charges + Summary (from OrderBillSummary) ── */}
+            <OrderSummary
+              itemsTotal={itemsTotal}
+              loadingCharge={loadingCharge}
+              taxPercent={taxPercent}
+              taxAmount={taxAmount}
+              previousBalance={previousBalance}
+              grandTotal={grandTotal}
+              onLoadingChargeChange={setLoadingCharge}
+              onTaxChange={setTaxPercent}
+              isFetchingBalance={isFetchingBalance}
+            />
+          </ScrollView>
+
+          {/* ── Sticky footer ── */}
+          <View
+            className="flex-row gap-3 px-4 py-3"
+            style={{
+              backgroundColor: colors.white,
+              borderTopWidth: 1,
+              borderTopColor: colors.neutral[100],
+            }}
+          >
+            {/* Preview (outline) */}
+            <TouchableOpacity
+              onPress={handleSendBill}
+              activeOpacity={0.8}
+              className="flex-1 flex-row items-center justify-center py-3.5 rounded-full border"
+              style={{ borderColor: colors.primary.DEFAULT }}
+            >
+              <Eye size={18} color={colors.primary.DEFAULT} strokeWidth={2} />
+              <Text
+                className="ml-2 text-[15px] font-bold"
+                style={{ color: colors.primary.DEFAULT }}
+              >
+                Preview
+              </Text>
+            </TouchableOpacity>
+
+            {/* Create Bill (solid) */}
+            <TouchableOpacity
+              onPress={handleSaveOrder}
+              activeOpacity={0.8}
+              className="flex-1 flex-row items-center justify-center py-3.5 rounded-full"
+              style={{ backgroundColor: colors.primary.DEFAULT }}
+            >
+              <CircleCheck size={18} color="#FFFFFF" strokeWidth={2} />
+              <Text className="ml-2 text-[15px] font-bold text-white">
+                Create Bill
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* ── Pickers ── */}
+          <CustomerPicker
+            visible={isCustomerPickerVisible}
+            onClose={() => setCustomerPickerVisible(false)}
+            selectedCustomer={selectedCustomer}
+            setSelectedCustomer={handleSelectCustomer}
+            vendorId={vendorId!}
+          />
+
+          <ProductPicker
+            visible={isProductPickerVisible}
+            onClose={() => setProductPickerVisible(false)}
+            vendorId={vendorId!}
+            addToCart={addToCart}
+            setVariantSelection={(product: any) => {
+              setSelectedProduct(product);
+              setProductPickerVisible(false);
+              setTimeout(() => setVariantPickerVisible(true), 300);
             }}
           />
-        )}
-      </KeyboardAvoidingView>
-    </ScreenWrapper>
+
+          {selectedProduct && (
+            <VariantPicker
+              visible={isVariantPickerVisible}
+              product={selectedProduct}
+              onSelect={(variantId, variantName, price) => {
+                addToCart(
+                  selectedProduct.id,
+                  selectedProduct.name,
+                  price,
+                  variantId ?? undefined,
+                  variantName,
+                );
+                setTimeout(() => {
+                  setVariantPickerVisible(false);
+                  setSelectedProduct(null);
+                }, 50);
+              }}
+              onClose={() => {
+                setVariantPickerVisible(false);
+                setSelectedProduct(null);
+              }}
+            />
+          )}
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  customerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
-    borderRadius: 12,
-    marginBottom: 16,
-    backgroundColor: colors.white,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  avatarText: {
-    color: colors.white,
-    fontWeight: "700",
-    fontSize: 13,
-  },
-  customerName: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: "600",
-    color: colors.neutral[900],
-  },
-});

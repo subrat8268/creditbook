@@ -1,5 +1,6 @@
-import { Minus, Plus } from "lucide-react-native";
+import { X } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
+import { colors } from "../../utils/theme";
 
 interface OrderItemCardProps {
   id: string;
@@ -19,48 +20,88 @@ export default function OrderItemCard({
   onUpdateQuantity,
   onRemove,
 }: OrderItemCardProps) {
+  const subtotal = price * quantity;
+  const label =
+    variantName && variantName !== "Base" ? `${name} (${variantName})` : name;
+
   return (
-    <View className="flex-row items-center justify-between p-4 border-b border-gray-200 bg-white rounded-xl mb-2">
-      {/* Left side: Product info */}
-      <View className="flex-1">
-        <View className="flex-row items-center">
-          <Text className="font-inter-medium text-textDark">{name}</Text>
-          {variantName && variantName !== "Base" && (
-            <Text className="text-textSecondary"> ({variantName})</Text>
-          )}
-        </View>
-        <Text className="text-textSecondary text-sm">₹{price}</Text>
-      </View>
-
-      {/* Middle: Quantity controls */}
-      <View className="flex-row items-center">
-        <TouchableOpacity
-          onPress={() => {
-            if (quantity > 1) {
-              onUpdateQuantity(quantity - 1);
-            } else {
-              onRemove();
-            }
-          }}
-          className="bg-gray-200 p-2 rounded-full"
+    <View className="mb-4">
+      {/* Name + × remove */}
+      <View className="flex-row items-start justify-between mb-0.5">
+        <Text
+          className="flex-1 text-[15px] font-bold mr-2"
+          style={{ color: colors.neutral[900] }}
+          numberOfLines={2}
         >
-          <Minus size={18} color={colors.neutral[700]} strokeWidth={2.5} />
-        </TouchableOpacity>
-
-        <Text className="mx-3 text-base font-inter-medium">{quantity}</Text>
-
+          {label}
+        </Text>
         <TouchableOpacity
-          onPress={() => onUpdateQuantity(quantity + 1)}
-          className="bg-gray-200 p-2 rounded-full"
+          onPress={onRemove}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Plus size={18} color={colors.neutral[700]} strokeWidth={2.5} />
+          <X size={16} color={colors.neutral[400]} strokeWidth={2.5} />
         </TouchableOpacity>
       </View>
 
-      {/* Right side: Total */}
-      <Text className="ml-4 font-inter-semibold text-textDark">
-        ₹{price * quantity}
+      {/* Rate subtitle */}
+      <Text className="text-sm mb-2.5" style={{ color: colors.neutral[500] }}>
+        Rate: ₹{price.toLocaleString("en-IN")}
       </Text>
+
+      {/* Stepper + subtotal */}
+      <View className="flex-row items-center justify-between">
+        {/* Bordered pill stepper */}
+        <View
+          className="flex-row items-center rounded-lg overflow-hidden border"
+          style={{ borderColor: colors.neutral[200] }}
+        >
+          <TouchableOpacity
+            onPress={() =>
+              quantity > 1 ? onUpdateQuantity(quantity - 1) : onRemove()
+            }
+            className="px-3.5 py-1.5"
+            hitSlop={{ top: 4, bottom: 4 }}
+          >
+            <Text
+              className="text-[18px] font-semibold"
+              style={{ color: colors.neutral[500] }}
+            >
+              −
+            </Text>
+          </TouchableOpacity>
+
+          <Text
+            className="px-3 text-[15px] font-bold border-l border-r"
+            style={{
+              borderColor: colors.neutral[200],
+              color: colors.neutral[900],
+            }}
+          >
+            {String(quantity).padStart(2, "0")}
+          </Text>
+
+          <TouchableOpacity
+            onPress={() => onUpdateQuantity(quantity + 1)}
+            className="px-3.5 py-1.5"
+            hitSlop={{ top: 4, bottom: 4 }}
+          >
+            <Text
+              className="text-[18px] font-semibold"
+              style={{ color: colors.neutral[500] }}
+            >
+              +
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Subtotal */}
+        <Text
+          className="text-[16px] font-bold"
+          style={{ color: colors.neutral[900] }}
+        >
+          ₹{subtotal.toLocaleString("en-IN")}
+        </Text>
+      </View>
     </View>
   );
 }
