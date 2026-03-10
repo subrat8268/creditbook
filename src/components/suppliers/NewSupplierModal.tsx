@@ -19,44 +19,6 @@ import { colors } from "../../utils/theme";
 import Button from "../ui/Button";
 import AppModal from "../ui/Modal";
 
-// ─── Avatar helpers (mirrors SupplierCard) ────────────────────────────────────
-const AVATAR_BG = [
-  colors.warning.light,
-  colors.success.light,
-  colors.info.light,
-  colors.danger.light,
-  "#EDE9FE",
-  "#FCE7F3",
-  "#CCFBF1",
-  "#FFF7ED",
-] as const;
-const AVATAR_TEXT = [
-  colors.warning.dark,
-  colors.primary.dark,
-  colors.info.dark,
-  colors.danger.dark,
-  "#6D28D9",
-  "#9D174D",
-  "#0F766E",
-  "#C2410C",
-] as const;
-
-function getAvatarIdx(name: string): number {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return Math.abs(hash) % AVATAR_BG.length;
-}
-
-function getInitials(name: string): string {
-  const parts = name.trim().split(" ").filter(Boolean);
-  if (parts.length >= 2)
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  if (name.trim().length > 0) return name.substring(0, 2).toUpperCase();
-  return "?";
-}
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface NewSupplierValues {
   name: string;
@@ -77,8 +39,6 @@ interface Props {
 }
 
 // ─── Field helpers ────────────────────────────────────────────────────────────
-const FIELD_LABEL = "text-sm font-semibold mb-1.5";
-
 function FieldLabel({
   children,
   required,
@@ -87,8 +47,11 @@ function FieldLabel({
   required?: boolean;
 }) {
   return (
-    <Text className={FIELD_LABEL} style={{ color: colors.neutral[700] }}>
-      {children}
+    <Text
+      className="text-[11px] font-bold tracking-widest mb-1.5"
+      style={{ color: colors.neutral[500] }}
+    >
+      {children.toUpperCase()}
       {required ? (
         <Text style={{ color: colors.danger.DEFAULT }}> *</Text>
       ) : null}
@@ -139,12 +102,12 @@ function BankField({
       className="flex-row items-center rounded-xl overflow-hidden border"
       style={{
         borderColor: colors.warning.light,
-        backgroundColor: "#FFF8F0",
+        backgroundColor: "#F0FDF4",
       }}
     >
       <View
         className="w-11 h-11 items-center justify-center"
-        style={{ backgroundColor: colors.warning.light }}
+        style={{ backgroundColor: colors.primary.light ?? "#DCFCE7" }}
       >
         {icon}
       </View>
@@ -214,48 +177,20 @@ export default function NewSupplierModal({
           values,
           errors,
           touched,
-        }) => {
-          const idx = values.name.trim() ? getAvatarIdx(values.name) : 0;
-          const avatarLabel = getInitials(values.name);
-
-          return (
+        }) => (
+          <>
+            {/* ── Scrollable fields ── */}
             <ScrollView
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
-              contentContainerStyle={{ gap: 16, paddingBottom: 8 }}
+              contentContainerStyle={{ gap: 14, paddingBottom: 8 }}
             >
-              {/* ── Avatar preview ── */}
-              <View className="items-center">
-                <View
-                  className="w-[60px] h-[60px] rounded-full items-center justify-center mb-1"
-                  style={{ backgroundColor: AVATAR_BG[idx] }}
-                >
-                  <Text
-                    className="font-bold"
-                    style={{
-                      fontSize: values.name.trim() ? 20 : 24,
-                      color: values.name.trim()
-                        ? AVATAR_TEXT[idx]
-                        : colors.neutral[400],
-                    }}
-                  >
-                    {avatarLabel}
-                  </Text>
-                </View>
-                <Text
-                  className="text-xs"
-                  style={{ color: colors.neutral[400] }}
-                >
-                  Avatar auto-generated from name
-                </Text>
-              </View>
-
               {/* ── Supplier Name ── */}
               <View>
                 <FieldLabel required>Supplier Name</FieldLabel>
                 <InputBase hasError={!!(touched.name && errors.name)}>
                   <TextInput
-                    placeholder="e.g. Abdullah Wholesalers"
+                    placeholder="Metro Distributors"
                     placeholderTextColor={colors.neutral[400]}
                     value={values.name}
                     onChangeText={handleChange("name")}
@@ -274,9 +209,9 @@ export default function NewSupplierModal({
                 )}
               </View>
 
-              {/* ── Phone Number ── */}
+              {/* ── Phone ── */}
               <View>
-                <FieldLabel>Phone Number</FieldLabel>
+                <FieldLabel>Phone</FieldLabel>
                 <View
                   className="flex-row items-center border rounded-xl overflow-hidden"
                   style={{
@@ -284,23 +219,22 @@ export default function NewSupplierModal({
                       touched.phone && errors.phone
                         ? colors.danger.DEFAULT
                         : colors.neutral[200],
-                    backgroundColor: colors.neutral[100],
+                    backgroundColor: "#FFFFFF",
                   }}
                 >
-                  {/* +91 prefix badge */}
                   <View
                     className="px-3 py-3 border-r justify-center"
                     style={{ borderRightColor: colors.neutral[200] }}
                   >
                     <Text
                       className="text-[15px] font-semibold"
-                      style={{ color: colors.neutral[700] }}
+                      style={{ color: colors.neutral[600] }}
                     >
                       +91
                     </Text>
                   </View>
                   <TextInput
-                    placeholder="00000 00000"
+                    placeholder="98765 43210"
                     placeholderTextColor={colors.neutral[400]}
                     value={values.phone}
                     onChangeText={handleChange("phone")}
@@ -321,28 +255,12 @@ export default function NewSupplierModal({
                 )}
               </View>
 
-              {/* ── Address (optional) ── */}
+              {/* ── Basket Mark ── */}
               <View>
-                <FieldLabel>Address (optional)</FieldLabel>
+                <FieldLabel>Basket Mark</FieldLabel>
                 <InputBase>
                   <TextInput
-                    placeholder="Enter full address"
-                    placeholderTextColor={colors.neutral[400]}
-                    value={values.address}
-                    onChangeText={handleChange("address")}
-                    onBlur={handleBlur("address")}
-                    className="flex-1 px-4 py-3 text-base"
-                    style={{ color: colors.neutral[900] }}
-                  />
-                </InputBase>
-              </View>
-
-              {/* ── Basket Mark / ID (optional) ── */}
-              <View>
-                <FieldLabel>Basket Mark / ID (optional)</FieldLabel>
-                <InputBase>
-                  <TextInput
-                    placeholder="Assign a unique mark"
+                    placeholder="e.g. M-42"
                     placeholderTextColor={colors.neutral[400]}
                     value={values.basket_mark}
                     onChangeText={handleChange("basket_mark")}
@@ -353,40 +271,38 @@ export default function NewSupplierModal({
                 </InputBase>
               </View>
 
-              {/* ── Add Bank Details accordion toggle ── */}
+              {/* ── Bank Details row ── */}
               <TouchableOpacity
                 onPress={() => setBankExpanded((v) => !v)}
-                activeOpacity={0.75}
-                className="flex-row items-center px-4 py-3 rounded-xl"
-                style={{ backgroundColor: colors.warning.light }}
+                activeOpacity={0.7}
+                className="flex-row items-center py-3"
               >
+                {/* green-tinted square icon */}
                 <View
-                  className="w-9 h-9 rounded-full items-center justify-center mr-3"
-                  style={{ backgroundColor: colors.warning.bg }}
+                  className="w-9 h-9 rounded-lg items-center justify-center mr-3"
+                  style={{ backgroundColor: colors.primary.light ?? "#DCFCE7" }}
                 >
                   <Landmark
                     size={18}
-                    color={colors.warning.DEFAULT}
+                    color={colors.primary.DEFAULT}
                     strokeWidth={2}
                   />
                 </View>
-                <View className="flex-1">
-                  <Text
-                    className="text-[14px] font-bold"
-                    style={{ color: colors.warning.dark }}
-                  >
-                    Add Bank Details
-                  </Text>
-                  <Text
-                    className="text-xs mt-[1px]"
-                    style={{ color: colors.warning.DEFAULT }}
-                  >
-                    Receive payments directly
-                  </Text>
-                </View>
+                <Text
+                  className="flex-1 text-[15px] font-semibold"
+                  style={{ color: colors.neutral[700] }}
+                >
+                  Bank Details
+                </Text>
+                <Text
+                  className="text-sm mr-0.5"
+                  style={{ color: colors.neutral[400] }}
+                >
+                  Optional
+                </Text>
                 <ChevronRight
-                  size={18}
-                  color={colors.warning.DEFAULT}
+                  size={16}
+                  color={colors.neutral[400]}
                   strokeWidth={2.5}
                   style={{
                     transform: [{ rotate: bankExpanded ? "90deg" : "0deg" }],
@@ -394,33 +310,12 @@ export default function NewSupplierModal({
                 />
               </TouchableOpacity>
 
-              {/* ── CTA ── */}
-              <Button
-                title="Add Supplier"
-                onPress={handleSubmit}
-                loading={loading}
-                icon={<UserPlus size={18} color="#FFFFFF" strokeWidth={2} />}
-                iconPosition="left"
-              />
-
-              {/* ── Bank details section (expandable below CTA) ── */}
+              {/* ── Bank fields (expandable) ── */}
               {bankExpanded && (
-                <View className="gap-3">
-                  {/* Section header */}
-                  <View className="flex-row items-center gap-2 mt-1">
-                    <Landmark
-                      size={15}
-                      color={colors.warning.DEFAULT}
-                      strokeWidth={2}
-                    />
-                    <Text
-                      className="text-xs font-bold tracking-widest"
-                      style={{ color: colors.warning.DEFAULT }}
-                    >
-                      BANK DETAILS
-                    </Text>
-                  </View>
-
+                <View
+                  className="gap-3 pt-1 pb-2 px-3 rounded-xl"
+                  style={{ backgroundColor: colors.neutral[100] }}
+                >
                   {/* Bank Name */}
                   <View>
                     <FieldLabel>Bank Name</FieldLabel>
@@ -428,17 +323,16 @@ export default function NewSupplierModal({
                       icon={
                         <Landmark
                           size={16}
-                          color={colors.warning.DEFAULT}
+                          color={colors.primary.DEFAULT}
                           strokeWidth={2}
                         />
                       }
-                      placeholder="e.g. HBL, Alfalah Bank"
+                      placeholder="e.g. SBI, HDFC Bank"
                       value={values.bank_name ?? ""}
                       onChangeText={handleChange("bank_name")}
                       onBlur={handleBlur("bank_name")}
                     />
                   </View>
-
                   {/* Account Number */}
                   <View>
                     <FieldLabel>Account Number / IBAN</FieldLabel>
@@ -446,7 +340,7 @@ export default function NewSupplierModal({
                       icon={
                         <CreditCard
                           size={16}
-                          color={colors.warning.DEFAULT}
+                          color={colors.primary.DEFAULT}
                           strokeWidth={2}
                         />
                       }
@@ -457,34 +351,32 @@ export default function NewSupplierModal({
                       keyboardType="numeric"
                     />
                   </View>
-
-                  {/* IFSC Code */}
+                  {/* IFSC */}
                   <View>
-                    <FieldLabel>Branch / IFSC Code</FieldLabel>
+                    <FieldLabel>IFSC Code</FieldLabel>
                     <BankField
                       icon={
                         <Hash
                           size={16}
-                          color={colors.warning.DEFAULT}
+                          color={colors.primary.DEFAULT}
                           strokeWidth={2}
                         />
                       }
-                      placeholder="e.g. 0012 or HBLP001"
+                      placeholder="e.g. SBIN0001234"
                       value={values.ifsc_code ?? ""}
                       onChangeText={handleChange("ifsc_code")}
                       onBlur={handleBlur("ifsc_code")}
                       autoCapitalize="characters"
                     />
                   </View>
-
                   {/* UPI */}
                   <View>
-                    <FieldLabel>UPI ID (optional)</FieldLabel>
+                    <FieldLabel>UPI ID</FieldLabel>
                     <BankField
                       icon={
                         <Hash
                           size={16}
-                          color={colors.warning.DEFAULT}
+                          color={colors.primary.DEFAULT}
                           strokeWidth={2}
                         />
                       }
@@ -497,8 +389,19 @@ export default function NewSupplierModal({
                 </View>
               )}
             </ScrollView>
-          );
-        }}
+
+            {/* ── Sticky CTA ── */}
+            <View className="pt-4">
+              <Button
+                title="Add Supplier"
+                onPress={handleSubmit}
+                loading={loading}
+                icon={<UserPlus size={18} color="#FFFFFF" strokeWidth={2} />}
+                iconPosition="left"
+              />
+            </View>
+          </>
+        )}
       </Formik>
     </AppModal>
   );
