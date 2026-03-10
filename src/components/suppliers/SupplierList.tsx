@@ -1,6 +1,6 @@
-import { Building2, Plus, Truck } from "lucide-react-native";
+import { Truck } from "lucide-react-native";
 import { useCallback } from "react";
-import { FlatList, RefreshControl, View } from "react-native";
+import { FlatList, RefreshControl } from "react-native";
 import { Supplier } from "../../types/supplier";
 import { colors } from "../../utils/theme";
 import EmptyState from "../feedback/EmptyState";
@@ -8,32 +8,9 @@ import ErrorState from "../feedback/ErrorState";
 import Loader from "../feedback/Loader";
 import SupplierCard from "./SupplierCard";
 
-// ── Supplier-specific empty state icon: building + green plus badge ───────────
+// ── Supplier-specific empty state icon: truck (amber, no badge) ───────────────
 const SupplierEmptyIcon = (
-  <View style={{ width: 64, height: 64 }}>
-    <Building2 size={64} color={colors.warning.DEFAULT} strokeWidth={1.5} />
-    <View
-      style={{
-        position: "absolute",
-        top: -4,
-        right: -6,
-        width: 22,
-        height: 22,
-        borderRadius: 11,
-        backgroundColor: colors.primary.DEFAULT,
-        alignItems: "center",
-        justifyContent: "center",
-        borderWidth: 2,
-        borderColor: "#FFFFFF",
-      }}
-    >
-      <Plus size={11} color="#FFFFFF" strokeWidth={3} />
-    </View>
-  </View>
-);
-
-const SupplierEmptyCtaIcon = (
-  <Truck size={18} color="#FFFFFF" strokeWidth={2} />
+  <Truck size={56} color={colors.warning.DEFAULT} strokeWidth={1.5} />
 );
 
 export default function SupplierList({
@@ -80,14 +57,13 @@ export default function SupplierList({
       }
       ListEmptyComponent={
         <EmptyState
-          title="No suppliers yet"
-          description="Add your first supplier to track deliveries and payments"
+          title="No suppliers added"
+          description="Track what you owe your distributors and suppliers"
           icon={SupplierEmptyIcon}
           iconBgColor={colors.warning.bg}
           iconSize={112}
           cta={onAddSupplier ? "Add Supplier" : undefined}
           onCta={onAddSupplier}
-          ctaIcon={onAddSupplier ? SupplierEmptyCtaIcon : undefined}
         />
       }
       ListFooterComponent={
