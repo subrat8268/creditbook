@@ -140,6 +140,7 @@ CREATE TABLE IF NOT EXISTS payments (
   amount NUMERIC(10,2) NOT NULL,
   payment_mode TEXT NOT NULL CHECK (payment_mode IN ('Cash', 'UPI', 'NEFT', 'Draft', 'Cheque')),
   payment_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  notes TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

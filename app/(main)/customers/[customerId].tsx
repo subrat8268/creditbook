@@ -694,6 +694,7 @@ export default function CustomerDetailScreen() {
           orderId={customer.pendingOrderId!}
           balanceDue={customer.pendingOrderBalance ?? 0}
           customerId={customer.id}
+          customerName={customer.name}
         />
       )}
     </SafeAreaView>

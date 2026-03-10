@@ -7,6 +7,7 @@ interface RecordPaymentProps {
   amount: number;
   mode: "Cash" | "UPI" | "NEFT" | "Draft" | "Cheque";
   markFull: boolean;
+  notes?: string;
 }
 
 export function usePayments(orderId: string, vendorId?: string) {
@@ -28,9 +29,9 @@ export function usePayments(orderId: string, vendorId?: string) {
 
   // Record a payment (partial or full)
   const recordPaymentMutation = useMutation<void, Error, RecordPaymentProps>({
-    mutationFn: async ({ amount, mode, markFull }) => {
+    mutationFn: async ({ amount, mode, markFull, notes }) => {
       if (!vendorId) throw new Error("Vendor ID is required");
-      await recordPayment(orderId, vendorId, amount, mode, markFull);
+      await recordPayment(orderId, vendorId, amount, mode, markFull, notes);
     },
 
     onMutate: () => {

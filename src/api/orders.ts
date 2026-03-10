@@ -183,6 +183,7 @@ export async function recordPayment(
   amount: number,
   paymentMode: PaymentMode,
   markFull: boolean,
+  notes?: string,
 ): Promise<void> {
   // 1. Get current order
   const { data: order, error: orderErr } = await supabase
@@ -203,14 +204,17 @@ export async function recordPayment(
   if (paymentAmount <= 0) throw new Error("Invalid payment amount");
 
   // 3. Insert into payments
-  const { error: insertErr } = await supabase.from("payments").insert([
-    {
-      order_id: orderId,
-      vendor_id: vendorId,
-      amount: paymentAmount,
-      payment_mode: paymentMode,
-    },
-  ]);
+  const paymentRow: Record<string, unknown> = {
+    order_id: orderId,
+    vendor_id: vendorId,
+    amount: paymentAmount,
+    payment_mode: paymentMode,
+  };
+  if (notes?.trim()) paymentRow.notes = notes.trim();
+
+  const { error: insertErr } = await supabase
+    .from("payments")
+    .insert([paymentRow]);
   if (insertErr) throw insertErr;
 
   // 4. Update order
