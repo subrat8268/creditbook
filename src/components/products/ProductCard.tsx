@@ -1,14 +1,12 @@
 import { ProductVariant } from "@/src/api/products";
 import { colors } from "@/src/utils/theme";
-import { Image } from "expo-image";
-import { EllipsisVertical, Package } from "lucide-react-native";
+import { ChevronRight, Package } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
 interface ProductCardProps {
   name: string;
   basePrice: number;
   variants?: ProductVariant[];
-  image?: string;
   onOptionsPress: () => void;
 }
 
@@ -16,70 +14,80 @@ export default function ProductCard({
   name,
   basePrice,
   variants,
-  image,
   onOptionsPress,
 }: ProductCardProps) {
+  const variantCount = variants?.length ?? 0;
+  // Display price: if variants exist, show lowest variant price; otherwise base price
+  const displayPrice =
+    variantCount > 0 ? Math.min(...variants!.map((v) => v.price)) : basePrice;
+
   return (
-    <View className="flex items-center justify-between bg-white border-neutral-300 border p-4 rounded-xl mb-4">
-      <View className="flex-row items-center justify-between w-full">
-        <View className="flex-row items-center flex-1">
-          {image ? (
-            <Image
-              style={{
-                width: 60,
-                height: 72,
-                borderRadius: 12,
-                marginRight: 12,
-              }}
-              contentFit="fill"
-              source={{ uri: image }}
-            />
-          ) : (
-            <View className="w-12 h-12 rounded-lg bg-neutral-200 mr-3 items-center justify-center">
-              <Package
-                size={24}
-                color={colors.neutral[600]}
-                strokeWidth={1.5}
-              />
-            </View>
-          )}
-          <View className="flex-1">
-            <Text className="font-inter-medium text-lg text-neutral-900">
-              {name}
-            </Text>
-            <Text className=" text-primary font-inter-semibold">
-              Price: ₹{basePrice}
-            </Text>
-          </View>
-        </View>
-        <TouchableOpacity onPress={onOptionsPress}>
-          <EllipsisVertical
-            size={20}
-            color={colors.neutral[400]}
-            strokeWidth={2}
-          />
-        </TouchableOpacity>
+    <TouchableOpacity
+      onPress={onOptionsPress}
+      activeOpacity={0.7}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: colors.white,
+        borderRadius: 14,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: colors.neutral[100],
+      }}
+    >
+      {/* Icon box */}
+      <View
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 10,
+          backgroundColor: colors.neutral[100],
+          alignItems: "center",
+          justifyContent: "center",
+          marginRight: 14,
+          flexShrink: 0,
+        }}
+      >
+        <Package size={22} color={colors.neutral[500]} strokeWidth={1.5} />
       </View>
-      <View className="w-full">
-        {/* Show variants if present */}
-        {variants && variants.length > 0 && (
-          <View className="mt-2">
-            {variants.map((variant, idx) => (
-              <View
-                key={idx}
-                className="flex-row justify-between items-center py-2 mt-1 px-3 border bg-neutral-100 border-neutral-200 rounded-lg mb-1"
-              >
-                <Text className="text-neutral-900 font-inter-medium">
-                  {variant.variant_name}
-                </Text>
-                <Text className="text-primary font-inter-semibold">
-                  ₹{variant.price}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
+
+      {/* Name + variant count */}
+      <View style={{ flex: 1 }}>
+        <Text
+          style={{
+            fontSize: 15,
+            fontWeight: "700",
+            color: colors.neutral[900],
+            marginBottom: 2,
+          }}
+          numberOfLines={1}
+        >
+          {name}
+        </Text>
+        <Text style={{ fontSize: 13, color: colors.neutral[400] }}>
+          {variantCount === 1
+            ? "1 variant"
+            : variantCount > 1
+              ? `${variantCount} variants`
+              : "No variants"}
+        </Text>
       </View>
-    </View>
+
+      {/* Price + chevron */}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+        <Text
+          style={{
+            fontSize: 15,
+            fontWeight: "700",
+            color: colors.neutral[900],
+          }}
+        >
+          ₹{displayPrice.toLocaleString("en-IN")}
+        </Text>
+        <ChevronRight size={16} color={colors.neutral[400]} strokeWidth={2} />
+      </View>
+    </TouchableOpacity>
   );
 }

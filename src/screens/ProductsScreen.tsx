@@ -1,17 +1,22 @@
-import { Package } from "lucide-react-native";
-import { useCallback, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { FlatList, Text, View } from "react-native";
+import { Package, Search, X } from "lucide-react-native";
+import { useCallback, useMemo, useState } from "react";
+import {
+  FlatList,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import NewProductModal, {
   type ProductSubmitValues,
 } from "../components/products/NewProductModal";
 import ProductActionsModal from "../components/products/ProductActionsModal";
 import ProductCard from "../components/products/ProductCard";
-import ScreenWrapper from "../components/ScreenWrapper";
 import ConfirmModal from "../components/ui/ConfirmModal";
 import FloatingActionButton from "../components/ui/FloatingActionButton";
-import SearchBar from "../components/ui/SearchBar";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import {
   useAddProduct,
@@ -22,18 +27,34 @@ import {
 import { useAuthStore } from "../store/authStore";
 import { colors } from "../utils/theme";
 
+// ── Category chips ────────────────────────────────────────
+// "keyword" is sent as the search query when chip is selected.
+// Add more categories here as the catalog grows.
+const CATEGORIES = [
+  { label: "All", keyword: "" },
+  { label: "Rice & Grains", keyword: "rice" },
+  { label: "Oils", keyword: "oil" },
+  { label: "Dairy", keyword: "butter" },
+  { label: "Dal", keyword: "dal" },
+  { label: "Drinks", keyword: "cola" },
+];
+
 export default function ProductsScreen() {
   const { profile } = useAuthStore();
   const vendorId = profile?.id;
-  const { t } = useTranslation();
 
   const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState("");
+  const [searchVisible, setSearchVisible] = useState(false);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Combine the free-text search and category keyword
+  const effectiveSearch = search || activeCategory;
 
   const {
     data: products,
@@ -43,12 +64,18 @@ export default function ProductsScreen() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useProducts(vendorId, search);
+  } = useProducts(vendorId, effectiveSearch);
 
   const addProductMutation = useAddProduct(vendorId!);
   const updateProductMutation = useUpdateProduct(vendorId!);
   const deleteProductMutation = useDeleteProduct(vendorId!);
 
+  const totalCount = useMemo(
+    () => (products ?? []).length,
+    [products],
+  );
+
+  // ── Handlers ────────────────────────────────────────────
   const handleAddProduct = async (values: ProductSubmitValues) => {
     try {
       await addProductMutation.mutateAsync({
@@ -95,7 +122,6 @@ export default function ProductsScreen() {
     }
   };
 
-  // Close actions menu and open the delete confirmation sheet
   const handleRequestDelete = () => {
     setIsActionsOpen(false);
     setTimeout(() => setShowDeleteConfirm(true), 300);
@@ -121,7 +147,27 @@ export default function ProductsScreen() {
     setIsActionsOpen(true);
   };
 
-  const PRODUCT_ITEM_H = 72;
+  const handleEditPress = () => {
+    if (!selectedProduct) return;
+    setEditingProduct(selectedProduct);
+    setIsActionsOpen(false);
+    setIsBottomSheetOpen(true);
+  };
+
+  const handleSelectCategory = (keyword: string) => {
+    setActiveCategory(keyword);
+    setSearch("");           // clear free-text when picking a chip
+    setSearchVisible(false); // hide search bar
+  };
+
+  const handleToggleSearch = () => {
+    setSearchVisible((v) => {
+      if (v) setSearch(""); // clear on hide
+      return !v;
+    });
+  };
+
+  const PRODUCT_ITEM_H = 70;
 
   const renderProductItem = useCallback(
     ({ item }: { item: any }) => (
@@ -132,26 +178,159 @@ export default function ProductsScreen() {
         onOptionsPress={() => handleOptionsPress(item)}
       />
     ),
-
     [],
   );
 
-  const handleEditPress = () => {
-    if (!selectedProduct) return;
-    setEditingProduct(selectedProduct);
-    setIsActionsOpen(false);
-    setIsBottomSheetOpen(true);
-  };
-
   return (
-    <ScreenWrapper>
-      <View className="mb-4">
-        <SearchBar
-          value={search}
-          onChangeText={setSearch}
-          placeholder={t("products.search")}
-        />
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.neutral.bg }}
+      edges={["top", "left", "right"]}
+    >
+      {/* ── Header ── */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 20,
+          paddingBottom: 12,
+          paddingTop: 4,
+          backgroundColor: colors.neutral.bg,
+        }}
+      >
+        {/* Title + count */}
+        <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <Text
+            style={{
+              fontSize: 22,
+              fontWeight: "800",
+              color: colors.neutral[900],
+            }}
+          >
+            Products
+          </Text>
+          {totalCount > 0 && (
+            <View
+              style={{
+                backgroundColor: colors.primary.light ?? "#DCFCE7",
+                borderRadius: 20,
+                paddingHorizontal: 10,
+                paddingVertical: 3,
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.primary.DEFAULT,
+                  fontSize: 13,
+                  fontWeight: "700",
+                }}
+              >
+                {totalCount}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Search icon toggle */}
+        <TouchableOpacity
+          onPress={handleToggleSearch}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          {searchVisible ? (
+            <X size={22} color={colors.neutral[700]} strokeWidth={2} />
+          ) : (
+            <Search size={22} color={colors.neutral[700]} strokeWidth={2} />
+          )}
+        </TouchableOpacity>
       </View>
+
+      {/* ── Search input (shown when toggled) ── */}
+      {searchVisible && (
+        <View style={{ paddingHorizontal: 20, paddingBottom: 10 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: colors.white,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: colors.neutral[200],
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              gap: 8,
+            }}
+          >
+            <Search size={16} color={colors.neutral[400]} strokeWidth={2} />
+            <TextInput
+              autoFocus
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Search products..."
+              placeholderTextColor={colors.neutral[400]}
+              style={{
+                flex: 1,
+                fontSize: 14,
+                color: colors.neutral[900],
+              }}
+            />
+            {search.length > 0 && (
+              <TouchableOpacity
+                onPress={() => setSearch("")}
+                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+              >
+                <X size={14} color={colors.neutral[400]} strokeWidth={2} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      )}
+
+      {/* ── Category chips ── */}
+      {!searchVisible && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingBottom: 12,
+            gap: 8,
+          }}
+        >
+          {CATEGORIES.map((cat) => {
+            const isActive = activeCategory === cat.keyword;
+            return (
+              <TouchableOpacity
+                key={cat.label}
+                onPress={() => handleSelectCategory(cat.keyword)}
+                activeOpacity={0.75}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 50,
+                  backgroundColor: isActive
+                    ? colors.primary.DEFAULT
+                    : colors.white,
+                  borderWidth: 1,
+                  borderColor: isActive
+                    ? colors.primary.DEFAULT
+                    : colors.neutral[200],
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: isActive ? "700" : "500",
+                    color: isActive ? colors.white : colors.neutral[700],
+                  }}
+                >
+                  {cat.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      )}
+
+      {/* ── List ── */}
       <FlatList
         data={products ?? []}
         keyExtractor={(item) => item.id}
@@ -168,21 +347,53 @@ export default function ProductsScreen() {
           offset: PRODUCT_ITEM_H * i,
           index: i,
         })}
-        contentContainerStyle={{ paddingBottom: 80 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
         ListEmptyComponent={
           !isLoading && !error ? (
-            <View className="items-center mt-10">
-              <Package
-                size={40}
-                color={colors.neutral[400]}
-                strokeWidth={1.2}
-              />
-              <Text className="text-neutral-500 mt-2">No products found</Text>
+            <View style={{ alignItems: "center", marginTop: 60 }}>
+              <View
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  backgroundColor: colors.neutral[100],
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <Package
+                  size={36}
+                  color={colors.neutral[400]}
+                  strokeWidth={1.2}
+                />
+              </View>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "700",
+                  color: colors.neutral[900],
+                  marginBottom: 6,
+                }}
+              >
+                No products found
+              </Text>
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: colors.neutral[400],
+                  textAlign: "center",
+                  paddingHorizontal: 40,
+                }}
+              >
+                Add products to see them in search when creating a bill
+              </Text>
             </View>
           ) : null
         }
       />
 
+      {/* ── FAB ── */}
       <FloatingActionButton
         onPress={() => {
           setEditingProduct(null);
@@ -190,6 +401,7 @@ export default function ProductsScreen() {
         }}
       />
 
+      {/* ── Modals ── */}
       <NewProductModal
         title={editingProduct ? "Edit" : "Add"}
         visible={isBottomSheetOpen}
@@ -227,6 +439,6 @@ export default function ProductsScreen() {
         }}
         loading={deleteProductMutation.isPending}
       />
-    </ScreenWrapper>
+    </SafeAreaView>
   );
 }
