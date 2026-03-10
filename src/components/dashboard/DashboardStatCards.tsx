@@ -31,7 +31,9 @@ export default function DashboardStatCards({
             <Users size={20} color="#22C55E" strokeWidth={1.8} />
           </View>
         </View>
-        <Text className="text-[13px] text-textPrimary mt-1.5">Active Buyers</Text>
+        <Text className="text-[13px] text-textPrimary mt-1.5">
+          Active Buyers
+        </Text>
       </View>
 
       {/* Overdue Accounts */}
@@ -53,7 +55,9 @@ export default function DashboardStatCards({
             <AlertTriangle size={20} color="#E74C3C" strokeWidth={1.8} />
           </View>
         </View>
-        <Text className="text-[13px] text-textPrimary mt-1.5">Overdue Accounts</Text>
+        <Text className="text-[13px] text-textPrimary mt-1.5">
+          Overdue Accounts
+        </Text>
       </View>
     </View>
   );

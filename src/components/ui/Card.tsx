@@ -1,4 +1,3 @@
-import { colors } from "@/src/utils/theme";
 import { clsx } from "clsx";
 import React from "react";
 import { Text, View } from "react-native";
@@ -19,9 +18,7 @@ const Card = ({ title, value, icon, className }: CardProps) => {
       )}
     >
       <View>
-        <Text className="mb-1" style={{ color: colors.neutral[500] }}>
-          {title}
-        </Text>
+        <Text className="mb-1 text-textSecondary">{title}</Text>
         <Text className="text-2xl font-semibold">{value}</Text>
       </View>
       {icon && <View className="bg-icon p-3 rounded-full">{icon}</View>}

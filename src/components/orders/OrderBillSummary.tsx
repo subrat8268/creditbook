@@ -127,17 +127,15 @@ export default function OrderBillSummary({
         {/* Previous balance */}
         <View className="flex-row justify-between items-center">
           <Text
-            className="text-sm font-inter-medium"
-            style={{ color: colors.danger.DEFAULT }}
+            className="text-sm font-inter-medium text-danger"
           >
             Previous Balance
           </Text>
           {isFetchingBalance ? (
-            <ActivityIndicator size="small" color={colors.danger.DEFAULT} />
+            <ActivityIndicator size="small" color="#E74C3C" />
           ) : (
             <Text
-              className="text-sm font-inter-semibold"
-              style={{ color: colors.danger.DEFAULT }}
+              className="text-sm font-inter-semibold text-danger"
             >
               ₹{previousBalance.toLocaleString("en-IN")}
             </Text>
@@ -149,10 +147,10 @@ export default function OrderBillSummary({
 
         {/* Grand Total */}
         <View className="flex-row justify-between items-center">
-          <Text style={{ fontSize: 15, fontWeight: "700", color: colors.neutral[900] }}>
+          <Text className="text-[15px] font-bold text-textDark">
             Grand Total
           </Text>
-          <Text style={{ fontSize: 28, fontWeight: "700", color: colors.neutral[900] }}>
+          <Text className="text-[28px] font-bold text-textDark">
             ₹{grandTotal.toLocaleString("en-IN")}
           </Text>
         </View>
@@ -180,7 +178,7 @@ export default function OrderBillSummary({
           onPress={onSendBill}
           className="flex-1 bg-green-600 py-3 rounded-xl flex-row justify-center items-center"
         >
-          <MessageSquare size={20} color={colors.white} strokeWidth={2} />
+          <MessageSquare size={20} color="#FFFFFF" strokeWidth={2} />
           <Text className="text-white text-center font-inter-semibold text-base ml-2">
             Send Bill
           </Text>

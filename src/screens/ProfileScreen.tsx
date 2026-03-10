@@ -64,11 +64,9 @@ export default function ProfileScreen() {
         </Text>
 
         {/* Profile Avatar */}
-        <View style={{ alignItems: "center", marginBottom: 24 }}>
+        <View className="items-center mb-6">
           <View className="w-[72px] h-[72px] rounded-full bg-primary items-center justify-center">
-            <Text
-              style={{ color: colors.white, fontSize: 22, fontWeight: "700" }}
-            >
+            <Text className="text-white text-[22px] font-bold">
               {getInitials(profile.business_name)}
             </Text>
           </View>

@@ -33,7 +33,9 @@ export default function DashboardActionBar({
         onPress={onSendReminder}
       >
         <Send size={18} color="#22C55E" strokeWidth={2} />
-        <Text className="text-sm font-semibold text-primary">Send Reminder</Text>
+        <Text className="text-sm font-semibold text-primary">
+          Send Reminder
+        </Text>
       </TouchableOpacity>
     </View>
   );

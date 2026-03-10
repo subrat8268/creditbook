@@ -1,4 +1,3 @@
-import { colors } from "@/src/utils/theme";
 import React from "react";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,13 +12,8 @@ export default function ScreenWrapper({
   edges = ["left", "right"],
 }: ScreenWrapperProps) {
   return (
-    <SafeAreaView
-      edges={edges}
-      style={{ flex: 1, backgroundColor: colors.white }}
-    >
-      <View style={{ flex: 1, paddingVertical: 16, paddingHorizontal: 24 }}>
-        {children}
-      </View>
+    <SafeAreaView edges={edges} className="flex-1 bg-white">
+      <View className="flex-1 py-4 px-6">{children}</View>
     </SafeAreaView>
   );
 }

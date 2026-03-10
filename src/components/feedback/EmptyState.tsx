@@ -26,33 +26,23 @@ export default function EmptyState({
   return (
     <View className="flex-1 items-center justify-center px-8 py-12">
       {/* Icon circle — neutral.100 background */}
-      <View
-        className="w-[72px] h-[72px] rounded-full items-center justify-center mb-4"
-        style={{ backgroundColor: colors.neutral.bg }}
-      >
-        <CircleOff size={36} color={colors.neutral[400]} strokeWidth={1.5} />
+      <View className="w-[72px] h-[72px] rounded-full bg-background items-center justify-center mb-4">
+        <CircleOff size={36} color="#AEAEB2" strokeWidth={1.5} />
       </View>
 
-      <Text
-        className="text-[17px] font-bold text-center mb-1.5"
-        style={{ color: colors.neutral[900] }}
-      >
+      <Text className="text-[17px] font-bold text-textDark text-center mb-1.5">
         {heading}
       </Text>
 
       {sub ? (
-        <Text
-          className="text-[14px] text-center leading-5 mb-5"
-          style={{ color: colors.neutral[500] }}
-        >
+        <Text className="text-[14px] text-textSecondary text-center leading-5 mb-5">
           {sub}
         </Text>
       ) : null}
 
       {cta && onCta ? (
         <TouchableOpacity
-          className="mt-2 rounded-xl bg-primary items-center justify-center"
-          style={{ height: 52, paddingHorizontal: 32 }}
+          className="mt-2 rounded-xl bg-primary items-center justify-center h-[52px] px-8"
           onPress={onCta}
           activeOpacity={0.8}
         >

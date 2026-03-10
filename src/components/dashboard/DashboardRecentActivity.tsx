@@ -21,7 +21,9 @@ export default function DashboardRecentActivity({ items, onViewAll }: Props) {
       {items.length === 0 ? (
         <View className="bg-white rounded-2xl p-8 items-center">
           <Receipt size={36} color="#AEAEB2" strokeWidth={1.5} />
-          <Text className="text-textMuted mt-2.5 text-sm">No recent activity</Text>
+          <Text className="text-textMuted mt-2.5 text-sm">
+            No recent activity
+          </Text>
         </View>
       ) : (
         items.map((item) => <ActivityRow key={item.id} item={item} />)

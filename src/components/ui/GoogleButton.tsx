@@ -1,4 +1,3 @@
-import { colors } from "@/src/utils/theme";
 import { Text, TouchableOpacity } from "react-native";
 import GoogleLogo from "./GoogleLogo";
 
@@ -15,13 +14,8 @@ export default function GoogleButton({ onPress, isPending, disabled }: Props) {
       activeOpacity={0.75}
       onPress={onPress}
       disabled={disabled || isPending}
-      className="flex-row items-center justify-center rounded-2xl h-14 gap-3"
-      style={{
-        borderWidth: 1,
-        borderColor: colors.neutral[200],
-        backgroundColor: colors.white,
-        opacity: isPending ? 0.6 : 1,
-      }}
+      className="flex-row items-center justify-center rounded-2xl h-14 gap-3 bg-white border border-border"
+      style={{ opacity: isPending ? 0.6 : 1 }}
     >
       <GoogleLogo size={22} />
       <Text className="text-textDark font-semibold text-[15px]">

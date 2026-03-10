@@ -131,13 +131,12 @@ export default function CustomerCard({
       {/* Name + Phone */}
       <View className="flex-1 mr-[10px]">
         <Text
-          className="text-[15px] font-semibold mb-[3px]"
-          style={{ color: colors.neutral[900] }}
+          className="text-[15px] font-semibold mb-[3px] text-textDark"
           numberOfLines={1}
         >
           {name}
         </Text>
-        <Text className="text-[13px]" style={{ color: colors.neutral[500] }}>
+        <Text className="text-[13px] text-textSecondary">
           {phone}
         </Text>
       </View>
