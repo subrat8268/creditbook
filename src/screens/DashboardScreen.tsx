@@ -13,7 +13,6 @@ import Loader from "../components/feedback/Loader";
 import { useAddCustomer } from "../hooks/useCustomer";
 import { useDashboard } from "../hooks/useDashboard";
 import { useAuthStore } from "../store/authStore";
-import { formatINR } from "../utils/dashboardUi";
 
 // ─────────────── Main Screen ────────────
 export const DashboardScreen = () => {
@@ -63,6 +62,7 @@ export const DashboardScreen = () => {
       <StatusBar barStyle="dark-content" backgroundColor="#F6F7F9" />
 
       <DashboardHeader
+        variant={isBothMode ? "both" : "default"}
         overdueCount={data.overdueCustomers}
         onPressSettings={() => router.push("/(main)/profile")}
       />
@@ -72,55 +72,32 @@ export const DashboardScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         {isBothMode ? (
-          <View
-            className="bg-white rounded-3xl p-5 mb-3"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.07,
-              shadowRadius: 12,
-              elevation: 4,
-            }}
-          >
-            {/* Split row */}
-            <View className="flex-row gap-3 mb-3">
-              {/* Customers owe me */}
-              <View className="flex-1 bg-success-bg rounded-2xl p-4">
-                <Text className="text-[10px] tracking-widest text-primary-dark font-bold mb-1.5">
-                  YOU RECEIVE
-                </Text>
-                <Text className="text-[22px] font-extrabold text-primary-dark tracking-tight">
-                  {formatINR(data.customersOweMe)}
-                </Text>
-              </View>
-
-              {/* I owe suppliers */}
-              <View className="flex-1 bg-danger-bg rounded-2xl p-4">
-                <Text className="text-[10px] tracking-widest text-danger-strong font-bold mb-1.5">
-                  YOU OWE
-                </Text>
-                <Text className="text-[22px] font-extrabold text-danger-strong tracking-tight">
-                  {formatINR(data.iOweSuppliers)}
-                </Text>
-              </View>
-            </View>
-
-            {/* Net Position */}
-            <View className="flex-row justify-between items-center bg-background rounded-xl px-4 py-2.5">
-              <Text className="text-[13px] font-semibold text-textPrimary tracking-wide">
-                NET POSITION
-              </Text>
-              <Text
-                className="text-lg font-extrabold tracking-tight"
-                style={{
-                  color: data.netPosition >= 0 ? "#16A34A" : "#DC2626",
-                }}
-              >
-                {data.netPosition >= 0 ? "+" : ""}
-                {formatINR(data.netPosition)}
-              </Text>
-            </View>
-          </View>
+          <>
+            <DashboardHeroCard
+              variant="seller"
+              label="CUSTOMERS OWE ME"
+              amount={data.customersOweMe}
+              onPrimaryAction={() => router.push("/(main)/reports" as any)}
+              onSecondaryAction={() => {
+                // TODO(v3.6): WhatsApp bulk reminder
+              }}
+            />
+            <DashboardHeroCard
+              variant="distributor"
+              label="I OWE SUPPLIERS"
+              amount={data.iOweSuppliers}
+              subInfo={`${data.activeSuppliers} active supplier${data.activeSuppliers !== 1 ? "s" : ""}`}
+              onPrimaryAction={() => router.push("/(main)/suppliers" as any)}
+              onSecondaryAction={() => {
+                // TODO(v3.6): Record Delivery sheet
+              }}
+            />
+            <DashboardHeroCard
+              variant="net"
+              label="NET POSITION"
+              amount={data.netPosition}
+            />
+          </>
         ) : (
           <DashboardHeroCard
             variant={isDistributor ? "distributor" : "seller"}
@@ -150,18 +127,19 @@ export const DashboardScreen = () => {
         )}
 
         <DashboardStatCards
-          mode={isDistributor ? "distributor" : "seller"}
+          mode={isBothMode ? "both" : isDistributor ? "distributor" : "seller"}
           primaryCount={
             isDistributor ? data.activeSuppliers : data.activeBuyers
           }
           overdueCount={
             isDistributor ? data.overduePayments : data.overdueCustomers
           }
+          activeSuppliers={data.activeSuppliers}
+          overdueSuppliers={data.overduePayments}
         />
 
         <DashboardRecentActivity
           items={data.recentActivity}
-          isSupplier={isDistributor}
           onViewAll={() =>
             router.push(
               isDistributor

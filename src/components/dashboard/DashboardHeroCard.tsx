@@ -5,9 +5,10 @@ import { BarChart2, Smartphone, Truck, Users2 } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-// variant "seller"      → solid red hero, "View Report" + "Send Reminder"
-// variant "distributor" → pink gradient hero, "View Suppliers" + "Record Delivery"
-type Variant = "seller" | "distributor";
+// seller      → solid red, "View Report" + "Send Reminder"
+// distributor → pink gradient, "View Suppliers →" + "Record Delivery"
+// net         → dark navy gradient, no action buttons (NET POSITION card for both mode)
+type Variant = "seller" | "distributor" | "net";
 
 type Props = {
   variant?: Variant;
@@ -34,6 +35,8 @@ const DISTRIBUTOR_CONFIG = {
 
 // Distributor gradient: deep crimson-rose → magenta-rose
 const DISTRIBUTOR_GRADIENT: readonly [string, string] = ["#B91C6A", "#E8336E"];
+// Net Position gradient: dark navy (both mode)
+const NET_GRADIENT: readonly [string, string] = ["#1E293B", "#0F172A"];
 
 // ─── DashboardHeroCard ───────────────────────────────────────────────────────
 export default function DashboardHeroCard({
@@ -46,10 +49,43 @@ export default function DashboardHeroCard({
   onSecondaryAction,
 }: Props) {
   const isDistributor = variant === "distributor";
+  const isNet = variant === "net";
   const config = isDistributor ? DISTRIBUTOR_CONFIG : SELLER_CONFIG;
 
   const showDelta = weekDelta !== undefined && weekDelta !== 0;
   const deltaUp = (weekDelta ?? 0) >= 0;
+
+  // ── Net Position card — dark gradient, no buttons ─────────────────────────
+  if (isNet) {
+    return (
+      <LinearGradient
+        colors={NET_GRADIENT}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        className="rounded-3xl p-6 mb-3"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.3,
+          shadowRadius: 16,
+          elevation: 8,
+        }}
+      >
+        <Text
+          className="text-[11px] font-bold tracking-[1.6px] mb-2.5"
+          style={{ color: "rgba(255,255,255,0.6)" }}
+        >
+          {label}
+        </Text>
+        <Text
+          className="font-extrabold tracking-tight"
+          style={{ color: colors.white, fontSize: 40, lineHeight: 48 }}
+        >
+          {amount < 0 ? "−" : ""}{formatINR(Math.abs(amount))}
+        </Text>
+      </LinearGradient>
+    );
+  }
 
   const PrimaryIcon = config.primary.icon;
   const SecondaryIcon = config.secondary.icon;

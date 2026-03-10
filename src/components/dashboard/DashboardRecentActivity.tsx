@@ -6,14 +6,11 @@ import ActivityRow from "./ActivityRow";
 type Props = {
   items: RecentActivityItem[];
   onViewAll?: () => void;
-  /** Pass true in distributor mode to render supplier-style icon avatars */
-  isSupplier?: boolean;
 };
 
 export default function DashboardRecentActivity({
   items,
   onViewAll,
-  isSupplier = false,
 }: Props) {
   return (
     <>
@@ -33,7 +30,7 @@ export default function DashboardRecentActivity({
         </View>
       ) : (
         items.map((item) => (
-          <ActivityRow key={item.id} item={item} isSupplier={isSupplier} />
+          <ActivityRow key={item.id} item={item} />
         ))
       )}
     </>

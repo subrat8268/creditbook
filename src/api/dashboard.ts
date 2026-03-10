@@ -2,7 +2,10 @@ import { supabase } from "@/src/services/supabase";
 
 export interface RecentActivityItem {
   id: string;
-  type: "payment" | "bill";
+  /** payment = money received from customer
+   *  bill     = outstanding customer invoice
+   *  delivery = supplier goods received (both/distributor modes) */
+  type: "payment" | "bill" | "delivery";
   title: string;
   name: string;
   date: string;
@@ -131,17 +134,26 @@ export async function getDashboardData(
     (d: any) => new Date(d.created_at) < thirtyDaysAgo,
   ).length;
 
-  // Recent activity — last 5 orders with customer name
-  const { data: recentOrders } = await supabase
-    .from("orders")
-    .select(
-      "id, bill_number, total_amount, amount_paid, balance_due, status, created_at, customers(name)",
-    )
-    .eq("vendor_id", vendorId)
-    .order("created_at", { ascending: false })
-    .limit(5);
+  // Recent activity — last 8 customer orders + last 4 supplier deliveries, merged by date
+  const [{ data: recentOrders }, { data: recentDeliveries }] =
+    await Promise.all([
+      supabase
+        .from("orders")
+        .select(
+          "id, bill_number, total_amount, amount_paid, balance_due, status, created_at, customers(name)",
+        )
+        .eq("vendor_id", vendorId)
+        .order("created_at", { ascending: false })
+        .limit(8),
+      supabase
+        .from("supplier_deliveries")
+        .select("id, total_amount, created_at, suppliers(name)")
+        .eq("vendor_id", vendorId)
+        .order("created_at", { ascending: false })
+        .limit(4),
+    ]);
 
-  const recentActivity: RecentActivityItem[] = (recentOrders ?? []).map(
+  const orderItems: RecentActivityItem[] = (recentOrders ?? []).map(
     (o: any) => {
       const customerName: string = o.customers?.name ?? "Unknown";
       const isPaid =
@@ -178,6 +190,26 @@ export async function getDashboardData(
       };
     },
   );
+
+  const deliveryItems: RecentActivityItem[] = (recentDeliveries ?? []).map(
+    (d: any) => {
+      const supplierName: string = d.suppliers?.name ?? "Supplier";
+      return {
+        id: `delivery-${d.id}`,
+        type: "delivery" as const,
+        name: supplierName,
+        title: `Inventory from ${supplierName}`,
+        date: d.created_at,
+        amount: Number(d.total_amount),
+        status: "Pending" as const,
+      };
+    },
+  );
+
+  // Merge and sort by date descending, cap at 8 items for the feed
+  const recentActivity: RecentActivityItem[] = [...orderItems, ...deliveryItems]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 8);
 
   return {
     totalRevenue,

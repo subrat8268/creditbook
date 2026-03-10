@@ -1,43 +1,47 @@
 import { RecentActivityItem } from "@/src/api/dashboard";
 import { formatDashboardDate, formatINR } from "@/src/utils/dashboardUi";
 import { colors } from "@/src/utils/theme";
-import { Store } from "lucide-react-native";
+import { CreditCard, FileText, Truck } from "lucide-react-native";
 import { Text, View } from "react-native";
 import StatusBadge from "./StatusBadge";
 
-const AVATAR_COLORS = [
-  "#EF4444",
-  "#F97316",
-  "#EAB308",
-  "#22C55E",
-  "#14B8A6",
-  "#3B82F6",
-  "#8B5CF6",
-  "#EC4899",
-];
+// ─── Type-driven icon config ──────────────────────────────────────────────────
+type IconCfg = {
+  bg: string;
+  icon: React.ComponentType<{ size: number; color: string; strokeWidth: number }>;
+  color: string;
+  label: string;
+};
 
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
-}
-
-function getAvatarColor(name: string): string {
-  const sum = name.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  return AVATAR_COLORS[sum % 8];
-}
+const ICON_CONFIG: Record<string, IconCfg> = {
+  payment: {
+    bg: colors.success.light ?? "#DCFCE7",
+    icon: CreditCard,
+    color: colors.success.dark ?? "#166534",
+    label: "Customer Payment",
+  },
+  delivery: {
+    bg: colors.warning.light ?? "#FEF3C7",
+    icon: Truck,
+    color: colors.warning.dark ?? "#92400E",
+    label: "Inventory Received",
+  },
+  bill: {
+    bg: colors.neutral[100],
+    icon: FileText,
+    color: colors.neutral[500],
+    label: "Bill Created",
+  },
+};
 
 type Props = {
   item: RecentActivityItem;
-  /** When true: renders a gray Store icon avatar instead of color-initials circle */
-  isSupplier?: boolean;
 };
 
-export default function ActivityRow({ item, isSupplier = false }: Props) {
-  const initials = getInitials(item.name || "?");
-  const avatarColor = getAvatarColor(item.name || "?");
-  const isPaid = item.status === "Paid";
-  // Money received (payment) → green +; outstanding bill → red −
+export default function ActivityRow({ item }: Props) {
+  const cfg = ICON_CONFIG[item.type] ?? ICON_CONFIG.bill;
+  const IconComp = cfg.icon;
+  // Money received (payment) → green +; anything else → red −
   const isIncoming = item.type === "payment";
 
   return (
@@ -51,22 +55,13 @@ export default function ActivityRow({ item, isSupplier = false }: Props) {
         elevation: 2,
       }}
     >
-      {/* Avatar — supplier: gray icon square | customer: colored initials circle */}
-      {isSupplier ? (
-        <View
-          className="w-9 h-9 rounded-xl items-center justify-center"
-          style={{ backgroundColor: colors.neutral[100] }}
-        >
-          <Store size={18} color={colors.neutral[500]} strokeWidth={1.75} />
-        </View>
-      ) : (
-        <View
-          className="w-9 h-9 rounded-full items-center justify-center"
-          style={{ backgroundColor: avatarColor }}
-        >
-          <Text className="text-white font-bold text-[13px]">{initials}</Text>
-        </View>
-      )}
+      {/* Type icon square */}
+      <View
+        className="w-9 h-9 rounded-xl items-center justify-center"
+        style={{ backgroundColor: cfg.bg }}
+      >
+        <IconComp size={18} color={cfg.color} strokeWidth={1.75} />
+      </View>
 
       <View className="flex-1">
         <Text
@@ -76,7 +71,7 @@ export default function ActivityRow({ item, isSupplier = false }: Props) {
           {item.title}
         </Text>
         <Text className="text-xs text-textSecondary">
-          {formatDashboardDate(item.date)}
+          {cfg.label} · {formatDashboardDate(item.date)}
         </Text>
       </View>
 
