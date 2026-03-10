@@ -55,6 +55,7 @@ export default function CustomerList({
         phone={item.phone}
         isOverdue={item.isOverdue}
         outstandingBalance={item.outstandingBalance}
+        lastActiveAt={item.lastActiveAt}
         onPress={() => onPressCustomer(item.id)}
       />
     ),

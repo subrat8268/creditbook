@@ -7,6 +7,8 @@ export interface Customer {
   created_at: string;
   isOverdue?: boolean;
   outstandingBalance?: number;
+  /** ISO timestamp of the last order/payment activity with this customer */
+  lastActiveAt?: string;
 }
 
 export interface Transaction {

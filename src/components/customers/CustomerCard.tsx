@@ -1,4 +1,5 @@
 import { Image, Text, TouchableOpacity, View } from "react-native";
+import { formatRelativeActivity } from "../../utils/helper";
 import { colors } from "../../utils/theme";
 
 type CustomerStatus = "Overdue" | "Pending" | "Paid" | "Advance";
@@ -9,6 +10,8 @@ type Props = {
   avatar?: string;
   isOverdue?: boolean;
   outstandingBalance?: number;
+  /** ISO timestamp of last activity — shown as relative time */
+  lastActiveAt?: string;
   onPress?: () => void;
 };
 
@@ -48,10 +51,8 @@ function getStatus(isOverdue: boolean, balance: number): CustomerStatus {
 }
 
 function formatAmount(status: CustomerStatus, balance: number): string {
-  const abs = Math.abs(balance).toFixed(2);
-  if (status === "Advance") return `₹${abs}`;
-  if (status === "Paid") return "₹0.00";
-  return `-₹${abs}`;
+  if (status === "Paid") return "\u20B90";
+  return `\u20B9${Math.abs(balance).toLocaleString("en-IN")}`;
 }
 
 const STATUS_STYLES: Record<
@@ -95,6 +96,7 @@ export default function CustomerCard({
   avatar,
   isOverdue = false,
   outstandingBalance = 0,
+  lastActiveAt,
   onPress,
 }: Props) {
   const status = getStatus(isOverdue, outstandingBalance);
@@ -117,11 +119,11 @@ export default function CustomerCard({
       ) : (
         <View
           className="w-[52px] h-[52px] rounded-full mr-[14px] items-center justify-center"
-          style={{ backgroundColor: avatarColor + "22" }}
+          style={{ backgroundColor: avatarColor }}
         >
           <Text
             className="text-[17px] font-bold tracking-[0.3px]"
-            style={{ color: avatarColor }}
+            style={{ color: "#FFFFFF" }}
           >
             {getInitials(name)}
           </Text>
@@ -136,7 +138,9 @@ export default function CustomerCard({
         >
           {name}
         </Text>
-        <Text className="text-[13px] text-textSecondary">{phone}</Text>
+        <Text className="text-[13px] text-textSecondary">
+          Last activity: {formatRelativeActivity(lastActiveAt)}
+        </Text>
       </View>
 
       {/* Amount + Badge */}
