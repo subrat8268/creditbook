@@ -1,336 +1,608 @@
-import { uploadImage } from "@/src/api/upload";
-import ImagePickerField from "@/src/components/ImagePickerField";
-import ScreenWrapper from "@/src/components/ScreenWrapper";
-import SubscriptionCard from "@/src/components/SubscriptionCard";
-import Loader from "@/src/components/feedback/Loader";
+﻿import { Stack, useRouter } from "expo-router";
+import {
+  ArrowLeft,
+  Building2,
+  ChevronRight,
+  CreditCard,
+  Download,
+  Hash,
+  Info,
+  Languages,
+  LayoutGrid,
+  LogOut,
+  Receipt,
+  Smartphone,
+  Store,
+} from "lucide-react-native";
+import { ComponentType, ReactNode } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { useLanguageStore } from "@/src/store/languageStore";
 import { colors } from "@/src/utils/theme";
-import { useRouter } from "expo-router";
-import { ChevronRight, Download } from "lucide-react-native";
-import { useTranslation } from "react-i18next";
-import {
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from "react-native";
 
-const getInitials = (name?: string | null): string => {
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getInitials(name?: string | null): string {
   if (!name) return "CB";
   const parts = name.trim().split(/\s+/).slice(0, 2);
-  return parts.map((w) => w[0]?.toUpperCase() || "").join("");
-};
+  return parts.map((w) => w[0]?.toUpperCase() ?? "").join("");
+}
+
+function maskAccount(acc?: string | null): string {
+  if (!acc) return "—";
+  const cleaned = acc.replace(/\s/g, "");
+  if (cleaned.length <= 4) return cleaned;
+  return `**** **** ${cleaned.slice(-4)}`;
+}
+
+// ─── SectionCard ──────────────────────────────────────────────────────────────
+
+interface SectionCardProps {
+  title: string;
+  children: ReactNode;
+}
+
+function SectionCard({ title, children }: SectionCardProps) {
+  return (
+    <View style={styles.sectionCard}>
+      <Text style={styles.sectionLabel}>{title}</Text>
+      {children}
+    </View>
+  );
+}
+
+// ─── DetailRow ────────────────────────────────────────────────────────────────
+
+interface DetailRowProps {
+  Icon: ComponentType<{ size: number; color: string; strokeWidth?: number }>;
+  label: string;
+  value?: string | null;
+  last?: boolean;
+  onPress?: () => void;
+}
+
+function DetailRow({ Icon, label, value, last, onPress }: DetailRowProps) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={onPress ? 0.7 : 1}
+      style={[styles.detailRow, last && styles.detailRowLast]}
+    >
+      <View style={styles.detailIconBox}>
+        <Icon size={18} color={colors.primary.dark} strokeWidth={1.75} />
+      </View>
+      <View style={styles.detailText}>
+        <Text style={styles.detailLabel}>{label}</Text>
+        <Text style={styles.detailValue} numberOfLines={1}>
+          {value || "—"}
+        </Text>
+      </View>
+      <ChevronRight size={16} color={colors.neutral[400]} strokeWidth={1.75} />
+    </TouchableOpacity>
+  );
+}
+
+// ─── SegmentControl ───────────────────────────────────────────────────────────
+
+interface SegmentOption<T extends string> {
+  value: T;
+  label: string;
+}
+
+interface SegmentControlProps<T extends string> {
+  options: SegmentOption<T>[];
+  value: T;
+  onChange: (v: T) => void;
+}
+
+function SegmentControl<T extends string>({
+  options,
+  value,
+  onChange,
+}: SegmentControlProps<T>) {
+  return (
+    <View style={styles.segmentWrapper}>
+      {options.map((opt) => {
+        const isActive = value === opt.value;
+        return (
+          <TouchableOpacity
+            key={opt.value}
+            onPress={() => onChange(opt.value)}
+            activeOpacity={0.75}
+            style={[styles.segmentItem, isActive && styles.segmentItemActive]}
+          >
+            <Text
+              style={[styles.segmentText, isActive && styles.segmentTextActive]}
+            >
+              {opt.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
 
 export default function ProfileScreen() {
   const { user, profile, setProfile, logout } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
-  const { t } = useTranslation();
   const router = useRouter();
 
-  const updateField = async (field: string, value: any) => {
+  if (!profile) {
+    return (
+      <SafeAreaView style={styles.loaderScreen}>
+        <ActivityIndicator color={colors.primary.DEFAULT} />
+      </SafeAreaView>
+    );
+  }
+
+  const updateField = async (field: string, value: unknown) => {
     if (!user) return;
     const { error } = await supabase
       .from("profiles")
       .update({ [field]: value })
       .eq("user_id", user.id);
-
     if (!error) {
       const current = useAuthStore.getState().profile;
       if (current) setProfile({ ...current, [field]: value });
     }
   };
 
-  const handleImage = async (uri: string, field: string) => {
-    const uploadedUrl = await uploadImage(uri);
-    updateField(field, uploadedUrl);
-  };
-
-  if (!profile) return <Loader />;
-
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    logout();
-    router.replace("/(auth)/login");
+    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Sign Out",
+        style: "destructive",
+        onPress: async () => {
+          await supabase.auth.signOut();
+          logout();
+          router.replace("/(auth)/login");
+        },
+      },
+    ]);
   };
+
+  const dashboardMode = (profile.dashboard_mode ?? "seller") as
+    | "seller"
+    | "distributor"
+    | "both";
+
+  const email = user?.email ?? user?.phone ?? "";
 
   return (
-    <ScreenWrapper>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <Text className="text-2xl font-bold text-textDark mb-6">
-          {t("profile.title")}
-        </Text>
+    <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
+      <Stack.Screen options={{ headerShown: false }} />
 
-        {/* Profile Avatar */}
-        <View className="items-center mb-6">
-          <View className="w-[72px] h-[72px] rounded-full bg-primary items-center justify-center">
-            <Text className="text-white text-[22px] font-bold">
+      {/* ── Header ── */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={styles.headerBtn}
+        >
+          <ArrowLeft size={22} color={colors.neutral[900]} strokeWidth={1.75} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Profile &amp; Settings</Text>
+        <View style={styles.headerBtn} />
+      </View>
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── Avatar ── */}
+        <View style={styles.avatarSection}>
+          <View style={styles.avatarRing}>
+            <Text style={styles.avatarText}>
               {getInitials(profile.business_name)}
             </Text>
           </View>
-          {profile.business_name ? (
-            <Text
-              className="mt-2 text-base font-bold text-textDark"
-              numberOfLines={1}
-            >
-              {profile.business_name}
-            </Text>
-          ) : null}
+          <Text style={styles.businessName}>
+            {profile.business_name || "Your Business"}
+          </Text>
+          {!!email && <Text style={styles.emailText}>{email}</Text>}
+          <TouchableOpacity
+            onPress={() =>
+              Alert.alert("Edit Profile", "Profile editing coming soon.")
+            }
+            activeOpacity={0.75}
+            style={styles.editBtn}
+          >
+            <Text style={styles.editBtnText}>Edit Profile</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Subscription */}
-        <SubscriptionCard profile={profile} />
+        {/* ── Business Details ── */}
+        <SectionCard title="BUSINESS DETAILS">
+          <DetailRow Icon={Store} label="NAME" value={profile.business_name} />
+          <DetailRow Icon={Receipt} label="GSTIN" value={profile.gstin} />
+          <DetailRow
+            Icon={Hash}
+            label="PREFIX"
+            value={profile.bill_number_prefix ?? "INV"}
+          />
+          <DetailRow
+            Icon={Smartphone}
+            label="UPI ID"
+            value={profile.upi_id}
+            last
+          />
+        </SectionCard>
 
-        {/* Avatar */}
-        <ImagePickerField
-          label={t("profile.yourPhoto")}
-          value={profile.avatar_url ?? null}
-          onPick={(uri) => handleImage(uri, "avatar_url")}
-          name={profile.name ?? undefined}
-        />
+        {/* ── Bank Account ── */}
+        <SectionCard title="BANK ACCOUNT">
+          <DetailRow
+            Icon={Building2}
+            label="BANK NAME"
+            value={profile.bank_name}
+          />
+          <DetailRow
+            Icon={CreditCard}
+            label="ACC NO"
+            value={maskAccount(profile.account_number)}
+          />
+          <DetailRow Icon={Info} label="IFSC" value={profile.ifsc_code} last />
+        </SectionCard>
 
-        {/* Business Logo */}
-        <ImagePickerField
-          label={t("profile.businessLogo")}
-          value={profile.business_logo_url ?? null}
-          onPick={(uri) => handleImage(uri, "business_logo_url")}
-        />
-
-        {/* Business Fields */}
-        <Text className="mt-3 font-semibold text-textDark mb-1">
-          {t("profile.businessName")}
-        </Text>
-        <TextInput
-          className="p-3 bg-background rounded-xl mb-4"
-          value={profile.business_name ?? ""}
-          onChangeText={(t) => updateField("business_name", t)}
-        />
-
-        <Text className="font-semibold text-textDark mb-1">
-          {t("profile.businessAddress")}
-        </Text>
-        <TextInput
-          className="p-3 bg-background rounded-xl mb-4"
-          multiline
-          value={profile.business_address ?? ""}
-          onChangeText={(t) => updateField("business_address", t)}
-        />
-
-        <Text className="font-semibold text-textDark mb-1">
-          {t("profile.gstin")}
-        </Text>
-        <TextInput
-          className="p-3 bg-background rounded-xl mb-4"
-          value={profile.gstin ?? ""}
-          onChangeText={(t) => updateField("gstin", t)}
-        />
-
-        <Text className="font-semibold text-textDark mb-1">
-          {t("profile.upiId")}
-        </Text>
-        <TextInput
-          className="p-3 bg-background rounded-xl mb-8"
-          value={profile.upi_id ?? ""}
-          onChangeText={(t) => updateField("upi_id", t)}
-        />
-
-        {/* Bill Settings */}
-        <View className="mb-2">
-          <Text className="text-lg font-bold text-textDark">
-            {t("profile.billSettings")}
-          </Text>
-          <Text className="text-xs text-textSecondary mt-0.5">
-            {t("profile.billSettingsDesc")}
-          </Text>
-        </View>
-
-        <Text className="font-semibold text-textDark mb-1 mt-3">
-          {t("profile.billNumberPrefix")}
-        </Text>
-        <TextInput
-          className="p-3 bg-background rounded-xl mb-8"
-          placeholder="e.g. INV, BILL, CB"
-          placeholderTextColor={colors.neutral[400]}
-          autoCapitalize="characters"
-          maxLength={10}
-          value={profile.bill_number_prefix ?? "INV"}
-          onEndEditing={(e) =>
-            updateField(
-              "bill_number_prefix",
-              e.nativeEvent.text.toUpperCase() || "INV",
-            )
-          }
-          onChangeText={(t) =>
-            setProfile({
-              ...profile!,
-              bill_number_prefix: t.toUpperCase(),
-            })
-          }
-        />
-
-        {/* Bank Account Details */}
-        <View className="mb-2 mt-2">
-          <Text className="text-lg font-bold text-textDark">
-            {t("profile.bankDetails")}
-          </Text>
-          <Text className="text-xs text-textSecondary mt-0.5">
-            {t("profile.bankDetailsDesc")}
-          </Text>
-        </View>
-
-        <Text className="font-semibold text-textDark mb-1 mt-3">
-          {t("profile.bankName")}
-        </Text>
-        <TextInput
-          className="p-3 bg-background rounded-xl mb-4"
-          placeholder="e.g. State Bank of India"
-          placeholderTextColor={colors.neutral[400]}
-          value={profile.bank_name ?? ""}
-          onEndEditing={(e) => updateField("bank_name", e.nativeEvent.text)}
-          onChangeText={(t) => setProfile({ ...profile!, bank_name: t })}
-        />
-
-        <Text className="font-semibold text-textDark mb-1">
-          {t("profile.accountNumber")}
-        </Text>
-        <TextInput
-          className="p-3 bg-background rounded-xl mb-4"
-          placeholder="e.g. 00112233445566"
-          placeholderTextColor={colors.neutral[400]}
-          keyboardType="numeric"
-          value={profile.account_number ?? ""}
-          onEndEditing={(e) =>
-            updateField("account_number", e.nativeEvent.text)
-          }
-          onChangeText={(t) => setProfile({ ...profile!, account_number: t })}
-        />
-
-        <Text className="font-semibold text-textDark mb-1">
-          {t("profile.ifscCode")}
-        </Text>
-        <TextInput
-          className="p-3 bg-background rounded-xl mb-8"
-          placeholder="e.g. SBIN0001234"
-          placeholderTextColor={colors.neutral[400]}
-          autoCapitalize="characters"
-          value={profile.ifsc_code ?? ""}
-          onEndEditing={(e) =>
-            updateField("ifsc_code", e.nativeEvent.text.toUpperCase())
-          }
-          onChangeText={(t) =>
-            setProfile({ ...profile!, ifsc_code: t.toUpperCase() })
-          }
-        />
-
-        {/* Dashboard Mode */}
-        <View className="mb-2 mt-2">
-          <Text className="text-lg font-bold text-textDark">
-            {t("profile.dashboardMode")}
-          </Text>
-          <Text className="text-xs text-textSecondary mt-0.5">
-            {t("profile.dashboardModeDesc")}
-          </Text>
-        </View>
-
-        <View className="flex-row gap-2 mb-8 mt-3">
-          {(
-            [
-              { value: "seller", label: "Seller" },
-              { value: "distributor", label: "Distributor" },
-              { value: "both", label: "Both" },
-            ] as const
-          ).map(({ value, label }) => {
-            const isActive = (profile.dashboard_mode ?? "seller") === value;
-            return (
-              <TouchableOpacity
-                key={value}
-                onPress={() => updateField("dashboard_mode", value)}
-                className={`flex-1 py-3 rounded-xl border items-center ${
-                  isActive
-                    ? "bg-primary border-primary"
-                    : "bg-background border-gray-200"
-                }`}
-              >
-                <Text
-                  className={`font-semibold text-sm ${
-                    isActive ? "text-white" : "text-textPrimary"
-                  }`}
-                >
-                  {label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* Language Toggle */}
-        <View className="mb-2 mt-2">
-          <Text className="text-lg font-bold text-textDark">
-            {t("profile.language")}
-          </Text>
-          <Text className="text-xs text-textSecondary mt-0.5">
-            {t("profile.languageDesc")}
-          </Text>
-        </View>
-
-        <View className="flex-row gap-2 mb-8 mt-3">
-          {(["en", "hi"] as const).map((lang) => {
-            const isActive = language === lang;
-            const label =
-              lang === "en" ? t("profile.english") : t("profile.hindi");
-            return (
-              <TouchableOpacity
-                key={lang}
-                onPress={() => setLanguage(lang)}
-                className={`flex-1 py-3 rounded-xl border items-center ${
-                  isActive
-                    ? "bg-primary border-primary"
-                    : "bg-background border-gray-200"
-                }`}
-              >
-                <Text
-                  className={`font-semibold text-sm ${
-                    isActive ? "text-white" : "text-textPrimary"
-                  }`}
-                >
-                  {label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* Export Data */}
-        <TouchableOpacity
-          className="bg-success-bg border border-success-light py-3 px-4 rounded-xl mb-3 flex-row items-center justify-between"
-          onPress={() => router.push("/(main)/export" as any)}
-        >
-          <View className="flex-row items-center gap-3">
-            <Download size={20} color={colors.primary.dark} strokeWidth={2} />
-            <View>
-              <Text className="font-semibold text-success-text">
-                {t("export.title")}
-              </Text>
-              <Text className="text-xs text-primary-dark">
-                {t("export.profileDesc")}
-              </Text>
+        {/* ── App Preferences ── */}
+        <SectionCard title="APP PREFERENCES">
+          <View style={styles.prefRow}>
+            <View style={styles.prefRowLeft}>
+              <View style={styles.detailIconBox}>
+                <LayoutGrid
+                  size={18}
+                  color={colors.primary.dark}
+                  strokeWidth={1.75}
+                />
+              </View>
+              <Text style={styles.prefRowLabel}>Dashboard Mode</Text>
             </View>
           </View>
-          <ChevronRight size={18} color={colors.primary.dark} strokeWidth={2} />
-        </TouchableOpacity>
+          <SegmentControl<"seller" | "distributor" | "both">
+            options={[
+              { value: "seller", label: "Seller" },
+              { value: "both", label: "Both" },
+              { value: "distributor", label: "Distributor" },
+            ]}
+            value={dashboardMode}
+            onChange={(v) => updateField("dashboard_mode", v)}
+          />
 
-        {/* Logout */}
-        <TouchableOpacity
-          className="bg-danger-light border border-danger-dark py-3 rounded-xl"
-          onPress={handleSignOut}
-        >
-          <Text className="text-danger-text text-center font-semibold">
-            {t("common.logout")}
-          </Text>
-        </TouchableOpacity>
+          <View style={styles.prefDivider} />
+
+          <View style={styles.prefRow}>
+            <View style={styles.prefRowLeft}>
+              <View style={styles.detailIconBox}>
+                <Languages
+                  size={18}
+                  color={colors.primary.dark}
+                  strokeWidth={1.75}
+                />
+              </View>
+              <Text style={styles.prefRowLabel}>Language</Text>
+            </View>
+            <View style={styles.langToggle}>
+              <TouchableOpacity
+                onPress={() => setLanguage("en")}
+                activeOpacity={0.75}
+                style={[
+                  styles.langPill,
+                  language === "en" && styles.langPillActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.langPillText,
+                    language === "en" && styles.langPillTextActive,
+                  ]}
+                >
+                  EN
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setLanguage("hi")}
+                activeOpacity={0.75}
+                style={[
+                  styles.langPill,
+                  language === "hi" && styles.langPillActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.langPillText,
+                    language === "hi" && styles.langPillTextActive,
+                  ]}
+                >
+                  {"🇮🇳"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SectionCard>
+
+        {/* ── Data ── */}
+        <SectionCard title="DATA">
+          <TouchableOpacity
+            onPress={() => router.push("/(main)/export" as never)}
+            activeOpacity={0.75}
+            style={[styles.detailRow, styles.detailRowLast]}
+          >
+            <View style={styles.detailIconBox}>
+              <Download
+                size={18}
+                color={colors.primary.dark}
+                strokeWidth={1.75}
+              />
+            </View>
+            <View style={styles.detailText}>
+              <Text style={styles.detailValue}>Export Business Data</Text>
+            </View>
+            <ChevronRight
+              size={16}
+              color={colors.neutral[400]}
+              strokeWidth={1.75}
+            />
+          </TouchableOpacity>
+        </SectionCard>
+
+        {/* ── Sign Out ── */}
+        <View style={styles.sectionCard}>
+          <TouchableOpacity
+            onPress={handleSignOut}
+            activeOpacity={0.75}
+            style={styles.signOutRow}
+          >
+            <LogOut
+              size={18}
+              color={colors.danger.DEFAULT}
+              strokeWidth={1.75}
+            />
+            <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.footer}>CreditBook v1.0.0</Text>
       </ScrollView>
-    </ScreenWrapper>
+    </SafeAreaView>
   );
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.neutral.bg,
+  },
+  loaderScreen: {
+    flex: 1,
+    backgroundColor: colors.neutral.bg,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: colors.neutral.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.neutral[200],
+  },
+  headerBtn: {
+    width: 36,
+    alignItems: "center",
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: "center",
+    fontSize: 17,
+    fontWeight: "700",
+    color: colors.neutral[900],
+  },
+  scroll: { flex: 1 },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 36,
+    gap: 12,
+  },
+  avatarSection: {
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  avatarRing: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    borderWidth: 2.5,
+    borderColor: colors.primary.DEFAULT,
+    backgroundColor: colors.neutral.surface,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+  avatarText: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: colors.primary.dark,
+  },
+  businessName: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: colors.neutral[900],
+  },
+  emailText: {
+    fontSize: 13,
+    color: colors.neutral[500],
+    marginTop: 3,
+  },
+  editBtn: {
+    marginTop: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 28,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: colors.primary.DEFAULT,
+  },
+  editBtnText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.primary.DEFAULT,
+  },
+  sectionCard: {
+    backgroundColor: colors.neutral.surface,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.neutral[400],
+    letterSpacing: 0.8,
+    marginBottom: 10,
+  },
+  detailRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.neutral[200],
+    gap: 12,
+  },
+  detailRowLast: {
+    borderBottomWidth: 0,
+    marginBottom: 8,
+  },
+  detailIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: colors.primary.light,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  detailText: { flex: 1 },
+  detailLabel: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: colors.neutral[400],
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  detailValue: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.neutral[900],
+  },
+  segmentWrapper: {
+    flexDirection: "row",
+    borderWidth: 1,
+    borderColor: colors.neutral[200],
+    borderRadius: 10,
+    overflow: "hidden",
+    marginBottom: 12,
+    marginTop: 4,
+  },
+  segmentItem: {
+    flex: 1,
+    paddingVertical: 9,
+    alignItems: "center",
+    backgroundColor: colors.neutral.surface,
+  },
+  segmentItemActive: {
+    backgroundColor: colors.primary.light,
+  },
+  segmentText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.neutral[500],
+  },
+  segmentTextActive: {
+    color: colors.primary.dark,
+  },
+  prefRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    gap: 12,
+  },
+  prefRowLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    flex: 1,
+  },
+  prefRowLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.neutral[900],
+  },
+  prefDivider: {
+    height: 1,
+    backgroundColor: colors.neutral[200],
+    marginVertical: 4,
+  },
+  langToggle: {
+    flexDirection: "row",
+    gap: 6,
+  },
+  langPill: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.neutral[200],
+    backgroundColor: colors.neutral.bg,
+  },
+  langPillActive: {
+    backgroundColor: colors.primary.DEFAULT,
+    borderColor: colors.primary.DEFAULT,
+  },
+  langPillText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.neutral[500],
+  },
+  langPillTextActive: {
+    color: colors.neutral.surface,
+  },
+  signOutRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  signOutText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: colors.danger.DEFAULT,
+  },
+  footer: {
+    textAlign: "center",
+    fontSize: 12,
+    color: colors.neutral[400],
+    marginTop: 8,
+  },
+});
