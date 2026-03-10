@@ -1,12 +1,17 @@
-import BottomSheet, {
-    BottomSheetBackdrop,
-    BottomSheetScrollView,
-} from "@gorhom/bottom-sheet";
-import { PlusCircle, Trash2 } from "lucide-react-native";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Trash2, Truck } from "lucide-react-native";
+import { useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { RecordDeliveryInput } from "../../api/suppliers";
+import { colors } from "../../utils/theme";
 import Button from "../ui/Button";
+import AppModal from "../ui/Modal";
 
 interface DeliveryItemDraft {
   item_name: string;
@@ -19,6 +24,7 @@ interface Props {
   onClose: () => void;
   onSubmit: (data: RecordDeliveryInput) => Promise<void>;
   loading?: boolean;
+  supplierName?: string;
 }
 
 const emptyItem = (): DeliveryItemDraft => ({
@@ -27,36 +33,70 @@ const emptyItem = (): DeliveryItemDraft => ({
   rate: "",
 });
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function fmtINR(n: number) {
+  return (
+    "₹" +
+    n.toLocaleString("en-IN", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })
+  );
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+function ChargeRow({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <View className="flex-row items-center justify-between mb-3">
+      <Text className="text-[15px]" style={{ color: colors.neutral[700] }}>
+        {label}
+      </Text>
+      <View
+        className="flex-row items-center border rounded-lg overflow-hidden"
+        style={{ borderColor: colors.neutral[200], width: 110 }}
+      >
+        <Text className="pl-3 text-sm" style={{ color: colors.neutral[500] }}>
+          ₹
+        </Text>
+        <TextInput
+          placeholder="0"
+          placeholderTextColor={colors.neutral[400]}
+          value={value}
+          onChangeText={onChange}
+          keyboardType="numeric"
+          className="flex-1 px-2 py-2.5 text-sm"
+          style={{ color: colors.neutral[900] }}
+        />
+      </View>
+    </View>
+  );
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function RecordDeliveryModal({
   visible,
   onClose,
   onSubmit,
   loading,
+  supplierName,
 }: Props) {
   const todayISO = new Date().toISOString().split("T")[0];
-  const [delivery_date, setDeliveryDate] = useState(todayISO);
   const [items, setItems] = useState<DeliveryItemDraft[]>([emptyItem()]);
   const [loading_charge, setLoadingCharge] = useState("");
   const [advance_paid, setAdvancePaid] = useState("");
-  const [notes, setNotes] = useState("");
-
-  const sheetRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ["90%"], []);
-
-  useEffect(() => {
-    if (visible) {
-      sheetRef.current?.expand();
-    } else {
-      sheetRef.current?.close();
-    }
-  }, [visible]);
 
   const reset = () => {
-    setDeliveryDate(todayISO);
     setItems([emptyItem()]);
     setLoadingCharge("");
     setAdvancePaid("");
-    setNotes("");
   };
 
   const updateItem = (
@@ -77,15 +117,13 @@ export default function RecordDeliveryModal({
   };
 
   // Live totals
-  const itemsTotal = items.reduce((s, it) => {
-    const qty = parseFloat(it.quantity) || 0;
-    const rate = parseFloat(it.rate) || 0;
-    return s + qty * rate;
-  }, 0);
+  const itemsTotal = items.reduce(
+    (s, it) => s + (parseFloat(it.quantity) || 0) * (parseFloat(it.rate) || 0),
+    0,
+  );
   const loadingNum = parseFloat(loading_charge) || 0;
   const advanceNum = parseFloat(advance_paid) || 0;
-  const grandTotal = itemsTotal + loadingNum;
-  const balanceAfter = grandTotal - advanceNum;
+  const netBalance = Math.max(0, itemsTotal + loadingNum - advanceNum);
 
   const handleSubmit = async () => {
     const validItems = items.filter(
@@ -95,22 +133,13 @@ export default function RecordDeliveryModal({
         parseFloat(it.rate) > 0,
     );
     if (validItems.length === 0) {
-      Alert.alert(
-        "Required",
-        "Add at least one delivery item with qty and rate.",
-      );
+      Alert.alert("Required", "Add at least one item with name, qty and rate.");
       return;
     }
-    if (!delivery_date) {
-      Alert.alert("Required", "Delivery date is required.");
-      return;
-    }
-
     await onSubmit({
-      delivery_date,
+      delivery_date: todayISO,
       loading_charge: loadingNum,
       advance_paid: advanceNum,
-      notes: notes.trim() || undefined,
       items: validItems.map((it) => ({
         item_name: it.item_name.trim(),
         quantity: parseFloat(it.quantity),
@@ -120,213 +149,239 @@ export default function RecordDeliveryModal({
     reset();
   };
 
-  const inputClass =
-    "border border-neutral-300 rounded-lg px-3 py-2.5 font-inter text-neutral-900";
-  const labelClass = "text-xs font-inter-medium text-neutral-500 mb-1";
-
   return (
-    <BottomSheet
-      ref={sheetRef}
-      snapPoints={snapPoints}
-      index={-1}
-      enablePanDownToClose
-      keyboardBehavior="interactive"
-      keyboardBlurBehavior="restore"
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop
-          {...props}
-          disappearsOnIndex={-1}
-          appearsOnIndex={0}
-          opacity={0.4}
-        />
-      )}
-      onClose={onClose}
-    >
-      {/* Sheet header */}
-      <View className="flex-row items-center justify-between px-6 pb-3 border-b border-neutral-200">
-        <TouchableOpacity onPress={onClose}>
-          <Text className="text-neutral-500 font-inter text-base">Cancel</Text>
-        </TouchableOpacity>
-        <Text className="text-lg font-inter-semibold">Record Delivery</Text>
-        <View className="w-14" />
-      </View>
+    <AppModal title="Record Delivery" onClose={onClose} visible={visible}>
+      {/* ── Supplier name pill ── */}
+      {supplierName ? (
+        <View
+          className="flex-row items-center self-start gap-1.5 px-3 py-1.5 rounded-full mb-4"
+          style={{
+            backgroundColor: colors.primary.light ?? "#DCFCE7",
+            marginTop: -4,
+          }}
+        >
+          <Truck size={13} color={colors.primary.DEFAULT} strokeWidth={2} />
+          <Text
+            className="text-[13px] font-semibold"
+            style={{ color: colors.primary.DEFAULT }}
+          >
+            {supplierName}
+          </Text>
+        </View>
+      ) : null}
 
-      <BottomSheetScrollView
-        contentContainerStyle={{ padding: 24, paddingBottom: 48 }}
+      {/* ── Scrollable fields ── */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 8 }}
       >
-        {/* Date */}
-        <Text className={labelClass}>Delivery Date</Text>
-        <TextInput
-          className={`${inputClass} mb-4`}
-          value={delivery_date}
-          onChangeText={setDeliveryDate}
-          placeholder="YYYY-MM-DD"
-        />
-
-        {/* Items */}
-        <Text className="text-base font-inter-semibold text-neutral-800 mb-3">
-          Items Received
+        {/* Section label */}
+        <Text
+          className="text-[11px] font-bold tracking-widest mb-3"
+          style={{ color: colors.neutral[500] }}
+        >
+          DELIVERY ITEMS
         </Text>
 
-        {items.map((it, idx) => (
-          <View
-            key={idx}
-            className="border border-neutral-200 rounded-xl p-3 mb-3 bg-neutral-50"
-          >
-            <View className="flex-row items-center justify-between mb-2">
-              <Text className="font-inter-medium text-neutral-700">
-                Item {idx + 1}
-              </Text>
-              {items.length > 1 && (
-                <TouchableOpacity onPress={() => removeItem(idx)}>
-                  <Trash2 size={18} color={colors.danger.DEFAULT} strokeWidth={2} />
-                </TouchableOpacity>
+        {/* Item rows */}
+        {items.map((it, idx) => {
+          const subtotal =
+            (parseFloat(it.quantity) || 0) * (parseFloat(it.rate) || 0);
+          return (
+            <View key={idx}>
+              {idx > 0 && (
+                <View
+                  className="h-px mb-3"
+                  style={{ backgroundColor: colors.neutral[200] }}
+                />
               )}
-            </View>
-
-            <Text className={labelClass}>Item Name</Text>
-            <TextInput
-              className={`${inputClass} mb-2`}
-              placeholder="e.g. Gutka, Cigarette box"
-              value={it.item_name}
-              onChangeText={(v) => updateItem(idx, "item_name", v)}
-            />
-
-            <View className="flex-row gap-2">
-              <View className="flex-1">
-                <Text className={labelClass}>Qty</Text>
+              {/* Name + amount + trash */}
+              <View className="flex-row items-center mb-1.5">
                 <TextInput
-                  className={inputClass}
-                  placeholder="0"
-                  value={it.quantity}
-                  onChangeText={(v) => updateItem(idx, "quantity", v)}
-                  keyboardType="numeric"
+                  placeholder="Item name (e.g. Flour 50kg)"
+                  placeholderTextColor={colors.neutral[400]}
+                  value={it.item_name}
+                  onChangeText={(v) => updateItem(idx, "item_name", v)}
+                  className="flex-1 text-[15px] font-semibold"
+                  style={{ color: colors.neutral[900] }}
                 />
+                <View className="flex-row items-center gap-2 ml-2">
+                  {subtotal > 0 && (
+                    <Text
+                      className="text-[15px] font-semibold"
+                      style={{ color: colors.neutral[900] }}
+                    >
+                      {fmtINR(subtotal)}
+                    </Text>
+                  )}
+                  {items.length > 1 && (
+                    <TouchableOpacity
+                      onPress={() => removeItem(idx)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Trash2
+                        size={17}
+                        color={colors.danger.DEFAULT}
+                        strokeWidth={2}
+                      />
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
-              <View className="flex-1">
-                <Text className={labelClass}>Rate (₹)</Text>
-                <TextInput
-                  className={inputClass}
-                  placeholder="0"
-                  value={it.rate}
-                  onChangeText={(v) => updateItem(idx, "rate", v)}
-                  keyboardType="numeric"
-                />
-              </View>
-              <View className="flex-1">
-                <Text className={labelClass}>Subtotal</Text>
-                <View className={`${inputClass} bg-neutral-100`}>
-                  <Text className="text-neutral-700 font-inter-medium">
-                    ₹
-                    {(
-                      (parseFloat(it.quantity) || 0) *
-                      (parseFloat(it.rate) || 0)
-                    ).toLocaleString("en-IN")}
+              {/* Qty | Rate inline inputs */}
+              <View className="flex-row items-center gap-2 mb-4">
+                <View
+                  className="flex-row items-center border rounded-lg overflow-hidden"
+                  style={{ borderColor: colors.neutral[200], flex: 1 }}
+                >
+                  <Text
+                    className="pl-2 pr-0.5 text-sm"
+                    style={{ color: colors.neutral[500] }}
+                  >
+                    Qty
                   </Text>
+                  <TextInput
+                    placeholder="0"
+                    placeholderTextColor={colors.neutral[400]}
+                    value={it.quantity}
+                    onChangeText={(v) => updateItem(idx, "quantity", v)}
+                    keyboardType="numeric"
+                    className="flex-1 px-1.5 py-2 text-sm"
+                    style={{ color: colors.neutral[900] }}
+                  />
+                </View>
+                <Text
+                  className="text-sm"
+                  style={{ color: colors.neutral[400] }}
+                >
+                  ×
+                </Text>
+                <View
+                  className="flex-row items-center border rounded-lg overflow-hidden"
+                  style={{ borderColor: colors.neutral[200], flex: 1.6 }}
+                >
+                  <Text
+                    className="pl-2 pr-0.5 text-sm"
+                    style={{ color: colors.neutral[500] }}
+                  >
+                    Rate ₹
+                  </Text>
+                  <TextInput
+                    placeholder="0"
+                    placeholderTextColor={colors.neutral[400]}
+                    value={it.rate}
+                    onChangeText={(v) => updateItem(idx, "rate", v)}
+                    keyboardType="numeric"
+                    className="flex-1 px-1.5 py-2 text-sm"
+                    style={{ color: colors.neutral[900] }}
+                  />
                 </View>
               </View>
             </View>
-          </View>
-        ))}
+          );
+        })}
 
+        {/* Add Item — dashed border button */}
         <TouchableOpacity
           onPress={addItem}
-          className="flex-row items-center gap-2 py-2 mb-4"
+          activeOpacity={0.7}
+          className="items-center justify-center rounded-xl py-3 mb-5"
+          style={{
+            borderWidth: 1.5,
+            borderColor: colors.primary.DEFAULT,
+            borderStyle: "dashed",
+          }}
         >
-          <PlusCircle size={20} color={colors.info.dark} strokeWidth={2} />
-          <Text className="text-primary font-inter-medium">Add Item</Text>
+          <Text
+            className="text-[14px] font-semibold"
+            style={{ color: colors.primary.DEFAULT }}
+          >
+            + Add Item
+          </Text>
         </TouchableOpacity>
 
         {/* Charges */}
-        <View className="flex-row gap-3 mb-4">
-          <View className="flex-1">
-            <Text className={labelClass}>Loading Charge (₹)</Text>
-            <TextInput
-              className={inputClass}
-              placeholder="0"
-              value={loading_charge}
-              onChangeText={setLoadingCharge}
-              keyboardType="numeric"
-            />
-          </View>
-          <View className="flex-1">
-            <Text className={labelClass}>Advance Paid (₹)</Text>
-            <TextInput
-              className={inputClass}
-              placeholder="0"
-              value={advance_paid}
-              onChangeText={setAdvancePaid}
-              keyboardType="numeric"
-            />
-          </View>
-        </View>
-
-        {/* Notes */}
-        <Text className={labelClass}>Notes (optional)</Text>
-        <TextInput
-          className={`${inputClass} mb-4`}
-          placeholder="Any remarks..."
-          value={notes}
-          onChangeText={setNotes}
-          multiline
+        <ChargeRow
+          label="Loading Charge"
+          value={loading_charge}
+          onChange={setLoadingCharge}
+        />
+        <ChargeRow
+          label="Advance Paid"
+          value={advance_paid}
+          onChange={setAdvancePaid}
         />
 
-        {/* Summary */}
-        <View className="bg-neutral-50 border border-neutral-200 rounded-xl p-4 mb-6">
-          <Text className="font-inter-semibold text-neutral-800 mb-2">
-            Summary
+        {/* Summary divider */}
+        <View
+          className="h-px mt-2 mb-4"
+          style={{ backgroundColor: colors.neutral[200] }}
+        />
+
+        {/* Summary pill bar */}
+        <View className="flex-row flex-wrap items-center gap-x-1.5 gap-y-1 mb-3">
+          <Text className="text-xs" style={{ color: colors.neutral[500] }}>
+            Items:{" "}
+            <Text style={{ color: colors.neutral[700], fontWeight: "600" }}>
+              {fmtINR(itemsTotal)}
+            </Text>
           </Text>
-          <View className="flex-row justify-between mb-1">
-            <Text className="text-neutral-600 font-inter">Items Total</Text>
-            <Text className="font-inter-medium">
-              ₹{itemsTotal.toLocaleString("en-IN")}
-            </Text>
-          </View>
           {loadingNum > 0 && (
-            <View className="flex-row justify-between mb-1">
-              <Text className="text-neutral-600 font-inter">
-                Loading Charge
+            <>
+              <Text className="text-xs" style={{ color: colors.neutral[400] }}>
+                •
               </Text>
-              <Text className="font-inter-medium">
-                ₹{loadingNum.toLocaleString("en-IN")}
+              <Text className="text-xs" style={{ color: colors.neutral[500] }}>
+                Loading:{" "}
+                <Text style={{ color: colors.neutral[700], fontWeight: "600" }}>
+                  {fmtINR(loadingNum)}
+                </Text>
               </Text>
-            </View>
+            </>
           )}
-          <View className="flex-row justify-between mb-2 border-t border-neutral-200 pt-2">
-            <Text className="font-inter-semibold text-neutral-900">
-              Grand Total
-            </Text>
-            <Text className="font-inter-bold text-neutral-900 text-base">
-              ₹{grandTotal.toLocaleString("en-IN")}
-            </Text>
-          </View>
           {advanceNum > 0 && (
             <>
-              <View className="flex-row justify-between mb-1">
-                <Text className="text-green-600 font-inter">Advance Paid</Text>
-                <Text className="text-green-600 font-inter-medium">
-                  −₹{advanceNum.toLocaleString("en-IN")}
+              <Text className="text-xs" style={{ color: colors.neutral[400] }}>
+                •
+              </Text>
+              <Text className="text-xs" style={{ color: colors.neutral[500] }}>
+                Advance:{" "}
+                <Text
+                  style={{ color: colors.danger.DEFAULT, fontWeight: "600" }}
+                >
+                  -{fmtINR(advanceNum)}
                 </Text>
-              </View>
-              <View className="flex-row justify-between">
-                <Text className="text-danger-strong font-inter-semibold">
-                  Balance Owed
-                </Text>
-                <Text className="text-danger-strong font-inter-bold text-base">
-                  ₹{Math.max(0, balanceAfter).toLocaleString("en-IN")}
-                </Text>
-              </View>
+              </Text>
             </>
           )}
         </View>
 
+        {/* Net Added to Balance */}
+        <View className="flex-row items-center justify-between">
+          <Text
+            className="text-[15px] font-semibold"
+            style={{ color: colors.neutral[700] }}
+          >
+            Net Added to Balance
+          </Text>
+          <Text
+            className="text-[20px] font-bold"
+            style={{ color: colors.danger.DEFAULT }}
+          >
+            {fmtINR(netBalance)}
+          </Text>
+        </View>
+      </ScrollView>
+
+      {/* ── Sticky CTA ── */}
+      <View className="pt-4">
         <Button
           title="Record Delivery"
           onPress={handleSubmit}
           loading={loading}
         />
-      </BottomSheetScrollView>
-    </BottomSheet>
+      </View>
+    </AppModal>
   );
 }

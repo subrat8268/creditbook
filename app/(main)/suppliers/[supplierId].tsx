@@ -3,9 +3,9 @@ import Loader from "@/src/components/feedback/Loader";
 import RecordDeliveryModal from "@/src/components/suppliers/RecordDeliveryModal";
 import RecordPaymentMadeModal from "@/src/components/suppliers/RecordPaymentMadeModal";
 import {
-  useRecordDelivery,
-  useRecordPaymentMade,
-  useSupplierDetail,
+    useRecordDelivery,
+    useRecordPaymentMade,
+    useSupplierDetail,
 } from "@/src/hooks/useSuppliers";
 import { useAuthStore } from "@/src/store/authStore";
 import { SupplierTimelineEntry } from "@/src/types/supplier";
@@ -14,25 +14,25 @@ import { colors } from "@/src/utils/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
-  ArrowLeft,
-  ArrowUpRight,
-  Building2,
-  Calendar,
-  CirclePlus,
-  Copy,
-  Package,
-  Pencil,
-  Phone,
-  Truck,
+    ArrowLeft,
+    ArrowUpRight,
+    Building2,
+    Calendar,
+    CirclePlus,
+    Copy,
+    Package,
+    Pencil,
+    Phone,
+    Truck,
 } from "lucide-react-native";
 import { useState } from "react";
 import {
-  Alert,
-  FlatList,
-  Linking,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    FlatList,
+    Linking,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -483,6 +483,7 @@ export default function SupplierDetailScreen() {
           visible={deliveryModalOpen}
           onClose={() => setDeliveryModalOpen(false)}
           loading={recordDelivery.isPending}
+          supplierName={supplier.name}
           onSubmit={async (data) => {
             await recordDelivery.mutateAsync(data);
             setDeliveryModalOpen(false);
