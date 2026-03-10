@@ -2,10 +2,10 @@ import { Package } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Text, View } from "react-native";
-import * as Yup from "yup";
 
-import { uploadImage } from "../api/upload";
-import BottomSheetForm from "../components/BottomSheetForm";
+import NewProductModal, {
+  type ProductSubmitValues,
+} from "../components/products/NewProductModal";
 import ProductActionsModal from "../components/products/ProductActionsModal";
 import ProductCard from "../components/products/ProductCard";
 import ScreenWrapper from "../components/ScreenWrapper";
@@ -19,38 +19,7 @@ import {
   useUpdateProduct,
 } from "../hooks/useProducts";
 import { useAuthStore } from "../store/authStore";
-
-type Variant = {
-  name: string;
-  price: number;
-  imageUrl?: string;
-};
-
-type ProductFormValues = {
-  name: string;
-  base_price: string;
-  image_url?: string;
-  variants?: Variant[];
-};
-
-const productSchema = Yup.object().shape({
-  name: Yup.string().required("Product name is required"),
-  base_price: Yup.number()
-    .typeError("Must be a number")
-    .required("Base price is required")
-    .min(0, "Must be at least 0"),
-  variants: Yup.array().of(
-    Yup.object().shape({
-      name: Yup.string().required("Variant name is required"),
-      price: Yup.number()
-        .typeError("Must be a number")
-        .required("Variant price is required")
-        .min(0, "Must be at least 0"),
-      imageUrl: Yup.string().nullable(),
-    }),
-  ),
-  image_url: Yup.string().nullable(),
-});
+import { colors } from "../utils/theme";
 
 export default function ProductsScreen() {
   const { profile } = useAuthStore();
@@ -63,7 +32,6 @@ export default function ProductsScreen() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
 
   const {
     data: products,
@@ -79,94 +47,38 @@ export default function ProductsScreen() {
   const updateProductMutation = useUpdateProduct(vendorId!);
   const deleteProductMutation = useDeleteProduct(vendorId!);
 
-  const handleAddProduct = async (values: ProductFormValues) => {
+  const handleAddProduct = async (values: ProductSubmitValues) => {
     try {
-      setIsUploading(true);
-
-      // Upload main product image if it's a local URI
-      let mainImageUrl = values.image_url;
-      if (mainImageUrl && mainImageUrl.startsWith("file://")) {
-        mainImageUrl = await uploadImage(mainImageUrl);
-      }
-
-      // Upload variant images if they're local URIs
-      const processedVariants = await Promise.all(
-        (values.variants || []).map(async (variant) => {
-          let variantImageUrl = variant.imageUrl;
-          if (variantImageUrl && variantImageUrl.startsWith("file://")) {
-            variantImageUrl = await uploadImage(variantImageUrl);
-          }
-          return {
-            ...variant,
-            price: Number(variant.price),
-            imageUrl: variantImageUrl || null,
-          };
-        }),
-      );
-
       await addProductMutation.mutateAsync({
         name: values.name,
-        base_price: Number(values.base_price),
-        image_url: mainImageUrl || null,
-        variants: (processedVariants.length > 0
-          ? processedVariants
-          : []) as any,
+        base_price: values.variants.length > 0 ? values.variants[0].price : 0,
+        image_url: null,
+        variants: values.variants as any,
       });
-
       setIsBottomSheetOpen(false);
     } catch (err: any) {
       console.error("Failed to add product:", err.message);
       alert("Failed to add product. Please try again.");
-    } finally {
-      setIsUploading(false);
     }
   };
 
-  const handleEditProduct = async (values: ProductFormValues) => {
+  const handleEditProduct = async (values: ProductSubmitValues) => {
     if (!editingProduct) return;
     try {
-      setIsUploading(true);
-
-      // Upload main product image if it's a local URI
-      let mainImageUrl = values.image_url;
-      if (mainImageUrl && mainImageUrl.startsWith("file://")) {
-        mainImageUrl = await uploadImage(mainImageUrl);
-      }
-
-      // Upload variant images if they're local URIs
-      const processedVariants = await Promise.all(
-        (values.variants || []).map(async (variant) => {
-          let variantImageUrl = variant.imageUrl;
-          if (variantImageUrl && variantImageUrl.startsWith("file://")) {
-            variantImageUrl = await uploadImage(variantImageUrl);
-          }
-          return {
-            ...variant,
-            price: Number(variant.price),
-            imageUrl: variantImageUrl || null,
-          };
-        }),
-      );
-
       await updateProductMutation.mutateAsync({
         id: editingProduct.id,
         values: {
           name: values.name,
-          base_price: Number(values.base_price),
-          image_url: mainImageUrl || null,
-          variants: (processedVariants.length > 0
-            ? processedVariants
-            : []) as any,
+          base_price: values.variants.length > 0 ? values.variants[0].price : 0,
+          image_url: null,
+          variants: values.variants as any,
         },
       });
-
       setEditingProduct(null);
       setIsBottomSheetOpen(false);
     } catch (err: any) {
       console.error("Failed to update product:", err.message);
       alert("Failed to update product. Please try again.");
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -209,11 +121,10 @@ export default function ProductsScreen() {
         name={item.name}
         basePrice={item.base_price}
         variants={item.variants}
-     
         onOptionsPress={() => handleOptionsPress(item)}
       />
     ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     [],
   );
 
@@ -253,7 +164,11 @@ export default function ProductsScreen() {
         ListEmptyComponent={
           !isLoading && !error ? (
             <View className="items-center mt-10">
-              <Package size={40} color={colors.neutral[400]} strokeWidth={1.2} />
+              <Package
+                size={40}
+                color={colors.neutral[400]}
+                strokeWidth={1.2}
+              />
               <Text className="text-neutral-500 mt-2">No products found</Text>
             </View>
           ) : null
@@ -267,63 +182,22 @@ export default function ProductsScreen() {
         }}
       />
 
-      <BottomSheetForm<ProductFormValues>
+      <NewProductModal
+        title={editingProduct ? "Edit" : "Add"}
         visible={isBottomSheetOpen}
-        title={editingProduct ? "Edit Product" : "Add Product"}
-        isSubmitting={isUploading}
-        initialValues={
-          editingProduct
-            ? {
-                name: editingProduct.name,
-                base_price: String(editingProduct.base_price),
-                image_url: editingProduct.image_url || "",
-                variants: editingProduct.variants ?? [],
-              }
-            : {
-                name: "",
-                base_price: "",
-                image_url: "",
-                variants: [],
-              }
-        }
-        validationSchema={productSchema}
-        fields={[
-          { name: "name", label: "Product Name", placeholder: "Enter name" },
-          {
-            name: "base_price",
-            label: "Base Price",
-            placeholder: "Enter price",
-            type: "number",
-          },
-          {
-            name: "image_url",
-            label: "Product Image (optional)",
-            isImagePicker: true,
-          },
-        ]}
-        variantFields={[
-          {
-            name: "name",
-            label: "Variant Name",
-            placeholder: "e.g., Small, Red, 500ml",
-          },
-          {
-            name: "price",
-            label: "Variant Price",
-            placeholder: "Enter price",
-            type: "number",
-          },
-          {
-            name: "imageUrl",
-            label: "Variant Image (optional)",
-            isImagePicker: true,
-          },
-        ]}
         onClose={() => {
           setIsBottomSheetOpen(false);
           setEditingProduct(null);
         }}
         onSubmit={editingProduct ? handleEditProduct : handleAddProduct}
+        initialValues={
+          editingProduct
+            ? {
+                name: editingProduct.name,
+                variants: editingProduct.variants ?? [],
+              }
+            : undefined
+        }
       />
 
       <ProductActionsModal
