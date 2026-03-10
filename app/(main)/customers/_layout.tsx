@@ -37,6 +37,10 @@ export default function CustomersLayout() {
   return (
     <Stack
       screenOptions={({ route }) => {
+        // [customerId] renders its own header via Stack.Screen options
+        if (route.name === "[customerId]") {
+          return { headerShown: false };
+        }
         const config =
           screenConfig[route.name as keyof typeof screenConfig] ||
           screenConfig.index;

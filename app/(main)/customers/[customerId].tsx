@@ -10,6 +10,7 @@ import * as Print from "expo-print";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import {
+  AlertTriangle,
   ArrowDown,
   ArrowLeft,
   ArrowUp,
@@ -33,15 +34,15 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 type TxFilter = "All" | "Bills Given" | "Payments";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+/** Format rupee amount — shows decimals only when non-zero paise */
 function formatINR(n: number) {
   return (
-    "₹" +
+    "\u20B9" +
     n.toLocaleString("en-IN", {
-      minimumFractionDigits: 2,
+      minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     })
   );
@@ -72,6 +73,15 @@ function getDateLabel(iso: string): string {
   });
 }
 
+function formatLastBillDate(iso: string | null | undefined): string {
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 function getLastActiveLabel(lastActiveAt: string | null | undefined): string {
   if (!lastActiveAt) return "";
   const diffDays = Math.round(
@@ -92,7 +102,8 @@ function buildStatementHtml(
   const rows = transactions
     .map((tx) => {
       const sign = tx.type === "payment" ? "+" : "";
-      const color = tx.type === "payment" ? colors.success.DEFAULT : colors.danger.DEFAULT;
+      const color =
+        tx.type === "payment" ? colors.success.DEFAULT : colors.danger.DEFAULT;
       const label =
         tx.type === "bill"
           ? `Invoice ${tx.billNumber ?? ""}`
@@ -135,17 +146,26 @@ const MODE_LABEL: Record<string, string> = {
 
 function TransactionRow({ tx }: { tx: Transaction }) {
   const isPayment = tx.type === "payment";
-  const borderColor = isPayment ? colors.success.DEFAULT : colors.danger.DEFAULT;
+  const borderColor = isPayment
+    ? colors.success.DEFAULT
+    : colors.danger.DEFAULT;
   const iconBg = isPayment ? colors.success.bg : colors.danger.bg;
   const iconColor = isPayment ? colors.success.DEFAULT : colors.danger.DEFAULT;
-  const amountColor = isPayment ? colors.success.DEFAULT : colors.danger.DEFAULT;
+  const amountColor = isPayment
+    ? colors.success.DEFAULT
+    : colors.danger.DEFAULT;
   const title = isPayment
     ? "Payment Received"
-    : `Invoice${tx.billNumber ? ` #${tx.billNumber}` : ""}`;
+    : `Bill${tx.billNumber ? ` #${tx.billNumber}` : ""}`;
   const modeLabel = tx.paymentMode
     ? (MODE_LABEL[tx.paymentMode.toLowerCase()] ?? tx.paymentMode)
-    : "Payment";
-  const subtitle = isPayment ? modeLabel : (tx.status ?? "");
+    : "";
+  // Payment subtitle: "Cash \u00b7 INV-042"  | Bill subtitle: "7 items"
+  const subtitle = isPayment
+    ? [modeLabel, tx.orderBillNumber].filter(Boolean).join(" \u00b7 ")
+    : tx.itemCount
+      ? `${tx.itemCount} item${tx.itemCount !== 1 ? "s" : ""}`
+      : (tx.status ?? "");
 
   return (
     <View
@@ -311,7 +331,11 @@ export default function CustomerDetailScreen() {
             className="w-[38px] h-[38px] rounded-full bg-search items-center justify-center"
             onPress={downloadStatement}
           >
-            <FileText size={20} color={colors.primary.DEFAULT} strokeWidth={2} />
+            <FileText
+              size={20}
+              color={colors.primary.DEFAULT}
+              strokeWidth={2}
+            />
           </TouchableOpacity>
           <TouchableOpacity
             className="w-[38px] h-[38px] rounded-full bg-search items-center justify-center"
@@ -371,33 +395,38 @@ export default function CustomerDetailScreen() {
           <View className="flex-row justify-between items-center mb-[10px]">
             <Text className="text-[11px] font-bold text-white/75 tracking-widest">
               {customer.outstandingBalance === 0
-                ? "ALL SETTLED 🎉"
+                ? "ALL SETTLED \uD83C\uDF89"
                 : "TOTAL BALANCE DUE"}
             </Text>
-            {customer.isOverdue && (
-              <View className="bg-white/20 px-[10px] py-1 rounded-xl">
-                <Text className="text-[11px] text-white font-bold">
-                  Overdue
+          </View>
+
+          <Text className="text-[38px] font-extrabold text-white leading-tight mb-3">
+            {formatINR(customer.outstandingBalance)}
+          </Text>
+
+          {/* Bottom row: overdue pill + last bill date */}
+          {customer.isOverdue ? (
+            <View className="flex-row items-center gap-3">
+              <View
+                className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full"
+                style={{ backgroundColor: "rgba(255,255,255,0.18)" }}
+              >
+                <AlertTriangle size={12} color="#FFF" strokeWidth={2.5} />
+                <Text className="text-[12px] font-bold text-white">
+                  OVERDUE \u00b7 {customer.daysSinceLastOrder} days
                 </Text>
               </View>
-            )}
-          </View>
-
-          <View className="flex-row items-end gap-1.5 mb-1.5">
-            <Text className="text-[34px] font-extrabold text-white">
-              {formatINR(customer.outstandingBalance)}
+              {customer.lastActiveAt ? (
+                <Text className="text-[12px] text-white/65">
+                  Last bill: {formatLastBillDate(customer.lastActiveAt)}
+                </Text>
+              ) : null}
+            </View>
+          ) : customer.lastActiveAt ? (
+            <Text className="text-[12px] text-white/65">
+              Last bill: {formatLastBillDate(customer.lastActiveAt)}
             </Text>
-            <Text className="text-[15px] font-semibold text-white/65 mb-1">
-              INR
-            </Text>
-          </View>
-
-          {customer.daysSinceLastOrder > 0 && (
-            <Text className="text-[13px] text-white/60">
-              Last bill {customer.daysSinceLastOrder} day
-              {customer.daysSinceLastOrder !== 1 ? "s" : ""} ago
-            </Text>
-          )}
+          ) : null}
         </LinearGradient>
 
         {/* ── Action Buttons ── */}
@@ -455,7 +484,11 @@ export default function CustomerDetailScreen() {
               className="w-11 h-11 rounded-full items-center justify-center"
               style={{ backgroundColor: colors.success.bg }}
             >
-              <Banknote size={22} color={colors.success.DEFAULT} strokeWidth={2} />
+              <Banknote
+                size={22}
+                color={colors.success.DEFAULT}
+                strokeWidth={2}
+              />
             </View>
             <Text className="text-[13px] font-semibold text-textDark">
               Received
@@ -476,12 +509,16 @@ export default function CustomerDetailScreen() {
           >
             <View
               className="w-11 h-11 rounded-full items-center justify-center"
-              style={{ backgroundColor: colors.success.light }}
+              style={{ backgroundColor: colors.warning.light }}
             >
-              <MessageCircle size={22} color={colors.primary.DEFAULT} strokeWidth={2} />
+              <MessageCircle
+                size={22}
+                color={colors.warning.DEFAULT}
+                strokeWidth={2}
+              />
             </View>
             <Text className="text-[13px] font-semibold text-textDark">
-              Send Reminder
+              Reminder
             </Text>
           </TouchableOpacity>
         </View>
@@ -523,7 +560,11 @@ export default function CustomerDetailScreen() {
           {/* Rows */}
           {listItems.length === 0 ? (
             <View className="items-center py-10 gap-[10px]">
-              <Receipt size={40} color={colors.neutral[300]} strokeWidth={1.2} />
+              <Receipt
+                size={40}
+                color={colors.neutral[300]}
+                strokeWidth={1.2}
+              />
               <Text className="text-sm text-textMuted">
                 No transactions yet
               </Text>

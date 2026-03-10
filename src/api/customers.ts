@@ -127,15 +127,35 @@ export async function fetchCustomerDetail(
     : 0;
   const isOverdue = outstandingBalance > 0 && daysSinceLastOrder > 30;
 
-  // Fetch all payments for these orders in one batch
+  // Fetch all payments + item counts in parallel
   const orderIds = orderList.map((o) => o.id);
-  const { data: payments } = orderIds.length
-    ? await supabase
-        .from("payments")
-        .select("id, order_id, amount, payment_date, payment_mode")
-        .in("order_id", orderIds)
-        .order("payment_date", { ascending: true })
-    : { data: [] };
+  const [paymentsResult, itemCountResult] = await Promise.all([
+    orderIds.length
+      ? supabase
+          .from("payments")
+          .select(
+            "id, order_id, amount, payment_date, payment_mode, orders(bill_number)",
+          )
+          .in("order_id", orderIds)
+          .order("payment_date", { ascending: true })
+      : Promise.resolve({ data: [] as any[], error: null }),
+    orderIds.length
+      ? supabase.from("order_items").select("order_id").in("order_id", orderIds)
+      : Promise.resolve({ data: [] as any[], error: null }),
+  ]);
+  const payments = paymentsResult.data ?? [];
+
+  // item counts per order
+  const countByOrder: Record<string, number> = {};
+  for (const row of itemCountResult.data ?? []) {
+    countByOrder[row.order_id] = (countByOrder[row.order_id] ?? 0) + 1;
+  }
+
+  // bill_number map from order_id (for payments)
+  const billNumberByOrderId: Record<string, string> = {};
+  for (const o of orderList) {
+    if (o.bill_number) billNumberByOrderId[o.id] = o.bill_number;
+  }
 
   // Build unified transaction list with running balance (forward pass)
   const billEvents = orderList.map((o) => ({
@@ -146,15 +166,17 @@ export async function fetchCustomerDetail(
     runningBalance: 0,
     billNumber: o.bill_number as string | undefined,
     status: o.status as "Paid" | "Pending" | "Partially Paid",
+    itemCount: countByOrder[o.id] ?? 0,
   }));
 
-  const paymentEvents = (payments ?? []).map((p) => ({
+  const paymentEvents = payments.map((p: any) => ({
     id: p.id,
     type: "payment" as const,
     created_at: p.payment_date,
     amount: Number(p.amount),
     runningBalance: 0,
     paymentMode: p.payment_mode as string,
+    orderBillNumber: billNumberByOrderId[p.order_id],
   }));
 
   // Sort ascending by time for forward pass

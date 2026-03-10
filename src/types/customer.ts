@@ -20,8 +20,12 @@ export interface Transaction {
   // Bill fields
   billNumber?: string;
   status?: "Paid" | "Pending" | "Partially Paid";
+  /** Number of line items on a bill transaction */
+  itemCount?: number;
   // Payment fields
   paymentMode?: string;
+  /** Bill number of the order this payment settles (e.g. "INV-042") */
+  orderBillNumber?: string;
 }
 
 export interface CustomerDetail {
