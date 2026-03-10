@@ -17,7 +17,6 @@ import {
   Banknote,
   Download,
   FileText,
-  Filter,
   MessageCircle,
   Phone,
   Plus,
@@ -83,7 +82,7 @@ function formatLastBillDate(iso: string | null | undefined): string {
 }
 
 function getLastActiveLabel(lastActiveAt: string | null | undefined): string {
-  if (!lastActiveAt) return "";
+  if (!lastActiveAt) return "Last active: Never";
   const diffDays = Math.round(
     (Date.now() - new Date(lastActiveAt).getTime()) / 86_400_000,
   );
@@ -394,9 +393,7 @@ export default function CustomerDetailScreen() {
 
           <View className="flex-row justify-between items-center mb-[10px]">
             <Text className="text-[11px] font-bold text-white/75 tracking-widest">
-              {customer.outstandingBalance === 0
-                ? "ALL SETTLED \uD83C\uDF89"
-                : "TOTAL BALANCE DUE"}
+              TOTAL BALANCE DUE
             </Text>
           </View>
 
@@ -404,8 +401,12 @@ export default function CustomerDetailScreen() {
             {formatINR(customer.outstandingBalance)}
           </Text>
 
-          {/* Bottom row: overdue pill + last bill date */}
-          {customer.isOverdue ? (
+          {/* Bottom row: settled subtitle | overdue pill | last bill date */}
+          {customer.outstandingBalance === 0 ? (
+            <Text className="text-[13px] text-white/70">
+              No outstanding balance
+            </Text>
+          ) : customer.isOverdue ? (
             <View className="flex-row items-center gap-3">
               <View
                 className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full"
@@ -524,70 +525,121 @@ export default function CustomerDetailScreen() {
         </View>
 
         {/* ── Transactions ── */}
-        <View className="mx-4 mt-6">
-          <View className="flex-row justify-between items-center mb-3.5">
-            <Text className="text-xl font-bold text-textDark">
-              Transactions
-            </Text>
-            <TouchableOpacity className="flex-row items-center gap-1">
-              <Text className="text-sm font-semibold text-danger">Filter</Text>
-              <Filter size={14} color={colors.danger.DEFAULT} strokeWidth={2} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Sub-tabs */}
-          <View className="flex-row gap-2 mb-4">
-            {(["All", "Bills Given", "Payments"] as TxFilter[]).map((f) => (
-              <TouchableOpacity
-                key={f}
-                onPress={() => setTxFilter(f)}
-                className={`px-4 py-2 rounded-full ${
-                  txFilter === f ? "bg-textDark" : "bg-border"
-                }`}
-                activeOpacity={0.75}
-              >
-                <Text
-                  className={`text-[13px] font-semibold ${
-                    txFilter === f ? "text-white" : "text-textPrimary"
-                  }`}
+        <View className="mt-6">
+          {/* Underline tab bar */}
+          <View
+            className="flex-row border-b"
+            style={{ borderBottomColor: colors.neutral[200] }}
+          >
+            {(["All", "Bills Given", "Payments"] as TxFilter[]).map((f) => {
+              const active = txFilter === f;
+              return (
+                <TouchableOpacity
+                  key={f}
+                  onPress={() => setTxFilter(f)}
+                  activeOpacity={0.75}
+                  className="flex-1 items-center pb-3 pt-1"
+                  style={{
+                    borderBottomWidth: active ? 2 : 0,
+                    borderBottomColor: active
+                      ? colors.primary.DEFAULT
+                      : "transparent",
+                    marginBottom: active ? -1 : 0,
+                  }}
                 >
-                  {f}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    className="text-[13px] font-semibold"
+                    style={{
+                      color: active
+                        ? colors.primary.DEFAULT
+                        : colors.neutral[500],
+                    }}
+                  >
+                    {f}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
 
-          {/* Rows */}
+          {/* Rows or rich empty state */}
           {listItems.length === 0 ? (
-            <View className="items-center py-10 gap-[10px]">
-              <Receipt
-                size={40}
-                color={colors.neutral[300]}
-                strokeWidth={1.2}
-              />
-              <Text className="text-sm text-textMuted">
+            <View className="items-center px-8 pt-10 pb-6 gap-4">
+              {/* Dashed icon box */}
+              <View
+                className="w-[112px] h-[112px] rounded-[24px] items-center justify-center"
+                style={{
+                  borderWidth: 2,
+                  borderStyle: "dashed",
+                  borderColor: colors.primary.light,
+                  backgroundColor: colors.success.bg,
+                }}
+              >
+                <Receipt
+                  size={48}
+                  color={colors.primary.light}
+                  strokeWidth={1.5}
+                />
+              </View>
+              <Text className="text-[17px] font-bold text-textDark">
                 No transactions yet
               </Text>
+              <Text className="text-[13px] text-textSecondary text-center leading-5">
+                Create a bill or record a payment to get started
+              </Text>
+              {/* Two CTAs */}
+              <View className="flex-row gap-3 mt-2 w-full">
+                <TouchableOpacity
+                  className="flex-1 items-center justify-center py-3 rounded-full border"
+                  style={{ borderColor: colors.primary.DEFAULT }}
+                  activeOpacity={0.8}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/orders/create",
+                      params: { customer: JSON.stringify(customer) },
+                    })
+                  }
+                >
+                  <Text
+                    className="text-[14px] font-bold"
+                    style={{ color: colors.primary.DEFAULT }}
+                  >
+                    New Bill
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className="flex-1 items-center justify-center py-3 rounded-full"
+                  style={{ backgroundColor: colors.primary.DEFAULT }}
+                  activeOpacity={0.8}
+                  onPress={() => setPaymentModalVisible(true)}
+                >
+                  <Text className="text-[14px] font-bold text-white">
+                    Record Payment
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ) : (
-            listItems.map((item) =>
-              item.kind === "header" ? (
-                <View
-                  key={item.key}
-                  className="flex-row items-center my-3 gap-2"
-                >
-                  <View className="flex-1 h-px bg-border" />
-                  <View className="bg-border rounded-xl px-3 py-1">
-                    <Text className="text-xs font-semibold text-textPrimary">
-                      {item.label}
-                    </Text>
+            <View className="px-4 pt-4">
+              {listItems.map((item) =>
+                item.kind === "header" ? (
+                  <View
+                    key={item.key}
+                    className="flex-row items-center my-3 gap-2"
+                  >
+                    <View className="flex-1 h-px bg-border" />
+                    <View className="bg-border rounded-xl px-3 py-1">
+                      <Text className="text-xs font-semibold text-textPrimary">
+                        {item.label}
+                      </Text>
+                    </View>
+                    <View className="flex-1 h-px bg-border" />
                   </View>
-                  <View className="flex-1 h-px bg-border" />
-                </View>
-              ) : (
-                <TransactionRow key={item.key} tx={item.data} />
-              ),
-            )
+                ) : (
+                  <TransactionRow key={item.key} tx={item.data} />
+                ),
+              )}
+            </View>
           )}
         </View>
       </ScrollView>
@@ -595,15 +647,37 @@ export default function CustomerDetailScreen() {
       {/* ── Download Statement Footer ── */}
       <View className="px-6 py-4 bg-white border-t border-border">
         <TouchableOpacity
-          className={`flex-row items-center justify-center gap-2 bg-textDark rounded-[30px] py-4 ${
+          className={`flex-row items-center justify-center gap-2 rounded-[30px] py-4 ${
             exporting ? "opacity-60" : ""
           }`}
+          style={{
+            backgroundColor:
+              customer.transactions.length === 0
+                ? colors.neutral[200]
+                : colors.neutral[900],
+          }}
           onPress={downloadStatement}
           disabled={exporting}
           activeOpacity={0.85}
         >
-          <Download size={18} color={colors.white} strokeWidth={2} />
-          <Text className="text-[15px] font-bold text-white">
+          <Download
+            size={18}
+            color={
+              customer.transactions.length === 0
+                ? colors.neutral[500]
+                : colors.white
+            }
+            strokeWidth={2}
+          />
+          <Text
+            className="text-[15px] font-bold"
+            style={{
+              color:
+                customer.transactions.length === 0
+                  ? colors.neutral[500]
+                  : colors.white,
+            }}
+          >
             {exporting ? "Generating…" : "Download Statement"}
           </Text>
         </TouchableOpacity>
