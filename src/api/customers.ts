@@ -71,9 +71,14 @@ export async function addCustomer(
   vendorId: string,
   values: Omit<Customer, "id" | "vendor_id" | "created_at">,
 ) {
+  const { openingBalance, ...rest } = values as any;
+  const payload: Record<string, any> = { ...rest, vendor_id: vendorId };
+  if (openingBalance && openingBalance > 0) {
+    payload.opening_balance = openingBalance;
+  }
   const { data, error } = await supabase
     .from("customers")
-    .insert([{ ...values, vendor_id: vendorId }])
+    .insert([payload])
     .select()
     .single();
   if (error) throw error;

@@ -4,6 +4,8 @@ export interface Customer {
   phone: string;
   vendor_id: string;
   address?: string;
+  /** Pre-existing balance when adding a customer who already owes money */
+  openingBalance?: number;
   created_at: string;
   isOverdue?: boolean;
   outstandingBalance?: number;

@@ -1,16 +1,16 @@
 import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
+    useInfiniteQuery,
+    useMutation,
+    useQuery,
+    useQueryClient,
 } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Alert } from "react-native";
 import {
-  addCustomer,
-  fetchCustomerDetail,
-  fetchCustomers,
-  PAGE_SIZE,
+    addCustomer,
+    fetchCustomerDetail,
+    fetchCustomers,
+    PAGE_SIZE,
 } from "../api/customers";
 import { useCustomersStore } from "../store/customersStore";
 import { Customer, CustomerDetail } from "../types/customer";
@@ -59,7 +59,15 @@ export const useAddCustomer = (vendorId: string) => {
   return useMutation<
     Customer,
     Error,
-    Omit<Customer, "id" | "vendor_id" | "created_at">
+    Omit<
+      Customer,
+      | "id"
+      | "vendor_id"
+      | "created_at"
+      | "isOverdue"
+      | "outstandingBalance"
+      | "lastActiveAt"
+    >
   >({
     mutationFn: (values) => addCustomer(vendorId, values),
     onSuccess: (newCustomer) => {

@@ -47,6 +47,7 @@ export default function CustomersScreen() {
     name: string;
     phone: string;
     address?: string;
+    openingBalance?: number;
   }) => {
     try {
       await addCustomerMutation.mutateAsync(values);

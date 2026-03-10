@@ -36,6 +36,9 @@ export const CustomerSchema = Yup.object().shape({
     .matches(/^\+?[0-9]{10,15}$/, "Invalid phone number")
     .required("Phone is required"),
   address: Yup.string().optional(),
+  openingBalance: Yup.number()
+    .min(0, "Opening balance cannot be negative")
+    .optional(),
 });
 
 export const ProductSchema = Yup.object().shape({
