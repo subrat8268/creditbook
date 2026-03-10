@@ -1,6 +1,21 @@
 import { colors } from "@/src/utils/theme";
+import { formatINR } from "@/src/utils/dashboardUi";
+import { useDashboard } from "@/src/hooks/useDashboard";
+import { useAuthStore } from "@/src/store/authStore";
 import { useRouter } from "expo-router";
-import { ArrowLeft, TrendingDown, TrendingUp } from "lucide-react-native";
+import {
+  Activity,
+  AlertTriangle,
+  CalendarDays,
+  CheckCircle2,
+  ChevronRight,
+  CircleAlert,
+  Download,
+  FileText,
+  Info,
+  Truck,
+  Users,
+} from "lucide-react-native";
 import {
   ActivityIndicator,
   ScrollView,
@@ -10,331 +25,399 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useDashboard } from "../../../src/hooks/useDashboard";
-import { useAuthStore } from "../../../src/store/authStore";
-import { formatINR } from "../../../src/utils/dashboardUi";
+import { SafeAreaView } from "react-native-safe-area-context";
 
+// ── Helper ────────────────────────────────────────────────
+function todayLabel() {
+  const now = new Date();
+  const day = now.getDate();
+  const month = now.toLocaleString("en-IN", { month: "short" }).toUpperCase();
+  const year = now.getFullYear();
+  return `AS OF TODAY, ${day} ${month} ${year}`;
+}
+
+// ── Sub-components ────────────────────────────────────────
+
+/** Large solid-color stat card matching screenshot */
+function StatCard({
+  label,
+  amount,
+  subtitle,
+  icon,
+  bg,
+  onPress,
+}: {
+  label: string;
+  amount: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  bg: string;
+  onPress?: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={onPress ? 0.85 : 1}
+      style={[s.statCard, { backgroundColor: bg }]}
+    >
+      {/* Top row */}
+      <View style={s.statCardTop}>
+        <Text style={s.statCardLabel}>{label}</Text>
+        {icon}
+      </View>
+      {/* Amount */}
+      <Text style={s.statCardAmount}>{amount}</Text>
+      {/* Divider */}
+      <View style={s.statCardDivider} />
+      {/* Subtitle row */}
+      <View style={s.statCardBottom}>
+        <Text style={s.statCardSub}>{subtitle}</Text>
+        {onPress && (
+          <ChevronRight size={18} color="rgba(255,255,255,0.8)" strokeWidth={2} />
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+/** Dark "Net Position" card */
+function NetCard({
+  amount,
+  formula,
+}: {
+  amount: string;
+  formula: string;
+}) {
+  return (
+    <View style={s.netCard}>
+      {/* Top row */}
+      <View style={s.statCardTop}>
+        <Text style={s.netLabel}>NET POSITION</Text>
+        <Activity size={20} color="rgba(255,255,255,0.55)" strokeWidth={2} />
+      </View>
+      {/* Amount */}
+      <Text style={s.netAmount}>{amount}</Text>
+      {/* Divider */}
+      <View style={[s.statCardDivider, { borderColor: "rgba(255,255,255,0.1)" }]} />
+      {/* Formula row */}
+      <View style={s.statCardBottom}>
+        <Text style={s.netFormula}>{formula}</Text>
+        <Info size={16} color="rgba(255,255,255,0.45)" strokeWidth={2} />
+      </View>
+    </View>
+  );
+}
+
+/** Quick insight pill badge */
+function InsightPill({
+  icon,
+  label,
+  bg,
+  textColor,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  bg: string;
+  textColor: string;
+}) {
+  return (
+    <View style={[s.pill, { backgroundColor: bg }]}>
+      {icon}
+      <Text style={[s.pillText, { color: textColor }]}>{label}</Text>
+    </View>
+  );
+}
+
+// ── Screen ────────────────────────────────────────────────
 export default function FinancialPositionScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { profile } = useAuthStore();
   const { data, isLoading, isError } = useDashboard(profile?.id);
+  const router = useRouter();
 
-  const netPos = data ? data.customersOweMe - data.iOweSuppliers : 0;
-  const isPositive = netPos >= 0;
+  const customersOweMe = data?.customersOweMe ?? 0;
+  const iOweSuppliers = data?.iOweSuppliers ?? 0;
+  const netPos = customersOweMe - iOweSuppliers;
+  const activeBuyers = data?.activeBuyers ?? 0;
+  const activeSuppliers = data?.activeSuppliers ?? 0;
+  const overdueCustomers = data?.overdueCustomers ?? 0;
+
+  // Derive collection rate: (totalRevenue / (totalRevenue + outstandingAmount)) * 100
+  const totalRevenue = data?.totalRevenue ?? 0;
+  const outstandingAmount = data?.outstandingAmount ?? 0;
+  const collectionRate =
+    totalRevenue + outstandingAmount > 0
+      ? Math.round((totalRevenue / (totalRevenue + outstandingAmount)) * 100)
+      : 0;
 
   return (
-    <View style={[styles.root, { paddingTop: insets.top }]}>
+    <SafeAreaView style={s.root} edges={["top", "left", "right"]}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.neutral.bg} />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <ArrowLeft size={22} color={colors.neutral[900]} strokeWidth={2} />
+      {/* ── Header ── */}
+      <View style={s.header}>
+        <View>
+          <Text style={s.headerTitle}>Financial Position</Text>
+          <Text style={s.headerSub}>{todayLabel()}</Text>
+        </View>
+        <TouchableOpacity hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <CalendarDays size={22} color={colors.neutral[600]} strokeWidth={1.8} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Financial Position</Text>
-        <View style={{ width: 40 }} />
       </View>
 
+      {/* ── Body ── */}
       {isLoading ? (
-        <View style={styles.center}>
+        <View style={s.center}>
           <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
         </View>
       ) : isError || !data ? (
-        <View style={styles.center}>
-          <Text style={styles.errorText}>
-            Could not load data. Pull to refresh.
-          </Text>
+        <View style={s.center}>
+          <Text style={s.errorText}>Could not load data. Pull to refresh.</Text>
         </View>
       ) : (
         <ScrollView
-          contentContainerStyle={styles.scroll}
+          contentContainerStyle={s.scroll}
           showsVerticalScrollIndicator={false}
         >
-          {/* Net Position hero */}
-          <View
-            style={[
-              styles.heroCard,
-              {
-                backgroundColor: isPositive
-                  ? colors.success.bg
-                  : colors.danger.bg,
-              },
-            ]}
-          >
-            <Text
-              style={[
-                styles.heroLabel,
-                {
-                  color: isPositive
-                    ? colors.primary.dark
-                    : colors.danger.strong,
-                },
-              ]}
-            >
-              NET POSITION
-            </Text>
-            <Text
-              style={[
-                styles.heroAmount,
-                {
-                  color: isPositive
-                    ? colors.primary.dark
-                    : colors.danger.strong,
-                },
-              ]}
-            >
-              {isPositive ? "+" : ""}
-              {formatINR(netPos)}
-            </Text>
-            <View style={styles.heroRow}>
-              {isPositive ? (
-                <TrendingUp
-                  size={16}
-                  color={colors.primary.dark}
-                  strokeWidth={2}
-                />
-              ) : (
-                <TrendingDown
-                  size={16}
-                  color={colors.danger.strong}
-                  strokeWidth={2}
-                />
-              )}
-              <Text
-                style={[
-                  styles.heroSub,
-                  {
-                    color: isPositive
-                      ? colors.primary.dark
-                      : colors.danger.strong,
-                  },
-                ]}
-              >
-                {isPositive
-                  ? "You are in a healthy surplus"
-                  : "You owe more than you receive"}
+          {/* ── Customers Owe Me ── */}
+          <StatCard
+            label="CUSTOMERS OWE ME"
+            amount={formatINR(customersOweMe)}
+            subtitle={`${activeBuyers} active · ${overdueCustomers} overdue`}
+            bg={colors.primary.DEFAULT}
+            icon={<Users size={20} color="rgba(255,255,255,0.75)" strokeWidth={1.8} />}
+            onPress={() => router.push("/(main)/customers")}
+          />
+
+          {/* ── I Owe Suppliers ── */}
+          <StatCard
+            label="I OWE SUPPLIERS"
+            amount={formatINR(iOweSuppliers)}
+            subtitle={`${activeSuppliers} supplier${activeSuppliers !== 1 ? "s" : ""}`}
+            bg="#E0336E"
+            icon={<Truck size={20} color="rgba(255,255,255,0.75)" strokeWidth={1.8} />}
+            onPress={() => router.push("/(main)/suppliers")}
+          />
+
+          {/* ── Net Position ── */}
+          <NetCard
+            amount={formatINR(netPos)}
+            formula={`${formatINR(customersOweMe)} – ${formatINR(iOweSuppliers)}`}
+          />
+
+          {/* ── Quick Insights ── */}
+          <View style={s.sectionHeader}>
+            <Text style={s.sectionLabel}>QUICK INSIGHTS</Text>
+          </View>
+
+          <View style={s.pillGroup}>
+            {overdueCustomers > 0 && (
+              <InsightPill
+                icon={<CircleAlert size={14} color={colors.danger.DEFAULT} strokeWidth={2} />}
+                label={`${overdueCustomers} overdue customer${overdueCustomers !== 1 ? "s" : ""}`}
+                bg={colors.danger.light}
+                textColor={colors.danger.DEFAULT}
+              />
+            )}
+            {iOweSuppliers > 0 && (
+              <InsightPill
+                icon={<AlertTriangle size={14} color={colors.warning.dark} strokeWidth={2} />}
+                label={`Largest debt: ₹${Math.round(iOweSuppliers / 1000)}K`}
+                bg={colors.warning.light}
+                textColor={colors.warning.dark}
+              />
+            )}
+            {collectionRate > 0 && (
+              <InsightPill
+                icon={<CheckCircle2 size={14} color={colors.primary.dark} strokeWidth={2} />}
+                label={`Collection rate: ${collectionRate}%`}
+                bg={colors.primary.light}
+                textColor={colors.primary.dark}
+              />
+            )}
+          </View>
+
+          {/* ── Monthly Report card ── */}
+          <View style={s.reportCard}>
+            {/* PDF icon */}
+            <View style={s.reportIconBox}>
+              <FileText size={22} color={colors.primary.DEFAULT} strokeWidth={1.8} />
+            </View>
+            {/* Meta */}
+            <View style={s.reportMeta}>
+              <Text style={s.reportTitle}>Monthly Financial Report</Text>
+              <Text style={s.reportSub}>
+                {new Date().toLocaleString("en-IN", {
+                  month: "long",
+                  year: "numeric",
+                })}{" "}
+                • PDF
               </Text>
             </View>
+            {/* Download button */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={s.downloadBtn}
+            >
+              <Download size={18} color="#fff" strokeWidth={2} />
+            </TouchableOpacity>
           </View>
 
-          {/* Receivables card */}
-          <View style={styles.card}>
-            <View style={styles.cardRow}>
-              <View
-                style={[
-                  styles.dot,
-                  { backgroundColor: colors.primary.DEFAULT },
-                ]}
-              />
-              <Text style={styles.cardLabel}>Customers Owe Me</Text>
-            </View>
-            <Text style={[styles.cardAmount, { color: colors.primary.dark }]}>
-              {formatINR(data.customersOweMe)}
-            </Text>
-            <Text style={styles.cardCaption}>
-              Total outstanding from {data.activeBuyers} active buyer
-              {data.activeBuyers !== 1 ? "s" : ""}
-            </Text>
-            {/* Progress bar */}
-            <ProgressBar
-              value={data.customersOweMe}
-              total={data.customersOweMe + data.iOweSuppliers}
-              color={colors.primary.DEFAULT}
-            />
-          </View>
-
-          {/* Payables card */}
-          <View style={styles.card}>
-            <View style={styles.cardRow}>
-              <View
-                style={[styles.dot, { backgroundColor: colors.danger.DEFAULT }]}
-              />
-              <Text style={styles.cardLabel}>I Owe Suppliers</Text>
-            </View>
-            <Text style={[styles.cardAmount, { color: colors.danger.strong }]}>
-              {formatINR(data.iOweSuppliers)}
-            </Text>
-            <Text style={styles.cardCaption}>
-              Total pending supplier payments
-            </Text>
-            <ProgressBar
-              value={data.iOweSuppliers}
-              total={data.customersOweMe + data.iOweSuppliers}
-              color={colors.danger.DEFAULT}
-            />
-          </View>
-
-          {/* Breakdown row */}
-          <View style={styles.breakdownCard}>
-            <BreakdownRow
-              label="Overdue Customers"
-              value={data.overdueCustomers}
-              unit="accounts"
-              color={colors.warning.DEFAULT}
-            />
-            <View style={styles.divider} />
-            <BreakdownRow
-              label="Net Receivable"
-              value={formatINR(data.customersOweMe)}
-              color={colors.primary.dark}
-            />
-            <View style={styles.divider} />
-            <BreakdownRow
-              label="Net Payable"
-              value={formatINR(data.iOweSuppliers)}
-              color={colors.danger.strong}
-            />
-          </View>
+          <View style={{ height: 32 }} />
         </ScrollView>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-function ProgressBar({
-  value,
-  total,
-  color,
-}: {
-  value: number;
-  total: number;
-  color: string;
-}) {
-  const pct = total > 0 ? Math.min(value / total, 1) : 0;
-  return (
-    <View style={pb.track}>
-      <View
-        style={[
-          pb.bar,
-          {
-            width: `${(pct * 100).toFixed(1)}%` as any,
-            backgroundColor: color,
-          },
-        ]}
-      />
-    </View>
-  );
-}
-
-function BreakdownRow({
-  label,
-  value,
-  unit,
-  color,
-}: {
-  label: string;
-  value: string | number;
-  unit?: string;
-  color: string;
-}) {
-  return (
-    <View style={bd.row}>
-      <Text style={bd.label}>{label}</Text>
-      <Text style={[bd.value, { color }]}>
-        {typeof value === "number" ? value : value}
-        {unit ? ` ${unit}` : ""}
-      </Text>
-    </View>
-  );
-}
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
+// ── Styles ────────────────────────────────────────────────
+const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.neutral.bg },
   header: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingVertical: 14,
-    backgroundColor: colors.neutral.bg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.neutral[200],
+    paddingBottom: 16,
+    paddingTop: 8,
   },
-  backBtn: {
-    width: 40,
-    height: 40,
-    alignItems: "flex-start",
-    justifyContent: "center",
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: colors.neutral[900],
+    marginBottom: 2,
   },
-  headerTitle: { fontSize: 17, fontWeight: "700", color: colors.neutral[900] },
+  headerSub: {
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 0.8,
+    color: colors.neutral[400],
+  },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   errorText: { fontSize: 14, color: colors.neutral[400] },
-  scroll: { padding: 20, gap: 14, paddingBottom: 48 },
-  heroCard: { borderRadius: 20, padding: 24, marginBottom: 2 },
-  heroLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 1.2,
-    marginBottom: 8,
+  scroll: { paddingHorizontal: 16, gap: 12, paddingBottom: 24 },
+
+  // ── StatCard ──
+  statCard: {
+    borderRadius: 20,
+    paddingHorizontal: 22,
+    paddingVertical: 20,
   },
-  heroAmount: {
-    fontSize: 40,
-    fontWeight: "800",
-    letterSpacing: -0.5,
+  statCardTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 10,
   },
-  heroRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  heroSub: { fontSize: 13, fontWeight: "600" },
-  card: {
-    backgroundColor: colors.white,
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+  statCardLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1.1,
+    color: "rgba(255,255,255,0.8)",
   },
-  cardRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 8,
-  },
-  dot: { width: 10, height: 10, borderRadius: 5 },
-  cardLabel: { fontSize: 14, fontWeight: "600", color: colors.neutral[600] },
-  cardAmount: {
-    fontSize: 28,
+  statCardAmount: {
+    fontSize: 36,
     fontWeight: "800",
-    letterSpacing: -0.4,
-    marginBottom: 4,
+    color: "#FFFFFF",
+    letterSpacing: -0.5,
+    marginBottom: 14,
   },
-  cardCaption: { fontSize: 12, color: colors.neutral[400], marginBottom: 12 },
-  breakdownCard: {
+  statCardDivider: {
+    borderTopWidth: 1,
+    borderColor: "rgba(255,255,255,0.25)",
+    marginBottom: 12,
+  },
+  statCardBottom: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  statCardSub: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.85)",
+    fontWeight: "500",
+  },
+
+  // ── NetCard ──
+  netCard: {
+    borderRadius: 20,
+    paddingHorizontal: 22,
+    paddingVertical: 20,
+    backgroundColor: "#1C2333",
+  },
+  netLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1.1,
+    color: "rgba(255,255,255,0.5)",
+  },
+  netAmount: {
+    fontSize: 36,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    letterSpacing: -0.5,
+    marginBottom: 14,
+  },
+  netFormula: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.55)",
+    fontWeight: "500",
+  },
+
+  // ── Quick Insights ──
+  sectionHeader: { marginTop: 4, marginBottom: 0 },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1.1,
+    color: colors.neutral[400],
+  },
+  pillGroup: { flexDirection: "column", gap: 8 },
+  pill: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 50,
+  },
+  pillText: { fontSize: 13, fontWeight: "600" },
+
+  // ── Report card ──
+  reportCard: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.white,
     borderRadius: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 4,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    padding: 16,
+    gap: 14,
+    borderWidth: 1,
+    borderColor: colors.neutral[100],
   },
-  divider: { height: 1, backgroundColor: colors.neutral.bg },
-});
-
-const pb = StyleSheet.create({
-  track: {
-    height: 6,
-    backgroundColor: colors.neutral.bg,
-    borderRadius: 3,
-    overflow: "hidden",
-  },
-  bar: { height: 6, borderRadius: 3 },
-});
-
-const bd = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  reportIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: colors.primary.light,
     alignItems: "center",
-    paddingVertical: 14,
+    justifyContent: "center",
+    flexShrink: 0,
   },
-  label: { fontSize: 14, color: colors.neutral[600], fontWeight: "500" },
-  value: { fontSize: 15, fontWeight: "700" },
+  reportMeta: { flex: 1 },
+  reportTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.neutral[900],
+    marginBottom: 3,
+  },
+  reportSub: { fontSize: 12, color: colors.neutral[400] },
+  downloadBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primary.DEFAULT,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
 });
