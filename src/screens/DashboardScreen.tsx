@@ -13,8 +13,7 @@ import Loader from "../components/feedback/Loader";
 import { useAddCustomer } from "../hooks/useCustomer";
 import { useDashboard } from "../hooks/useDashboard";
 import { useAuthStore } from "../store/authStore";
-import { dashboardPalette as C, formatINR } from "../utils/dashboardUi";
-import { colors } from "../utils/theme";
+import { formatINR } from "../utils/dashboardUi";
 
 // ─────────────── Main Screen ────────────
 export const DashboardScreen = () => {
@@ -59,8 +58,8 @@ export const DashboardScreen = () => {
         : "CreditBook Seller";
 
   return (
-    <View style={{ flex: 1, backgroundColor: C.bg }}>
-      <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
+    <View className="flex-1 bg-background">
+      <StatusBar barStyle="dark-content" backgroundColor="#F6F7F9" />
 
       <DashboardHeader
         overdueCount={data.overdueCustomers}
@@ -73,12 +72,9 @@ export const DashboardScreen = () => {
       >
         {isBothMode ? (
           <View
+            className="bg-white rounded-3xl p-5 mb-3"
             style={{
-              backgroundColor: C.white,
-              borderRadius: 24,
-              padding: 20,
-              marginBottom: 12,
-              shadowColor: colors.black,
+              shadowColor: "#000",
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.07,
               shadowRadius: 12,
@@ -86,103 +82,37 @@ export const DashboardScreen = () => {
             }}
           >
             {/* Split row */}
-            <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
+            <View className="flex-row gap-3 mb-3">
               {/* Customers owe me */}
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: C.receivePanelBg,
-                  borderRadius: 16,
-                  padding: 16,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 10,
-                    letterSpacing: 1,
-                    color: colors.primary.dark,
-                    fontWeight: "700",
-                    marginBottom: 6,
-                  }}
-                >
+              <View className="flex-1 bg-success-bg rounded-2xl p-4">
+                <Text className="text-[10px] tracking-widest text-primary-dark font-bold mb-1.5">
                   YOU RECEIVE
                 </Text>
-                <Text
-                  style={{
-                    fontSize: 22,
-                    fontWeight: "800",
-                    color: colors.primary.dark,
-                    letterSpacing: -0.3,
-                  }}
-                >
+                <Text className="text-[22px] font-extrabold text-primary-dark tracking-tight">
                   {formatINR(data.customersOweMe)}
                 </Text>
               </View>
 
               {/* I owe suppliers */}
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: C.owePanelBg,
-                  borderRadius: 16,
-                  padding: 16,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 10,
-                    letterSpacing: 1,
-                    color: C.dashboardRed,
-                    fontWeight: "700",
-                    marginBottom: 6,
-                  }}
-                >
+              <View className="flex-1 bg-danger-bg rounded-2xl p-4">
+                <Text className="text-[10px] tracking-widest text-danger-strong font-bold mb-1.5">
                   YOU OWE
                 </Text>
-                <Text
-                  style={{
-                    fontSize: 22,
-                    fontWeight: "800",
-                    color: C.dashboardRed,
-                    letterSpacing: -0.3,
-                  }}
-                >
+                <Text className="text-[22px] font-extrabold text-danger-strong tracking-tight">
                   {formatINR(data.iOweSuppliers)}
                 </Text>
               </View>
             </View>
 
             {/* Net Position */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                backgroundColor: C.bg,
-                borderRadius: 12,
-                paddingHorizontal: 16,
-                paddingVertical: 10,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 13,
-                  fontWeight: "600",
-                  color: C.body,
-                  letterSpacing: 0.4,
-                }}
-              >
+            <View className="flex-row justify-between items-center bg-background rounded-xl px-4 py-2.5">
+              <Text className="text-[13px] font-semibold text-textPrimary tracking-wide">
                 NET POSITION
               </Text>
               <Text
+                className="text-lg font-extrabold tracking-tight"
                 style={{
-                  fontSize: 18,
-                  fontWeight: "800",
-                  color:
-                    data.netPosition >= 0
-                      ? colors.primary.dark
-                      : C.dashboardRed,
-                  letterSpacing: -0.3,
+                  color: data.netPosition >= 0 ? "#16A34A" : "#DC2626",
                 }}
               >
                 {data.netPosition >= 0 ? "+" : ""}
@@ -210,17 +140,13 @@ export const DashboardScreen = () => {
       </ScrollView>
 
       <Pressable
+        className="absolute items-center justify-center bg-primary rounded-full"
         style={{
-          position: "absolute",
           bottom: 96,
           right: 24,
           width: 58,
           height: 58,
-          borderRadius: 29,
-          backgroundColor: C.blue,
-          alignItems: "center",
-          justifyContent: "center",
-          shadowColor: C.blue,
+          shadowColor: "#22C55E",
           shadowOffset: { width: 0, height: 6 },
           shadowOpacity: 0.4,
           shadowRadius: 12,
@@ -228,7 +154,7 @@ export const DashboardScreen = () => {
         }}
         onPress={() => router.push("/orders/createOrderScreen")}
       >
-        <Plus size={26} color={C.white} strokeWidth={2.5} />
+        <Plus size={26} color="#FFFFFF" strokeWidth={2.5} />
       </Pressable>
 
       <NewCustomerModal

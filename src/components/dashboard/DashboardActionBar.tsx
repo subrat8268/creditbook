@@ -1,5 +1,3 @@
-import { dashboardPalette as C } from "@/src/utils/dashboardUi";
-import { colors } from "@/src/utils/theme";
 import { FileText, Send } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
@@ -14,13 +12,9 @@ export default function DashboardActionBar({
 }: Props) {
   return (
     <View
+      className="bg-white rounded-[20px] flex-row mb-4 overflow-hidden"
       style={{
-        backgroundColor: C.white,
-        borderRadius: 20,
-        flexDirection: "row",
-        marginBottom: 16,
-        overflow: "hidden",
-        shadowColor: colors.black,
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 8,
@@ -28,38 +22,18 @@ export default function DashboardActionBar({
       }}
     >
       <TouchableOpacity
-        style={{
-          flex: 1,
-          paddingVertical: 18,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-          borderRightWidth: 1,
-          borderRightColor: C.divider,
-        }}
+        className="flex-1 py-[18px] flex-row items-center justify-center gap-2 border-r border-divider"
         onPress={onViewReport}
       >
-        <FileText size={18} color={C.blue} strokeWidth={2} />
-        <Text style={{ fontSize: 14, fontWeight: "600", color: C.blue }}>
-          View Report
-        </Text>
+        <FileText size={18} color="#22C55E" strokeWidth={2} />
+        <Text className="text-sm font-semibold text-primary">View Report</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={{
-          flex: 1,
-          paddingVertical: 18,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-        }}
+        className="flex-1 py-[18px] flex-row items-center justify-center gap-2"
         onPress={onSendReminder}
       >
-        <Send size={18} color={C.blue} strokeWidth={2} />
-        <Text style={{ fontSize: 14, fontWeight: "600", color: C.blue }}>
-          Send Reminder
-        </Text>
+        <Send size={18} color="#22C55E" strokeWidth={2} />
+        <Text className="text-sm font-semibold text-primary">Send Reminder</Text>
       </TouchableOpacity>
     </View>
   );

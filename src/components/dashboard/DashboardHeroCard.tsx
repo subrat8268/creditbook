@@ -1,4 +1,4 @@
-import { dashboardPalette as C, formatINR } from "@/src/utils/dashboardUi";
+import { formatINR } from "@/src/utils/dashboardUi";
 import { RefreshCw } from "lucide-react-native";
 import { Text, View } from "react-native";
 
@@ -15,19 +15,16 @@ export default function DashboardHeroCard({
 }: Props) {
   return (
     <View
+      className="bg-white rounded-3xl p-7 mb-3 overflow-hidden"
       style={{
-        backgroundColor: C.white,
-        borderRadius: 24,
-        padding: 28,
-        marginBottom: 12,
-        overflow: "hidden",
-        shadowColor: colors.black,
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.07,
         shadowRadius: 12,
         elevation: 4,
       }}
     >
+      {/* Decorative blobs */}
       <View
         style={{
           position: "absolute",
@@ -36,7 +33,7 @@ export default function DashboardHeroCard({
           width: 140,
           height: 140,
           borderRadius: 70,
-          backgroundColor: C.heroDecor,
+          backgroundColor: "#F5ECD8",
           opacity: 0.9,
         }}
       />
@@ -48,36 +45,20 @@ export default function DashboardHeroCard({
           width: 70,
           height: 70,
           borderRadius: 35,
-          backgroundColor: C.heroDecor,
+          backgroundColor: "#F5ECD8",
           opacity: 0.55,
         }}
       />
 
-      <Text
-        style={{
-          fontSize: 11,
-          fontWeight: "700",
-          letterSpacing: 1.4,
-          color: C.heroLabel,
-          marginBottom: 10,
-        }}
-      >
+      <Text className="text-[11px] font-bold tracking-[1.4px] text-textSecondary mb-2.5">
         {label}
       </Text>
-      <Text
-        style={{
-          fontSize: 40,
-          fontWeight: "800",
-          color: C.heroAmount,
-          marginBottom: 10,
-          letterSpacing: -0.5,
-        }}
-      >
+      <Text className="text-[40px] font-extrabold text-warning mb-2.5 tracking-tight">
         {formatINR(amount)}
       </Text>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-        <RefreshCw size={12} color={C.heroSub} strokeWidth={2} />
-        <Text style={{ fontSize: 12, color: C.heroSub }}>{updatedText}</Text>
+      <View className="flex-row items-center gap-1.5">
+        <RefreshCw size={12} color="#6B7280" strokeWidth={2} />
+        <Text className="text-xs text-textSecondary">{updatedText}</Text>
       </View>
     </View>
   );

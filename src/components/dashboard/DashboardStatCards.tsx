@@ -1,4 +1,3 @@
-import { dashboardPalette as C } from "@/src/utils/dashboardUi";
 import { AlertTriangle, Users } from "lucide-react-native";
 import { Text, View } from "react-native";
 
@@ -12,87 +11,49 @@ export default function DashboardStatCards({
   overdueCustomers,
 }: Props) {
   return (
-    <View style={{ flexDirection: "row", gap: 12, marginBottom: 28 }}>
+    <View className="flex-row gap-3 mb-7">
+      {/* Active Buyers */}
       <View
+        className="flex-1 bg-white rounded-[20px] p-[18px]"
         style={{
-          flex: 1,
-          backgroundColor: C.white,
-          borderRadius: 20,
-          padding: 18,
-          shadowColor: colors.black,
+          shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.05,
           shadowRadius: 8,
           elevation: 2,
         }}
       >
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
-          <Text style={{ fontSize: 28, fontWeight: "800", color: C.heading }}>
+        <View className="flex-row justify-between items-start">
+          <Text className="text-[28px] font-extrabold text-textDark">
             {activeBuyers}
           </Text>
-          <View
-            style={{
-              width: 38,
-              height: 38,
-              borderRadius: 12,
-              backgroundColor: C.blueLight,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Users size={20} color={C.blue} strokeWidth={1.8} />
+          <View className="w-[38px] h-[38px] rounded-xl bg-primary-light items-center justify-center">
+            <Users size={20} color="#22C55E" strokeWidth={1.8} />
           </View>
         </View>
-        <Text style={{ fontSize: 13, color: C.body, marginTop: 6 }}>
-          Active Buyers
-        </Text>
+        <Text className="text-[13px] text-textPrimary mt-1.5">Active Buyers</Text>
       </View>
 
+      {/* Overdue Accounts */}
       <View
+        className="flex-1 bg-white rounded-[20px] p-[18px]"
         style={{
-          flex: 1,
-          backgroundColor: C.white,
-          borderRadius: 20,
-          padding: 18,
-          shadowColor: colors.black,
+          shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.05,
           shadowRadius: 8,
           elevation: 2,
         }}
       >
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
-          <Text style={{ fontSize: 28, fontWeight: "800", color: C.heading }}>
+        <View className="flex-row justify-between items-start">
+          <Text className="text-[28px] font-extrabold text-textDark">
             {overdueCustomers}
           </Text>
-          <View
-            style={{
-              width: 38,
-              height: 38,
-              borderRadius: 12,
-              backgroundColor: C.redLight,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <AlertTriangle size={20} color={C.red} strokeWidth={1.8} />
+          <View className="w-[38px] h-[38px] rounded-xl bg-danger-light items-center justify-center">
+            <AlertTriangle size={20} color="#E74C3C" strokeWidth={1.8} />
           </View>
         </View>
-        <Text style={{ fontSize: 13, color: C.body, marginTop: 6 }}>
-          Overdue Accounts
-        </Text>
+        <Text className="text-[13px] text-textPrimary mt-1.5">Overdue Accounts</Text>
       </View>
     </View>
   );
