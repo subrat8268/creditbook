@@ -8,10 +8,7 @@ type Props = {
   onViewAll?: () => void;
 };
 
-export default function DashboardRecentActivity({
-  items,
-  onViewAll,
-}: Props) {
+export default function DashboardRecentActivity({ items, onViewAll }: Props) {
   return (
     <>
       <View className="flex-row justify-between items-center mb-3.5">
@@ -29,9 +26,7 @@ export default function DashboardRecentActivity({
           </Text>
         </View>
       ) : (
-        items.map((item) => (
-          <ActivityRow key={item.id} item={item} />
-        ))
+        items.map((item) => <ActivityRow key={item.id} item={item} />)
       )}
     </>
   );

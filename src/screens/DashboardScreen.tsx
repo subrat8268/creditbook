@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { Plus } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable, ScrollView, StatusBar, Text, View } from "react-native";
+import { Pressable, ScrollView, StatusBar, View } from "react-native";
 import NewCustomerModal from "../components/customers/NewCustomerModal";
 import DashboardActionBar from "../components/dashboard/DashboardActionBar";
 import DashboardHeader from "../components/dashboard/DashboardHeader";

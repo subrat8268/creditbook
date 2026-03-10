@@ -8,7 +8,11 @@ import StatusBadge from "./StatusBadge";
 // ─── Type-driven icon config ──────────────────────────────────────────────────
 type IconCfg = {
   bg: string;
-  icon: React.ComponentType<{ size: number; color: string; strokeWidth: number }>;
+  icon: React.ComponentType<{
+    size: number;
+    color: string;
+    strokeWidth: number;
+  }>;
   color: string;
   label: string;
 };

@@ -81,7 +81,8 @@ export default function DashboardHeroCard({
           className="font-extrabold tracking-tight"
           style={{ color: colors.white, fontSize: 40, lineHeight: 48 }}
         >
-          {amount < 0 ? "−" : ""}{formatINR(Math.abs(amount))}
+          {amount < 0 ? "−" : ""}
+          {formatINR(Math.abs(amount))}
         </Text>
       </LinearGradient>
     );

@@ -10,8 +10,8 @@ type Mode = "seller" | "distributor" | "both";
 
 type Props = {
   mode?: Mode;
-  primaryCount: number;      // activeBuyers (seller/both) or activeSuppliers (distributor)
-  overdueCount: number;      // overdueCustomers (seller/both) or overduePayments (distributor)
+  primaryCount: number; // activeBuyers (seller/both) or activeSuppliers (distributor)
+  overdueCount: number; // overdueCustomers (seller/both) or overduePayments (distributor)
   // Both-mode extras
   activeSuppliers?: number;
   overdueSuppliers?: number;
@@ -89,7 +89,9 @@ export default function DashboardStatCards({
       label="ACTIVE BUYERS"
       value={primaryCount}
       descriptor="customers"
-      icon={<Users size={20} color={colors.primary.DEFAULT} strokeWidth={1.8} />}
+      icon={
+        <Users size={20} color={colors.primary.DEFAULT} strokeWidth={1.8} />
+      }
       iconBg={colors.primary.light}
     />
   );
@@ -99,7 +101,9 @@ export default function DashboardStatCards({
       label="ACTIVE SUPPLIERS"
       value={isBoth ? activeSuppliers : primaryCount}
       descriptor="vendors"
-      icon={<Users2 size={20} color={colors.primary.DEFAULT} strokeWidth={1.8} />}
+      icon={
+        <Users2 size={20} color={colors.primary.DEFAULT} strokeWidth={1.8} />
+      }
       iconBg={colors.primary.light}
     />
   );
@@ -110,7 +114,13 @@ export default function DashboardStatCards({
       value={overdueCount}
       descriptor="need follow-up"
       valueColor={colors.danger.DEFAULT}
-      icon={<AlertTriangle size={20} color={colors.danger.DEFAULT} strokeWidth={1.8} />}
+      icon={
+        <AlertTriangle
+          size={20}
+          color={colors.danger.DEFAULT}
+          strokeWidth={1.8}
+        />
+      }
       iconBg={colors.danger.light}
     />
   );
@@ -121,7 +131,13 @@ export default function DashboardStatCards({
       value={isBoth ? overdueSuppliers : overdueCount}
       descriptor="need follow-up"
       valueColor={colors.danger.DEFAULT}
-      icon={<AlertTriangle size={20} color={colors.danger.DEFAULT} strokeWidth={1.8} />}
+      icon={
+        <AlertTriangle
+          size={20}
+          color={colors.danger.DEFAULT}
+          strokeWidth={1.8}
+        />
+      }
       iconBg={colors.danger.light}
     />
   );
@@ -150,5 +166,3 @@ export default function DashboardStatCards({
     </View>
   );
 }
-
-
