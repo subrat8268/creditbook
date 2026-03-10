@@ -33,8 +33,8 @@ export default function SuppliersLayout() {
   return (
     <Stack
       screenOptions={({ route }) => {
-        // index renders its own header (Suppliers + I Owe pill)
-        if (route.name === "index") {
+        // Both index and [supplierId] render their own custom headers
+        if (route.name === "index" || route.name === "[supplierId]") {
           return { headerShown: false };
         }
         const config =

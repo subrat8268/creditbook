@@ -4,6 +4,7 @@ import {
   SupplierDelivery,
   SupplierDeliveryItem,
   SupplierDetail,
+  SupplierTimelineEntry,
 } from "../types/supplier";
 
 export const PAGE_SIZE = 10;
@@ -107,26 +108,88 @@ export async function fetchSupplierDetail(
 
   if (dErr) return null;
 
-  const { data: payments } = await supabase
+  const { data: paymentsMade } = await supabase
     .from("payments_made")
-    .select("amount")
-    .eq("supplier_id", supplierId);
+    .select("id, amount, payment_mode, notes, created_at")
+    .eq("supplier_id", supplierId)
+    .order("created_at", { ascending: true });
 
   const totalDelivered = (deliveries ?? []).reduce(
     (s, d) => s + Number(d.total_amount),
     0,
   );
-  const totalPaid = (payments ?? []).reduce((s, p) => s + Number(p.amount), 0);
+  const totalPaid = (paymentsMade ?? []).reduce(
+    (s, p) => s + Number(p.amount),
+    0,
+  );
   const totalOwed = Math.max(0, totalDelivered - totalPaid);
+
+  const mappedDeliveries: SupplierDelivery[] = (deliveries ?? []).map((d) => ({
+    ...(d as SupplierDelivery),
+    items: (d.supplier_delivery_items ?? []) as SupplierDeliveryItem[],
+  }));
+
+  // ── Build unified timeline with running balance ───────────────────────────
+  type RawEvent = {
+    id: string;
+    type: "delivery" | "payment";
+    date: string;
+    delta: number; // +delivery amount, -payment amount
+    delivery?: SupplierDelivery;
+    paymentAmount?: number;
+    paymentMode?: string;
+    paymentNotes?: string;
+  };
+
+  const events: RawEvent[] = [
+    ...mappedDeliveries.map((d) => ({
+      id: d.id,
+      type: "delivery" as const,
+      date: d.delivery_date,
+      delta: Number(d.total_amount),
+      delivery: d,
+    })),
+    ...(paymentsMade ?? []).map((p) => ({
+      id: p.id,
+      type: "payment" as const,
+      date: p.created_at,
+      delta: -Number(p.amount),
+      paymentAmount: Number(p.amount),
+      paymentMode: p.payment_mode,
+      paymentNotes: p.notes ?? undefined,
+    })),
+  ];
+
+  // Sort ascending → compute running balance → reverse for newest-first display
+  events.sort((a, b) => a.date.localeCompare(b.date));
+  let running = 0;
+  let dIdx = 0;
+  const timeline: SupplierTimelineEntry[] = events.map((ev) => {
+    running += ev.delta;
+    const entry: SupplierTimelineEntry = {
+      id: ev.id,
+      type: ev.type,
+      date: ev.date,
+      runningBalance: Math.max(0, running),
+      delivery: ev.delivery,
+      paymentAmount: ev.paymentAmount,
+      paymentMode: ev.paymentMode,
+      paymentNotes: ev.paymentNotes,
+    };
+    if (ev.type === "delivery") {
+      dIdx += 1;
+      entry.deliveryNumber = dIdx;
+    }
+    return entry;
+  });
+  timeline.reverse();
 
   return {
     ...(supplier as Supplier),
     balanceOwed: totalOwed,
     totalOwed,
-    deliveries: (deliveries ?? []).map((d) => ({
-      ...(d as SupplierDelivery),
-      items: (d.supplier_delivery_items ?? []) as SupplierDeliveryItem[],
-    })),
+    deliveries: mappedDeliveries,
+    timeline,
   };
 }
 

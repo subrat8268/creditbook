@@ -1,26 +1,189 @@
 import EmptyState from "@/src/components/feedback/EmptyState";
 import Loader from "@/src/components/feedback/Loader";
-import ScreenWrapper from "@/src/components/ScreenWrapper";
 import RecordDeliveryModal from "@/src/components/suppliers/RecordDeliveryModal";
 import RecordPaymentMadeModal from "@/src/components/suppliers/RecordPaymentMadeModal";
-import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import {
-    useRecordDelivery,
-    useRecordPaymentMade,
-    useSupplierDetail,
+  useRecordDelivery,
+  useRecordPaymentMade,
+  useSupplierDetail,
 } from "@/src/hooks/useSuppliers";
 import { useAuthStore } from "@/src/store/authStore";
-import { useLocalSearchParams } from "expo-router";
-import { Banknote, Building2 } from "lucide-react-native";
+import { SupplierTimelineEntry } from "@/src/types/supplier";
+import { formatRelativeActivity } from "@/src/utils/helper";
+import { colors } from "@/src/utils/theme";
+import { LinearGradient } from "expo-linear-gradient";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  Building2,
+  Calendar,
+  CirclePlus,
+  Copy,
+  Package,
+  Pencil,
+  Phone,
+  Truck,
+} from "lucide-react-native";
 import { useState } from "react";
-import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  FlatList,
+  Linking,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function formatINR(n: number) {
+  return (
+    "₹" +
+    n.toLocaleString("en-IN", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })
+  );
+}
+
+function formatDate(iso?: string | null): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function getDateLabel(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = Math.round(
+    (today.getTime() - target.getTime()) / 86_400_000,
+  );
+  if (diffDays === 0) return "TODAY";
+  if (diffDays === 1) return "YESTERDAY";
+  return d
+    .toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    })
+    .toUpperCase();
+}
+
+function maskAccount(n?: string): string {
+  if (!n) return "";
+  if (n.length <= 4) return n;
+  return `****${n.slice(-4)}`;
+}
+
+// ─── Gradient hero colours ────────────────────────────────────────────────────
+const HERO_GRADIENT: [string, string] = ["#BE2D5C", "#E8427D"];
+
+// ─── Timeline row ─────────────────────────────────────────────────────────────
+function TimelineRow({ entry }: { entry: SupplierTimelineEntry }) {
+  const isDelivery = entry.type === "delivery";
+  const borderColor = isDelivery
+    ? colors.warning.DEFAULT
+    : colors.success.DEFAULT;
+  const iconBg = isDelivery ? colors.warning.light : colors.success.bg;
+  const iconColor = isDelivery
+    ? colors.warning.DEFAULT
+    : colors.success.DEFAULT;
+  const amountColor = isDelivery
+    ? colors.danger.DEFAULT
+    : colors.success.DEFAULT;
+
+  const d = entry.delivery;
+  const itemCount = d?.items?.length ?? 0;
+  const loadingCharge = Number(d?.loading_charge ?? 0);
+  const amount = isDelivery
+    ? Number(d?.total_amount ?? 0)
+    : (entry.paymentAmount ?? 0);
+
+  const title = isDelivery
+    ? `Delivery #D-${String(entry.deliveryNumber ?? 0).padStart(3, "0")}`
+    : "Payment Made";
+
+  const subtitle = isDelivery
+    ? [
+        itemCount > 0 ? `${itemCount} item${itemCount !== 1 ? "s" : ""}` : null,
+        loadingCharge > 0
+          ? `₹${loadingCharge.toLocaleString("en-IN")} loading`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" · ")
+    : [entry.paymentMode, entry.paymentNotes].filter(Boolean).join(" · ");
+
+  const amountText = isDelivery ? formatINR(amount) : `−${formatINR(amount)}`;
+
+  return (
+    <View
+      className="bg-white rounded-[14px] px-3.5 py-3.5 mb-[10px] border-l-4"
+      style={{
+        borderLeftColor: borderColor,
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 1,
+      }}
+    >
+      <View className="flex-row items-center">
+        {/* Icon */}
+        <View
+          className="w-[38px] h-[38px] rounded-full items-center justify-center mr-3"
+          style={{ backgroundColor: iconBg }}
+        >
+          {isDelivery ? (
+            <Package size={18} color={iconColor} strokeWidth={2} />
+          ) : (
+            <CirclePlus size={18} color={iconColor} strokeWidth={2} />
+          )}
+        </View>
+
+        {/* Text */}
+        <View className="flex-1">
+          <Text className="text-sm font-bold text-textDark">{title}</Text>
+          {subtitle ? (
+            <Text className="text-xs text-textMuted mt-px">{subtitle}</Text>
+          ) : null}
+        </View>
+
+        {/* Amount + Running balance */}
+        <View className="items-end">
+          <Text
+            className="text-[15px] font-bold"
+            style={{ color: amountColor }}
+          >
+            {amountText}
+          </Text>
+          <Text
+            className="text-xs mt-[2px]"
+            style={{ color: colors.neutral[500] }}
+          >
+            Bal: {formatINR(entry.runningBalance)}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function SupplierDetailScreen() {
   const { supplierId } = useLocalSearchParams<{ supplierId: string }>();
   const profile = useAuthStore((s) => s.profile);
+  const router = useRouter();
 
   const { data: supplier, isLoading, isError } = useSupplierDetail(supplierId);
-
   const [deliveryModalOpen, setDeliveryModalOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
@@ -33,182 +196,313 @@ export default function SupplierDetailScreen() {
   if (isLoading) return <Loader />;
   if (isError || !supplier) return <EmptyState message="Supplier not found" />;
 
+  const timeline = supplier.timeline ?? [];
+
+  // ── Group by date label ───────────────────────────────────────────────────
+  const grouped: { label: string; data: SupplierTimelineEntry[] }[] = [];
+  for (const entry of timeline) {
+    const label = getDateLabel(entry.date);
+    const last = grouped[grouped.length - 1];
+    if (last && last.label === label) {
+      last.data.push(entry);
+    } else {
+      grouped.push({ label, data: [entry] });
+    }
+  }
+  const flatItems: (SupplierTimelineEntry | { _sectionHeader: string })[] =
+    grouped.flatMap((g) => [{ _sectionHeader: g.label }, ...g.data]);
+
+  // ── Header component (above timeline) ────────────────────────────────────
   const renderHeader = () => (
     <View>
-      {/* Supplier Info */}
-      <View className="rounded-lg p-4 border border-neutral-300 gap-3 mb-4">
-        <View className="flex-row items-center gap-4">
-          <View className="w-14 h-14 rounded-full bg-amber-100 items-center justify-center">
-            <Building2 size={28} color={colors.warning.dark} strokeWidth={1.8} />
-          </View>
-          <View className="flex-1">
-            <Text className="text-2xl text-neutral-900 font-inter-bold">
-              {supplier.name}
-            </Text>
-            {supplier.phone ? (
-              <Text className="text-neutral-600 font-inter">
-                {supplier.phone}
-              </Text>
-            ) : null}
-            {supplier.basket_mark ? (
-              <Text className="text-neutral-400 text-sm font-inter">
-                Mark: {supplier.basket_mark}
-              </Text>
-            ) : null}
-          </View>
-        </View>
-
-        {/* Bank details */}
-        {supplier.bank_name ? (
-          <View className="bg-neutral-50 rounded-lg p-3 gap-1">
-            <Text className="text-xs font-inter-semibold text-neutral-500 uppercase tracking-wide">
-              Bank Details
-            </Text>
-            <Text className="font-inter-medium text-neutral-800">
-              {supplier.bank_name}
-            </Text>
-            {supplier.account_number ? (
-              <Text className="font-inter text-neutral-600 text-sm">
-                A/c: {supplier.account_number}
-              </Text>
-            ) : null}
-            {supplier.ifsc_code ? (
-              <Text className="font-inter text-neutral-600 text-sm">
-                IFSC: {supplier.ifsc_code}
-              </Text>
-            ) : null}
-          </View>
-        ) : null}
-      </View>
-
-      {/* Balance Owed */}
-      <View className="flex gap-2 border border-danger-light bg-danger-bg rounded-lg p-4 mb-4">
-        <Text className="text-xl font-inter-semibold text-neutral-900">
-          Balance You Owe
+      {/* Hero gradient card */}
+      <LinearGradient
+        colors={HERO_GRADIENT}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        className="rounded-2xl px-5 py-5 mb-4"
+      >
+        <Text
+          className="text-xs font-bold tracking-widest mb-2"
+          style={{ color: "rgba(255,255,255,0.75)" }}
+        >
+          I OWE THIS SUPPLIER
         </Text>
         <Text
-          className={`text-3xl font-inter-bold ${
-            supplier.totalOwed > 0 ? "text-danger-strong" : "text-green-600"
-          }`}
+          className="font-bold mb-3"
+          style={{ fontSize: 42, color: "#FFFFFF", lineHeight: 46 }}
         >
-          ₹ {supplier.totalOwed.toLocaleString("en-IN")}
+          {formatINR(supplier.totalOwed)}
         </Text>
-
-        {supplier.totalOwed > 0 && (
-          <TouchableOpacity
-            onPress={() => setPaymentModalOpen(true)}
-            className="flex-row items-center justify-center gap-2 bg-primary rounded-lg py-3 mt-1"
-          >
-            <Banknote size={18} color="white" strokeWidth={2} />
-            <Text className="text-white font-inter-semibold text-sm">
-              Record Payment
+        {supplier.lastDeliveryAt && (
+          <View className="flex-row items-center gap-[6px]">
+            <Calendar
+              size={13}
+              color="rgba(255,255,255,0.75)"
+              strokeWidth={2}
+            />
+            <Text
+              className="text-xs"
+              style={{ color: "rgba(255,255,255,0.8)" }}
+            >
+              Last delivery: {formatDate(supplier.lastDeliveryAt)}
             </Text>
-          </TouchableOpacity>
+          </View>
         )}
+      </LinearGradient>
+
+      {/* Bank details card */}
+      {supplier.bank_name ? (
+        <View
+          className="bg-white rounded-2xl px-4 py-4 mb-4 border"
+          style={{ borderColor: colors.neutral[200] }}
+        >
+          <View className="flex-row items-center justify-between mb-3">
+            <Text
+              className="text-[15px] font-bold"
+              style={{ color: colors.neutral[900] }}
+            >
+              Bank Details
+            </Text>
+            {supplier.upi ? (
+              <TouchableOpacity
+                onPress={() => {
+                  Alert.alert("UPI ID Copied", supplier.upi ?? "");
+                }}
+                className="flex-row items-center gap-1"
+              >
+                <Copy
+                  size={13}
+                  color={colors.primary.DEFAULT}
+                  strokeWidth={2.5}
+                />
+                <Text
+                  className="text-[13px] font-bold"
+                  style={{ color: colors.primary.DEFAULT }}
+                >
+                  Copy UPI
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+
+          {/* Bank icon + name row */}
+          <View className="flex-row items-center gap-3 mb-2">
+            <View
+              className="w-9 h-9 rounded-full items-center justify-center"
+              style={{ backgroundColor: colors.info.bg }}
+            >
+              <Building2
+                size={18}
+                color={colors.info.DEFAULT}
+                strokeWidth={1.8}
+              />
+            </View>
+            <View>
+              <Text
+                className="text-[14px] font-semibold"
+                style={{ color: colors.neutral[900] }}
+              >
+                {supplier.bank_name}
+                {supplier.account_number
+                  ? ` — ${maskAccount(supplier.account_number)}`
+                  : ""}
+              </Text>
+              {supplier.ifsc_code ? (
+                <Text
+                  className="text-xs mt-px"
+                  style={{ color: colors.neutral[500] }}
+                >
+                  IFSC: {supplier.ifsc_code}
+                </Text>
+              ) : null}
+              {supplier.upi ? (
+                <Text
+                  className="text-xs mt-px"
+                  style={{ color: colors.neutral[500] }}
+                >
+                  UPI: {supplier.upi}
+                </Text>
+              ) : null}
+            </View>
+          </View>
+        </View>
+      ) : null}
+
+      {/* Action strip */}
+      <View className="flex-row gap-3 mb-5">
+        <TouchableOpacity
+          onPress={() => setDeliveryModalOpen(true)}
+          activeOpacity={0.8}
+          className="flex-1 bg-white rounded-2xl py-4 items-center gap-2 border"
+          style={{ borderColor: colors.neutral[200] }}
+        >
+          <View
+            className="w-10 h-10 rounded-full items-center justify-center"
+            style={{ backgroundColor: colors.warning.light }}
+          >
+            <Truck size={20} color={colors.warning.DEFAULT} strokeWidth={2} />
+          </View>
+          <Text
+            className="text-[13px] font-bold"
+            style={{ color: colors.neutral[700] }}
+          >
+            Record Delivery
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setPaymentModalOpen(true)}
+          activeOpacity={0.8}
+          className="flex-1 bg-white rounded-2xl py-4 items-center gap-2 border"
+          style={{ borderColor: colors.neutral[200] }}
+        >
+          <View
+            className="w-10 h-10 rounded-full items-center justify-center"
+            style={{ backgroundColor: colors.success.bg }}
+          >
+            <ArrowUpRight
+              size={20}
+              color={colors.success.DEFAULT}
+              strokeWidth={2}
+            />
+          </View>
+          <Text
+            className="text-[13px] font-bold"
+            style={{ color: colors.neutral[700] }}
+          >
+            Pay Supplier
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Deliveries Header */}
-      <Text className="text-xl font-inter-semibold text-neutral-900 mb-3">
-        Delivery History
-      </Text>
+      {/* Section heading */}
+      {timeline.length > 0 && (
+        <Text
+          className="text-[17px] font-bold mb-3"
+          style={{ color: colors.neutral[900] }}
+        >
+          Delivery History
+        </Text>
+      )}
     </View>
   );
 
   return (
-    <ScreenWrapper>
-      <FlatList
-        data={supplier.deliveries}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={renderHeader}
-        contentContainerStyle={{ paddingBottom: 100 }}
-        ListEmptyComponent={<EmptyState message="No deliveries recorded yet" />}
-        renderItem={({ item }) => (
-          <View className="border border-neutral-200 rounded-xl p-4 mb-3 bg-white">
-            {/* Delivery header row */}
-            <View className="flex-row justify-between items-start mb-2">
-              <Text className="font-inter-medium text-neutral-900">
-                {new Date(item.delivery_date).toDateString()}
-              </Text>
-              <Text className="font-inter-bold text-neutral-900 text-base">
-                ₹{Number(item.total_amount).toLocaleString("en-IN")}
-              </Text>
-            </View>
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <SafeAreaView
+        edges={["top", "left", "right"]}
+        className="flex-1"
+        style={{ backgroundColor: colors.neutral.bg }}
+      >
+        {/* ── Custom header ── */}
+        <View
+          className="flex-row items-center px-4 py-3 bg-white border-b"
+          style={{ borderBottomColor: colors.neutral[200] }}
+        >
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="p-1 mr-2"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <ArrowLeft size={22} color={colors.neutral[900]} strokeWidth={2} />
+          </TouchableOpacity>
 
-            {/* Items list */}
-            {(item.items ?? []).map((it, idx) => (
-              <View
-                key={idx}
-                className="flex-row justify-between py-1 border-b border-neutral-100"
-              >
-                <Text className="text-neutral-600 font-inter text-sm flex-1">
-                  {it.item_name}
-                </Text>
-                <Text className="text-neutral-500 text-sm font-inter">
-                  {it.quantity} × ₹{it.rate} ={" "}
-                  <Text className="text-neutral-800 font-inter-medium">
-                    ₹
-                    {((it.quantity ?? 0) * (it.rate ?? 0)).toLocaleString(
-                      "en-IN",
-                    )}
-                  </Text>
-                </Text>
-              </View>
-            ))}
-
-            {/* Charges/advance row */}
-            <View className="flex-row justify-between mt-2 pt-2 border-t border-neutral-100">
-              {Number(item.loading_charge) > 0 ? (
-                <Text className="text-neutral-500 text-xs font-inter">
-                  Loading: ₹
-                  {Number(item.loading_charge).toLocaleString("en-IN")}
-                </Text>
-              ) : (
-                <View />
-              )}
-              {Number(item.advance_paid) > 0 ? (
-                <Text className="text-green-600 text-xs font-inter-medium">
-                  Advance paid: ₹
-                  {Number(item.advance_paid).toLocaleString("en-IN")}
-                </Text>
-              ) : null}
-            </View>
-
-            {item.notes ? (
-              <Text className="text-neutral-400 text-xs font-inter mt-1">
-                {item.notes}
-              </Text>
-            ) : null}
+          <View className="flex-1">
+            <Text
+              className="font-bold text-[17px]"
+              style={{ color: colors.neutral[900] }}
+              numberOfLines={1}
+            >
+              {supplier.name}
+            </Text>
+            <Text
+              className="text-xs mt-px"
+              style={{ color: colors.neutral[500] }}
+            >
+              Last delivery: {formatRelativeActivity(supplier.lastDeliveryAt)}
+            </Text>
           </View>
-        )}
-      />
 
-      {/* FAB — Record Delivery */}
-      <FloatingActionButton onPress={() => setDeliveryModalOpen(true)} />
+          <View className="flex-row items-center gap-3">
+            {supplier.phone ? (
+              <TouchableOpacity
+                onPress={() => Linking.openURL(`tel:${supplier.phone}`)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Phone
+                  size={20}
+                  color={colors.primary.DEFAULT}
+                  strokeWidth={2}
+                />
+              </TouchableOpacity>
+            ) : null}
+            <TouchableOpacity
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Pencil size={18} color={colors.neutral[500]} strokeWidth={2} />
+            </TouchableOpacity>
+          </View>
+        </View>
 
-      {/* Record Delivery Modal */}
-      <RecordDeliveryModal
-        visible={deliveryModalOpen}
-        onClose={() => setDeliveryModalOpen(false)}
-        loading={recordDelivery.isPending}
-        onSubmit={async (data) => {
-          await recordDelivery.mutateAsync(data);
-          setDeliveryModalOpen(false);
-          Alert.alert("Success", "Delivery recorded successfully.");
-        }}
-      />
+        {/* ── Timeline list ── */}
+        <FlatList
+          data={flatItems}
+          keyExtractor={(item, idx) =>
+            "_sectionHeader" in item
+              ? `hdr-${item._sectionHeader}-${idx}`
+              : item.id
+          }
+          ListHeaderComponent={renderHeader}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingTop: 16,
+            paddingBottom: 100,
+          }}
+          ListEmptyComponent={
+            <EmptyState message="No deliveries recorded yet" />
+          }
+          renderItem={({ item }) => {
+            if ("_sectionHeader" in item) {
+              return (
+                <Text
+                  className="text-xs font-bold tracking-wider mb-2 mt-1"
+                  style={{ color: colors.neutral[500] }}
+                >
+                  {item._sectionHeader}
+                </Text>
+              );
+            }
+            return <TimelineRow entry={item} />;
+          }}
+        />
 
-      {/* Record Payment Modal */}
-      <RecordPaymentMadeModal
-        visible={paymentModalOpen}
-        balanceOwed={supplier.totalOwed}
-        onClose={() => setPaymentModalOpen(false)}
-        loading={recordPayment.isPending}
-        onSubmit={async (data) => {
-          await recordPayment.mutateAsync(data);
-          setPaymentModalOpen(false);
-          Alert.alert("Success", "Payment recorded successfully.");
-        }}
-      />
-    </ScreenWrapper>
+        {/* Record Delivery Modal */}
+        <RecordDeliveryModal
+          visible={deliveryModalOpen}
+          onClose={() => setDeliveryModalOpen(false)}
+          loading={recordDelivery.isPending}
+          onSubmit={async (data) => {
+            await recordDelivery.mutateAsync(data);
+            setDeliveryModalOpen(false);
+            Alert.alert("Success", "Delivery recorded successfully.");
+          }}
+        />
+
+        {/* Record Payment Made Modal */}
+        <RecordPaymentMadeModal
+          visible={paymentModalOpen}
+          balanceOwed={supplier.totalOwed}
+          onClose={() => setPaymentModalOpen(false)}
+          loading={recordPayment.isPending}
+          onSubmit={async (data) => {
+            await recordPayment.mutateAsync(data);
+            setPaymentModalOpen(false);
+            Alert.alert("Success", "Payment recorded successfully.");
+          }}
+        />
+      </SafeAreaView>
+    </>
   );
 }
