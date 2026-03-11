@@ -86,7 +86,7 @@ function SummaryRow({
       </Text>
       <Text
         style={{
-          fontSize: large ? 20 : 14,
+          fontSize: large ? 28 : 14,
           fontWeight: bold ? "700" : "500",
           color: valueColor ?? colors.neutral[700],
         }}
@@ -232,7 +232,7 @@ export default function OrderBillSummary({
           label="Grand Total"
           value={fmtINR(grandTotal)}
           labelColor={colors.neutral[900]}
-          valueColor={colors.primary.DEFAULT}
+          valueColor={colors.neutral[900]}
           bold
           large
         />

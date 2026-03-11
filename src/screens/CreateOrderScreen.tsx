@@ -58,9 +58,12 @@ function getInitials(name: string) {
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
-function getAvatarColor(name: string) {
-  const sum = name.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-  return AVATAR_COLORS[sum % 8];
+function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
 export default function CreateOrderScreen() {
@@ -408,14 +411,7 @@ export default function CreateOrderScreen() {
                       ? selectedCustomer.name
                       : "Select Customer"}
                   </Text>
-                  {selectedCustomer?.customer_type ? (
-                    <Text
-                      className="text-sm"
-                      style={{ color: colors.neutral[500] }}
-                    >
-                      {selectedCustomer.customer_type}
-                    </Text>
-                  ) : (
+                  {!selectedCustomer && (
                     <Text
                       className="text-sm"
                       style={{ color: colors.neutral[400] }}

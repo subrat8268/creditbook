@@ -274,8 +274,8 @@ export default function ProfileScreen() {
           <SegmentControl<"seller" | "distributor" | "both">
             options={[
               { value: "seller", label: "Seller" },
-              { value: "both", label: "Both" },
               { value: "distributor", label: "Distributor" },
+              { value: "both", label: "Both" },
             ]}
             value={dashboardMode}
             onChange={(v) => updateField("dashboard_mode", v)}
@@ -424,12 +424,10 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   avatarRing: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    borderWidth: 2.5,
-    borderColor: colors.primary.DEFAULT,
-    backgroundColor: colors.neutral.surface,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.primary.DEFAULT,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 10,
@@ -437,7 +435,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 24,
     fontWeight: "700",
-    color: colors.primary.dark,
+    color: "#FFFFFF",
   },
   businessName: {
     fontSize: 18,

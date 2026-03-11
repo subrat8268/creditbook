@@ -10,26 +10,26 @@ import * as Print from "expo-print";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import {
-  AlertTriangle,
-  ArrowDown,
-  ArrowLeft,
-  ArrowUp,
-  Banknote,
-  Download,
-  FileText,
-  MessageCircle,
-  Phone,
-  Plus,
-  Receipt,
+    AlertTriangle,
+    ArrowDown,
+    ArrowLeft,
+    ArrowUp,
+    Banknote,
+    Download,
+    FileText,
+    MessageCircle,
+    Phone,
+    Plus,
+    Receipt,
 } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import {
-  Alert,
-  Linking,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Linking,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -519,7 +519,7 @@ export default function CustomerDetailScreen() {
               />
             </View>
             <Text className="text-[13px] font-semibold text-textDark">
-              Reminder
+              Send Reminder
             </Text>
           </TouchableOpacity>
         </View>
