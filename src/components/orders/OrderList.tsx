@@ -4,7 +4,6 @@ import { daysSince } from "@/src/utils/helper";
 import { colors } from "@/src/utils/theme";
 import { useCallback } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
-import EmptyState from "../feedback/EmptyState";
 import Loader from "../feedback/Loader";
 
 // ── Avatar helpers ────────────────────────────────────────────────────────────
@@ -34,35 +33,34 @@ function getInitials(name: string): string {
   return name.substring(0, 2).toUpperCase();
 }
 
+// Month abbreviations for reliable cross-platform date formatting
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 function formatDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 const STATUS_STYLES: Record<
   string,
   { bg: string; text: string; label: string }
 > = {
-  Paid: { bg: colors.success.light, text: colors.success.dark, label: "PAID" },
-  "Partially Paid": {
-    bg: colors.info.light,
-    text: colors.info.dark,
-    label: "PARTIAL",
-  },
-  Pending: {
-    bg: colors.warning.light,
-    text: colors.warning.dark,
-    label: "PENDING",
-  },
-  Overdue: {
-    bg: colors.danger.light,
-    text: colors.danger.DEFAULT,
-    label: "OVERDUE",
-  },
+  Paid: { bg: "#DCFCE7", text: "#16A34A", label: "PAID" },
+  "Partially Paid": { bg: "#DBEAFE", text: "#1D4ED8", label: "PARTIAL" },
+  Pending: { bg: "#FEF3C7", text: "#D97706", label: "PENDING" },
+  Overdue: { bg: "#FEE2E2", text: "#DC2626", label: "OVERDUE" },
 };
 
 interface Props {
@@ -74,6 +72,7 @@ interface Props {
   onEndReached: () => void;
   isFetchingNextPage: boolean;
   onPressOrder: (orderId: string) => void;
+  onCreateBill: () => void;
 }
 
 export default function OrderList({
@@ -85,10 +84,12 @@ export default function OrderList({
   onEndReached,
   isFetchingNextPage,
   onPressOrder,
+  onCreateBill,
 }: Props) {
   const { updatingOrderIds } = useOrderStore();
 
-  const ORDER_ITEM_H = 76;
+  // card (96) + marginBottom (12) = 108 per slot
+  const ORDER_ITEM_H = 108;
 
   const renderItem = useCallback(
     ({ item }: { item: Order }) => {
@@ -97,121 +98,111 @@ export default function OrderList({
         item.status === "Pending" && daysSince(item.created_at) > 30;
       const statusKey = isOverdue ? "Overdue" : item.status;
       const chipStyle = STATUS_STYLES[statusKey] ?? STATUS_STYLES["Pending"];
-
       const customerName = item.customer?.name ?? "Unknown Customer";
-      const avatarColor = getAvatarColor(customerName);
-      const initials = getInitials(customerName);
 
       return (
         <TouchableOpacity
           onPress={() => onPressOrder(item.id)}
           activeOpacity={0.8}
           style={{
-            backgroundColor: colors.neutral.surface,
-            borderRadius: 14,
-            paddingHorizontal: 14,
-            paddingVertical: 12,
-            marginBottom: 10,
-            flexDirection: "row",
-            alignItems: "center",
-            borderWidth: 1,
-            borderColor: colors.neutral[200],
-            shadowColor: colors.black,
+            backgroundColor: "#FFFFFF",
+            borderRadius: 12,
+            marginHorizontal: 16,
+            marginBottom: 12,
+            padding: 14,
+            elevation: 2,
+            shadowColor: "#000000",
             shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.04,
+            shadowOpacity: 0.06,
             shadowRadius: 4,
-            elevation: 1,
           }}
         >
-          {/* Avatar */}
-          <View
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: avatarColor,
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: 12,
-              flexShrink: 0,
-            }}
-          >
-            <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF" }}>
-              {initials}
-            </Text>
-          </View>
-
-          {/* Centre: bill number + customer name + date */}
-          <View style={{ flex: 1 }}>
+          {/* ── Main row: avatar + name/bill + amount/chip ────── */}
+          <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+            {/* Avatar */}
             <View
               style={{
-                flexDirection: "row",
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                backgroundColor: getAvatarColor(customerName),
                 alignItems: "center",
-                marginBottom: 2,
+                justifyContent: "center",
+                marginRight: 12,
+                flexShrink: 0,
               }}
             >
               <Text
-                style={{
-                  fontSize: 13,
-                  fontWeight: "700",
-                  color: colors.neutral[900],
-                  marginRight: 6,
-                }}
+                style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF" }}
+              >
+                {getInitials(customerName)}
+              </Text>
+            </View>
+
+            {/* Centre: customer name + bill number */}
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text
+                  style={{
+                    fontSize: 15,
+                    fontWeight: "700",
+                    color: "#1C1C1E",
+                    flexShrink: 1,
+                  }}
+                  numberOfLines={1}
+                >
+                  {customerName}
+                </Text>
+                {isUpdating && <Loader />}
+              </View>
+              <Text
+                style={{ fontSize: 13, color: "#6B7280", marginTop: 2 }}
                 numberOfLines={1}
               >
                 {item.bill_number}
               </Text>
-              {isUpdating && <Loader />}
             </View>
-            <Text
-              style={{
-                fontSize: 13,
-                color: colors.neutral[700],
-                marginBottom: 1,
-              }}
-              numberOfLines={1}
-            >
-              {customerName}
-            </Text>
-            <Text style={{ fontSize: 11, color: colors.neutral[400] }}>
-              {formatDate(item.created_at)}
-            </Text>
-          </View>
 
-          {/* Right: amount + status chip */}
-          <View
-            style={{ alignItems: "flex-end", flexShrink: 0, marginLeft: 8 }}
-          >
-            <Text
-              style={{
-                fontSize: 15,
-                fontWeight: "700",
-                color: colors.neutral[900],
-                marginBottom: 5,
-              }}
-            >
-              ₹{item.total_amount.toLocaleString("en-IN")}
-            </Text>
+            {/* Right: amount + status chip */}
             <View
-              style={{
-                backgroundColor: chipStyle.bg,
-                borderRadius: 999,
-                paddingHorizontal: 8,
-                paddingVertical: 3,
-              }}
+              style={{ alignItems: "flex-end", flexShrink: 0, marginLeft: 8 }}
             >
               <Text
                 style={{
-                  color: chipStyle.text,
-                  fontSize: 10,
+                  fontSize: 17,
                   fontWeight: "700",
-                  letterSpacing: 0.5,
+                  color: "#1C1C1E",
+                  marginBottom: 5,
                 }}
               >
-                {chipStyle.label}
+                ₹{item.total_amount.toLocaleString("en-IN")}
               </Text>
+              <View
+                style={{
+                  backgroundColor: chipStyle.bg,
+                  borderRadius: 999,
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                }}
+              >
+                <Text
+                  style={{
+                    color: chipStyle.text,
+                    fontSize: 10,
+                    fontWeight: "700",
+                    letterSpacing: 0.4,
+                  }}
+                >
+                  {chipStyle.label}
+                </Text>
+              </View>
             </View>
           </View>
+
+          {/* ── Bottom row: date ─────────────────────────────── */}
+          <Text style={{ fontSize: 13, color: "#6B7280", marginTop: 10 }}>
+            {formatDate(item.created_at)}
+          </Text>
         </TouchableOpacity>
       );
     },
@@ -229,29 +220,95 @@ export default function OrderList({
       removeClippedSubviews={true}
       initialNumToRender={10}
       maxToRenderPerBatch={10}
-      windowSize={5}
+      windowSize={10}
       getItemLayout={(_, i) => ({
         length: ORDER_ITEM_H,
         offset: ORDER_ITEM_H * i,
         index: i,
       })}
-      contentContainerStyle={{ paddingBottom: 80, paddingTop: 4 }}
+      contentContainerStyle={{ paddingBottom: 100, paddingTop: 8 }}
       ListFooterComponent={
         isFetchingNextPage ? (
           <Text
-            className="text-center p-4"
-            style={{ color: colors.neutral[500] }}
+            style={{
+              textAlign: "center",
+              padding: 16,
+              color: "#6B7280",
+              fontSize: 13,
+            }}
           >
-            Loading more...
+            Loading more…
           </Text>
         ) : null
       }
       ListEmptyComponent={
         !isLoading && !error ? (
-          <EmptyState
-            title="No bills yet"
-            description="Create your first bill to get started."
-          />
+          <View
+            style={{
+              flex: 1,
+              alignItems: "center",
+              justifyContent: "center",
+              paddingTop: 80,
+              paddingHorizontal: 32,
+            }}
+          >
+            {/* Illustration placeholder */}
+            <View
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                backgroundColor: "#F0FDF4",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 20,
+              }}
+            >
+              <Text style={{ fontSize: 36 }}>📋</Text>
+            </View>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "700",
+                color: "#1C1C1E",
+                marginBottom: 8,
+                textAlign: "center",
+              }}
+            >
+              No orders yet
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#6B7280",
+                textAlign: "center",
+                lineHeight: 20,
+                marginBottom: 28,
+              }}
+            >
+              Create your first bill to get started
+            </Text>
+            <TouchableOpacity
+              onPress={onCreateBill}
+              activeOpacity={0.85}
+              style={{
+                backgroundColor: "#22C55E",
+                borderRadius: 12,
+                paddingVertical: 14,
+                paddingHorizontal: 32,
+              }}
+            >
+              <Text
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: 15,
+                  fontWeight: "600",
+                }}
+              >
+                Create Bill
+              </Text>
+            </TouchableOpacity>
+          </View>
         ) : null
       }
     />
