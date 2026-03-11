@@ -1,14 +1,13 @@
 import { useAuthStore } from "@/src/store/authStore";
-import { Bell, Menu, Settings } from "lucide-react-native";
+import { Bell, Settings } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
-  /** default  = business avatar + name + greeting + settings (seller / distributor)
-   *  both     = hamburger + "CreditBook" brand + bell only (both mode) */
+  /** default  = business avatar + name + greeting + settings (all modes)
+   *  both     = same as default (hamburger removed per spec) */
   variant?: "default" | "both";
   roleLabel?: string;
   overdueCount?: number;
-  onPressMenu?: () => void;
   onPressNotifications?: () => void;
   onPressSettings?: () => void;
 };
@@ -28,7 +27,6 @@ const getGreeting = (): string => {
 export default function DashboardHeader({
   variant = "default",
   overdueCount = 0,
-  onPressMenu,
   onPressNotifications,
   onPressSettings,
 }: Props) {
@@ -36,48 +34,6 @@ export default function DashboardHeader({
   const businessName = profile?.business_name ?? profile?.name ?? "My Business";
   const initials = getInitials(businessName);
 
-  // ── "Both" mode header — hamburger + brand + bell ─────────────────────────
-  if (variant === "both") {
-    return (
-      <View className="pt-[54px] px-5 pb-4 flex-row items-center bg-white">
-        {/* Hamburger — TODO(v3.6): opens drawer navigation */}
-        <TouchableOpacity
-          className="w-[38px] h-[38px] items-center justify-center mr-2"
-          onPress={onPressMenu}
-        >
-          <Menu size={22} color="#1C1C1E" strokeWidth={1.75} />
-        </TouchableOpacity>
-
-        <Text className="flex-1 text-[18px] font-extrabold text-textDark text-center">
-          CreditBook
-        </Text>
-
-        {/* Bell */}
-        <TouchableOpacity
-          className="w-[38px] h-[38px] rounded-full bg-primary-light items-center justify-center"
-          onPress={onPressNotifications}
-        >
-          <View style={{ position: "relative" }}>
-            <Bell size={20} color="#22C55E" strokeWidth={1.75} />
-            {overdueCount > 0 && (
-              <View
-                className="bg-primary rounded-full"
-                style={{
-                  position: "absolute",
-                  top: -2,
-                  right: -2,
-                  width: 8,
-                  height: 8,
-                }}
-              />
-            )}
-          </View>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  // ── Default header — avatar + business name + greeting + settings ──────────
   return (
     <View className="pt-[54px] px-5 pb-4 flex-row items-center bg-background">
       {/* Initials avatar */}
