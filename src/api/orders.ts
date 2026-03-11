@@ -26,6 +26,7 @@ export interface Order {
   tax_percent: number;
   status: "Paid" | "Pending" | "Partially Paid";
   created_at: string;
+  customer?: { id: string; name: string; phone: string } | null;
 }
 
 interface CustomerInfo {

@@ -1,23 +1,27 @@
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
 import { Formik } from "formik";
 import {
-    ChevronRight,
-    CreditCard,
-    Hash,
-    Landmark,
-    UserPlus,
+  ChevronRight,
+  CreditCard,
+  Hash,
+  Landmark,
+  UserPlus,
+  X,
 } from "lucide-react-native";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Pressable,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SupplierSchema } from "../../utils/schemas";
 import { colors } from "../../utils/theme";
 import Button from "../ui/Button";
-import AppModal from "../ui/Modal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface NewSupplierValues {
@@ -135,6 +139,29 @@ export default function NewSupplierModal({
 }: Props) {
   const [bankExpanded, setBankExpanded] = useState(false);
 
+  const sheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ["90%"], []);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
+  useEffect(() => {
+    if (visible) {
+      sheetRef.current?.expand();
+    } else {
+      sheetRef.current?.close();
+    }
+  }, [visible]);
+
   const initialValues: NewSupplierValues = {
     name: "",
     phone: "",
@@ -147,44 +174,71 @@ export default function NewSupplierModal({
   };
 
   return (
-    <AppModal title="Add Supplier" onClose={onClose} visible={visible}>
-      <Formik
-        initialValues={initialValues}
-        validationSchema={SupplierSchema}
-        onSubmit={async (values, { resetForm, setSubmitting }) => {
-          try {
-            await onSubmit({
-              name: values.name.trim(),
-              phone: values.phone?.trim() || undefined,
-              address: values.address?.trim() || undefined,
-              basket_mark: values.basket_mark?.trim() || undefined,
-              bank_name: values.bank_name?.trim() || undefined,
-              account_number: values.account_number?.trim() || undefined,
-              ifsc_code: values.ifsc_code?.trim() || undefined,
-              upi: values.upi?.trim() || undefined,
-            });
-            resetForm();
-            setBankExpanded(false);
-          } finally {
-            setSubmitting(false);
-          }
-        }}
+    <BottomSheet
+      ref={sheetRef}
+      index={-1}
+      snapPoints={snapPoints}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
+      onChange={(idx) => {
+        if (idx === -1) {
+          onClose();
+          setBankExpanded(false);
+        }
+      }}
+      handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      backgroundStyle={{
+        borderTopLeftRadius: 28,
+        borderTopRightRadius: 28,
+        backgroundColor: "white",
+      }}
+    >
+      <BottomSheetScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}
       >
-        {({
-          handleChange,
-          handleBlur,
-          handleSubmit,
-          values,
-          errors,
-          touched,
-        }) => (
-          <>
-            {/* ── Scrollable fields ── */}
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              contentContainerStyle={{ gap: 14, paddingBottom: 8 }}
-            >
+        {/* Header */}
+        <View className="flex-row items-center justify-between py-3 mb-2">
+          <Text className="text-xl font-semibold text-textDark">
+            Add Supplier
+          </Text>
+          <Pressable onPress={onClose} disabled={loading}>
+            <X size={22} color={colors.neutral[600]} strokeWidth={2} />
+          </Pressable>
+        </View>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={SupplierSchema}
+          onSubmit={async (values, { resetForm, setSubmitting }) => {
+            try {
+              await onSubmit({
+                name: values.name.trim(),
+                phone: values.phone?.trim() || undefined,
+                address: values.address?.trim() || undefined,
+                basket_mark: values.basket_mark?.trim() || undefined,
+                bank_name: values.bank_name?.trim() || undefined,
+                account_number: values.account_number?.trim() || undefined,
+                ifsc_code: values.ifsc_code?.trim() || undefined,
+                upi: values.upi?.trim() || undefined,
+              });
+              resetForm();
+              setBankExpanded(false);
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+        >
+          {({
+            handleChange,
+            handleBlur,
+            handleSubmit,
+            values,
+            errors,
+            touched,
+          }) => (
+            <View style={{ gap: 14 }}>
               {/* ── Supplier Name ── */}
               <View>
                 <FieldLabel required>Supplier Name</FieldLabel>
@@ -388,21 +442,21 @@ export default function NewSupplierModal({
                   </View>
                 </View>
               )}
-            </ScrollView>
 
-            {/* ── Sticky CTA ── */}
-            <View className="pt-4">
-              <Button
-                title="Add Supplier"
-                onPress={handleSubmit}
-                loading={loading}
-                icon={<UserPlus size={18} color="#FFFFFF" strokeWidth={2} />}
-                iconPosition="left"
-              />
+              {/* ── CTA ── */}
+              <View className="pt-4">
+                <Button
+                  title="Add Supplier"
+                  onPress={handleSubmit}
+                  loading={loading}
+                  icon={<UserPlus size={18} color="#FFFFFF" strokeWidth={2} />}
+                  iconPosition="left"
+                />
+              </View>
             </View>
-          </>
-        )}
-      </Formik>
-    </AppModal>
+          )}
+        </Formik>
+      </BottomSheetScrollView>
+    </BottomSheet>
   );
 }

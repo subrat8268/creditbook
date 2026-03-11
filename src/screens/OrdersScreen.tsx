@@ -1,26 +1,27 @@
 import ScreenWrapper from "@/src/components/ScreenWrapper";
 import OrderList from "@/src/components/orders/OrderList";
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
+import SearchBar from "@/src/components/ui/SearchBar";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useOrders } from "@/src/hooks/useOrders";
 import { useAuthStore } from "@/src/store/authStore";
 import BottomSheet, {
-    BottomSheetBackdrop,
-    BottomSheetView,
+  BottomSheetBackdrop,
+  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { Check } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity } from "react-native";
 import { FilterBar } from "../components/orders/FilterBar";
 import { useOrderFilters } from "../hooks/useOrderFilters";
+import { colors } from "../utils/theme";
 
 export default function OrdersScreen() {
   const { profile } = useAuthStore();
   const router = useRouter();
-  const { t } = useTranslation();
   const filters = useOrderFilters();
+  const [search, setSearch] = useState("");
 
   const {
     data: orders,
@@ -30,7 +31,7 @@ export default function OrdersScreen() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useOrders(profile?.id, undefined, filters.selectedFilter, filters.sortBy);
+  } = useOrders(profile?.id, search, filters.selectedFilter, filters.sortBy);
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -59,6 +60,13 @@ export default function OrdersScreen() {
   return (
     <>
       <ScreenWrapper>
+        {/* Search bar */}
+        <SearchBar
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Search by bill no. or customer…"
+        />
+
         {/* FilterBar */}
         <FilterBar
           filters={filters.filters}
@@ -93,7 +101,10 @@ export default function OrdersScreen() {
         )}
         enablePanDownToClose
         backgroundStyle={{ backgroundColor: colors.white, borderRadius: 24 }}
-        handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
+        handleIndicatorStyle={{
+          backgroundColor: colors.neutral[300],
+          width: 40,
+        }}
       >
         <BottomSheetView className="p-5">
           <Text className="text-lg font-semibold mb-3 text-textDark">
@@ -131,7 +142,10 @@ export default function OrdersScreen() {
         )}
         enablePanDownToClose
         backgroundStyle={{ backgroundColor: colors.white, borderRadius: 24 }}
-        handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
+        handleIndicatorStyle={{
+          backgroundColor: colors.neutral[300],
+          width: 40,
+        }}
       >
         <BottomSheetView className="p-5">
           <Text className="text-lg font-semibold mb-3 text-textDark">
