@@ -1,9 +1,9 @@
 # CreditBook Product Roadmap
 
-> **Version**: 1.4
-> **Last Updated**: March 10, 2026
+> **Version**: 1.5
+> **Last Updated**: March 11, 2026
 > **Status**: Active Development
-> **Current Phase**: Phase 6.5 complete → Phase 7 in progress
+> **Current Phase**: Phase 6.6 complete → Phase 7 in progress
 
 ---
 
@@ -21,20 +21,21 @@
 
 ## Roadmap Overview
 
-| Phase     | Title                                 | Status         | Key Deliverable                                                                            |
-| :-------- | :------------------------------------ | :------------- | :----------------------------------------------------------------------------------------- |
-| Phase 1   | Core Ledger MVP                       | ✅ Complete    | Customer credit tracking and balance management                                            |
-| Phase 2   | Billing & Suppliers                   | ✅ Complete    | Itemized bills, supplier management, net position                                          |
-| Phase 3   | Indian Billing Suite                  | ✅ Complete    | GST, sequential IDs, loading charge, WhatsApp reminders                                    |
-| Phase 4   | Platform Features                     | ✅ Complete    | Onboarding, Sentry, i18n, CSV export, contacts import                                      |
-| Phase 5   | Design System & Dashboard             | ✅ Complete    | Green (#22C55E) brand system, premium dashboard redesign                                   |
-| Phase 6   | Customer UI Overhaul                  | ✅ Complete    | Transaction feed, payment modal, customer detail redesign                                  |
-| Phase 6.2 | UI Audit — Icons, Colors & Components | ✅ Complete    | Lucide migration, @gorhom/bottom-sheet, Toast, Financial Position screen                   |
-| Phase 6.3 | Production Hardening                  | ✅ Complete    | FlatList perf, KeyboardAvoidingView, icon/data audit, component organisation               |
-| Phase 6.4 | Production Bug Fix & Signoff          | ✅ Complete    | 27-item audit: DB/RLS bugs, broken search, export crash, UI token fixes                    |
-| Phase 6.5 | Auth Hardening Sprint                 | ✅ Complete    | Password recovery race fix, secure storage, state machine compliance, 9 QA issues resolved |
-| Phase 7   | Growth & Monetisation                 | 🔄 In Progress | UPI, push notifications, analytics, premium tier                                           |
-| Phase 8   | Financial Platform                    | 🗓 Planned     | Credit scoring, lending, automated bookkeeping                                             |
+| Phase     | Title                                 | Status         | Key Deliverable                                                                                       |
+| :-------- | :------------------------------------ | :------------- | :---------------------------------------------------------------------------------------------------- |
+| Phase 1   | Core Ledger MVP                       | ✅ Complete    | Customer credit tracking and balance management                                                       |
+| Phase 2   | Billing & Suppliers                   | ✅ Complete    | Itemized bills, supplier management, net position                                                     |
+| Phase 3   | Indian Billing Suite                  | ✅ Complete    | GST, sequential IDs, loading charge, WhatsApp reminders                                               |
+| Phase 4   | Platform Features                     | ✅ Complete    | Onboarding, Sentry, i18n, CSV export, contacts import                                                 |
+| Phase 5   | Design System & Dashboard             | ✅ Complete    | Green (#22C55E) brand system, premium dashboard redesign                                              |
+| Phase 6   | Customer UI Overhaul                  | ✅ Complete    | Transaction feed, payment modal, customer detail redesign                                             |
+| Phase 6.2 | UI Audit — Icons, Colors & Components | ✅ Complete    | Lucide migration, @gorhom/bottom-sheet, Toast, Financial Position screen                              |
+| Phase 6.3 | Production Hardening                  | ✅ Complete    | FlatList perf, KeyboardAvoidingView, icon/data audit, component organisation                          |
+| Phase 6.4 | Production Bug Fix & Signoff          | ✅ Complete    | 27-item audit: DB/RLS bugs, broken search, export crash, UI token fixes                               |
+| Phase 6.5 | Auth Hardening Sprint                 | ✅ Complete    | Password recovery race fix, secure storage, state machine compliance, 9 QA issues resolved            |
+| Phase 6.6 | Screen Redesigns UI Sprint            | ✅ Complete    | 7 screens/components fully rewritten: SafeAreaView+StyleSheet, sub-components extracted, i18n removed |
+| Phase 7   | Growth & Monetisation                 | 🔄 In Progress | UPI, push notifications, analytics, premium tier                                                      |
+| Phase 8   | Financial Platform                    | 🗓 Planned     | Credit scoring, lending, automated bookkeeping                                                        |
 
 ---
 
@@ -280,6 +281,47 @@
 | `src/screens/AuthProfileErrorScreen.tsx` | Dead-state recovery UI: Retry + Logout for PROFILE_ERROR state                   |
 | `app/profile-error.tsx`                  | Route wrapper for `AuthProfileErrorScreen`                                       |
 | `app/(auth)/set-new-password.tsx`        | Password recovery form (Formik + Yup); calls `setRecoveryMode(false)` on success |
+
+---
+
+## Phase 6.6 — Screen Redesigns UI Sprint ✅ Complete
+
+**Goal**: Fully redesign 7 screens and components to match final screenshot specs. Migrate all screens from ScreenWrapper + NativeWind to SafeAreaView + StyleSheet.create, extract reusable sub-components from each screen, and remove i18n / ScreenWrapper dependencies.
+
+**Constraint**: All changes must be zero-TypeScript-error. No new dependencies added.
+
+### Screens & Components Redesigned
+
+| Screen / Component             | Key Changes                                                                                                                                                                                                                                                            |
+| :----------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CreateOrderScreen.tsx`        | Custom back-arrow header; sticky footer; `OrderBillSummary` inline sub-component; removed ScreenWrapper                                                                                                                                                                |
+| `NewProductModal.tsx`          | Variants-only (no Base Price); `RupeeInput` sub-component; `FieldArray` for variant rows; sticky CTA; removed AppModal dependency                                                                                                                                      |
+| `ConfirmModal.tsx` (NEW)       | New reusable destructive-confirm component in `src/components/ui/`; `AlertTriangle` + Delete/Cancel + `loading` prop                                                                                                                                                   |
+| `ProductCard.tsx`              | Compact single-row: icon box + bold name + "N variants" subtitle + ₹price + ChevronRight; no image / expand                                                                                                                                                            |
+| `ProductsScreen.tsx`           | SafeAreaView + StyleSheet; custom header with green count badge; Search/X toggle; horizontal `CATEGORIES` chip bar; `ConfirmModal` for delete                                                                                                                          |
+| `app/(main)/reports/index.tsx` | Full inline rewrite: `StatCard` / `NetCard` / `InsightPill` sub-components; green + `#E0336E` + dark `#1C2333` cards; Monthly Report download card                                                                                                                     |
+| `ExportScreen.tsx`             | `ExportRow` + `DateInput` sub-components; All-time / This-month date presets; `loadingKey` prevents concurrent exports; removed ScreenWrapper / NativeWind / i18n                                                                                                      |
+| `ProfileScreen.tsx`            | `SectionCard` + `DetailRow` + `SegmentControl<T>` sub-components; green-bordered avatar ring + initials; `maskAccount()` helper; Sign Out with `Alert.alert` confirmation; removed SubscriptionCard / ImagePickerField / uploadImage / i18n / inline TextInput editing |
+
+### Files Modified
+
+- `src/screens/ExportScreen.tsx`
+- `src/screens/ProfileScreen.tsx`
+- `src/screens/ProductsScreen.tsx`
+- `src/screens/CreateOrderScreen.tsx`
+- `src/components/products/NewProductModal.tsx`
+- `src/components/products/ProductCard.tsx`
+- `app/(main)/reports/index.tsx`
+
+### Files Created
+
+- `src/components/ui/ConfirmModal.tsx`
+
+### Architecture Notes
+
+- **Styling pattern**: `SafeAreaView` from `react-native-safe-area-context` + `StyleSheet.create()` is now the canonical pattern for all main screens. `ScreenWrapper` + NativeWind className string usage is deprecated for screen-level code.
+- **Sub-components**: All screen-level sub-components (SectionCard, DetailRow, SegmentControl, ExportRow, DateInput, StatCard, NetCard, InsightPill) are declared inline in their parent screen file — no separate file per sub-component.
+- **i18n removal**: `ExportScreen` and `ProfileScreen` no longer call `useTranslation()`. Language-aware text is plain string literals pending a future i18n re-audit.
 
 ---
 

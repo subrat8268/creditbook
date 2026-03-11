@@ -1,7 +1,7 @@
 # CreditBook App - Complete Project Documentation
 
-> **Last Updated**: March 10, 2026
-> **Version**: 3.5
+> **Last Updated**: March 11, 2026
+> **Version**: 3.6
 > **Status**: Active Development
 > **Target Market**: Indian SMBs (Retailers, Wholesalers, Distributors)
 
@@ -596,6 +596,15 @@ Specific adaptations for the Indian market implemented in the app:
   - [x] Confirm password field in signup and set-new-password screens both have eye-toggles.
   - [x] Onboarding `role.tsx` uses `router.push` (not `replace`) to business, preserving back-stack.
   - [x] `Loader.tsx` shows delayed "Loading your profile…" hint after 2 s for slow-profile UX.
+- [x] **Phase 6.6: Screen Redesigns UI Sprint (v3.6 Completed)**
+  - [x] `CreateOrderScreen` — custom header, sticky footer, `OrderBillSummary` inline sub-component; removed ScreenWrapper.
+  - [x] `NewProductModal` — variants-only (no Base Price); `RupeeInput` sub-component (₹ prefix + TextInput); `FieldArray` for dynamic variant rows; sticky "Save Product" CTA.
+  - [x] `ConfirmModal.tsx` — new reusable destructive-action confirmation component (`src/components/ui/`); `AlertTriangle` icon, Delete + Cancel buttons, `loading` prop.
+  - [x] `ProductCard` — redesigned as compact single-row: icon box + bold name + "N variants" subtitle + `₹price` + ChevronRight; no image or expand rows.
+  - [x] `ProductsScreen` — SafeAreaView + StyleSheet; custom header with green count badge; Search/X toggle; horizontal `CATEGORIES` chip bar; `ConfirmModal` wired for delete.
+  - [x] Financial Position screen (`app/(main)/reports/index.tsx`) — full inline redesign: `StatCard`, `NetCard`, `InsightPill` sub-components; green customers card, `#E0336E` suppliers card, dark `#1C2333` net card; Monthly Report download card.
+  - [x] `ExportScreen` — full rewrite: `ExportRow` + `DateInput` sub-components; date presets (All time / This month); `loadingKey` prevents concurrent exports; removed ScreenWrapper / NativeWind / i18n.
+  - [x] `ProfileScreen` — full rewrite: `SectionCard` + `DetailRow` + `SegmentControl<T>` sub-components; read-only display; `maskAccount()` helper; Sign Out with `Alert.alert` confirmation; removed SubscriptionCard / ImagePickerField / i18n / inline TextInput editing.
 - [~] **Phase 7: Growth — In Progress**
   - [ ] WhatsApp Business API (auto-send bill on creation).
   - [ ] Push notifications for overdue payments.
@@ -610,7 +619,22 @@ Specific adaptations for the Indian market implemented in the app:
 
 ## 9. Recent Updates & Changelog
 
-### v3.5 — QA Auth Hardening: 9 Fixes (Current)
+### v3.6 — Screen Redesigns UI Sprint (Current)
+
+- **REWRITE**: **`CreateOrderScreen`** — SafeAreaView + StyleSheet; custom back-arrow header; sticky footer with bill summary; `OrderBillSummary` as inline sub-component. Removed ScreenWrapper dependency.
+- **NEW**: **`ConfirmModal.tsx`** (`src/components/ui/`) — reusable destructive confirmation bottom sheet. `AlertTriangle` icon in `danger.bg` 64 px circle; solid Delete button + outlined Cancel; `loading` prop disables both buttons while request is in flight.
+- **REWRITE**: **`NewProductModal`** — variants-only (no separate Base Price row); `RupeeInput` inline sub-component (₹ prefix box + divider + TextInput); `FieldArray` for unlimited variant rows; sticky "Save Product" CTA button.
+- **REWRITE**: **`ProductCard`** — compact single-row design: green icon box + bold product name + "N variants" subtitle + `₹price` right + ChevronRight. No image display, no expanding rows, no EllipsisVertical menu.
+- **REWRITE**: **`ProductsScreen`** — SafeAreaView + StyleSheet; custom header with green product count badge; Search/X toggle collapses to icon when inactive; horizontal scrollable `CATEGORIES` chip bar; `ConfirmModal` wired via `showDeleteConfirm` state.
+- **REWRITE**: **Financial Position screen** (`app/(main)/reports/index.tsx`) — full inline redesign: `StatCard` (green customers, `#E0336E` suppliers), `NetCard` (dark `#1C2333` bg), `InsightPill` sub-components; `todayLabel()` helper; Monthly Report download card.
+- **REWRITE**: **`ExportScreen`** — full rewrite: `ExportRow` + `DateInput` sub-components; "All time" / "This month" presets via `applyPreset()`; `loadingKey` state prevents concurrent exports; info banner; removed ScreenWrapper / NativeWind class-based styling / i18n.
+- **REWRITE**: **`ProfileScreen`** — full rewrite: `SectionCard` + `DetailRow` + `SegmentControl<T>` sub-components; green-bordered avatar ring + initials; read-only business/bank sections; `maskAccount()` for ACC NO; Sign Out triggers `Alert.alert` confirmation; removed SubscriptionCard / ImagePickerField / uploadImage / i18n / inline TextInput editing.
+- **FILES MODIFIED**: `src/screens/ExportScreen.tsx`, `src/screens/ProfileScreen.tsx`, `src/screens/ProductsScreen.tsx`, `src/screens/CreateOrderScreen.tsx`, `app/(main)/reports/index.tsx`, `src/components/products/NewProductModal.tsx`, `src/components/products/ProductCard.tsx`.
+- **FILES CREATED**: `src/components/ui/ConfirmModal.tsx`.
+
+---
+
+### v3.5 — QA Auth Hardening: 9 Fixes
 
 - **FIX (FAIL-01 / WARN-07)**: **`isRecoveryMode` guard** — `authStore` now holds `isRecoveryMode: boolean` + `setRecoveryMode(v)`. Root `_layout.tsx` adds a top-priority `{isRecoveryMode && <Stack.Screen name="(auth)/set-new-password" />}` guard; all other 5 guards wrapped with `!isRecoveryMode`. Ensures password-recovery screen is never evicted by dashboard/onboarding guard even when a full session + profile are present. `PASSWORD_RECOVERY` handler in `useAuth` calls `setRecoveryMode(true)`.
 - **FIX (WARN-06)**: `set-new-password.tsx` now calls `setRecoveryMode(false)` + `supabase.auth.signOut()` before routing to login. Prevents `USER_UPDATED → fetchProfile → dashboard` race.
@@ -798,7 +822,8 @@ Specific adaptations for the Indian market implemented in the app:
 **Document History**
 
 | Version | Date | Author | Notes |
-| :------ | :----------- | :----------- | :-------------------------------------------------------------------------------------------- || **3.5** | Mar 10, 2026 | AI Assistant | QA auth hardening: 9 issues fixed (FAIL-01, WARN-01–WARN-09) — isRecoveryMode guard, password recovery race, redirectTo, confirm-password toggle, delayed loader hint, back-stack fix |
+| :------ | :----------- | :----------- | :-------------------------------------------------------------------------------------------- || **3.6** | Mar 11, 2026 | AI Assistant | Screen Redesigns UI Sprint: 7 screens/components fully rewrote to SafeAreaView+StyleSheet pattern — ExportScreen, ProfileScreen, ProductsScreen, ProductCard, NewProductModal, CreateOrderScreen, Financial Position; ConfirmModal added |
+| **3.5** | Mar 10, 2026 | AI Assistant | QA auth hardening: 9 issues fixed (FAIL-01, WARN-01–WARN-09) — isRecoveryMode guard, password recovery race, redirectTo, confirm-password toggle, delayed loader hint, back-stack fix |
 | **3.4** | Mar 10, 2026 | AI Assistant | Full auth hardening: C1–C5 critical fixes, V1–V3 state machine violations, R1–R2 race conditions, I1–I2 improvements, B1 (expo-secure-store), B6 (Sentry breadcrumbs), 8 new/modified files |
 | **3.3** | Mar 8, 2026 | AI Assistant | Icon migration complete: @expo/vector-icons fully removed, all ~35 files migrated to lucide-react-native |
 | **3.2** | Mar 8, 2026 | AI Assistant | UI audit: green primary color, Toast, Financial Position screen, bottom-sheet modals, EmptyState upgrade, CustomerCard palette, dashboard "both" fix |

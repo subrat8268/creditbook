@@ -1,7 +1,7 @@
 # CreditBook — Project Architecture
 
-> **Last Updated**: March 10, 2026
-> **App Version**: 3.5
+> **Last Updated**: March 11, 2026
+> **App Version**: 3.6
 > **Status**: Auth hardening complete (v3.4–3.5) — pending device verification
 
 ---
@@ -101,11 +101,11 @@ src/
 
 ```
 src/components/
-├── BottomSheetForm.tsx            ← Generic bottom-sheet wrapper (1 importer: ProductsScreen)
-├── ImagePickerField.tsx           ← Camera/gallery image picker input
-├── ScreenWrapper.tsx              ← Safe-area wrapper; uses SafeAreaView from react-native-safe-area-context
+├── BottomSheetForm.tsx            ← Generic bottom-sheet wrapper (no active importers as of v3.6)
+├── ImagePickerField.tsx           ← Camera/gallery image picker input (removed from ProfileScreen in v3.6)
+├── ScreenWrapper.tsx              ← Safe-area wrapper; legacy — new screens use SafeAreaView + StyleSheet directly
 ├── SearchablePickerModal.tsx      ← Full-screen picker (React Native built-in Modal)
-├── SubscriptionCard.tsx           ← Used only in ProfileScreen
+├── SubscriptionCard.tsx           ← Removed from ProfileScreen in v3.6; no active importers
 │
 ├── customers/
 │   ├── ContactsPickerModal.tsx
@@ -149,9 +149,9 @@ src/components/
 │   └── VariantPicker.tsx
 │
 ├── products/
-│   ├── NewProductModal.tsx        ← Still uses AppModal (react-native-modal) — deferred M-01
+│   ├── NewProductModal.tsx        ← v3.6 rewrite: variants-only (no Base Price); RupeeInput sub-component; FieldArray; sticky CTA; no AppModal
 │   ├── ProductActionsModal.tsx
-│   └── ProductCard.tsx
+│   └── ProductCard.tsx            ← v3.6 rewrite: compact single-row (icon box + name + "N variants" + ₹price + ChevronRight)
 │
 ├── suppliers/
 │   ├── NewSupplierModal.tsx
@@ -163,6 +163,7 @@ src/components/
 └── ui/
     ├── Button.tsx                 ← Outline spinner color fixed to #22C55E (P-07)
     ├── Card.tsx
+    ├── ConfirmModal.tsx           ← v3.6 NEW: reusable destructive confirm sheet; AlertTriangle icon; Delete+Cancel; loading prop
     ├── FloatingActionButton.tsx   ← Moved from root (P-27)
     ├── Input.tsx
     ├── Modal.tsx                  ← AppModal (react-native-modal legacy); animationIn="slideInUp" (P-17)
@@ -177,10 +178,10 @@ src/screens/
 ├── CreateOrderScreen.tsx          ← KeyboardAvoidingView added (P-24)
 ├── CustomersScreen.tsx
 ├── DashboardScreen.tsx            ← isSellerMode fixed from stale 'vendor' check (P-02)
-├── ExportScreen.tsx               ← ArrowLeft back button added (P-21)
+├── ExportScreen.tsx               ← v3.6 full rewrite: ExportRow+DateInput sub-components; date presets; loadingKey; removed ScreenWrapper/i18n
 ├── OrdersScreen.tsx
-├── ProductsScreen.tsx
-├── ProfileScreen.tsx              ← Mode toggle Seller/Distributor/Both; filled avatar (P-21)
+├── ProductsScreen.tsx             ← v3.6 rewrite: SafeAreaView+StyleSheet; category chips; Search toggle; ConfirmModal for delete
+├── ProfileScreen.tsx              ← v3.6 full rewrite: SectionCard+DetailRow+SegmentControl sub-components; read-only; removed SubscriptionCard/ImagePickerField/i18n
 └── SuppliersScreen.tsx
 ```
 
@@ -239,18 +240,19 @@ src/screens/
 
 ## 4. Modal Components
 
-| Component                    | Library                | Snap / Size | Used In                         |
-| :--------------------------- | :--------------------- | :---------- | :------------------------------ |
-| `RecordCustomerPaymentModal` | `@gorhom/bottom-sheet` | `["65%"]`   | Customer Detail screen          |
-| `RecordPaymentMadeModal`     | `@gorhom/bottom-sheet` | `["62%"]`   | Supplier Detail screen          |
-| `RecordDeliveryModal`        | `@gorhom/bottom-sheet` | `["90%"]`   | Supplier Detail screen (P-08)   |
-| `BottomSheetForm`            | `@gorhom/bottom-sheet` | Custom      | ProductsScreen                  |
-| `BottomSheetPicker`          | `@gorhom/bottom-sheet` | Custom      | CustomerSelector, order flow    |
-| `NewCustomerModal`           | `react-native-modal`   | Full-screen | CustomersScreen                 |
-| `NewSupplierModal`           | `react-native-modal`   | Full-screen | SuppliersScreen                 |
-| `NewProductModal`            | `react-native-modal`   | Full-screen | ProductsScreen (deferred M-01)  |
-| `SearchablePickerModal`      | RN built-in `Modal`    | Full-screen | Order creation flow             |
-| `ContactsPickerModal`        | `@gorhom/bottom-sheet` | Custom      | CustomersScreen (secondary FAB) |
+| Component                    | Library                | Snap / Size | Used In                                          |
+| :--------------------------- | :--------------------- | :---------- | :----------------------------------------------- |
+| `RecordCustomerPaymentModal` | `@gorhom/bottom-sheet` | `["65%"]`   | Customer Detail screen                           |
+| `RecordPaymentMadeModal`     | `@gorhom/bottom-sheet` | `["62%"]`   | Supplier Detail screen                           |
+| `RecordDeliveryModal`        | `@gorhom/bottom-sheet` | `["90%"]`   | Supplier Detail screen (P-08)                    |
+| `BottomSheetForm`            | `@gorhom/bottom-sheet` | Custom      | No active importers (v3.6)                       |
+| `BottomSheetPicker`          | `@gorhom/bottom-sheet` | Custom      | CustomerSelector, order flow                     |
+| `NewCustomerModal`           | `react-native-modal`   | Full-screen | CustomersScreen                                  |
+| `NewSupplierModal`           | `react-native-modal`   | Full-screen | SuppliersScreen                                  |
+| `NewProductModal`            | RN built-in `Modal`    | Full-screen | ProductsScreen (v3.6 rewrite — AppModal removed) |
+| `ConfirmModal`               | RN built-in `Modal`    | Bottom card | ProductsScreen (v3.6 NEW)                        |
+| `SearchablePickerModal`      | RN built-in `Modal`    | Full-screen | Order creation flow                              |
+| `ContactsPickerModal`        | `@gorhom/bottom-sheet` | Custom      | CustomersScreen (secondary FAB)                  |
 
 > **Three modal patterns in use.** Full consolidation to `@gorhom/bottom-sheet` is deferred (M-01). `AppModal` (`react-native-modal`) is used by NewCustomer/Supplier/ProductModal. RN built-in `Modal` is used by SearchablePickerModal only.
 
@@ -457,11 +459,11 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
 
 ### Deferred Items (v3.6)
 
-| Issue     | Detail                                                                                                                                                                                 |
-| :-------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| M-01      | Modal library not fully consolidated — `NewProductModal` / `NewCustomerModal` / `NewSupplierModal` still use `react-native-modal` via `AppModal`. Full migration is a larger refactor. |
-| M-04      | Export screen not in tab bar — only reachable via `router.push` from ProfileScreen. UX decision pending.                                                                               |
-| M-05–M-08 | Architecture cleanup: rationalise `src/screens/` indirection inconsistency (4 inline vs 8 delegated).                                                                                  |
+| Issue     | Detail                                                                                                                                                                                                        |
+| :-------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| M-01      | Modal library not fully consolidated — `NewCustomerModal` / `NewSupplierModal` still use `react-native-modal` via `AppModal`. `NewProductModal` was migrated off AppModal in v3.6. Full unification deferred. |
+| M-04      | Export screen not in tab bar — only reachable via `router.push` from ProfileScreen. UX decision pending.                                                                                                      |
+| M-05–M-08 | Architecture cleanup: rationalise `src/screens/` indirection inconsistency (4 inline vs 8 delegated).                                                                                                         |
 
 ### Icon Library
 

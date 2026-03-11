@@ -1,7 +1,7 @@
 # CreditBook UX Context
 
 > **Purpose**: This document provides complete UX context for AI UI generation tools (e.g., Google Stitch, Galileo, Uizard) and human designers onboarding to the CreditBook product.
-> **Last Updated**: March 9, 2026
+> **Last Updated**: March 11, 2026
 > **References**: `docs/prd.md`, `docs/design-system.md`, `docs/roadmap.md`, `README.md`
 
 ---
@@ -374,39 +374,72 @@ Every screen should support at least one of these goals:
 **Route**: `/(main)/reports`  
 **Purpose**: Dedicated full-screen financial breakdown; accessible from the Dashboard "View Report" button.
 
-**Main UI components**:
+**Main UI components** (v3.6 redesign):
 
-- Header with back button (`ArrowLeft` from lucide-react-native) and title "Financial Position"
-- **Customers Owe Me** card: green background `#F0FDF4`, `#22C55E` amount, `TrendingUp` icon
-- **I Owe Suppliers** card: red background `#FEF2F2`, `#E74C3C` amount, `TrendingDown` icon
-- **Net Position** row: `TrendingUp`/`TrendingDown` icon based on sign; green if positive, red if negative
-- Loading spinner (`#22C55E`) and error state handled gracefully
+- Header with back button (`ArrowLeft`) + title "Financial Position" + today's date subtitle
+- **`StatCard` — Customers Owe Me**: green card (`#F0FDF4` bg), `#22C55E` amount text, `TrendingUp` icon in green circle
+- **`StatCard` — I Owe Suppliers**: pinkish-red card (`#FEF2F2` bg), `#E0336E` amount text, `TrendingDown` icon in red circle
+- **`NetCard`**: dark card (`#1C2333` bg), white amount (32px bold), `TrendingUp`/`TrendingDown` icon
+- **`InsightPill`**: contextual health label — "Healthy" (green) / "Monitor" (amber) / "At Risk" (red)
+- Monthly Report download card (placeholder for future PDF export)
+- Loading spinner and graceful error state
 
 **Key user actions**:
 
 - Tap back button → return to Dashboard
+- Tap Monthly Report card → (future: download monthly summary PDF)
 
 ---
 
 ### 4.15 Profile / Settings Screen
 
-**Purpose**: Manage business details, app preferences, and account settings.
+**Purpose**: View business profile, bank details, and app preferences. Editing happens through a dedicated Edit Profile flow.
 
-**Main UI components**:
+**Main UI components** (v3.6 redesign):
 
-- Business profile fields: name, GSTIN, UPI ID, bill prefix
-- Bank account details: bank name, account number, IFSC
-- Dashboard mode toggle: Seller / Distributor / Both
-- Language toggle: English / हिन्दी
-- Export Data button
-- Sign Out button
+- Custom header: `ArrowLeft` back + centered "Profile & Settings" title
+- **Avatar section**: green-bordered ring + initials derived from business name + business email + "Edit Profile" outlined pill button
+- **`SectionCard` — BUSINESS DETAILS**: 4 `DetailRow` items (Store → business name, Receipt → bill prefix, Hash → GSTIN, Smartphone → phone number)
+- **`SectionCard` — BANK ACCOUNT**: 3 `DetailRow` items (Building2 → bank name, CreditCard → account no. masked as `**** **** 4590`, Info → IFSC code)
+- **`SectionCard` — APP PREFERENCES**:
+  - `LayoutGrid` icon + "Dashboard Mode" + `SegmentControl` [Seller | Both | Distributor]
+  - Languages icon + "Language" + EN / 🇮🇳 solid pills (active = green)
+- **`SectionCard` — DATA**: `Download` icon row → navigates to Export Data screen
+- **Sign Out row**: `LogOut` icon + "Sign Out" red text; triggers `Alert.alert` confirmation before calling `logout()`
+- "CreditBook v1.0.0" centered footer
 
 **Key user actions**:
 
-- Edit business details → save to `profiles`
-- Change dashboard mode → updates visible dashboard cards
-- Toggle language → changes app UI language
-- Tap "Export Data" → go to Export screen
+- Tap "Edit Profile" → (future: navigate to editable profile form)
+- Tap Dashboard Mode segment → updates `dashboard_mode` in DB + authStore immediately
+- Tap language pill (EN / 🇮🇳) → updates `languageStore`; persisted via AsyncStorage
+- Tap "Export Data" row → `router.push("/(main)/export")`
+- Tap "Sign Out" → confirmation alert; confirm → `logout()` → login screen
+
+---
+
+### 4.16 Export Data Screen
+
+**Route**: `/(main)/export` (hidden tab; navigated to from Profile → DATA section)  
+**Purpose**: Export business data as CSV for external review or accounting.
+
+**Main UI components** (v3.6 redesign):
+
+- Custom header: `ArrowLeft` back + centered "Export Data" + subtitle "Download your business records"
+- **Date Filter card** (FILTER BY DATE — OPTIONAL): two `DateInput` sub-components (From / To) with `CalendarDays` icon inside; "All time" + "This month" preset chips below
+- **Export Type card** (CHOOSE EXPORT TYPE): 4 `ExportRow` sub-components, each with icon box + label + description + colored "Export CSV" pill button:
+  - Orders & Bills (green pill)
+  - Payments Received (green pill)
+  - Customer Balances (blue pill)
+  - Supplier Purchases (amber pill)
+- Blue info banner explaining CSV format and date-range scoping
+- "CreditBook Export" centered footer
+
+**Key user actions**:
+
+- Select "All time" or "This month" preset → fills From/To inputs automatically
+- Enter custom From/To dates manually → clears preset chip
+- Tap "Export CSV" on any row → fetches data → generates CSV → opens native share sheet
 
 ---
 

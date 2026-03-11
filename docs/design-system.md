@@ -1,7 +1,7 @@
 # CreditBook Design System
 
-> **Version**: 1.3
-> **Last Updated**: March 9, 2026
+> **Version**: 1.4
+> **Last Updated**: March 11, 2026
 > **Maintained by**: CreditBook Product & Design Team
 
 ---
@@ -18,6 +18,7 @@
 8. [Motion Guidelines](#8-motion-guidelines)
 9. [UX Patterns](#9-ux-patterns)
 10. [Design Principles](#10-design-principles)
+11. [Screen-Level Sub-Components (v3.6)](#11-screen-level-sub-components-v36)
 
 ---
 
@@ -621,3 +622,148 @@ Do not require users to interpret data themselves. Show calculated summaries (ne
 ---
 
 _This document is maintained alongside the codebase. Update it whenever a new component, color token, or UX pattern is introduced._
+
+---
+
+## 11. Screen-Level Sub-Components (v3.6)
+
+Starting in v3.6, multi-step screens extract their repeating UI pieces as **inline sub-components** declared at the top of the screen file (not separate files). These are documented here so designers and developers can reference them without reading individual screen files.
+
+### Styling Convention
+
+All redesigned screens use:
+
+```tsx
+import { SafeAreaView } from 'react-native-safe-area-context';
+const styles = StyleSheet.create({ ... });
+```
+
+`ScreenWrapper` + NativeWind `className` strings are **not used** on main screens as of v3.6.
+
+---
+
+### `SectionCard` — ProfileScreen
+
+A white rounded card with an all-caps gray section label above its content.
+
+```tsx
+function SectionCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <View style={styles.sectionCard}>
+      <Text style={styles.sectionLabel}>{title}</Text>
+      {children}
+    </View>
+  );
+}
+// sectionCard: bg=#FFFFFF, borderRadius=16, padding=0, marginBottom=12, shadow elevation=1
+// sectionLabel: color=neutral[500], fontSize=11, fontWeight='700', letterSpacing=1, marginBottom=8, paddingHorizontal=16, paddingTop=14
+```
+
+---
+
+### `DetailRow` — ProfileScreen
+
+A single row inside a `SectionCard`: green icon box on the left, stacked label+value in the middle, `ChevronRight` on the right.
+
+```tsx
+function DetailRow({ Icon, label, value, last, onPress }: DetailRowProps) { ... }
+// Props:
+//   Icon       — lucide-react-native component
+//   label      — string (e.g., "Business Name")
+//   value      — string (e.g., "Raj Kirana Store")
+//   last?      — boolean — suppresses bottom border on last row
+//   onPress?   — makes the row tappable (navigates or triggers action)
+//
+// Icon box: width/height=36, borderRadius=10, bg=colors.primary.light, icon color=colors.primary.DEFAULT, size=18
+// Label: fontSize=11, color=neutral[500]
+// Value: fontSize=14, fontWeight='600', color=neutral[800]
+// ChevronRight: size=16, color=neutral[400]
+```
+
+---
+
+### `SegmentControl<T>` — ProfileScreen
+
+A generic 3-option segment control. The active option gets green bg (`primary.light`) and green bold text. Inactive options get neutral bg.
+
+```tsx
+function SegmentControl<T extends string>({
+  options, value, onChange
+}: { options: { label: string; value: T }[]; value: T; onChange: (v: T) => void }) { ... }
+// Container: flexDirection='row', borderRadius=10, bg=neutral[100], padding=3
+// Active option: bg=primary.DEFAULT, borderRadius=8
+// Active text: color=#FFFFFF, fontWeight='700'
+// Inactive text: color=neutral[600], fontWeight='500'
+```
+
+---
+
+### `ExportRow` — ExportScreen
+
+A single export type row: colored icon box on the left, label + description text in the middle, a colored pill "Export CSV" button on the right.
+
+```tsx
+function ExportRow({ Icon, label, desc, pillColor, pillBg, iconColor, iconBg, loading, disabled, onPress }: ExportRowProps) { ... }
+// Icon box: 40×40, borderRadius=10
+// Pill button: paddingHorizontal=14, paddingVertical=6, borderRadius=20, bg=pillBg, text color=pillColor
+// Row separator: 1dp neutral[100] border on all rows except last
+```
+
+---
+
+### `DateInput` — ExportScreen
+
+A text input with a calendar icon inside a bordered row, used for From/To date entry.
+
+```tsx
+function DateInput({ label, placeholder, value, onChangeText }: DateInputProps) { ... }
+// Container: borderWidth=1, borderColor=neutral[200], borderRadius=10, bg=neutral[50]
+// CalendarDays icon: size=16, color=neutral[400], on the left inside the row
+// TextInput: flex=1, placeholderTextColor=neutral[400]
+// Label text: fontSize=11, fontWeight='600', color=neutral[500]
+```
+
+---
+
+### `StatCard` — Financial Position Screen
+
+A card showing a single financial stat with a TrendingUp/TrendingDown icon, label, and large amount.
+
+```tsx
+function StatCard({ label, amount, icon: Icon, bg, iconBg, iconColor, textColor }: StatCardProps) { ... }
+// Card: bg=bg prop, borderRadius=16, padding=18, flex=1
+// Icon circle: width/height=44, borderRadius=22, bg=iconBg
+// Amount: fontSize=24, fontWeight='800', color=textColor
+// Label: fontSize=13, color=textColor opacity 0.7
+```
+
+---
+
+### `NetCard` — Financial Position Screen
+
+The dark net-position card showing receivables minus payables.
+
+```tsx
+function NetCard({ net }: { net: number }) { ... }
+// bg: #1C2333, borderRadius=16, padding=20
+// Amount: fontSize=32, fontWeight='800', color=#FFFFFF
+// TrendingUp/TrendingDown icon inside a colored circle
+```
+
+---
+
+### `InsightPill` — Financial Position Screen
+
+A small pill chip showing a contextual insight (e.g., "Healthy" or "Monitor").
+
+```tsx
+function InsightPill({ label, color, bg }: { label: string; color: string; bg: string }) { ... }
+// Pill: paddingHorizontal=12, paddingVertical=4, borderRadius=999, bg=bg prop
+// Text: fontSize=12, fontWeight='600', color=color prop
+```

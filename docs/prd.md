@@ -1,7 +1,7 @@
 # CreditBook – Product Requirements Document
 
-> **Version**: 1.2
-> **Last Updated**: March 9, 2026
+> **Version**: 1.3
+> **Last Updated**: March 11, 2026
 > **Status**: Active Development
 > **Owner**: CreditBook Product Team
 
@@ -336,14 +336,35 @@ Role maps to `dashboard_mode` on the `profiles` table and controls which net-pos
 **Route**: `/(main)/reports`  
 **Purpose**: Dedicated full-screen financial breakdown; accessible from the "View Report" button in the Dashboard action bar.
 
-**Contents**:
+**Contents** (v3.6 redesign):
 
-- Header with back navigation and title "Financial Position"
-- **Customers Owe Me** card (green `#F0FDF4` background, `#22C55E` text): total receivables from all customers
-- **I Owe Suppliers** card (red `#FEF2F2` background, `#E74C3C` text): total payables to all suppliers
-- **Net Position** row: `receivables − payables`; green if positive (`#22C55E`), red if negative (`#E74C3C`)
-- Trend icons: `TrendingUp` (green) / `TrendingDown` (red) from `lucide-react-native`
-- Loading and error states handled gracefully
+- Header with back navigation + title “Financial Position” + today’s date subtitle (`todayLabel()` helper)
+- **`StatCard` — Customers Owe Me**: green background (`#F0FDF4`), `#22C55E` amount text, `TrendingUp` icon
+- **`StatCard` — I Owe Suppliers**: pinkish-red background (`#FEF2F2`), `#E0336E` amount text, `TrendingDown` icon
+- **`NetCard`**: dark background (`#1C2333`), white amount text, `TrendingUp`/`TrendingDown` icon inside colored circle; net = receivables − payables
+- **`InsightPill`**: contextual health label (“Healthy” green / “Monitor” amber / “At Risk” red) based on net sign
+- Monthly Report download card (placeholder for future export)
+- Loading spinner (`#22C55E`) and error state handled gracefully
+
+---
+
+### 4.10 Export Data Screen
+
+**Route**: `/(main)/export` (hidden tab; pushed from ProfileScreen)  
+**Purpose**: Export business data as CSV for external analysis.
+
+**Contents** (v3.6 redesign):
+
+- Custom header with back button + “Export Data” title + subtitle
+- **Date Filter card** (FILTER BY DATE — OPTIONAL): `DateInput` sub-components for From / To; “All time” and “This month” preset chips
+- **Export Type card** (CHOOSE EXPORT TYPE): 4 `ExportRow` sub-components
+  - Orders & Bills (green pill)
+  - Payments Received (green pill)
+  - Customer Balances (blue pill)
+  - Supplier Purchases (amber pill)
+- Each row has a loading state; `loadingKey` prevents concurrent exports
+- Info banner (blue border): explains format + date range behaviour
+- “CreditBook Export” footer
 
 ---
 
