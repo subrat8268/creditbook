@@ -1,8 +1,6 @@
 export function normalizePhone(input: string): string {
-  let phone = input.trim().replace(/\s+/g, "");
-  if (!phone.startsWith("+91")) {
-    // default to India (+91)
-    phone = "+91" + phone.replace(/^0+/, ""); // strip leading zeros
-  }
-  return phone;
+  const phone = input.trim().replace(/[\s\-.()]/g, "");
+  if (phone.startsWith("+")) return phone; // already has a country code — keep as-is
+  // No country code: treat as Indian number (+91), strip leading zeros
+  return "+91" + phone.replace(/^0+/, "");
 }

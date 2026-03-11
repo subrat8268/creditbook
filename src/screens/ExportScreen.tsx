@@ -1,31 +1,31 @@
 import { Stack, useRouter } from "expo-router";
 import {
-  ArrowLeft,
-  CalendarDays,
-  FileText,
-  Info,
-  Receipt,
-  Truck,
-  Users,
+    ArrowLeft,
+    CalendarDays,
+    FileText,
+    Info,
+    Receipt,
+    Truck,
+    Users,
 } from "lucide-react-native";
 import { ComponentType, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
-  fetchCustomersForExport,
-  fetchOrdersForExport,
-  fetchPaymentsForExport,
-  fetchSupplierPurchasesForExport,
+    fetchCustomersForExport,
+    fetchOrdersForExport,
+    fetchPaymentsForExport,
+    fetchSupplierPurchasesForExport,
 } from "../api/export";
 import { useAuthStore } from "../store/authStore";
 import { shareCsv, toCsv } from "../utils/exportCsv";
@@ -103,7 +103,12 @@ interface DateInputProps {
   onChangeText: (v: string) => void;
 }
 
-function DateInput({ label, value, placeholder, onChangeText }: DateInputProps) {
+function DateInput({
+  label,
+  value,
+  placeholder,
+  onChangeText,
+}: DateInputProps) {
   return (
     <View style={styles.dateInputWrapper}>
       <Text style={styles.dateLabel}>{label}</Text>
@@ -207,7 +212,11 @@ export default function ExportScreen() {
           break;
         }
         case "suppliers": {
-          const rows = await fetchSupplierPurchasesForExport(vendorId, from, to);
+          const rows = await fetchSupplierPurchasesForExport(
+            vendorId,
+            from,
+            to,
+          );
           csv = toCsv(rows);
           filename = `creditbook_supplier_purchases_${today}.csv`;
           break;
@@ -215,7 +224,10 @@ export default function ExportScreen() {
       }
 
       if (!csv) {
-        Alert.alert("No data", "There is no data to export for the selected range.");
+        Alert.alert(
+          "No data",
+          "There is no data to export for the selected range.",
+        );
         return;
       }
 
@@ -244,8 +256,8 @@ export default function ExportScreen() {
       label: "Orders & Bills",
       desc: "Invoice history with items",
       Icon: Receipt,
-      pillColor: colors.primary.dark,
-      pillBg: colors.primary.light,
+      pillColor: colors.white,
+      pillBg: colors.primary.DEFAULT,
       iconColor: colors.primary.dark,
       iconBg: "#DCFCE7",
     },
@@ -254,8 +266,8 @@ export default function ExportScreen() {
       label: "Payments Received",
       desc: "All customer payments",
       Icon: FileText,
-      pillColor: colors.primary.dark,
-      pillBg: colors.primary.light,
+      pillColor: colors.white,
+      pillBg: colors.primary.DEFAULT,
       iconColor: colors.primary.dark,
       iconBg: "#DCFCE7",
     },
@@ -264,8 +276,8 @@ export default function ExportScreen() {
       label: "Customer Balances",
       desc: "Outstanding balances per customer",
       Icon: Users,
-      pillColor: colors.info.dark,
-      pillBg: colors.info.light,
+      pillColor: colors.white,
+      pillBg: colors.primary.DEFAULT,
       iconColor: colors.info.dark,
       iconBg: colors.info.bg,
     },
@@ -274,8 +286,8 @@ export default function ExportScreen() {
       label: "Supplier Purchases",
       desc: "Deliveries and payments made",
       Icon: Truck,
-      pillColor: colors.warning.dark,
-      pillBg: colors.warning.light,
+      pillColor: colors.white,
+      pillBg: colors.primary.DEFAULT,
       iconColor: colors.warning.dark,
       iconBg: colors.warning.bg,
     },
@@ -360,7 +372,9 @@ export default function ExportScreen() {
               activeOpacity={0.75}
               style={[
                 styles.chip,
-                datePreset === "month" ? styles.chipActive : styles.chipInactive,
+                datePreset === "month"
+                  ? styles.chipActive
+                  : styles.chipInactive,
               ]}
             >
               <Text

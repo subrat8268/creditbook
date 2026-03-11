@@ -1,6 +1,12 @@
 import { AlertTriangle } from "lucide-react-native";
 import { useState } from "react";
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { colors } from "../../utils/theme";
 import Button from "../ui/Button";
 import AppModal from "../ui/Modal";
@@ -24,13 +30,13 @@ const PAYMENT_MODES = ["Cash", "UPI", "NEFT", "Draft", "Cheque"];
 // ─── Avatar helpers ───────────────────────────────────────────────────────────
 const AVATAR_COLORS = [
   colors.danger.DEFAULT,
-  colors.warning.DEFAULT,
+  "#0D9488", // teal-600 — replaces amber (financial state reserved)
   colors.primary.DEFAULT,
   colors.info.DEFAULT,
   "#9B59B6",
   "#E91E8C",
   "#00BCD4",
-  "#FF5722",
+  "#0284C7", // sky-600 — replaces orange (financial state reserved)
 ] as const;
 
 function getAvatarColor(name: string): string {
@@ -111,10 +117,7 @@ export default function RecordPaymentMadeModal({
               className="rounded-full mr-3 items-center justify-center"
               style={{ width: 44, height: 44, backgroundColor: avatarColor }}
             >
-              <Text
-                className="font-bold text-white"
-                style={{ fontSize: 15 }}
-              >
+              <Text className="font-bold text-white" style={{ fontSize: 15 }}>
                 {initials}
               </Text>
             </View>

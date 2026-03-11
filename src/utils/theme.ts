@@ -67,6 +67,8 @@ export const colors = {
   border: {
     tabborder: "#E5E7EB",
   },
+  // FAB — highest-elevation element on list screens (spec: #2563EB blue)
+  fab: "#2563EB",
 };
 
 // ─── Dashboard Palette ───────────────────────────────────────────────────────

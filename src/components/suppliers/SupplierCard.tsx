@@ -6,25 +6,25 @@ import { colors } from "../../utils/theme";
 
 // ── Avatar helpers — soft pastel bg + dark text (supplier visual identity) ───
 const AVATAR_BG = [
-  colors.warning.light, // amber-100  — warm financial tone
+  "#EEF2FF", // indigo-50
   colors.success.light, // green-100
   colors.info.light, // blue-100
-  colors.danger.light, // red-100
+  "#FDF4FF", // fuchsia-50
   "#EDE9FE", // purple-100
   "#FCE7F3", // pink-100
   "#CCFBF1", // teal-100
-  "#FFF7ED", // orange-100
+  "#F1F5F9", // slate-100
 ] as const;
 
 const AVATAR_TEXT = [
-  colors.warning.dark, // #D97706
+  "#4338CA", // indigo-700
   colors.primary.dark, // #16A34A
   colors.info.dark, // #2563EB
-  colors.danger.dark, // #B33226
+  "#9333EA", // fuchsia-700
   "#6D28D9", // purple-700
   "#9D174D", // pink-800
   "#0F766E", // teal-700
-  "#C2410C", // orange-700
+  "#475569", // slate-600
 ] as const;
 
 function getAvatarIdx(name: string): number {

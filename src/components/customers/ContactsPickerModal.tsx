@@ -2,15 +2,16 @@ import * as Contacts from "expo-contacts";
 import { Check, Users, UserX, X } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  Linking,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    Linking,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Modal from "react-native-modal";
 import { useCustomersStore } from "../../store/customersStore";
+import { normalizePhone } from "../../utils/phone";
 import { colors } from "../../utils/theme";
 import SearchBar from "../ui/SearchBar";
 
@@ -25,10 +26,6 @@ type Props = {
   onClose: () => void;
   onImport: (contacts: { name: string; phone: string }[]) => Promise<void>;
 };
-
-function cleanPhone(raw: string): string {
-  return raw.replace(/[\s\-.()]/g, "");
-}
 
 function isValidPhone(phone: string): boolean {
   return /^\+?[0-9]{10,15}$/.test(phone);
@@ -73,7 +70,7 @@ export default function ContactsPickerModal({
   const existingPhones = useMemo(() => {
     const set = new Set<string>();
     for (const c of existingCustomers) {
-      set.add(cleanPhone(c.phone));
+      set.add(normalizePhone(c.phone));
     }
     return set;
   }, [existingCustomers]);
@@ -100,7 +97,7 @@ export default function ContactsPickerModal({
     for (const c of data) {
       if (!c.name || !c.phoneNumbers?.length) continue;
       const rawPhone = c.phoneNumbers[0].number ?? "";
-      const phone = cleanPhone(rawPhone);
+      const phone = normalizePhone(rawPhone);
       if (!isValidPhone(phone)) continue;
       entries.push({
         id: c.id ?? `${c.name}-${phone}`,
