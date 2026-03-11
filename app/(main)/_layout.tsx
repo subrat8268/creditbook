@@ -1,11 +1,11 @@
 import { colors } from "@/src/utils/theme";
 import { Tabs } from "expo-router";
-import { FileText, House, Truck, UserCircle, Users } from "lucide-react-native";
+import { House, ShoppingCart, Truck, UserCircle, Users } from "lucide-react-native";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const ACTIVE = colors.primary.DEFAULT;
-const INACTIVE = colors.neutral[400];
+const ACTIVE = colors.primary.DEFAULT; // #22C55E
+const INACTIVE = "#9CA3AF"; // design-spec inactive tab color
 
 const CustomHeader = () => (
   <View className="bg-white flex-1 border-b border-default" />
@@ -69,14 +69,14 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Tab 3 — Bills (route: orders) */}
+      {/* Tab 3 — Orders */}
       <Tabs.Screen
         name="orders"
         options={{
-          title: "Bills",
+          title: "Orders",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <FileText size={size} color={color} strokeWidth={1.75} />
+            <ShoppingCart size={size} color={color} strokeWidth={1.75} />
           ),
         }}
       />
@@ -98,6 +98,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <UserCircle size={size} color={color} strokeWidth={1.75} />
           ),
@@ -107,6 +108,7 @@ export default function TabLayout() {
       {/* Hidden screens — accessible via router.push, never shown in tab bar */}
       <Tabs.Screen name="products" options={{ href: null }} />
       <Tabs.Screen name="export" options={{ href: null }} />
+      <Tabs.Screen name="reports" options={{ href: null }} />
     </Tabs>
   );
 }
