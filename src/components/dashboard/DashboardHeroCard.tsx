@@ -1,7 +1,7 @@
 import { formatINR } from "@/src/utils/dashboardUi";
 import { colors } from "@/src/utils/theme";
 import { LinearGradient } from "expo-linear-gradient";
-import { BarChart2, Smartphone, Truck, Users2 } from "lucide-react-native";
+import { BarChart2, Smartphone } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -28,11 +28,6 @@ const SELLER_CONFIG = {
   secondary: { icon: Smartphone, label: "Send Reminder" },
 } as const;
 
-const DISTRIBUTOR_CONFIG = {
-  primary: { icon: Users2, label: "View Suppliers →" },
-  secondary: { icon: Truck, label: "Record Delivery" },
-} as const;
-
 // Distributor gradient: deep crimson-rose → magenta-rose
 const DISTRIBUTOR_GRADIENT: readonly [string, string] = ["#B91C6A", "#E8336E"];
 // Net Position gradient: dark navy (both mode)
@@ -50,7 +45,7 @@ export default function DashboardHeroCard({
 }: Props) {
   const isDistributor = variant === "distributor";
   const isNet = variant === "net";
-  const config = isDistributor ? DISTRIBUTOR_CONFIG : SELLER_CONFIG;
+  const config = SELLER_CONFIG;
 
   const showDelta = weekDelta !== undefined && weekDelta !== 0;
   const deltaUp = (weekDelta ?? 0) >= 0;

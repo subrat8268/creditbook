@@ -1,7 +1,7 @@
-import { colors } from "@/src/utils/theme";
-import { formatINR } from "@/src/utils/dashboardUi";
 import { useDashboard } from "@/src/hooks/useDashboard";
 import { useAuthStore } from "@/src/store/authStore";
+import { formatINR } from "@/src/utils/dashboardUi";
+import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import {
   Activity,
@@ -73,7 +73,11 @@ function StatCard({
       <View style={s.statCardBottom}>
         <Text style={s.statCardSub}>{subtitle}</Text>
         {onPress && (
-          <ChevronRight size={18} color="rgba(255,255,255,0.8)" strokeWidth={2} />
+          <ChevronRight
+            size={18}
+            color="rgba(255,255,255,0.8)"
+            strokeWidth={2}
+          />
         )}
       </View>
     </TouchableOpacity>
@@ -81,13 +85,7 @@ function StatCard({
 }
 
 /** Dark "Net Position" card */
-function NetCard({
-  amount,
-  formula,
-}: {
-  amount: string;
-  formula: string;
-}) {
+function NetCard({ amount, formula }: { amount: string; formula: string }) {
   return (
     <View style={s.netCard}>
       {/* Top row */}
@@ -98,7 +96,9 @@ function NetCard({
       {/* Amount */}
       <Text style={s.netAmount}>{amount}</Text>
       {/* Divider */}
-      <View style={[s.statCardDivider, { borderColor: "rgba(255,255,255,0.1)" }]} />
+      <View
+        style={[s.statCardDivider, { borderColor: "rgba(255,255,255,0.1)" }]}
+      />
       {/* Formula row */}
       <View style={s.statCardBottom}>
         <Text style={s.netFormula}>{formula}</Text>
@@ -160,7 +160,11 @@ export default function FinancialPositionScreen() {
           <Text style={s.headerSub}>{todayLabel()}</Text>
         </View>
         <TouchableOpacity hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <CalendarDays size={22} color={colors.neutral[600]} strokeWidth={1.8} />
+          <CalendarDays
+            size={22}
+            color={colors.neutral[600]}
+            strokeWidth={1.8}
+          />
         </TouchableOpacity>
       </View>
 
@@ -184,7 +188,13 @@ export default function FinancialPositionScreen() {
             amount={formatINR(customersOweMe)}
             subtitle={`${activeBuyers} active · ${overdueCustomers} overdue`}
             bg={colors.primary.DEFAULT}
-            icon={<Users size={20} color="rgba(255,255,255,0.75)" strokeWidth={1.8} />}
+            icon={
+              <Users
+                size={20}
+                color="rgba(255,255,255,0.75)"
+                strokeWidth={1.8}
+              />
+            }
             onPress={() => router.push("/(main)/customers")}
           />
 
@@ -194,7 +204,13 @@ export default function FinancialPositionScreen() {
             amount={formatINR(iOweSuppliers)}
             subtitle={`${activeSuppliers} supplier${activeSuppliers !== 1 ? "s" : ""}`}
             bg="#E0336E"
-            icon={<Truck size={20} color="rgba(255,255,255,0.75)" strokeWidth={1.8} />}
+            icon={
+              <Truck
+                size={20}
+                color="rgba(255,255,255,0.75)"
+                strokeWidth={1.8}
+              />
+            }
             onPress={() => router.push("/(main)/suppliers")}
           />
 
@@ -212,7 +228,13 @@ export default function FinancialPositionScreen() {
           <View style={s.pillGroup}>
             {overdueCustomers > 0 && (
               <InsightPill
-                icon={<CircleAlert size={14} color={colors.danger.DEFAULT} strokeWidth={2} />}
+                icon={
+                  <CircleAlert
+                    size={14}
+                    color={colors.danger.DEFAULT}
+                    strokeWidth={2}
+                  />
+                }
                 label={`${overdueCustomers} overdue customer${overdueCustomers !== 1 ? "s" : ""}`}
                 bg={colors.danger.light}
                 textColor={colors.danger.DEFAULT}
@@ -220,7 +242,13 @@ export default function FinancialPositionScreen() {
             )}
             {iOweSuppliers > 0 && (
               <InsightPill
-                icon={<AlertTriangle size={14} color={colors.warning.dark} strokeWidth={2} />}
+                icon={
+                  <AlertTriangle
+                    size={14}
+                    color={colors.warning.dark}
+                    strokeWidth={2}
+                  />
+                }
                 label={`Largest debt: ₹${Math.round(iOweSuppliers / 1000)}K`}
                 bg={colors.warning.light}
                 textColor={colors.warning.dark}
@@ -228,7 +256,13 @@ export default function FinancialPositionScreen() {
             )}
             {collectionRate > 0 && (
               <InsightPill
-                icon={<CheckCircle2 size={14} color={colors.primary.dark} strokeWidth={2} />}
+                icon={
+                  <CheckCircle2
+                    size={14}
+                    color={colors.primary.dark}
+                    strokeWidth={2}
+                  />
+                }
                 label={`Collection rate: ${collectionRate}%`}
                 bg={colors.primary.light}
                 textColor={colors.primary.dark}
@@ -240,7 +274,11 @@ export default function FinancialPositionScreen() {
           <View style={s.reportCard}>
             {/* PDF icon */}
             <View style={s.reportIconBox}>
-              <FileText size={22} color={colors.primary.DEFAULT} strokeWidth={1.8} />
+              <FileText
+                size={22}
+                color={colors.primary.DEFAULT}
+                strokeWidth={1.8}
+              />
             </View>
             {/* Meta */}
             <View style={s.reportMeta}>
@@ -254,10 +292,7 @@ export default function FinancialPositionScreen() {
               </Text>
             </View>
             {/* Download button */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={s.downloadBtn}
-            >
+            <TouchableOpacity activeOpacity={0.8} style={s.downloadBtn}>
               <Download size={18} color="#fff" strokeWidth={2} />
             </TouchableOpacity>
           </View>
