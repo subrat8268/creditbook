@@ -88,13 +88,9 @@ const HERO_GRADIENT: [string, string] = ["#BE2D5C", "#E8427D"];
 // ─── Timeline row ─────────────────────────────────────────────────────────────
 function TimelineRow({ entry }: { entry: SupplierTimelineEntry }) {
   const isDelivery = entry.type === "delivery";
-  const borderColor = isDelivery
-    ? colors.warning.DEFAULT
-    : colors.success.DEFAULT;
-  const iconBg = isDelivery ? colors.warning.light : colors.success.bg;
-  const iconColor = isDelivery
-    ? colors.warning.DEFAULT
-    : colors.success.DEFAULT;
+  const borderColor = isDelivery ? colors.neutral[300] : colors.success.DEFAULT;
+  const iconBg = isDelivery ? colors.neutral[100] : colors.success.bg;
+  const iconColor = isDelivery ? colors.neutral[500] : colors.success.DEFAULT;
   const amountColor = isDelivery
     ? colors.danger.DEFAULT
     : colors.success.DEFAULT;

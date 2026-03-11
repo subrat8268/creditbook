@@ -1,18 +1,18 @@
 import { Formik } from "formik";
 import {
-  ChevronRight,
-  CreditCard,
-  Hash,
-  Landmark,
-  UserPlus,
+    ChevronRight,
+    CreditCard,
+    Hash,
+    Landmark,
+    UserPlus,
 } from "lucide-react-native";
 import { useState } from "react";
 import {
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SupplierSchema } from "../../utils/schemas";
 import { colors } from "../../utils/theme";
@@ -327,7 +327,7 @@ export default function NewSupplierModal({
                           strokeWidth={2}
                         />
                       }
-                      placeholder="e.g. SBI, HDFC Bank"
+                      placeholder="e.g. HDFC Bank, SBI"
                       value={values.bank_name ?? ""}
                       onChangeText={handleChange("bank_name")}
                       onBlur={handleBlur("bank_name")}
@@ -335,7 +335,7 @@ export default function NewSupplierModal({
                   </View>
                   {/* Account Number */}
                   <View>
-                    <FieldLabel>Account Number / IBAN</FieldLabel>
+                    <FieldLabel>Account Number</FieldLabel>
                     <BankField
                       icon={
                         <CreditCard
@@ -362,7 +362,7 @@ export default function NewSupplierModal({
                           strokeWidth={2}
                         />
                       }
-                      placeholder="e.g. SBIN0001234"
+                      placeholder="e.g. HDFC0001234"
                       value={values.ifsc_code ?? ""}
                       onChangeText={handleChange("ifsc_code")}
                       onBlur={handleBlur("ifsc_code")}

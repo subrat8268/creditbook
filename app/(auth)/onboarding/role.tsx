@@ -32,8 +32,8 @@ const ROLES: RoleCard[] = [
     title: "Wholesaler",
     subtitle:
       "Distributor, FMCG supplier — manage bulk deliveries and large credit cycles",
-    iconColor: "#F59E0B",
-    iconBg: "#FEF3C7",
+    iconColor: "#22C55E",
+    iconBg: "#DCFCE7",
   },
   {
     role: "small-business",
@@ -41,8 +41,8 @@ const ROLES: RoleCard[] = [
     title: "Small Business",
     subtitle:
       "Auto repair, tiffin service, pharmacy — track service charges and payments",
-    iconColor: "#3B82F6",
-    iconBg: "#DBEAFE",
+    iconColor: "#22C55E",
+    iconBg: "#DCFCE7",
   },
 ];
 

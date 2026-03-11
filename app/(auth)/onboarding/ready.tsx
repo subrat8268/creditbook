@@ -48,7 +48,7 @@ export default function OnboardingReady() {
     }
   };
 
-  const businessLabel = `${profile?.business_name ?? "Business Name"} ${profile?.bill_number_prefix ?? "INV"}-`;
+  const businessLabel = `${profile?.business_name ?? "Business Name"} · ${profile?.bill_number_prefix ?? "INV"}`;
 
   return (
     <View className="flex-1 bg-background">

@@ -84,11 +84,11 @@ export default function SuppliersScreen() {
         {totalOwed > 0 && (
           <View
             className="rounded-full px-3 py-[5px]"
-            style={{ backgroundColor: colors.danger.light }}
+            style={{ backgroundColor: "#FCEEF4" }}
           >
             <Text
               className="font-bold text-[13px]"
-              style={{ color: colors.danger.DEFAULT }}
+              style={{ color: "#DB2777" }}
             >
               I Owe: ₹{totalOwed.toLocaleString("en-IN")}
             </Text>
