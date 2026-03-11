@@ -39,8 +39,11 @@ export default function OrdersLayout() {
           screenOptions[route.name as keyof typeof screenOptions] ||
           screenOptions.index;
         return {
-          header: () => (
-            <CustomHeader title={config.title} showBack={config.showBack} />
+          header: (hdrProps: any) => (
+            <CustomHeader
+              title={hdrProps.options?.title ?? config.title}
+              showBack={config.showBack}
+            />
           ),
         };
       }}
