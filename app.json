@@ -1,27 +1,28 @@
 {
   "expo": {
-    "name": "creditbook-app",
-    "slug": "creditbook-app",
+    "name": "KredBook",
+    "slug": "kredbook",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "creditbookapp",
+    "scheme": "kredbook",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kredbook.app",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#22C55E"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "pan",
-      "package": "com.anonymous.creditbookapp"
+      "package": "com.kredbook.app",
+      "permissions": ["READ_CONTACTS", "CAMERA", "READ_MEDIA_IMAGES"]
     },
     "web": {
       "output": "static",
@@ -51,6 +52,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2d6f89f5-dcb0-4987-b420-4ef5f1b393ed"
+      }
+    },
+    "owner": "subratjenas-organization"
   }
 }

@@ -1,5 +1,6 @@
 import { supabase } from "../services/supabase";
 import { Customer, CustomerDetail } from "../types/customer";
+export type { Customer };
 
 export const PAGE_SIZE = 10;
 
@@ -41,7 +42,7 @@ export async function fetchCustomers(
   // Fetch sum of balance_due per customer
   const { data: balanceRows } = await supabase
     .from("orders")
-    .select("customer_id, balance_due")
+    .select("customer_id, balance_due, created_at")
     .eq("vendor_id", vendorId)
     .in(
       "customer_id",

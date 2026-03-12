@@ -26,7 +26,8 @@ export const DashboardScreen = () => {
   const handleAddCustomer = async (values: {
     name: string;
     phone: string;
-    address: string;
+    address?: string;
+    openingBalance?: number;
   }) => {
     try {
       await addCustomerMutation.mutateAsync(values);

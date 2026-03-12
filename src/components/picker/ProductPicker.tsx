@@ -27,7 +27,7 @@ interface ProductPickerProps {
     name: string,
     price: number,
     variantId?: string,
-    variantName?: string
+    variantName?: string,
   ) => void;
   setVariantSelection: (product: Product | null) => void;
 }
@@ -55,8 +55,9 @@ export default function ProductPicker({
   const mappedProducts = products.map((p) => ({
     ...p,
     variants: p.variants.map((v, i) => ({
-      id: `${p.id}-variant-${i}`,
       ...v,
+      id: `${p.id}-variant-${i}`,
+      name: v.variant_name,
     })),
   }));
 

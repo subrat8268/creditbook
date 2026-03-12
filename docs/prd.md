@@ -1,6 +1,6 @@
 # CreditBook – Product Requirements Document
 
-> **Version**: 1.3
+> **Version**: 1.4
 > **Last Updated**: March 11, 2026
 > **Status**: Active Development
 > **Owner**: CreditBook Product Team
@@ -57,6 +57,14 @@ Every product decision is evaluated against this goal. Features that add complex
 - **Fast transaction recording** — Bill or payment recorded in under 60 seconds
 - **Reliable audit trail** — Sequential bills, immutable records, payment history
 - **Supplier-side tracking** — Balance what you're owed vs. what you owe
+
+### Business Model
+
+> **CreditBook is free for all users.** No paywalls, no feature gating, no subscription required.
+
+All core features — credit tracking, billing, payments, supplier management, PDF export, and reminders — are available to every business at zero cost. The product succeeds by becoming indispensable through daily use, not by locking features behind subscriptions.
+
+If the app grows significantly, optional value-add features (multi-user access, advanced analytics, custom invoice branding) may be considered as additive paid upgrades. **Core ledger functionality will never be gated.**
 
 ---
 
@@ -368,6 +376,70 @@ Role maps to `dashboard_mode` on the `profiles` table and controls which net-pos
 
 ---
 
+### 4.11 Orders List Screen
+
+**Route**: `/(main)/orders/` (tab root — no back arrow)  
+**Purpose**: Browse and filter all bills created by the vendor.
+
+**Contents** (v3.7):
+
+- `SafeAreaView edges={['top']}` with `#F6F7F9` background
+- **Header row**: "Orders" title (22 sp bold, `#1C1C1E`) + Search icon — tap to expand a collapsible `SearchBar`; tap again to collapse and clear
+- **Filter chips** (horizontal `ScrollView`, 32 dp height, pill radius):
+  - All · Paid · Partial · Pending · Overdue
+  - Active chip: `#22C55E` background/border, white text
+  - Inactive: `#F6F7F9` bg, `#E5E7EB` border, `#6B7280` text
+  - **"Overdue"** is a client-side sub-filter — API fetches Pending; `useMemo` filters `daysSince(created_at) > 30`
+  - **Sort chip** at end of row: opens BottomSheet with Newest / Oldest / High Amount / Low Amount options
+- **Order Card** (white, `radius:12`, `mx:16`, `mb:12`, `elevation:2`):
+  - Left: 44 dp initials avatar + customer name (15 sp bold) + bill number (13 sp `#6B7280`)
+  - Right: `₹amount` (17 sp bold) + status chip (PAID / PARTIAL / PENDING / OVERDUE)
+  - Bottom row: formatted date e.g. "15 Feb 2026" (13 sp `#6B7280`)
+- **Empty state**: "No orders yet" message + "Create Bill" green CTA button
+- **FAB**: 56 dp circle, `#2563EB`, `+` icon, bottom-right
+- **Performance**: `getItemLayout` (108 dp/item), `windowSize:10`, `removeClippedSubviews`, `useCallback` on `renderItem`
+
+---
+
+### 4.12 Order Detail Screen
+
+**Route**: `/(main)/orders/[orderId]` (stack-pushed — back arrow, dynamic title)  
+**Purpose**: Full bill view with payment recording and WhatsApp / PDF sharing.
+
+**Contents** (v3.7):
+
+- Stack header: `Order #<bill_number>` (dynamic, from loaded order data)
+- `SafeAreaView edges={['bottom']}` — floats action bar above tab bar
+
+**1. Customer Card** (white, `radius:16`):
+
+- 48 dp initials avatar + customer name (17 sp bold) + phone (13 sp `#6B7280`)
+- Previous Balance label + amount — red if `> 0`, green `#22C55E` if `= 0`
+
+**2. Items Card** (top-rounded `radius:16`, flush-joined with Bill Summary below):
+
+- Section label: "ITEMS" (13 sp uppercase `#6B7280`)
+- Each row: product name (15 sp) · `qty × ₹price` (13 sp `#6B7280`) · `₹subtotal` (15 sp bold)
+
+**3. Bill Summary Card** (bottom-rounded, top flush — joined to Items):
+
+- Subtotal / GST (shown only if `tax_percent > 0`) / Loading Charge (shown only if `> 0`) / Previous Balance (shown only if `> 0`, in `#E74C3C`)
+- Divider then Grand Total (22 sp bold) + status chip right-aligned
+
+**4. Payment History Card** (white, `radius:16`):
+
+- Sorted oldest → newest; running "Remaining: ₹X" below each payment
+- Mode chips: Cash=green, UPI=blue, NEFT=purple, Draft=amber, Cheque=sky
+- Payment amounts in `#22C55E`; empty state: "No payments recorded yet"
+
+**5. Fixed Action Bar** (absolute bottom, white bg, `borderTop: #E5E7EB`):
+
+- **"Send Bill"** (outline green): `generateBillPdf()` → `expo-sharing`; WhatsApp fallback
+- **"Record Payment"** (filled green): opens `RecordCustomerPaymentModal`; hidden when `status === "Paid"`
+- On modal success: invalidates 4 TanStack Query caches + shows success Alert
+
+---
+
 ## 5. UX Principles
 
 ### 5.1 Simplicity
@@ -467,19 +539,19 @@ The color system encodes financial status visually — users can assess ledger h
 
 ### Phase 7 — Growth (Planned)
 
-| Feature                          | Description                                                               |
-| :------------------------------- | :------------------------------------------------------------------------ |
-| **UPI Payment Integration**      | In-app payment collection via UPI deep links or Razorpay SDK              |
-| **Automated Payment Reminders**  | Scheduled WhatsApp/SMS reminders for overdue customers                    |
-| **GST-Ready Invoice Export**     | GSTIN-compliant invoice format with HSN codes and tax breakdown           |
-| **Multi-User Business Accounts** | Staff accounts with role-based access (owner / billing staff / view-only) |
-| **Analytics Dashboard**          | Revenue trends, top customers, collection rate, monthly comparison        |
-| **AI Payment Prediction**        | Predict likelihood of payment based on customer history                   |
-| **Phone OTP Login**              | Replace email/password with mobile OTP for frictionless signup            |
-| **Cloud Backup & Restore**       | Manual and scheduled backup to user's Google Drive or Supabase storage    |
-| **Online Customer Storefront**   | Shareable product catalog link for customer-facing orders                 |
-| **Inventory Alerts**             | Low-stock notifications based on transaction velocity                     |
-| **Premium Subscription**         | ₹149–₹199/month for multi-user, analytics, custom branding, no watermark  |
+| Feature                          | Description                                                                                                                                                               |
+| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **UPI Payment Integration**      | In-app payment collection via UPI deep links or Razorpay SDK                                                                                                              |
+| **Automated Payment Reminders**  | Scheduled WhatsApp/SMS reminders for overdue customers                                                                                                                    |
+| **GST-Ready Invoice Export**     | GSTIN-compliant invoice format with HSN codes and tax breakdown                                                                                                           |
+| **Multi-User Business Accounts** | Staff accounts with role-based access (owner / billing staff / view-only)                                                                                                 |
+| **Analytics Dashboard**          | Revenue trends, top customers, collection rate, monthly comparison                                                                                                        |
+| **AI Payment Prediction**        | Predict likelihood of payment based on customer history                                                                                                                   |
+| **Phone OTP Login**              | Replace email/password with mobile OTP for frictionless signup                                                                                                            |
+| **Cloud Backup & Restore**       | Manual and scheduled backup to user's Google Drive or Supabase storage                                                                                                    |
+| **Online Customer Storefront**   | Shareable product catalog link for customer-facing orders                                                                                                                 |
+| **Inventory Alerts**             | Low-stock notifications based on transaction velocity                                                                                                                     |
+| **Optional Paid Upgrades**       | If the product grows significantly: multi-user access, advanced analytics, custom invoice branding — as additive upgrades only. Core ledger features remain free forever. |
 
 ---
 
@@ -511,11 +583,12 @@ The color system encodes financial status visually — users can assess ledger h
 
 ### Business Metrics
 
-| Metric                      | Description                                                    |
-| :-------------------------- | :------------------------------------------------------------- |
-| **Premium conversion rate** | % of active users upgrading to paid plan                       |
-| **Businesses onboarded**    | Unique business profiles with ≥ 1 customer and ≥ 1 transaction |
-| **NPS**                     | Net Promoter Score from in-app survey                          |
+| Metric                     | Description                                                          |
+| :------------------------- | :------------------------------------------------------------------- |
+| **Businesses onboarded**   | Unique business profiles with ≥ 1 customer and ≥ 1 transaction       |
+| **Bills generated (MoM)**  | Total PDF invoices created per month — core value delivery indicator |
+| **Payment reminders sent** | Total WhatsApp reminders dispatched per month (track MoM growth)     |
+| **NPS**                    | Net Promoter Score from in-app survey                                |
 
 ---
 

@@ -6,7 +6,8 @@ import { initSentry, Sentry } from "@/src/services/sentry";
 import { ThemeProvider } from "@/src/utils/ThemeProvider";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SplashScreen, Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
 import { StatusBar } from "react-native";
@@ -22,6 +23,11 @@ initSentry();
 // Required for expo-web-browser OAuth redirect handling (noop on Android/iOS,
 // closes the auth session tab on web)
 WebBrowser.maybeCompleteAuthSession();
+
+// Keep native splash visible until first app frame is intentionally ready.
+SplashScreen.preventAutoHideAsync().catch(() => {
+  // Ignore if already prevented/hidden by the runtime.
+});
 
 const queryClient = new QueryClient();
 
@@ -39,26 +45,63 @@ function RootLayout() {
   const loadLanguage = useLanguageStore((s) => s.loadLanguage);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [ready, setReady] = useState(false);
 
   const fontsLoaded = useFontsLoader();
+  const router = useRouter();
 
   useEffect(() => {
     const init = async () => {
-      const [seen] = await Promise.all([
-        AsyncStorage.getItem("hasSeenWelcome"),
-        loadLanguage(), // restore persisted language before first render
-      ]);
-      setShowWelcome(!seen);
-      setLoading(false);
+      try {
+        const [seen] = await Promise.all([
+          AsyncStorage.getItem("hasSeenWelcome"),
+          loadLanguage(), // restore persisted language before first render
+        ]);
+        setShowWelcome(!seen);
+      } catch (error) {
+        console.warn("App init failed, continuing with defaults:", error);
+      } finally {
+        setLoading(false);
+      }
     };
     init();
   }, []);
 
+  // Hide native splash once basic app shell is ready.
+  // Profile loading should not block splash; we show an in-app loader instead.
   useEffect(() => {
-    if (fontsLoaded && !loading && (!user || !profileLoading)) {
-      SplashScreen.hideAsync();
+    if (fontsLoaded && !loading) {
+      SplashScreen.hideAsync().catch(() => {
+        // Ignore race where splash is already hidden.
+      });
+      setReady(true);
     }
-  }, [fontsLoaded, loading, user, profileLoading]);
+  }, [fontsLoaded, loading]);
+
+  // Navigate to the correct screen once ready
+  useEffect(() => {
+    if (!ready) return;
+
+    if (isRecoveryMode) {
+      router.replace("/(auth)/set-new-password" as any);
+    } else if (!user) {
+      router.replace(showWelcome ? "/" : ("/(auth)/login" as any));
+    } else if (!profile && !profileLoading) {
+      router.replace("/profile-error" as any);
+    } else if (profile && !profile.onboarding_complete) {
+      router.replace("/(auth)/onboarding" as any);
+    } else if (profile?.onboarding_complete === true) {
+      router.replace("/(main)/dashboard" as any);
+    }
+  }, [
+    ready,
+    isRecoveryMode,
+    user,
+    profile,
+    profileLoading,
+    showWelcome,
+    router,
+  ]);
 
   // Show loader until fonts, welcome check, AND profile fetch are all done
   if (!fontsLoaded || loading || (user && profileLoading)) return <Loader />;
@@ -69,41 +112,10 @@ function RootLayout() {
         <GestureHandlerRootView style={{ flex: 1 }}>
           <ToastProvider>
             <Stack screenOptions={{ headerShown: false }}>
-              {/* Highest priority: password recovery mode — shown regardless of
-                  user/profile state so the set-new-password screen is never
-                  replaced by the dashboard or onboarding guard mid-flow. */}
-              {isRecoveryMode && (
-                <Stack.Screen name="(auth)/set-new-password" />
-              )}
-
-              {/* Not logged in: show welcome or login */}
-              {!isRecoveryMode && !user && showWelcome && (
-                <Stack.Screen name="index" />
-              )}
-              {!isRecoveryMode && !user && !showWelcome && (
-                <Stack.Screen name="(auth)/login" />
-              )}
-
-              {/* Logged in: session valid but profile fetch failed — prevents blank screen */}
-              {!isRecoveryMode && user && !profile && !profileLoading && (
-                <Stack.Screen name="profile-error" />
-              )}
-
-              {/* Logged in: onboarding not completed (false / null / undefined) */}
-              {!isRecoveryMode &&
-                user &&
-                profile &&
-                !profile.onboarding_complete && (
-                  <Stack.Screen name="(auth)/onboarding" />
-                )}
-
-              {/* Logged in: onboarding done → main app */}
-              {!isRecoveryMode &&
-                user &&
-                profile &&
-                profile.onboarding_complete === true && (
-                  <Stack.Screen name="(main)/dashboard" />
-                )}
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(main)" />
+              <Stack.Screen name="profile-error" />
             </Stack>
             <StatusBar barStyle="dark-content" />
           </ToastProvider>

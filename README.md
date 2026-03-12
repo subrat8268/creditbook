@@ -613,13 +613,26 @@ Specific adaptations for the Indian market implemented in the app:
   - [ ] Staff accounts (Role-based access).
   - [ ] Online Storefront for customers.
   - [ ] Cloud Backup & Restore UI.
-  - [ ] Premium subscription tier (₹149–₹199/mo).
+  - [ ] Optional paid features evaluation (only if significant user growth warrants it).
 
 ---
 
 ## 9. Recent Updates & Changelog
 
-### v3.6 — Screen Redesigns UI Sprint (Current)
+### v3.7 — Orders Screens, Order Detail & Free-Tier Commitment (Current)
+
+- **REWRITE**: **`OrdersScreen`** (`src/screens/OrdersScreen.tsx`) — full rewrite. `SafeAreaView edges={['top']}` + `#F6F7F9` bg. "Orders" header (22 sp bold) with Search icon toggle — tap to expand collapsible `SearchBar`, tap again to collapse and clear. Inline horizontal filter chip row (All / Paid / Partial / Pending / Overdue, h:32, active `#22C55E`). **Overdue** handled client-side via `daysSince > 30` sub-filter — not an API param. **Sort chip** at end of chip row → local `sortSheetRef` BottomSheet (Newest / Oldest / High / Low). Removed `FilterBar` component, `useOrderFilters` hook, and separate Filter BottomSheet.
+- **REWRITE**: **`OrderList.tsx`** (`src/components/orders/OrderList.tsx`) — full card redesign. 44 dp initials avatar (deterministic AVATAR_COLORS hash) + customer name (15 sp bold, `#1C1C1E`) + bill number (13 sp `#6B7280`) + date bottom row (13 sp) + `₹amount` (17 sp bold) + status chip. `STATUS_STYLES` updated to exact spec hex: Paid `#DCFCE7`/`#16A34A` · Partial `#DBEAFE`/`#1D4ED8` · Pending `#FEF3C7`/`#D97706` · Overdue `#FEE2E2`/`#DC2626`. `ORDER_ITEM_H=108`; `windowSize:10`; `onCreateBill` prop. Inline empty state with "No orders yet" + "Create Bill" green CTA.
+- **NEW**: **Order Detail screen** (`app/(main)/orders/[orderId].tsx`) — full new screen. Stack header title: `Order #<bill_number>` (dynamic). `SafeAreaView edges={['bottom']}`. 5-section `ScrollView`: (1) **Customer Card** — 48 dp avatar + name + phone + Previous Balance (red if > 0, `#22C55E` if 0); (2) **Items Card** — top-rounded, flush-joined below to (3) **Bill Summary** — subtotal / GST (if > 0) / loading (if > 0) / prev balance (if > 0) / divider / Grand Total 22 sp + status chip; (4) **Payment History** — sorted oldest→newest, running "Remaining: ₹X", mode chips (Cash=green, UPI=blue, NEFT=purple, Draft=amber, Cheque=sky), amounts in `#22C55E`, empty state; (5) **Fixed Action Bar** — "Send Bill" outline green (`generateBillPdf` → `expo-sharing`; WhatsApp fallback) + "Record Payment" filled green (`RecordCustomerPaymentModal`, hidden when `status === "Paid"`). On payment success: invalidates `orderDetail` + `orders list` + `payments` + `dashboard` caches + shows `Alert.alert`.
+- **FIX**: **`app/(main)/orders/_layout.tsx`** — header renderer now accepts dynamic title from child `<Stack.Screen options={{ title: '...' }}/>`; enables `Order #INV-001` dynamic header per bill.
+- **FIX**: **`src/api/orders.ts`** — `Order` interface extended with `customer?: { id: string; name: string; phone: string } | null`.
+- **FIX M-01**: **`NewCustomerModal`** + **`NewSupplierModal`** — migrated from `react-native-modal` (AppModal) to `@gorhom/bottom-sheet` (`snapPoints:["90%"]`, `BottomSheetScrollView`, `BottomSheetBackdrop`). Deferred M-01 item fully resolved.
+- **PRODUCT**: CreditBook is and will remain **free for all users**. No paywalls, no feature gating. Optional paid features may be considered only if the app grows significantly — and only as additive upgrades, never restricting core ledger functionality.
+- **FILES MODIFIED**: `src/screens/OrdersScreen.tsx`, `src/components/orders/OrderList.tsx`, `app/(main)/orders/[orderId].tsx`, `app/(main)/orders/_layout.tsx`, `src/api/orders.ts`, `src/components/customers/NewCustomerModal.tsx`, `src/components/suppliers/NewSupplierModal.tsx`.
+
+---
+
+### v3.6 — Screen Redesigns UI Sprint
 
 - **REWRITE**: **`CreateOrderScreen`** — SafeAreaView + StyleSheet; custom back-arrow header; sticky footer with bill summary; `OrderBillSummary` as inline sub-component. Removed ScreenWrapper dependency.
 - **NEW**: **`ConfirmModal.tsx`** (`src/components/ui/`) — reusable destructive confirmation bottom sheet. `AlertTriangle` icon in `danger.bg` 64 px circle; solid Delete button + outlined Cancel; `loading` prop disables both buttons while request is in flight.
@@ -821,24 +834,26 @@ Specific adaptations for the Indian market implemented in the app:
 
 **Document History**
 
-| Version | Date | Author | Notes |
-| :------ | :----------- | :----------- | :-------------------------------------------------------------------------------------------- || **3.6** | Mar 11, 2026 | AI Assistant | Screen Redesigns UI Sprint: 7 screens/components fully rewrote to SafeAreaView+StyleSheet pattern — ExportScreen, ProfileScreen, ProductsScreen, ProductCard, NewProductModal, CreateOrderScreen, Financial Position; ConfirmModal added |
-| **3.5** | Mar 10, 2026 | AI Assistant | QA auth hardening: 9 issues fixed (FAIL-01, WARN-01–WARN-09) — isRecoveryMode guard, password recovery race, redirectTo, confirm-password toggle, delayed loader hint, back-stack fix |
-| **3.4** | Mar 10, 2026 | AI Assistant | Full auth hardening: C1–C5 critical fixes, V1–V3 state machine violations, R1–R2 race conditions, I1–I2 improvements, B1 (expo-secure-store), B6 (Sentry breadcrumbs), 8 new/modified files |
-| **3.3** | Mar 8, 2026 | AI Assistant | Icon migration complete: @expo/vector-icons fully removed, all ~35 files migrated to lucide-react-native |
-| **3.2** | Mar 8, 2026 | AI Assistant | UI audit: green primary color, Toast, Financial Position screen, bottom-sheet modals, EmptyState upgrade, CustomerCard palette, dashboard "both" fix |
-| **3.1** | Mar 5, 2026 | AI Assistant | Brand & design system docs rewrite: identity, color system, UX language, UI structure, patterns, typography || **3.0** | Mar 3, 2026 | AI Assistant | Design system overhaul: green palette, unified theme.ts, dashboard redesign, 7 UI components |
-| **2.4** | Mar 2, 2026 | AI Assistant | Import customers from phone contacts (expo-contacts, multi-select picker) |
-| **2.3** | Mar 2, 2026 | AI Assistant | CSV/Excel data export — 4 report types, date range filter, share sheet |
-| **2.2** | Mar 2, 2026 | AI Assistant | Hindi UI language toggle (i18next, 10 namespaces, AsyncStorage persistence) |
-| **2.1** | Mar 2, 2026 | AI Assistant | Sentry crash reporting integration |
-| **2.0** | Mar 2, 2026 | AI Assistant | 3-step onboarding flow |
-| **1.8** | Mar 1, 2026 | AI Assistant | Net Position Dashboard + Dashboard Mode switch |
-| **1.7** | Mar 1, 2026 | AI Assistant | Supplier/Distributor Mode: full CRUD + balances |
-| **1.6** | Mar 1, 2026 | AI Assistant | Overdue Flag: Dashboard, List badge, Detail banner |
-| **1.5** | Feb 27, 2026 | AI Assistant | Full Technical Architecture & Schema Docs |
-| **1.4** | Feb 27, 2026 | AI Assistant | Added Validation, Prefix, GST, Reminders |
-| **1.3** | Feb 27, 2026 | AI Assistant | Profile Bank UI modification |
-| **1.2** | Feb 27, 2026 | AI Assistant | Live Previous Balance feature |
-| **1.1** | Feb 27, 2026 | AI Assistant | Initial Indian Billing Suite |
-| **1.0** | Feb 27, 2026 | AI Assistant | Initial BRD |
+| Version | Date         | Author       | Notes                                                                                                                                                                                                                                    |
+| :------ | :----------- | :----------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | ------- | ----------- | ------------ | -------------------------------------------------------------------------------------------- |
+| **3.7** | Mar 11, 2026 | AI Assistant | Orders List + Order Detail screens built (v3.7); NewCustomerModal/NewSupplierModal @gorhom migration (M-01); free-tier product commitment documented across all docs                                                                     |
+| **3.6** | Mar 11, 2026 | AI Assistant | Screen Redesigns UI Sprint: 7 screens/components fully rewrote to SafeAreaView+StyleSheet pattern — ExportScreen, ProfileScreen, ProductsScreen, ProductCard, NewProductModal, CreateOrderScreen, Financial Position; ConfirmModal added |
+| **3.5** | Mar 10, 2026 | AI Assistant | QA auth hardening: 9 issues fixed (FAIL-01, WARN-01–WARN-09) — isRecoveryMode guard, password recovery race, redirectTo, confirm-password toggle, delayed loader hint, back-stack fix                                                    |
+| **3.4** | Mar 10, 2026 | AI Assistant | Full auth hardening: C1–C5 critical fixes, V1–V3 state machine violations, R1–R2 race conditions, I1–I2 improvements, B1 (expo-secure-store), B6 (Sentry breadcrumbs), 8 new/modified files                                              |
+| **3.3** | Mar 8, 2026  | AI Assistant | Icon migration complete: @expo/vector-icons fully removed, all ~35 files migrated to lucide-react-native                                                                                                                                 |
+| **3.2** | Mar 8, 2026  | AI Assistant | UI audit: green primary color, Toast, Financial Position screen, bottom-sheet modals, EmptyState upgrade, CustomerCard palette, dashboard "both" fix                                                                                     |
+| **3.1** | Mar 5, 2026  | AI Assistant | Brand & design system docs rewrite: identity, color system, UX language, UI structure, patterns, typography                                                                                                                              |     | **3.0** | Mar 3, 2026 | AI Assistant | Design system overhaul: green palette, unified theme.ts, dashboard redesign, 7 UI components |
+| **2.4** | Mar 2, 2026  | AI Assistant | Import customers from phone contacts (expo-contacts, multi-select picker)                                                                                                                                                                |
+| **2.3** | Mar 2, 2026  | AI Assistant | CSV/Excel data export — 4 report types, date range filter, share sheet                                                                                                                                                                   |
+| **2.2** | Mar 2, 2026  | AI Assistant | Hindi UI language toggle (i18next, 10 namespaces, AsyncStorage persistence)                                                                                                                                                              |
+| **2.1** | Mar 2, 2026  | AI Assistant | Sentry crash reporting integration                                                                                                                                                                                                       |
+| **2.0** | Mar 2, 2026  | AI Assistant | 3-step onboarding flow                                                                                                                                                                                                                   |
+| **1.8** | Mar 1, 2026  | AI Assistant | Net Position Dashboard + Dashboard Mode switch                                                                                                                                                                                           |
+| **1.7** | Mar 1, 2026  | AI Assistant | Supplier/Distributor Mode: full CRUD + balances                                                                                                                                                                                          |
+| **1.6** | Mar 1, 2026  | AI Assistant | Overdue Flag: Dashboard, List badge, Detail banner                                                                                                                                                                                       |
+| **1.5** | Feb 27, 2026 | AI Assistant | Full Technical Architecture & Schema Docs                                                                                                                                                                                                |
+| **1.4** | Feb 27, 2026 | AI Assistant | Added Validation, Prefix, GST, Reminders                                                                                                                                                                                                 |
+| **1.3** | Feb 27, 2026 | AI Assistant | Profile Bank UI modification                                                                                                                                                                                                             |
+| **1.2** | Feb 27, 2026 | AI Assistant | Live Previous Balance feature                                                                                                                                                                                                            |
+| **1.1** | Feb 27, 2026 | AI Assistant | Initial Indian Billing Suite                                                                                                                                                                                                             |
+| **1.0** | Feb 27, 2026 | AI Assistant | Initial BRD                                                                                                                                                                                                                              |

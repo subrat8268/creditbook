@@ -1,11 +1,20 @@
 import { useRouter } from "expo-router";
+import { Users } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ContactsPickerModal from "../components/customers/ContactsPickerModal";
 import CustomerList, {
-    CustomerFilter,
+  CustomerFilter,
 } from "../components/customers/CustomerList";
 import CustomersHeader from "../components/customers/CustomersHeader";
 import NewCustomerModal from "../components/customers/NewCustomerModal";
@@ -16,7 +25,6 @@ import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { useAuthStore } from "../store/authStore";
 import { useCustomersStore } from "../store/customersStore";
 import { colors } from "../utils/theme";
-import { Users } from "lucide-react-native";
 
 const FILTERS: CustomerFilter[] = ["All", "Overdue", "Paid", "Pending"];
 
@@ -58,7 +66,7 @@ export default function CustomersScreen() {
   };
 
   const handleBulkImport = async (
-    contacts: Array<{ name: string; phone: string }>,
+    contacts: { name: string; phone: string }[],
   ) => {
     let imported = 0;
     let skipped = 0;
@@ -114,7 +122,7 @@ export default function CustomersScreen() {
         }}
       />
 
-      {/* ── Search + filter bar ── */}}
+      {/* ── Search + filter bar ── */}
       <View className="px-5 pt-3.5 pb-1 bg-white">
         <SearchBar
           value={search}

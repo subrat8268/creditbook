@@ -5,14 +5,13 @@ import { useAuthStore } from "../store/authStore";
 import { LoginValues } from "../types/auth";
 
 export function useLogin() {
-  const { setUser, setProfile } = useAuthStore();
+  const { setUser } = useAuthStore();
   const router = useRouter();
 
   return useMutation({
     mutationFn: (values: LoginValues) => loginApi(values),
-    onSuccess: async ({ user, profile }) => {
+    onSuccess: async (user) => {
       setUser(user);
-      setProfile(profile);
       router.replace("/(main)/dashboard");
     },
     onError: (err) => {

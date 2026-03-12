@@ -1,4 +1,4 @@
-import { Customer } from "@/src/api/customers";
+import { Customer } from "@/src/types/customer";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 
 interface Props {

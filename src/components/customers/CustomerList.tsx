@@ -1,4 +1,4 @@
-import { Customer } from "@/src/api/customers";
+import { Customer } from "@/src/types/customer";
 import { BookOpen, Plus, UserPlus } from "lucide-react-native";
 import { useCallback } from "react";
 import { FlatList, RefreshControl, View } from "react-native";

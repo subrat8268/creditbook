@@ -1,9 +1,9 @@
 # CreditBook Product Roadmap
 
-> **Version**: 1.5
+> **Version**: 1.6
 > **Last Updated**: March 11, 2026
 > **Status**: Active Development
-> **Current Phase**: Phase 6.6 complete → Phase 7 in progress
+> **Current Phase**: Phase 6.7 complete → Phase 7 in progress
 
 ---
 
@@ -34,7 +34,8 @@
 | Phase 6.4 | Production Bug Fix & Signoff          | ✅ Complete    | 27-item audit: DB/RLS bugs, broken search, export crash, UI token fixes                               |
 | Phase 6.5 | Auth Hardening Sprint                 | ✅ Complete    | Password recovery race fix, secure storage, state machine compliance, 9 QA issues resolved            |
 | Phase 6.6 | Screen Redesigns UI Sprint            | ✅ Complete    | 7 screens/components fully rewritten: SafeAreaView+StyleSheet, sub-components extracted, i18n removed |
-| Phase 7   | Growth & Monetisation                 | 🔄 In Progress | UPI, push notifications, analytics, premium tier                                                      |
+| Phase 6.7 | Orders & Modal Hardening Sprint       | ✅ Complete    | Orders List + Order Detail screens built; NewCustomerModal + NewSupplierModal migrated to @gorhom     |
+| Phase 7   | Growth & Retention                    | 🔄 In Progress | UPI, push notifications, staff accounts, analytics                                                    |
 | Phase 8   | Financial Platform                    | 🗓 Planned     | Credit scoring, lending, automated bookkeeping                                                        |
 
 ---
@@ -325,11 +326,43 @@
 
 ---
 
-## Phase 7 — Growth & Monetisation 🔄 In Progress
+## Phase 6.7 — Orders & Modal Hardening Sprint ✅ Complete
 
-**Goal**: Drive retention through engagement features and introduce the premium subscription tier.
+**Goal**: Build the Orders List and Order Detail screens from scratch; migrate remaining AppModal-based forms to `@gorhom/bottom-sheet`.
 
-**Pre-requisite completed**: Phase 6.4 production signoff + Phase 6.5 auth hardening. All critical bugs and auth vulnerabilities resolved before Phase 7 work begins.
+**Constraint**: Zero new dependencies. Zero TypeScript errors on all changed files.
+
+### Features Completed
+
+| Component / Screen                | Changes                                                                                                                                                                                                                                          |
+| :-------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OrdersScreen.tsx`                | Full rewrite: `SafeAreaView edges={['top']}`; "Orders" header + collapsible Search icon toggle; inline filter chips (All/Paid/Partial/Pending/Overdue); Overdue as client-side `daysSince > 30` sub-filter; Sort chip → local BottomSheet; FAB   |
+| `OrderList.tsx`                   | Full redesign: 44 dp avatar + customer name (15 sp bold) + bill number + date row + ₹amount (17 sp) + status chip; `STATUS_STYLES` updated to exact spec hex; `ORDER_ITEM_H=108`; `onCreateBill` prop; inline empty state with "Create Bill" CTA |
+| `app/(main)/orders/[orderId].tsx` | New Order Detail screen: Customer card + Items card + Bill Summary (flush-joined) + Payment History (running balance, mode chips) + Fixed Action Bar (Send Bill → expo-sharing/WhatsApp; Record Payment → RecordCustomerPaymentModal)            |
+| `app/(main)/orders/_layout.tsx`   | Header renderer updated to accept dynamic `options.title` from child `Stack.Screen` — enables `Order #INV-001` dynamic title                                                                                                                     |
+| `src/api/orders.ts`               | `Order` interface extended with `customer?: { id, name, phone } \| null`                                                                                                                                                                         |
+| `NewCustomerModal.tsx` (M-01)     | Migrated from `react-native-modal` (AppModal) to `@gorhom/bottom-sheet` — `snapPoints:["90%"]`, `BottomSheetScrollView`, `BottomSheetBackdrop`                                                                                                   |
+| `NewSupplierModal.tsx` (M-01)     | Same migration as `NewCustomerModal`                                                                                                                                                                                                             |
+
+### Files Modified
+
+- `src/screens/OrdersScreen.tsx`
+- `src/components/orders/OrderList.tsx`
+- `app/(main)/orders/[orderId].tsx`
+- `app/(main)/orders/_layout.tsx`
+- `src/api/orders.ts`
+- `src/components/customers/NewCustomerModal.tsx`
+- `src/components/suppliers/NewSupplierModal.tsx`
+
+---
+
+## Phase 7 — Growth & Retention 🔄 In Progress
+
+**Goal**: Drive user retention and daily engagement through notifications, faster authentication, and staff collaboration features.
+
+**Pre-requisite completed**: Phase 6.4 production signoff + Phase 6.5 auth hardening + Phase 6.7 Orders screens. All critical bugs resolved before Phase 7 work begins.
+
+**Business Model Note**: CreditBook is and will remain **free for all users**. No premium subscription is planned. Phase 7 features grow the user base and increase daily engagement — not revenue extraction. If the product demonstrates significant organic growth, optional paid upgrades may be evaluated in Phase 9+.
 
 ### Features
 
@@ -338,7 +371,6 @@
 | **Phone OTP Login**          | High     | Replace email/password with mobile OTP (Supabase Phone Auth via Twilio/MSG91) | None                |
 | **WhatsApp Business API**    | High     | Auto-send PDF bill to customer on creation via WhatsApp Business API          | None                |
 | **Push Notifications (FCM)** | High     | Overdue payment alerts and transaction confirmations via Firebase             | None                |
-| **Premium Subscription**     | Medium   | ₹149–₹199/month via Razorpay; multi-user, analytics, no watermark             | None                |
 | **Inventory Stock Tracking** | Medium   | `stock_quantity` on products; low-stock alert banner                          | P03 variants fix ✅ |
 | **Staff Accounts**           | Medium   | Role-based access: Owner / Billing Staff / View-Only                          | None                |
 | **Cloud Backup & Restore**   | Medium   | Export full dataset to Google Drive or Supabase Storage                       | None                |
@@ -353,8 +385,6 @@
 [ ] feat: Add stock_quantity field to products table; update on order creation
 [ ] feat: Low-stock alert banner on Products screen and Dashboard
 [ ] feat: Staff accounts — invite by phone; role-based tab/action visibility
-[ ] feat: Build SubscriptionScreen with Razorpay/IAP integration
-[ ] feat: Gate premium features behind subscription check
 [ ] feat: Cloud Backup — export full dataset to Google Drive
 [ ] feat: Online Storefront — public product page with WhatsApp order CTA
 ```
@@ -378,21 +408,23 @@
 
 ## Milestones
 
-| Milestone                       | Description                                                                                           | Status     |
-| :------------------------------ | :---------------------------------------------------------------------------------------------------- | :--------- |
-| **MVP Launch**                  | Core ledger — customers, transactions, balance tracking, dashboard                                    | ✅ Shipped |
-| **Billing Launch**              | Itemized bills, PDF export, supplier management, net position                                         | ✅ Shipped |
-| **India Suite Launch**          | GST, sequential IDs, loading charge, WhatsApp reminders, overdue flagging                             | ✅ Shipped |
-| **Platform Launch**             | Onboarding, i18n, Sentry, CSV export, contacts import                                                 | ✅ Shipped |
-| **Design System Launch**        | Green (#22C55E) brand system, premium dashboard, unified theme                                        | ✅ Shipped |
-| **Customer UI Launch**          | Transaction feed, payment modal, Customer Detail redesign                                             | ✅ Shipped |
-| **UI Audit Launch**             | Lucide icons, @gorhom/bottom-sheet, Toast, Financial Position screen                                  | ✅ Shipped |
-| **Production Hardening Launch** | FlatList perf, KeyboardAvoidingView, icon/data audit, component organisation                          | ✅ Shipped |
-| **Production Signoff**          | All 27-item audit resolved; app submitted for TestFlight / Play Store Internal Testing                | ✅ Shipped |
-| **Auth Hardening**              | 9 QA issues resolved; password recovery race fixed; secure JWT storage; full state machine compliance | ✅ Shipped |
-| **Device Verification**         | P01–P38 sign-off checklist run on target hardware (Pixel 4a + iPhone)                                 | ⏳ Pending |
-| **Growth Launch**               | OTP login, push notifications, WhatsApp Business API, premium tier                                    | 🔄 Q2 2026 |
-| **Financial Platform Launch**   | Credit scoring, GST filing, lending integration                                                       | 🗓 Q4 2026 |
+| Milestone                       | Description                                                                                                       | Status     |
+| :------------------------------ | :---------------------------------------------------------------------------------------------------------------- | :--------- |
+| **MVP Launch**                  | Core ledger — customers, transactions, balance tracking, dashboard                                                | ✅ Shipped |
+| **Billing Launch**              | Itemized bills, PDF export, supplier management, net position                                                     | ✅ Shipped |
+| **India Suite Launch**          | GST, sequential IDs, loading charge, WhatsApp reminders, overdue flagging                                         | ✅ Shipped |
+| **Platform Launch**             | Onboarding, i18n, Sentry, CSV export, contacts import                                                             | ✅ Shipped |
+| **Design System Launch**        | Green (#22C55E) brand system, premium dashboard, unified theme                                                    | ✅ Shipped |
+| **Customer UI Launch**          | Transaction feed, payment modal, Customer Detail redesign                                                         | ✅ Shipped |
+| **UI Audit Launch**             | Lucide icons, @gorhom/bottom-sheet, Toast, Financial Position screen                                              | ✅ Shipped |
+| **Production Hardening Launch** | FlatList perf, KeyboardAvoidingView, icon/data audit, component organisation                                      | ✅ Shipped |
+| **Production Signoff**          | All 27-item audit resolved; app submitted for TestFlight / Play Store Internal Testing                            | ✅ Shipped |
+| **Auth Hardening**              | 9 QA issues resolved; password recovery race fixed; secure JWT storage; full state machine compliance             | ✅ Shipped |
+| **Screen Redesigns Launch**     | 7 screens fully rewritten to SafeAreaView+StyleSheet pattern; Phase 6.6 complete                                  | ✅ Shipped |
+| **Orders & Modals Launch**      | Orders List + Order Detail screens built; NewCustomerModal/NewSupplierModal @gorhom migration; Phase 6.7 complete | ✅ Shipped |
+| **Device Verification**         | P01–P38 sign-off checklist run on target hardware (Pixel 4a + iPhone)                                             | ⏳ Pending |
+| **Growth Launch**               | OTP login, push notifications, WhatsApp Business API, staff accounts                                              | 🔄 Q2 2026 |
+| **Financial Platform Launch**   | Credit scoring, GST filing, lending integration                                                                   | 🗓 Q4 2026 |
 
 ---
 
@@ -405,7 +437,6 @@
 | **Payment recovery rate**           | % of WhatsApp reminders resulting in payment within 7 days | ≥ 35%                   |
 | **Avg. time to record transaction** | Seconds from screen open to confirmation                   | < 60 seconds            |
 | **Day-30 retention**                | Users returning within 30 days of signup                   | ≥ 30%                   |
-| **Premium conversion rate**         | % of active users on paid plan                             | ≥ 8% by Month 6         |
 | **Net Promoter Score (NPS)**        | In-app survey score                                        | ≥ 50                    |
 
 ---

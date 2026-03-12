@@ -8,6 +8,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { colors } from "../utils/theme";
 import SearchBar from "./ui/SearchBar";
 
 interface Item {

@@ -1,8 +1,8 @@
 # CreditBook — Project Architecture
 
 > **Last Updated**: March 11, 2026
-> **App Version**: 3.6
-> **Status**: Auth hardening complete (v3.4–3.5) — pending device verification
+> **App Version**: 3.7
+> **Status**: Phase 6.7 complete — Orders + Order Detail screens shipped; @gorhom modal migration done
 
 ---
 
@@ -54,10 +54,10 @@ app/
     │   ├── index.tsx
     │   └── [customerId].tsx      ← Customer detail (inline, no src/screens/ file)
     ├── orders/
-    │   ├── _layout.tsx
+    │   ├── _layout.tsx           ← Stack navigator; header renders `options.title ?? config.title` (dynamic title for Order Detail)  ← v3.7
     │   ├── index.tsx
     │   ├── create.tsx
-    │   └── [orderId].tsx         ← Order detail (inline)
+    │   └── [orderId].tsx         ← Order Detail screen (v3.7 full rewrite): Customer card, Items+BillSummary flush cards, Payment History, Fixed Action Bar (Send Bill + Record Payment)
     ├── products/
     │   ├── _layout.tsx
     │   └── index.tsx
@@ -111,7 +111,7 @@ src/components/
 │   ├── ContactsPickerModal.tsx
 │   ├── CustomerCard.tsx
 │   ├── CustomerList.tsx
-│   ├── NewCustomerModal.tsx
+│   ├── NewCustomerModal.tsx       ← v3.7 M-01: migrated from AppModal (react-native-modal) to @gorhom/bottom-sheet; snapPoints:["90%"], BottomSheetScrollView, BottomSheetBackdrop
 │   └── RecordCustomerPaymentModal.tsx   ← @gorhom/bottom-sheet, snapPoints ["65%"]
 │
 ├── dashboard/
@@ -134,10 +134,10 @@ src/components/
 │
 ├── orders/
 │   ├── CustomerSelector.tsx
-│   ├── FilterBar.tsx              ← Active chip state added (P-12); theme tokens only
+│   ├── FilterBar.tsx              ← No longer used by OrdersScreen (v3.7 moved to inline chips); may be removed in a future cleanup
 │   ├── OrderBillSummary.tsx
 │   ├── OrderItemCard.tsx
-│   ├── OrderList.tsx              ← STATUS_STYLES map: Paid/Partial/Pending/Overdue (P-06)
+│   ├── OrderList.tsx              ← v3.7 full redesign: 44 dp initials avatar + customer name (15 sp bold) + bill# + date row + ₹amount (17 sp) + status chip; STATUS_STYLES exact hex (Paid=#DCFCE7, Partial=#DBEAFE, Pending=#FEF3C7, Overdue=#FEE2E2); ORDER_ITEM_H=108; windowSize:10; onCreateBill prop; inline empty state with "Create Bill" CTA
 │   ├── OrderSummary.tsx
 │   ├── PaymentHistory.tsx
 │   └── RecordPayments.tsx
@@ -154,7 +154,7 @@ src/components/
 │   └── ProductCard.tsx            ← v3.6 rewrite: compact single-row (icon box + name + "N variants" + ₹price + ChevronRight)
 │
 ├── suppliers/
-│   ├── NewSupplierModal.tsx
+│   ├── NewSupplierModal.tsx       ← v3.7 M-01: migrated from AppModal to @gorhom/bottom-sheet (same pattern as NewCustomerModal)
 │   ├── RecordDeliveryModal.tsx    ← Migrated to @gorhom/bottom-sheet (P-08)
 │   ├── RecordPaymentMadeModal.tsx ← @gorhom/bottom-sheet, snapPoints ["62%"]
 │   ├── SupplierCard.tsx           ← Initials avatar added (P-15); amber → theme tokens
@@ -179,7 +179,7 @@ src/screens/
 ├── CustomersScreen.tsx
 ├── DashboardScreen.tsx            ← isSellerMode fixed from stale 'vendor' check (P-02)
 ├── ExportScreen.tsx               ← v3.6 full rewrite: ExportRow+DateInput sub-components; date presets; loadingKey; removed ScreenWrapper/i18n
-├── OrdersScreen.tsx
+├── OrdersScreen.tsx               ← v3.7 full rewrite: SafeAreaView edges=['top']; "Orders" header + collapsible Search toggle; inline filter chips (All/Paid/Partial/Pending/Overdue); Overdue = client-side daysSince>30 sub-filter; Sort chip → local BottomSheet ref; FAB; FilterBar + useOrderFilters removed
 ├── ProductsScreen.tsx             ← v3.6 rewrite: SafeAreaView+StyleSheet; category chips; Search toggle; ConfirmModal for delete
 ├── ProfileScreen.tsx              ← v3.6 full rewrite: SectionCard+DetailRow+SegmentControl sub-components; read-only; removed SubscriptionCard/ImagePickerField/i18n
 └── SuppliersScreen.tsx
