@@ -1,6 +1,6 @@
 import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
+    BottomSheetBackdrop,
+    BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { Formik } from "formik";
 import { X } from "lucide-react-native";
@@ -12,7 +12,7 @@ import Button from "../ui/Button";
 
 // ─── Avatar utilities (mirrors CustomerCard) ─────────────────────────────────
 const AVATAR_COLORS = [
-  "#E74C3C",
+  colors.danger.DEFAULT,
   "#3498DB",
   "#9B59B6",
   "#1ABC9C",

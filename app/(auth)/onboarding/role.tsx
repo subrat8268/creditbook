@@ -1,5 +1,6 @@
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
+import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { Briefcase, Check, Store, Truck } from "lucide-react-native";
 import { ComponentType, useState } from "react";
@@ -103,8 +104,23 @@ export default function OnboardingRole() {
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
+        {/* ── Progress ── */}
+        <View className="mt-5 mb-6">
+          <Text className="text-[13px] text-textSecondary mb-2">
+            Step 1 of 3
+          </Text>
+          <View className="flex-row gap-1.5">
+            <View
+              className="flex-1 h-1 rounded-full"
+              style={{ backgroundColor: colors.primary.DEFAULT }}
+            />
+            <View className="flex-1 h-1 rounded-full bg-neutral-200" />
+            <View className="flex-1 h-1 rounded-full bg-neutral-200" />
+          </View>
+        </View>
+
         {/* ── Title ── */}
-        <Text className="text-2xl font-extrabold text-textDark mt-6 mb-1.5">
+        <Text className="text-2xl font-extrabold text-textDark mb-1.5">
           {"What's your business?"}
         </Text>
         <Text className="text-sm text-textSecondary mb-7">

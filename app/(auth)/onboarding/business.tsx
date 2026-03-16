@@ -74,9 +74,10 @@ export default function OnboardingBusiness() {
         {/* ── Progress ── */}
         <View className="mt-5 mb-6">
           <Text className="text-[13px] text-textSecondary mb-2">
-            Step 1 of 2
+            Step 2 of 3
           </Text>
           <View className="flex-row gap-1.5">
+            <View className="flex-1 h-1 rounded-full bg-primary" />
             <View className="flex-1 h-1 rounded-full bg-primary" />
             <View className="flex-1 h-1 rounded-full bg-neutral-200" />
           </View>
@@ -139,6 +140,9 @@ export default function OnboardingBusiness() {
             autoCapitalize="characters"
             className="border-[1.5px] border-border rounded-xl px-3.5 py-3 text-[15px] text-textDark bg-white"
           />
+          <Text className="text-xs text-textMuted mt-1.5">
+            You can add this later from Profile → Settings
+          </Text>
 
           {/* Bill Prefix */}
           <Text className="text-sm font-semibold text-neutral-800 mt-5 mb-2">

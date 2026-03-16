@@ -82,9 +82,10 @@ export default function OnboardingBank() {
         {/* ── Progress ── */}
         <View className="mt-5 mb-6">
           <Text className="text-[13px] text-textSecondary mb-2">
-            Step 2 of 2
+            Step 3 of 3
           </Text>
           <View className="flex-row gap-1.5">
+            <View className="flex-1 h-1 rounded-full bg-primary" />
             <View className="flex-1 h-1 rounded-full bg-primary" />
             <View className="flex-1 h-1 rounded-full bg-primary" />
           </View>

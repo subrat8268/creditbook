@@ -123,7 +123,7 @@ function buildStatementHtml(
   table{width:100%;border-collapse:collapse;margin-top:20px;}
   th{background:#5B3FFF;color:white;padding:10px 8px;text-align:left;}
   td{padding:10px 8px;border-bottom:1px solid #E5E5EA;}
-  .balance{font-size:18px;font-weight:700;color:#E74C3C;}
+  .balance{font-size:18px;font-weight:700;color:${colors.danger.DEFAULT};}
 </style></head><body>
 <h1>${businessName} — Customer Statement</h1>
 <p><b>Customer:</b> ${name}<br/><b>Phone:</b> ${phone}</p>

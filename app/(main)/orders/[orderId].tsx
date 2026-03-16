@@ -14,12 +14,12 @@ import * as Sharing from "expo-sharing";
 import { MessageCircle, Wallet } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
-  Alert,
-  Linking,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Linking,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -301,7 +301,10 @@ export default function OrderDetailScreen() {
                 style={{
                   fontSize: 15,
                   fontWeight: "700",
-                  color: order.previous_balance > 0 ? "#E74C3C" : "#22C55E",
+                  color:
+                    order.previous_balance > 0
+                      ? colors.danger.DEFAULT
+                      : colors.primary.DEFAULT,
                 }}
               >
                 ₹{fmt(order.previous_balance)}
@@ -484,10 +487,10 @@ export default function OrderDetailScreen() {
                 paddingVertical: 5,
               }}
             >
-              <Text style={{ fontSize: 14, color: "#E74C3C" }}>
+              <Text style={{ fontSize: 14, color: colors.danger.DEFAULT }}>
                 Previous Balance
               </Text>
-              <Text style={{ fontSize: 14, color: "#E74C3C" }}>
+              <Text style={{ fontSize: 14, color: colors.danger.DEFAULT }}>
                 ₹{fmt(order.previous_balance)}
               </Text>
             </View>

@@ -760,12 +760,12 @@ function NetCard({ net }: { net: number }) { ... }
 
 ---
 
-### `InsightPill` — Financial Position Screen
+### ~~`InsightPill`~~ — Financial Position Screen — **[Removed in v3.8]**
 
-A small pill chip showing a contextual insight (e.g., "Healthy" or "Monitor").
+> **Removed**: This component was deleted in v3.8 as part of the FinancialPositionScreen refactor. Do not re-implement. Use the `StatCard` border/subtitle row for contextual hints instead.
+
+~~A small pill chip showing a contextual insight (e.g., "Healthy" or "Monitor").~~
 
 ```tsx
-function InsightPill({ label, color, bg }: { label: string; color: string; bg: string }) { ... }
-// Pill: paddingHorizontal=12, paddingVertical=4, borderRadius=999, bg=bg prop
-// Text: fontSize=12, fontWeight='600', color=color prop
+// REMOVED — function InsightPill({ label, color, bg }) was deleted in v3.8
 ```

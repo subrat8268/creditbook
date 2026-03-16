@@ -7,9 +7,10 @@ import {
   Activity,
   CalendarDays,
   ChevronRight,
+  Download,
   Info,
   Truck,
-  Users
+  Users,
 } from "lucide-react-native";
 import {
   ActivityIndicator,
@@ -187,6 +188,34 @@ export default function FinancialPositionScreen() {
             formula={`${formatINR(customersOweMe)} – ${formatINR(iOweSuppliers)}`}
           />
 
+          {/* ── Export Data entry point ── */}
+          <TouchableOpacity
+            onPress={() => router.push("/(main)/export" as any)}
+            activeOpacity={0.85}
+            style={[s.exportRow, { backgroundColor: colors.neutral.surface }]}
+          >
+            <View style={s.exportRowLeft}>
+              <View style={s.exportIconBox}>
+                <Download
+                  size={18}
+                  color={colors.primary.dark}
+                  strokeWidth={1.8}
+                />
+              </View>
+              <View>
+                <Text style={s.exportRowTitle}>Export Data</Text>
+                <Text style={s.exportRowSub}>
+                  Download CSV for orders, payments &amp; more
+                </Text>
+              </View>
+            </View>
+            <ChevronRight
+              size={18}
+              color={colors.neutral[400]}
+              strokeWidth={1.8}
+            />
+          </TouchableOpacity>
+
           <View style={{ height: 32 }} />
         </ScrollView>
       )}
@@ -286,5 +315,39 @@ const s = StyleSheet.create({
     fontSize: 13,
     color: "rgba(255,255,255,0.55)",
     fontWeight: "500",
+  },
+
+  // ── Export row ──
+  exportRow: {
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  exportRowLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    flex: 1,
+  },
+  exportIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: colors.primary.light,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  exportRowTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: colors.neutral[900],
+    marginBottom: 2,
+  },
+  exportRowSub: {
+    fontSize: 12,
+    color: colors.neutral[500],
   },
 });
