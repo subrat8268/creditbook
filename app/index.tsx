@@ -44,7 +44,7 @@ export default function WelcomePage() {
       {/* Logo */}
       <Image
         source={require("../assets/images/logo.png")}
-        className="w-36"
+        className="w-36 h-36"
         resizeMode="contain"
       />
 
