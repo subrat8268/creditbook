@@ -5,16 +5,11 @@ import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import {
   Activity,
-  AlertTriangle,
   CalendarDays,
-  CheckCircle2,
   ChevronRight,
-  CircleAlert,
-  Download,
-  FileText,
   Info,
   Truck,
-  Users,
+  Users
 } from "lucide-react-native";
 import {
   ActivityIndicator,
@@ -108,26 +103,6 @@ function NetCard({ amount, formula }: { amount: string; formula: string }) {
   );
 }
 
-/** Quick insight pill badge */
-function InsightPill({
-  icon,
-  label,
-  bg,
-  textColor,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  bg: string;
-  textColor: string;
-}) {
-  return (
-    <View style={[s.pill, { backgroundColor: bg }]}>
-      {icon}
-      <Text style={[s.pillText, { color: textColor }]}>{label}</Text>
-    </View>
-  );
-}
-
 // ── Screen ────────────────────────────────────────────────
 export default function FinancialPositionScreen() {
   const { profile } = useAuthStore();
@@ -140,14 +115,6 @@ export default function FinancialPositionScreen() {
   const activeBuyers = data?.activeBuyers ?? 0;
   const activeSuppliers = data?.activeSuppliers ?? 0;
   const overdueCustomers = data?.overdueCustomers ?? 0;
-
-  // Derive collection rate: (totalRevenue / (totalRevenue + outstandingAmount)) * 100
-  const totalRevenue = data?.totalRevenue ?? 0;
-  const outstandingAmount = data?.outstandingAmount ?? 0;
-  const collectionRate =
-    totalRevenue + outstandingAmount > 0
-      ? Math.round((totalRevenue / (totalRevenue + outstandingAmount)) * 100)
-      : 0;
 
   return (
     <SafeAreaView style={s.root} edges={["top", "left", "right"]}>
@@ -219,83 +186,6 @@ export default function FinancialPositionScreen() {
             amount={formatINR(netPos)}
             formula={`${formatINR(customersOweMe)} – ${formatINR(iOweSuppliers)}`}
           />
-
-          {/* ── Quick Insights ── */}
-          <View style={s.sectionHeader}>
-            <Text style={s.sectionLabel}>QUICK INSIGHTS</Text>
-          </View>
-
-          <View style={s.pillGroup}>
-            {overdueCustomers > 0 && (
-              <InsightPill
-                icon={
-                  <CircleAlert
-                    size={14}
-                    color={colors.danger.DEFAULT}
-                    strokeWidth={2}
-                  />
-                }
-                label={`${overdueCustomers} overdue customer${overdueCustomers !== 1 ? "s" : ""}`}
-                bg={colors.danger.light}
-                textColor={colors.danger.DEFAULT}
-              />
-            )}
-            {iOweSuppliers > 0 && (
-              <InsightPill
-                icon={
-                  <AlertTriangle
-                    size={14}
-                    color={colors.warning.dark}
-                    strokeWidth={2}
-                  />
-                }
-                label={`Largest debt: ₹${Math.round(iOweSuppliers / 1000)}K`}
-                bg={colors.warning.light}
-                textColor={colors.warning.dark}
-              />
-            )}
-            {collectionRate > 0 && (
-              <InsightPill
-                icon={
-                  <CheckCircle2
-                    size={14}
-                    color={colors.primary.dark}
-                    strokeWidth={2}
-                  />
-                }
-                label={`Collection rate: ${collectionRate}%`}
-                bg={colors.primary.light}
-                textColor={colors.primary.dark}
-              />
-            )}
-          </View>
-
-          {/* ── Monthly Report card ── */}
-          <View style={s.reportCard}>
-            {/* PDF icon */}
-            <View style={s.reportIconBox}>
-              <FileText
-                size={22}
-                color={colors.primary.DEFAULT}
-                strokeWidth={1.8}
-              />
-            </View>
-            {/* Meta */}
-            <View style={s.reportMeta}>
-              <Text style={s.reportTitle}>Monthly Financial Report</Text>
-              <Text style={s.reportSub}>
-                {new Date().toLocaleString("en-IN", {
-                  month: "long",
-                  year: "numeric",
-                })}{" "}
-                • PDF
-              </Text>
-            </View>
-            {/* Download button */}
-            <TouchableOpacity activeOpacity={0.8} style={s.downloadBtn}>
-              <Download size={18} color="#fff" strokeWidth={2} />
-            </TouchableOpacity>
-          </View>
 
           <View style={{ height: 32 }} />
         </ScrollView>
@@ -396,63 +286,5 @@ const s = StyleSheet.create({
     fontSize: 13,
     color: "rgba(255,255,255,0.55)",
     fontWeight: "500",
-  },
-
-  // ── Quick Insights ──
-  sectionHeader: { marginTop: 4, marginBottom: 0 },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 1.1,
-    color: colors.neutral[400],
-  },
-  pillGroup: { flexDirection: "column", gap: 8 },
-  pill: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 50,
-  },
-  pillText: { fontSize: 13, fontWeight: "600" },
-
-  // ── Report card ──
-  reportCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.white,
-    borderRadius: 16,
-    padding: 16,
-    gap: 14,
-    borderWidth: 1,
-    borderColor: colors.neutral[100],
-  },
-  reportIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: colors.primary.light,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  reportMeta: { flex: 1 },
-  reportTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: colors.neutral[900],
-    marginBottom: 3,
-  },
-  reportSub: { fontSize: 12, color: colors.neutral[400] },
-  downloadBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary.DEFAULT,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
   },
 });
