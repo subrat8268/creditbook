@@ -48,7 +48,10 @@ export default function OnboardingReady() {
     }
   };
 
-  const businessLabel = `${profile?.business_name ?? "Business Name"} · ${profile?.bill_number_prefix ?? "INV"}`;
+  const hasBusinessSetup = !!profile?.business_name;
+  const businessLabel = hasBusinessSetup
+    ? `${profile!.business_name} · ${profile?.bill_number_prefix ?? "INV"}`
+    : "Setup pending";
 
   return (
     <View className="flex-1 bg-background">
@@ -57,12 +60,6 @@ export default function OnboardingReady() {
           <Image
             source={require("../../../assets/images/large-check.png")}
             style={{ width: 120, height: 120 }}
-            resizeMode="contain"
-          />
-
-          <Image
-            source={require("../../../assets/images/ready-image.png")}
-            style={{ width: 80, height: 80 }}
             resizeMode="contain"
           />
         </View>
@@ -80,10 +77,17 @@ export default function OnboardingReady() {
         </Text>
 
         <View className="flex-row flex-wrap gap-2.5 justify-center">
-          <View className="flex-row items-center gap-1.5 border-[1.5px] border-primary rounded-full px-3.5 py-[7px] bg-white">
-            <CalendarDays size={14} color="#22C55E" strokeWidth={2} />
+          <View
+            className="flex-row items-center gap-1.5 border-[1.5px] rounded-full px-3.5 py-[7px] bg-white"
+            style={{ borderColor: hasBusinessSetup ? "#22C55E" : "#D1D5DB" }}
+          >
+            <CalendarDays
+              size={14}
+              color={hasBusinessSetup ? "#22C55E" : "#9CA3AF"}
+              strokeWidth={2}
+            />
             <Text
-              className="text-[13px] font-semibold text-primary"
+              className={`text-[13px] font-semibold ${hasBusinessSetup ? "text-primary" : "text-textSecondary"}`}
               numberOfLines={1}
             >
               {businessLabel}

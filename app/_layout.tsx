@@ -87,7 +87,7 @@ function RootLayout() {
     } else if (!profile && !profileLoading) {
       router.replace("/profile-error" as any);
     } else if (profile && !profile.onboarding_complete) {
-      router.replace("/(auth)/onboarding" as any);
+      router.replace("/(auth)/onboarding/role" as any);
     } else if (profile?.onboarding_complete === true) {
       router.replace("/(main)/dashboard" as any);
     }

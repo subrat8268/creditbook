@@ -11,7 +11,6 @@ export default function OnboardingLayout() {
       }}
     >
       <Stack.Screen name="role" options={{ title: "Select Role" }} />
-      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="business" options={{ title: "Setup (Step 1)" }} />
       <Stack.Screen name="bank" options={{ title: "Setup (Step 2)" }} />
       <Stack.Screen name="ready" options={{ title: "Setup Finished" }} />
