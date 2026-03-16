@@ -242,7 +242,12 @@ The database is designed with **Row Level Security (RLS)** to ensure complete da
 
 **1. `profiles`** (The Vendor)
 
-- One-to-one link with `auth.users`.
+- One-to-one link with `auth.users` (UNIQUE, NOT NULL).
+- `name TEXT NOT NULL` — set during onboarding; `handle_new_user` trigger inserts `''` on signup.
+- `phone TEXT UNIQUE` — globally unique; used for pre-login phone lookup (`Allow phone lookup before login` RLS policy).
+- `role TEXT DEFAULT 'vendor'`.
+- `billing_address TEXT` — note: column is `billing_address` (not `business_address`).
+- `subscription_expiry DATE` — stored as `DATE` type (not TIMESTAMPTZ).
 - Stores `business_name`, `gstin`, `bill_number_prefix`.
 - **Bank Details**: `bank_name`, `account_number`, `ifsc_code` (for invoice footer).
 - **`dashboard_mode`** (`seller` | `distributor` | `both`, default `both`) — controls which net-position cards appear on the dashboard. ← v1.8
@@ -251,36 +256,60 @@ The database is designed with **Row Level Security (RLS)** to ensure complete da
 
 - `vendor_id` (FK): Links to profile.
 - Tracks `name`, `phone`, `address`.
+- `phone` is indexed with two indexes: a global UNIQUE index (`customers_phone_idx`) and a per-vendor UNIQUE composite index (`customers_vendor_phone_idx` on `(vendor_id, phone)`).
 
-**3. `orders`** (The Invoice)
+**3. `products`**
 
-- `bill_number` (Text): Unique per vendor (e.g., "INV-001").
-- `total_amount` (Numeric): Final bill value.
-- `previous_balance` (Numeric): Snapshot of customer debt _at that moment_.
-- `loading_charge` (Numeric): Transport fees.
-- `tax_percent` (Numeric): GST applied to items.
+- `vendor_id` (FK), `name TEXT NOT NULL`, `base_price NUMERIC(10,2)`, `image_url TEXT`.
+- `variants JSONB` — legacy JSON column for inline variant storage (live DB has this column at position 6). Structured variants use the `product_variants` table instead.
+
+**3a. `product_variants`**
+
+- `product_id` (FK), `vendor_id` (FK), `variant_name TEXT NOT NULL`, `price NUMERIC(10,2)`.
+- Each row = one size/color/SKU variant of a product.
+
+**4. `orders`** (The Invoice)
+
+- `bill_number TEXT` — nullable in live DB (added via ALTER after initial creation); no UNIQUE constraint on `(vendor_id, bill_number)` exists in live — desirable integrity constraint to be applied via migration.
+- `total_amount NUMERIC(10,2) NOT NULL` — no DEFAULT in live DB.
+- `status TEXT NOT NULL DEFAULT 'Unpaid'` — no CHECK constraint in live DB; values in use: `'Paid'`, `'Pending'`, `'Partially Paid'`, `'Unpaid'`.
+- `previous_balance NUMERIC` — snapshot of customer debt _at that moment_.
+- `loading_charge NUMERIC` — transport fees.
+- `tax_percent NUMERIC` — GST applied to items.
+- `amount_paid` is kept in sync by the `update_order_status` DB trigger whenever a `payments` row is inserted or updated.
 
 **4. `order_items`**
 
 - Links `orders` to `products`.
+- `product_id UUID NOT NULL` — NOT NULL in live DB.
+- `quantity INTEGER NOT NULL CHECK (quantity > 0)` — CHECK constraint exists in live.
 - Stores snapshot of `price` and `product_name` (preserving history if product changes).
 
-**5. `suppliers`** ← v1.7
+**5. `payments`**
+
+- `vendor_id` (FK), `order_id` (FK), `amount NUMERIC(10,2)`, `payment_mode TEXT NOT NULL DEFAULT 'Cash'`.
+- `payment_mode` CHECK: `('Cash', 'UPI', 'NEFT', 'Draft', 'Cheque')`.
+- `payment_date TIMESTAMPTZ NOT NULL DEFAULT NOW()`, `notes TEXT`.
+- Note: `created_at` column is **not** in the live DB (was in the v1.8 schema file but never applied).
+- Inserting or updating a row fires the `on_payment_upsert` trigger which syncs `orders.amount_paid` and `orders.status`.
+
+**7. `suppliers`** ← v1.7
 
 - `vendor_id` (FK), `name`, `phone`, `address`, `basket_mark`.
 - Bank details: `bank_name`, `account_number`, `ifsc_code`.
+- `upi TEXT` — UPI ID for making payments to the supplier (added v1.9 sync).
 
-**6. `supplier_deliveries`** ← v1.7
+**8. `supplier_deliveries`** ← v1.7
 
 - `vendor_id`, `supplier_id` (FK), `delivery_date`, `loading_charge`, `advance_paid`, `total_amount`, `notes`.
 - `total_amount` = itemsTotal + loading_charge (computed and stored at record time).
 
-**7. `supplier_delivery_items`** ← v1.7
+**9. `supplier_delivery_items`** ← v1.7
 
 - `delivery_id` (FK), `vendor_id`, `item_name`, `quantity`, `rate`.
 - **`subtotal`** is a generated column: `quantity * rate` (STORED).
 
-**8. `payments_made`** ← v1.7
+**10. `payments_made`** ← v1.7
 
 - Records payments from vendor → supplier.
 - `vendor_id`, `supplier_id` (FK), `delivery_id` (FK nullable), `amount`, `payment_mode` (same 5-mode CHECK as `payments`), `notes`.
@@ -289,10 +318,19 @@ The database is designed with **Row Level Security (RLS)** to ensure complete da
 #### **Critical SQL Functions (RPC)**
 
 - **`get_next_bill_number(vendor_uuid, prefix)`**
-  - **Logic**: Finds the max number for the given prefix (regex match) and increments by 1.
-  - **Return**: Formatted string `PREFIX-001`.
-- **`get_customer_previous_balance(customer_id)`**
-  - **Logic**: Sums `(total_amount - amount_paid)` for all orders of a customer.
+  - **Logic**: `prefix_offset = LENGTH(prefix) + 2`; regex-matches `^PREFIX-[0-9]+$`; finds MAX number and increments.
+  - **Return**: Formatted string `PREFIX-001`, `PREFIX-042`, `PREFIX-1000`.
+- **`get_customer_previous_balance(customer_uuid, vendor_uuid)`** — takes **2 params** (customer + vendor)
+  - **Logic**: Sums `(total_amount - amount_paid)` for all orders matching both `customer_id` and `vendor_id`.
+
+#### **DB Triggers**
+
+- **`on_auth_user_created`** (`AFTER INSERT ON auth.users`) → calls `handle_new_user()`
+  - Inserts a `profiles` row with `name = ''`, `onboarding_complete = FALSE` on every new signup. Errors are swallowed (`EXCEPTION WHEN OTHERS`) so auth is never blocked.
+- **`link_profile_after_signup`** (`AFTER INSERT ON auth.users`) → calls `link_user_profile()`
+  - If a profile with a matching `phone` already exists (admin/invite flow) and has no `user_id`, links the two rows.
+- **`on_payment_upsert`** (`AFTER INSERT OR UPDATE ON public.payments`) → calls `update_order_status()`
+  - Recalculates `amount_paid = SUM(payments.amount WHERE order_id)` and sets `status` to `'Paid'` / `'Partially Paid'` / `'Pending'` automatically.
 
 ### 4.4 Core Algorithms & Logic
 
@@ -314,8 +352,8 @@ _Note: Loading Charge is added AFTER tax (it is usually a non-taxable reimbursem
 
 To prevent race conditions or gaps:
 
-1.  Frontend requests new ID via RPC `get_next_bill_number` just before saving.
-2.  Database constraint `UNIQUE(vendor_id, bill_number)` ensures no duplicates.
+1.  Frontend requests new ID via RPC `get_next_bill_number(vendor_uuid, prefix)` just before saving.
+2.  A `UNIQUE(vendor_id, bill_number)` constraint is **desirable but not currently present** in the live DB (listed in migrations as a pending `ALTER TABLE` to apply). Without it, the suffix-increment RPC provides best-effort sequential numbering.
 3.  Users can change prefix in Profile (e.g., switch from "INV" to "FY24"), resetting the counter for that new series.
 
 ### 4.5 Security Architecture (RLS)

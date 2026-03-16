@@ -194,14 +194,14 @@ src/screens/
 
 ## 2. Key Architecture Files
 
-| File                       | Purpose                                                                                                               |
-| :------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
-| `app/_layout.tsx`          | Root layout — `QueryClientProvider → ThemeProvider → GestureHandlerRootView → ToastProvider → Stack`; `Sentry.wrap()` |
-| `src/utils/theme.ts`       | **Single source of truth** for all color tokens, spacing, radius, typography                                          |
-| `src/utils/dashboardUi.ts` | Thin re-export of `dashboardPalette` from `theme.ts` + INR/date formatters                                            |
-| `src/services/sentry.ts`   | `initSentry()` + DSN env guard; called at module level in root layout                                                 |
-| `schema.sql`               | Master DB schema — tables, RLS policies, RPC functions, indexes                                                       |
-| `tailwind.config.js`       | NativeWind token aliases mapping to `theme.ts` values                                                                 |
+| File                       | Purpose                                                                                                                                                                                                                                                                                                                                          |
+| :------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/_layout.tsx`          | Root layout — `QueryClientProvider → ThemeProvider → GestureHandlerRootView → ToastProvider → Stack`; `Sentry.wrap()`                                                                                                                                                                                                                            |
+| `src/utils/theme.ts`       | **Single source of truth** for all color tokens, spacing, radius, typography                                                                                                                                                                                                                                                                     |
+| `src/utils/dashboardUi.ts` | Thin re-export of `dashboardPalette` from `theme.ts` + INR/date formatters                                                                                                                                                                                                                                                                       |
+| `src/services/sentry.ts`   | `initSentry()` + DSN env guard; called at module level in root layout                                                                                                                                                                                                                                                                            |
+| `schema.sql`               | Master DB schema v1.9 — 11 tables, indexes, RLS policies, RPC functions (`get_next_bill_number`, `get_customer_previous_balance`, `handle_new_user`, `link_user_profile`, `update_order_status`), triggers (`on_auth_user_created`, `link_profile_after_signup`, `on_payment_upsert`), incremental migrations. Synced to live DB March 16, 2026. |
+| `tailwind.config.js`       | NativeWind token aliases mapping to `theme.ts` values                                                                                                                                                                                                                                                                                            |
 
 ---
 
@@ -364,11 +364,17 @@ create<AuthState>((set, get) => {
 USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
 ```
 
-**Indexes added (P-05):**
+**Indexes added (P-05 + v1.9 sync, March 16, 2026):**
 
 - `idx_supplier_deliveries_supplier` on `supplier_deliveries(supplier_id)`
 - `idx_payments_made_supplier` on `payments_made(supplier_id)`
 - `idx_payments_vendor` on `payments(vendor_id)`
+- `customers_phone_idx` — UNIQUE on `customers(phone)` (global uniqueness)
+- `customers_vendor_phone_idx` — UNIQUE composite on `customers(vendor_id, phone)` (per-vendor uniqueness)
+- `orders_vendor_customer_idx` — composite on `orders(vendor_id, customer_id)` (customer order lookups)
+- `products_vendor_name_idx` — composite on `products(vendor_id, name)` (product name search)
+
+> Note: `order_items_order_idx` and `payments_order_idx` are duplicate indexes present in the live DB (redundant with `idx_order_items_order` and `idx_payments_order` respectively). They are candidates for `DROP INDEX`.
 
 ---
 
@@ -484,4 +490,4 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
 
 ---
 
-_This document reflects the codebase state as of v3.5 (March 10, 2026). Update whenever screens, stores, API functions, or components are added or removed._
+_This document reflects the codebase state as of v3.8 (March 16, 2026). Update whenever screens, stores, API functions, or components are added or removed. DB schema notes reflect live Supabase introspection performed March 16, 2026 (schema.sql v1.9)._
