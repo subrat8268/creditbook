@@ -1,4 +1,4 @@
-import { ApiError, toApiError } from "../lib/supabaseQuery";
+import { toApiError } from "../lib/supabaseQuery";
 import { supabase } from "../services/supabase";
 import { Customer, CustomerDetail } from "../types/customer";
 export type { Customer };
@@ -85,15 +85,11 @@ export async function addCustomer(
     .single();
   if (error) {
     if (error.code === "23505") {
-      throw new ApiError(
-        "23505",
+      throw new Error(
         "A customer with this phone number already exists in your account.",
-        409,
-        error.details,
-        error.hint,
       );
     }
-    throw toApiError(error);
+    throw error;
   }
   return data as Customer;
 }
