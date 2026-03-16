@@ -1,8 +1,8 @@
-# CreditBook — Project Architecture
+# KredBook — Project Architecture
 
-> **Last Updated**: March 11, 2026
-> **App Version**: 3.7
-> **Status**: Phase 6.7 complete — Orders + Order Detail screens shipped; @gorhom modal migration done
+> **Last Updated**: March 16, 2026
+> **App Version**: 3.8
+> **Status**: Phase 6.8 complete — UX Audit & Navigation Polish Sprint shipped; `InsightPill` + Monthly Report card removed from Financial Position; `StackHeader` extracted; onboarding phone screen replaced with redirect; FAB routes corrected; app rebranded to KredBook (`com.kredbook.app`)
 
 ---
 
@@ -39,10 +39,10 @@ app/
 │   ├── set-new-password.tsx          ← Password recovery form (Formik, Yup, eye-toggle, signOut on success)  ← v3.4
 │   └── onboarding/
 │       ├── _layout.tsx
-│       ├── index.tsx             ← Step 1: Phone / intro
+│       ├── index.tsx             ← Redirect → role (phone OTP deferred to Phase 7)  ← v3.8
 │       ├── business.tsx          ← Step 2: Business details
-│       ├── ready.tsx             ← Step 3: Completion screen
-│       └── role.tsx              ← Role selection (Retailer / Wholesaler / Small Business)
+│       ├── ready.tsx             ← Step 3: Completion (single illustration, smart business label)  ← v3.8
+│       └── role.tsx              ← Step 1: Role selection (Retailer / Wholesaler / Small Business)
 │
 └── (main)/
     ├── _layout.tsx               ← Bottom tab navigator (5 tabs)
@@ -70,7 +70,9 @@ app/
     │   └── index.tsx
     ├── reports/
     │   ├── _layout.tsx           ← Created P-13 (headerShown: false, slideFromRight)
-    │   └── index.tsx             ← Financial Position screen (linked from dashboard)
+    │   └── index.tsx             ← Financial Position screen: `StatCard` (green Customers, `#E0336E` Suppliers) +
+    │                             `NetCard` (dark `#1C2333`); `todayLabel()` helper; linked from Dashboard.
+    │                             `InsightPill` + Quick Insights section + Monthly Report card removed in v3.8 (M-05)
     └── export/
         ├── _layout.tsx
         └── index.tsx             ← Hidden from tab bar; push from ProfileScreen
@@ -101,6 +103,9 @@ src/
 
 ```
 src/components/
+├── navigation/
+│   └── StackHeader.tsx            ← v3.8 NEW: shared back-arrow header; props: { title, showBack? };
+│                                  ←   height: 44+insets.top, paddingTop: insets.top; hitSlop on back btn
 ├── BottomSheetForm.tsx            ← Generic bottom-sheet wrapper (no active importers as of v3.6)
 ├── ImagePickerField.tsx           ← Camera/gallery image picker input (removed from ProfileScreen in v3.6)
 ├── ScreenWrapper.tsx              ← Safe-area wrapper; legacy — new screens use SafeAreaView + StyleSheet directly
@@ -154,8 +159,8 @@ src/components/
 │   └── ProductCard.tsx            ← v3.6 rewrite: compact single-row (icon box + name + "N variants" + ₹price + ChevronRight)
 │
 ├── suppliers/
-│   ├── NewSupplierModal.tsx       ← v3.7 M-01: migrated from AppModal to @gorhom/bottom-sheet (same pattern as NewCustomerModal)
-│   ├── RecordDeliveryModal.tsx    ← Migrated to @gorhom/bottom-sheet (P-08)
+│   ├── NewSupplierModal.tsx       ← v3.7 M-01: migrated to @gorhom/bottom-sheet (snapPoints:["90%"], BottomSheetScrollView, BottomSheetBackdrop)
+│   ├── RecordDeliveryModal.tsx    ← @gorhom/bottom-sheet (P-08)
 │   ├── RecordPaymentMadeModal.tsx ← @gorhom/bottom-sheet, snapPoints ["62%"]
 │   ├── SupplierCard.tsx           ← Initials avatar added (P-15); amber → theme tokens
 │   └── SupplierList.tsx
@@ -212,10 +217,10 @@ src/screens/
 | Reset Password   | `app/(auth)/resetPassword.tsx`                                     | Inline    |
 | Set New Password | `app/(auth)/set-new-password.tsx`                                  | Inline    |
 | Profile Error    | `app/profile-error.tsx` → `src/screens/AuthProfileErrorScreen.tsx` | Delegated |
-| Onboarding 1     | `app/(auth)/onboarding/index.tsx`                                  | Inline    |
+| Onboarding Role  | `app/(auth)/onboarding/role.tsx`                                   | Inline    |
 | Onboarding 2     | `app/(auth)/onboarding/business.tsx`                               | Inline    |
 | Onboarding 3     | `app/(auth)/onboarding/ready.tsx`                                  | Inline    |
-| Role Selection   | `app/(auth)/onboarding/role.tsx`                                   | Inline    |
+| Onboarding Index | `app/(auth)/onboarding/index.tsx` → Redirect to role               | Inline    |
 
 ### Main Screens (`app/(main)/`)
 
@@ -234,25 +239,25 @@ src/screens/
 | Financial Position | `reports/index.tsx`          | _(inline)_                          | Inline    |
 | Export Data        | `export/index.tsx`           | `src/screens/ExportScreen.tsx`      | Delegated |
 
-> **Architecture note**: 8 routes delegate to `src/screens/`; 4 routes implement logic inline in `app/`. No single rule governs this split. Queued for rationalisation in v3.5 (M-05–M-08).
+> **Architecture note**: 8 routes delegate to `src/screens/`; 4 routes implement logic inline in `app/`. No single rule governs this split. **Modal consolidation**: All full-screen entry modals now use `@gorhom/bottom-sheet` (migrated in v3.7). `react-native-modal` (`AppModal`) has zero active importers and is a candidate for removal.
 
 ---
 
 ## 4. Modal Components
 
-| Component                    | Library                | Snap / Size | Used In                                          |
-| :--------------------------- | :--------------------- | :---------- | :----------------------------------------------- |
-| `RecordCustomerPaymentModal` | `@gorhom/bottom-sheet` | `["65%"]`   | Customer Detail screen                           |
-| `RecordPaymentMadeModal`     | `@gorhom/bottom-sheet` | `["62%"]`   | Supplier Detail screen                           |
-| `RecordDeliveryModal`        | `@gorhom/bottom-sheet` | `["90%"]`   | Supplier Detail screen (P-08)                    |
-| `BottomSheetForm`            | `@gorhom/bottom-sheet` | Custom      | No active importers (v3.6)                       |
-| `BottomSheetPicker`          | `@gorhom/bottom-sheet` | Custom      | CustomerSelector, order flow                     |
-| `NewCustomerModal`           | `react-native-modal`   | Full-screen | CustomersScreen                                  |
-| `NewSupplierModal`           | `react-native-modal`   | Full-screen | SuppliersScreen                                  |
-| `NewProductModal`            | RN built-in `Modal`    | Full-screen | ProductsScreen (v3.6 rewrite — AppModal removed) |
-| `ConfirmModal`               | RN built-in `Modal`    | Bottom card | ProductsScreen (v3.6 NEW)                        |
-| `SearchablePickerModal`      | RN built-in `Modal`    | Full-screen | Order creation flow                              |
-| `ContactsPickerModal`        | `@gorhom/bottom-sheet` | Custom      | CustomersScreen (secondary FAB)                  |
+| Component                    | Library                | Snap / Size | Used In                                                   |
+| :--------------------------- | :--------------------- | :---------- | :-------------------------------------------------------- |
+| `RecordCustomerPaymentModal` | `@gorhom/bottom-sheet` | `["65%"]`   | Customer Detail screen                                    |
+| `RecordPaymentMadeModal`     | `@gorhom/bottom-sheet` | `["62%"]`   | Supplier Detail screen                                    |
+| `RecordDeliveryModal`        | `@gorhom/bottom-sheet` | `["90%"]`   | Supplier Detail screen (P-08)                             |
+| `NewCustomerModal`           | `@gorhom/bottom-sheet` | `["90%"]`   | CustomersScreen ← v3.7 (migrated from react-native-modal) |
+| `NewSupplierModal`           | `@gorhom/bottom-sheet` | `["90%"]`   | SuppliersScreen ← v3.7 (migrated from react-native-modal) |
+| `BottomSheetForm`            | `@gorhom/bottom-sheet` | Custom      | No active importers (v3.6)                                |
+| `BottomSheetPicker`          | `@gorhom/bottom-sheet` | Custom      | CustomerSelector, order flow                              |
+| `ContactsPickerModal`        | `@gorhom/bottom-sheet` | Custom      | CustomersScreen (secondary FAB)                           |
+| `NewProductModal`            | RN built-in `Modal`    | Full-screen | ProductsScreen (v3.6 rewrite — AppModal removed)          |
+| `ConfirmModal`               | RN built-in `Modal`    | Bottom card | ProductsScreen (v3.6 NEW)                                 |
+| `SearchablePickerModal`      | RN built-in `Modal`    | Full-screen | Order creation flow                                       |
 
 > **Three modal patterns in use.** Full consolidation to `@gorhom/bottom-sheet` is deferred (M-01). `AppModal` (`react-native-modal`) is used by NewCustomer/Supplier/ProductModal. RN built-in `Modal` is used by SearchablePickerModal only.
 

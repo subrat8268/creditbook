@@ -1,8 +1,9 @@
-# CreditBook App - Complete Project Documentation
+# KredBook App - Complete Project Documentation
 
-> **Last Updated**: March 11, 2026
-> **Version**: 3.6
+> **Last Updated**: March 16, 2026
+> **Version**: 3.8
 > **Status**: Active Development
+> **Bundle ID**: `com.kredbook.app` · **Slug**: `kredbook`
 > **Target Market**: Indian SMBs (Retailers, Wholesalers, Distributors)
 
 ---
@@ -36,13 +37,14 @@
 
 ## 1. Executive Summary
 
-CreditBook is a mobile-first **digital ledger and billing application** designed specifically for small and medium-sized businesses (SMBs) in India. It digitizes the traditional "Khata" (credit book) system, enabling shopkeepers to track customer credit, manage inventory, and generate professional GST-compliant invoices.
+**KredBook** is a mobile-first **digital ledger and billing application** designed specifically for small and medium-sized businesses (SMBs) in India. It digitizes the traditional "Khata" (credit book) system, enabling shopkeepers to track customer credit, manage inventory, and generate professional GST-compliant invoices.
 
 **Core Value Proposition**:
 
 - Eliminate paper ledgers and manual calculation errors.
 - Accelerate payment recovery via automated reminders and billing transparency.
 - Professionalize business operations with sequential, branded digital invoices (PDF).
+- **Free forever** — no paywalls, no feature gating, no subscription required.
 
 ---
 
@@ -338,14 +340,16 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
 
 | Field            | Value                                                   |
 | :--------------- | :------------------------------------------------------ |
-| **Brand Name**   | CreditBook                                              |
+| **Brand Name**   | KredBook                                                |
+| **App Slug**     | `kredbook`                                              |
+| **Bundle ID**    | `com.kredbook.app`                                      |
 | **Tagline**      | Track Credit. Get Paid Faster.                          |
 | **Product Type** | Mobile-first digital ledger for Indian small businesses |
 | **Target Users** | Retailers, wholesalers, shop owners, distributors       |
 
 **Product Description**
 
-CreditBook is a modern digital ledger that helps shop owners track customer credit, record payments, manage suppliers, and maintain clear financial visibility. It combines the familiarity of a traditional khata (ledger book) with modern fintech UX.
+KredBook is a modern digital ledger that helps shop owners track customer credit, record payments, manage suppliers, and maintain clear financial visibility. It combines the familiarity of a traditional khata (ledger book) with modern fintech UX. The app is **completely free** — all core features are available to every business at zero cost.
 
 **Brand Personality**
 
@@ -362,7 +366,7 @@ CreditBook is a modern digital ledger that helps shop owners track customer cred
 
 **"Digital Khata Book"**
 
-CreditBook uses a Digital Khata Book design philosophy. The UI mimics the simplicity of traditional Indian ledger books while adding modern fintech-style visual clarity.
+KredBook uses a Digital Khata Book design philosophy. The UI mimics the simplicity of traditional Indian ledger books while adding modern fintech-style visual clarity.
 
 | Principle                        | Intent                                                                                                                                                            |
 | :------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -468,7 +472,7 @@ Transactions appear in the feed immediately on submission while syncing in the b
 
 ### 5.8 Design Goals
 
-CreditBook blends the familiarity of a traditional ledger with modern fintech dashboards. The design prioritizes financial clarity, speed, simplicity, and trust. The UI remains minimal while clearly highlighting important financial information using color-coded balances and gradient summary cards.
+KredBook blends the familiarity of a traditional ledger with modern fintech dashboards. The design prioritizes financial clarity, speed, simplicity, and trust. The UI remains minimal while clearly highlighting important financial information using color-coded balances and gradient summary cards.
 
 - Financial status is visible without any navigation.
 - Recording a payment or creating a bill takes fewer than 3 taps.
@@ -503,8 +507,8 @@ Specific adaptations for the Indian market implemented in the app:
 1.  **Clone Repository**
 
     ```bash
-    git clone https://github.com/your-repo/creditbook-app.git
-    cd creditbook-app
+    git clone https://github.com/your-repo/kredbook-app.git
+    cd kredbook-app
     ```
 
 2.  **Install Dependencies**
@@ -605,6 +609,23 @@ Specific adaptations for the Indian market implemented in the app:
   - [x] Financial Position screen (`app/(main)/reports/index.tsx`) — full inline redesign: `StatCard`, `NetCard`, `InsightPill` sub-components; green customers card, `#E0336E` suppliers card, dark `#1C2333` net card; Monthly Report download card.
   - [x] `ExportScreen` — full rewrite: `ExportRow` + `DateInput` sub-components; date presets (All time / This month); `loadingKey` prevents concurrent exports; removed ScreenWrapper / NativeWind / i18n.
   - [x] `ProfileScreen` — full rewrite: `SectionCard` + `DetailRow` + `SegmentControl<T>` sub-components; read-only display; `maskAccount()` helper; Sign Out with `Alert.alert` confirmation; removed SubscriptionCard / ImagePickerField / i18n / inline TextInput editing.
+- [x] **Phase 6.7: Orders, Order Detail & Modal Migration (v3.7 Completed)**
+  - [x] `OrdersScreen` — full rewrite: collapsible Search toggle, inline filter chips (All/Paid/Partial/Pending/Overdue), client-side Overdue sub-filter (`daysSince > 30`), Sort BottomSheet; removed `FilterBar` + `useOrderFilters`.
+  - [x] `OrderList.tsx` — full redesign: 44 dp initials avatar, exact-spec STATUS_STYLES hex, `ORDER_ITEM_H=108`, inline empty state + "Create Bill" CTA.
+  - [x] Order Detail screen (`app/(main)/orders/[orderId].tsx`) — Customer card, flush Items + Bill Summary cards, Payment History with mode chips, fixed Action Bar (Send Bill + Record Payment).
+  - [x] `NewCustomerModal` + `NewSupplierModal` — migrated from `react-native-modal` to `@gorhom/bottom-sheet` (`snapPoints:["90%"]`, `BottomSheetScrollView`, `BottomSheetBackdrop`).
+  - [x] `Order` interface extended: `customer?: { id, name, phone }` field.
+  - [x] Orders `_layout.tsx` — dynamic `options.title` support for `Order #INV-001` per-bill headers.
+- [x] **Phase 6.8: UX Audit & Navigation Polish Sprint (v3.8 Completed)**
+  - [x] App renamed **CreditBook → KredBook**; `app.json` updated: name, slug (`kredbook`), bundle ID (`com.kredbook.app`).
+  - [x] `StackHeader` — new shared navigation header (`src/components/navigation/StackHeader.tsx`); `useSafeAreaInsets()` dynamic height (`44 + insets.top`); replaces 3 duplicate inline `CustomHeader` definitions.
+  - [x] `(main)/_layout.tsx` — dead `CustomHeader` import + wrapper `<View>` removed; `headerShown: false` in screenOptions; tab bar height: `64 + insets.bottom`.
+  - [x] `(auth)/_layout.tsx` — View wrapper and dead `CustomHeader` import removed; bare `<Stack>` layout.
+  - [x] Onboarding `index.tsx` — phone OTP screen replaced with `<Redirect href="/(auth)/onboarding/role" />`; phone collection deferred to Phase 7.
+  - [x] `ready.tsx` — stacked `ready-image.png` removed; single `large-check.png` illustration; smart business label: `businessName + prefix` pill (green) or `"Setup pending"` (neutral).
+  - [x] Root `_layout.tsx` — entry point corrected: `/(auth)/onboarding` → `/(auth)/onboarding/role`.
+  - [x] `DashboardScreen.tsx` — FAB route fixed (`/orders/createOrderScreen` → `/(main)/orders/create`); Distributor hero card `onPrimaryAction` corrected to `/(main)/reports` (M-06 audit).
+  - [x] Financial Position screen — `InsightPill` component + "Quick Insights" section + "Monthly Financial Report" download card removed (UX Audit M-05; Phase 7 content outside spec); dead imports (`Download`, `CircleAlert`, `CheckCircle2`, `AlertTriangle`) and 11 dead StyleSheet keys purged.
 - [~] **Phase 7: Growth — In Progress**
   - [ ] WhatsApp Business API (auto-send bill on creation).
   - [ ] Push notifications for overdue payments.
@@ -619,7 +640,24 @@ Specific adaptations for the Indian market implemented in the app:
 
 ## 9. Recent Updates & Changelog
 
-### v3.7 — Orders Screens, Order Detail & Free-Tier Commitment (Current)
+### v3.8 — UX Audit & Navigation Polish Sprint (Current)
+
+- **REBRAND**: App display name and configuration updated: `"CreditBook"` → `"KredBook"` (`slug: "kredbook"`, `bundleIdentifier: "com.kredbook.app"`, `scheme: "kredbook"`). All documentation aligned.
+- **NEW**: **`StackHeader`** (`src/components/navigation/StackHeader.tsx`) — shared navigation header component. Props: `{ title: string, showBack?: boolean }`. Computes `height: 44 + insets.top` and `paddingTop: insets.top` via `useSafeAreaInsets()`. Back button: `className="absolute left-4 bottom-2"` with `hitSlop`. Replaces 3 duplicate inline `CustomHeader` definitions across `(main)/`, `(auth)/`, and screen files.
+- **FIX**: **`app/(main)/_layout.tsx`** — removed dead `CustomHeader` component definition and `View` import; `headerShown: false` in root `screenOptions`; tab bar height corrected to `64 + insets.bottom` for edge-to-edge Android.
+- **FIX**: **`app/(auth)/_layout.tsx`** — removed `View` wrapper around `<Stack>` and dead `CustomHeader` import; bare `<Stack screenOptions={{ headerShown: false }}>` layout.
+- **FIX**: **`app/(auth)/onboarding/index.tsx`** — phone OTP collection screen removed; replaced with 7-line `<Redirect href="/(auth)/onboarding/role" />`. Phone login deferred to Phase 7.
+- **FIX**: **`app/(auth)/onboarding/ready.tsx`** — removed stacked `ready-image.png` duplicate; single `large-check.png` illustration remains. Business label now smart: shows `businessName · INV` in green pill if onboarding complete, `"Setup pending"` in neutral pill otherwise.
+- **FIX**: **`app/_layout.tsx`** — root entry point corrected: `/(auth)/onboarding` → `/(auth)/onboarding/role` (eliminates intermediate redirect hop).
+- **FIX (M-06)**: **`src/screens/DashboardScreen.tsx`** — FAB route fixed: `/orders/createOrderScreen` → `/(main)/orders/create`. Distributor-mode hero card `onPrimaryAction` corrected: was `/(main)/suppliers`, now `/(main)/reports`.
+- **FIX (M-05)**: **`app/(main)/reports/index.tsx`** — removed `InsightPill` component, `{/* Quick Insights */}` JSX section, and `{/* Monthly Financial Report */}` download card (Phase 7 content outside current-phase spec). Removed unused imports: `Download`, `CircleAlert`, `CheckCircle2`, `AlertTriangle`. Removed unused `collectionRate` variable + 3-line computation. Removed 11 dead StyleSheet keys: `sectionHeader`, `sectionLabel`, `pillGroup`, `pill`, `pillText`, `reportCard`, `reportIconBox`, `reportMeta`, `reportTitle`, `reportSub`, `downloadBtn`.
+- **TS**: `npx tsc --noEmit` — EXIT 0.
+- **FILES CREATED**: `src/components/navigation/StackHeader.tsx`.
+- **FILES MODIFIED**: `app/_layout.tsx`, `app/(main)/_layout.tsx`, `app/(auth)/_layout.tsx`, `app/(auth)/onboarding/index.tsx`, `app/(auth)/onboarding/ready.tsx`, `src/screens/DashboardScreen.tsx`, `app/(main)/reports/index.tsx`, `app.json`.
+
+---
+
+### v3.7 — Orders Screens, Order Detail & Free-Tier Commitment
 
 - **REWRITE**: **`OrdersScreen`** (`src/screens/OrdersScreen.tsx`) — full rewrite. `SafeAreaView edges={['top']}` + `#F6F7F9` bg. "Orders" header (22 sp bold) with Search icon toggle — tap to expand collapsible `SearchBar`, tap again to collapse and clear. Inline horizontal filter chip row (All / Paid / Partial / Pending / Overdue, h:32, active `#22C55E`). **Overdue** handled client-side via `daysSince > 30` sub-filter — not an API param. **Sort chip** at end of chip row → local `sortSheetRef` BottomSheet (Newest / Oldest / High / Low). Removed `FilterBar` component, `useOrderFilters` hook, and separate Filter BottomSheet.
 - **REWRITE**: **`OrderList.tsx`** (`src/components/orders/OrderList.tsx`) — full card redesign. 44 dp initials avatar (deterministic AVATAR_COLORS hash) + customer name (15 sp bold, `#1C1C1E`) + bill number (13 sp `#6B7280`) + date bottom row (13 sp) + `₹amount` (17 sp bold) + status chip. `STATUS_STYLES` updated to exact spec hex: Paid `#DCFCE7`/`#16A34A` · Partial `#DBEAFE`/`#1D4ED8` · Pending `#FEF3C7`/`#D97706` · Overdue `#FEE2E2`/`#DC2626`. `ORDER_ITEM_H=108`; `windowSize:10`; `onCreateBill` prop. Inline empty state with "No orders yet" + "Create Bill" green CTA.
@@ -627,7 +665,7 @@ Specific adaptations for the Indian market implemented in the app:
 - **FIX**: **`app/(main)/orders/_layout.tsx`** — header renderer now accepts dynamic title from child `<Stack.Screen options={{ title: '...' }}/>`; enables `Order #INV-001` dynamic header per bill.
 - **FIX**: **`src/api/orders.ts`** — `Order` interface extended with `customer?: { id: string; name: string; phone: string } | null`.
 - **FIX M-01**: **`NewCustomerModal`** + **`NewSupplierModal`** — migrated from `react-native-modal` (AppModal) to `@gorhom/bottom-sheet` (`snapPoints:["90%"]`, `BottomSheetScrollView`, `BottomSheetBackdrop`). Deferred M-01 item fully resolved.
-- **PRODUCT**: CreditBook is and will remain **free for all users**. No paywalls, no feature gating. Optional paid features may be considered only if the app grows significantly — and only as additive upgrades, never restricting core ledger functionality.
+- **PRODUCT**: **KredBook** is and will remain **free for all users**. No paywalls, no feature gating. Optional paid features may be considered only if the app grows significantly — and only as additive upgrades, never restricting core ledger functionality.
 - **FILES MODIFIED**: `src/screens/OrdersScreen.tsx`, `src/components/orders/OrderList.tsx`, `app/(main)/orders/[orderId].tsx`, `app/(main)/orders/_layout.tsx`, `src/api/orders.ts`, `src/components/customers/NewCustomerModal.tsx`, `src/components/suppliers/NewSupplierModal.tsx`.
 
 ---
@@ -639,7 +677,7 @@ Specific adaptations for the Indian market implemented in the app:
 - **REWRITE**: **`NewProductModal`** — variants-only (no separate Base Price row); `RupeeInput` inline sub-component (₹ prefix box + divider + TextInput); `FieldArray` for unlimited variant rows; sticky "Save Product" CTA button.
 - **REWRITE**: **`ProductCard`** — compact single-row design: green icon box + bold product name + "N variants" subtitle + `₹price` right + ChevronRight. No image display, no expanding rows, no EllipsisVertical menu.
 - **REWRITE**: **`ProductsScreen`** — SafeAreaView + StyleSheet; custom header with green product count badge; Search/X toggle collapses to icon when inactive; horizontal scrollable `CATEGORIES` chip bar; `ConfirmModal` wired via `showDeleteConfirm` state.
-- **REWRITE**: **Financial Position screen** (`app/(main)/reports/index.tsx`) — full inline redesign: `StatCard` (green customers, `#E0336E` suppliers), `NetCard` (dark `#1C2333` bg), `InsightPill` sub-components; `todayLabel()` helper; Monthly Report download card.
+- **REWRITE**: **Financial Position screen** (`app/(main)/reports/index.tsx`) — full inline redesign: `StatCard` (green customers, `#E0336E` suppliers), `NetCard` (dark `#1C2333` bg); `todayLabel()` helper. _Note: `InsightPill` (Quick Insights) + Monthly Report download card added here were removed in v3.8 (UX Audit M-05)._
 - **REWRITE**: **`ExportScreen`** — full rewrite: `ExportRow` + `DateInput` sub-components; "All time" / "This month" presets via `applyPreset()`; `loadingKey` state prevents concurrent exports; info banner; removed ScreenWrapper / NativeWind class-based styling / i18n.
 - **REWRITE**: **`ProfileScreen`** — full rewrite: `SectionCard` + `DetailRow` + `SegmentControl<T>` sub-components; green-bordered avatar ring + initials; read-only business/bank sections; `maskAccount()` for ACC NO; Sign Out triggers `Alert.alert` confirmation; removed SubscriptionCard / ImagePickerField / uploadImage / i18n / inline TextInput editing.
 - **FILES MODIFIED**: `src/screens/ExportScreen.tsx`, `src/screens/ProfileScreen.tsx`, `src/screens/ProductsScreen.tsx`, `src/screens/CreateOrderScreen.tsx`, `app/(main)/reports/index.tsx`, `src/components/products/NewProductModal.tsx`, `src/components/products/ProductCard.tsx`.

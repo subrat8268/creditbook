@@ -1,14 +1,14 @@
-# CreditBook UX Context
+# KredBook UX Context
 
-> **Purpose**: This document provides complete UX context for AI UI generation tools (e.g., Google Stitch, Galileo, Uizard) and human designers onboarding to the CreditBook product.
-> **Last Updated**: March 11, 2026
+> **Purpose**: This document provides complete UX context for AI UI generation tools (e.g., Google Stitch, Galileo, Uizard) and human designers onboarding to the KredBook product.
+> **Last Updated**: March 16, 2026
 > **References**: `docs/prd.md`, `docs/design-system.md`, `docs/roadmap.md`, `README.md`
 
 ---
 
 ## 1. Product Overview
 
-**CreditBook** is a mobile-first digital credit ledger for Indian retailers, wholesalers, and small business owners.
+**KredBook** is a mobile-first digital credit ledger for Indian retailers, wholesalers, and small business owners.
 
 It replaces the traditional paper **khata book** — the handwritten ledger that millions of Indian shop owners use to track customer credit. The app makes financial management fast, accurate, and visible on a smartphone.
 
@@ -105,7 +105,7 @@ Every screen should support at least one of these goals:
 
 **Main UI components**:
 
-- CreditBook logo and tagline ("Track Credit. Get Paid Faster.")
+- KredBook logo and tagline ("Track Credit. Get Paid Faster.")
 - Illustration communicating the khata-to-digital concept
 - "Get Started" primary button
 - "I already have an account" text link
@@ -406,7 +406,7 @@ Every screen should support at least one of these goals:
   - Languages icon + "Language" + EN / 🇮🇳 solid pills (active = green)
 - **`SectionCard` — DATA**: `Download` icon row → navigates to Export Data screen
 - **Sign Out row**: `LogOut` icon + "Sign Out" red text; triggers `Alert.alert` confirmation before calling `logout()`
-- "CreditBook v1.0.0" centered footer
+- "KredBook v1.0.0" centered footer
 
 **Key user actions**:
 
@@ -433,7 +433,7 @@ Every screen should support at least one of these goals:
   - Customer Balances (blue pill)
   - Supplier Purchases (amber pill)
 - Blue info banner explaining CSV format and date-range scoping
-- "CreditBook Export" centered footer
+- "KredBook Export" centered footer
 
 **Key user actions**:
 
@@ -698,7 +698,7 @@ Design the MVP screens without placeholders for these features.
 
 > "A digital khata book designed for modern shop owners — combining the familiarity of a traditional ledger with modern fintech dashboards."
 
-CreditBook blends the simplicity of a physical khata book with fintech-quality visual clarity. Color-coded balances and gradient summary cards make financial status instantly readable. The interface stays minimal so shopkeepers can focus on what matters: knowing who owes what and getting paid faster.
+KredBook blends the simplicity of a physical khata book with fintech-quality visual clarity. Color-coded balances and gradient summary cards make financial status instantly readable. The interface stays minimal so shopkeepers can focus on what matters: knowing who owes what and getting paid faster.
 
 ### The four non-negotiable qualities
 

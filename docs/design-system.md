@@ -1,8 +1,8 @@
-# CreditBook Design System
+# KredBook Design System
 
-> **Version**: 1.4
-> **Last Updated**: March 11, 2026
-> **Maintained by**: CreditBook Product & Design Team
+> **Version**: 1.5
+> **Last Updated**: March 16, 2026
+> **Maintained by**: KredBook Product & Design Team
 
 ---
 
@@ -24,7 +24,7 @@
 
 ## 1. Introduction
 
-This design system defines the visual language, component patterns, and UX guidelines used across the CreditBook mobile application. It serves as the single source of truth for product, design, and engineering.
+This design system defines the visual language, component patterns, and UX guidelines used across the **KredBook** mobile application. It serves as the single source of truth for product, design, and engineering.
 
 **Goals:**
 
@@ -36,7 +36,7 @@ This design system defines the visual language, component patterns, and UX guide
 
 | Priority                | Rationale                                                                                     |
 | :---------------------- | :-------------------------------------------------------------------------------------------- |
-| **Mobile-first design** | All primary users access CreditBook on Android smartphones                                    |
+| **Mobile-first design** | All primary users access KredBook on Android smartphones                                      |
 | **Financial clarity**   | Users must understand their ledger state at a glance, without reading every line              |
 | **Quick data entry**    | Recording a bill or payment should take fewer than 3 taps                                     |
 | **Low cognitive load**  | Shop owners are not necessarily financially literate — the UI must do the interpretation work |
@@ -49,7 +49,9 @@ This design system defines the visual language, component patterns, and UX guide
 
 | Field            | Value                                             |
 | :--------------- | :------------------------------------------------ |
-| **Brand Name**   | CreditBook                                        |
+| **Brand Name**   | KredBook                                          |
+| **App Slug**     | `kredbook`                                        |
+| **Bundle ID**    | `com.kredbook.app`                                |
 | **Tagline**      | Track Credit. Get Paid Faster.                    |
 | **Product Type** | Digital credit ledger for Indian small businesses |
 | **Target Users** | Retailers, wholesalers, shop owners, distributors |
@@ -68,7 +70,7 @@ This design system defines the visual language, component patterns, and UX guide
 
 **"Digital Khata Book"**
 
-CreditBook uses a Digital Khata Book design philosophy. The UI mimics the simplicity of traditional Indian ledger books while adding modern fintech-style visual clarity.
+KredBook uses a Digital Khata Book design philosophy. The UI mimics the simplicity of traditional Indian ledger books while adding modern fintech-style visual clarity.
 
 Design goals:
 
@@ -118,7 +120,7 @@ Use **short, action-oriented labels**:
 
 ### Dashboard Gradient Cards
 
-CreditBook dashboards use highlight cards with gradients to display important financial summaries. Each card type uses a distinct gradient that communicates the financial context at a glance.
+KredBook dashboards use highlight cards with gradients to display important financial summaries. Each card type uses a distinct gradient that communicates the financial context at a glance.
 
 | Card                      | Gradient            | Used For                               |
 | :------------------------ | :------------------ | :------------------------------------- |
@@ -439,7 +441,7 @@ Full-screen (or section-level) empty state component used when lists have no dat
 
 ### Icon Library
 
-CreditBook uses **`lucide-react-native`** as the sole icon library. The `@expo/vector-icons` package (Ionicons, MaterialIcons, etc.) has been completely removed from the codebase as of v3.3.
+**KredBook** uses **`lucide-react-native`** as the sole icon library. The `@expo/vector-icons` package (Ionicons, MaterialIcons, etc.) has been completely removed from the codebase as of v3.3.
 
 | Library                   | Status     | Notes                                                   |
 | :------------------------ | :--------- | :------------------------------------------------------ |
@@ -472,7 +474,7 @@ Icons must be:
 
 ## 8. Motion Guidelines
 
-Animations in CreditBook should be **functional, not decorative**. Every animation must serve a user comprehension or orientation purpose.
+Animations in **KredBook** should be **functional, not decorative**. Every animation must serve a user comprehension or orientation purpose.
 
 ### Duration
 
@@ -598,7 +600,7 @@ When a list screen has no data, use the shared `EmptyState` component. Never lea
 
 ### The Core Metaphor
 
-> CreditBook uses a **Digital Khata Book** design philosophy — combining the familiarity of a traditional Indian ledger with modern fintech visual clarity. The UI is minimal while clearly highlighting important financial information through color-coded balances and gradient summary cards.
+> **KredBook** uses a **Digital Khata Book** design philosophy — combining the familiarity of a traditional Indian ledger with modern fintech visual clarity. The UI is minimal while clearly highlighting important financial information through color-coded balances and gradient summary cards.
 
 ---
 

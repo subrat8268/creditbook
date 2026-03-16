@@ -1,9 +1,9 @@
-# CreditBook – Product Requirements Document
+# KredBook – Product Requirements Document
 
-> **Version**: 1.4
-> **Last Updated**: March 11, 2026
+> **Version**: 1.5
+> **Last Updated**: March 16, 2026
 > **Status**: Active Development
-> **Owner**: CreditBook Product Team
+> **Owner**: KredBook Product Team
 
 ---
 
@@ -41,7 +41,7 @@ This creates compounding problems at scale:
 
 ### The Solution
 
-CreditBook provides a **simple digital ledger with real-time balance visibility, payment tracking, and one-tap bill generation.**
+KredBook provides a **simple digital ledger with real-time balance visibility, payment tracking, and one-tap bill generation.**
 
 It replaces the khata book with a mobile experience that requires no accounting knowledge, no training, and no internet dependency for core recording operations.
 
@@ -60,7 +60,7 @@ Every product decision is evaluated against this goal. Features that add complex
 
 ### Business Model
 
-> **CreditBook is free for all users.** No paywalls, no feature gating, no subscription required.
+> **KredBook is free for all users.** No paywalls, no feature gating, no subscription required.
 
 All core features — credit tracking, billing, payments, supplier management, PDF export, and reminders — are available to every business at zero cost. The product succeeds by becoming indispensable through daily use, not by locking features behind subscriptions.
 
@@ -372,7 +372,7 @@ Role maps to `dashboard_mode` on the `profiles` table and controls which net-pos
   - Supplier Purchases (amber pill)
 - Each row has a loading state; `loadingKey` prevents concurrent exports
 - Info banner (blue border): explains format + date range behaviour
-- “CreditBook Export” footer
+- “KredBook Export” footer
 
 ---
 
@@ -596,23 +596,23 @@ The color system encodes financial status visually — users can assess ledger h
 
 ### Mission Statement
 
-> CreditBook aims to become the default digital khata book for small businesses in emerging markets.
+> KredBook aims to become the default digital khata book for small businesses in emerging markets.
 
 The immediate goal is to digitize the credit ledger for Indian SMBs. The long-term opportunity is to become the financial operating system for informal businesses — starting with ledger management and expanding into the broader financial stack.
 
 ### Long-Term Roadmap
 
-| Horizon     | Opportunity                                                                      |
-| :---------- | :------------------------------------------------------------------------------- |
-| **Year 1**  | Replace the physical khata — credit ledger, billing, payments, reminders         |
-| **Year 2**  | Credit scoring — use transaction history to generate a business credit profile   |
-| **Year 3**  | Business financing — offer working capital loans underwritten by CreditBook data |
-| **Year 4+** | Automated bookkeeping — P&L, GST filing assistance, accountant integrations      |
+| Horizon     | Opportunity                                                                    |
+| :---------- | :----------------------------------------------------------------------------- |
+| **Year 1**  | Replace the physical khata — credit ledger, billing, payments, reminders       |
+| **Year 2**  | Credit scoring — use transaction history to generate a business credit profile |
+| **Year 3**  | Business financing — offer working capital loans underwritten by KredBook data |
+| **Year 4+** | Automated bookkeeping — P&L, GST filing assistance, accountant integrations    |
 
 ### Market Opportunity
 
-India has approximately **63 million MSMEs**, the majority of which still operate without digital financial tools. The informal credit economy represents hundreds of billions of rupees in untracked receivables. CreditBook is positioned to capture this market by solving the most fundamental and universal problem first: knowing who owes what.
+India has approximately **63 million MSMEs**, the majority of which still operate without digital financial tools. The informal credit economy represents hundreds of billions of rupees in untracked receivables. KredBook is positioned to capture this market by solving the most fundamental and universal problem first: knowing who owes what.
 
 ---
 
-_This document is the primary product specification for CreditBook. Engineering, design, and QA decisions should be validated against the requirements defined here. Update this document when features are added, changed, or deprecated._
+_This document is the primary product specification for KredBook. Engineering, design, and QA decisions should be validated against the requirements defined here. Update this document when features are added, changed, or deprecated._
