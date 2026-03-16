@@ -1,15 +1,16 @@
 import { colors } from "@/src/utils/theme";
 import { Tabs } from "expo-router";
-import { House, ShoppingCart, Truck, UserCircle, Users } from "lucide-react-native";
-import { View } from "react-native";
+import {
+  House,
+  ShoppingCart,
+  Truck,
+  UserCircle,
+  Users,
+} from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ACTIVE = colors.primary.DEFAULT; // #22C55E
 const INACTIVE = "#9CA3AF"; // design-spec inactive tab color
-
-const CustomHeader = () => (
-  <View className="bg-white flex-1 border-b border-default" />
-);
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
@@ -17,13 +18,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerTitleAlign: "center",
-        headerShadowVisible: false,
-        headerTitleStyle: {
-          fontWeight: "600",
-          fontSize: 18,
-        },
-        headerBackground: CustomHeader,
+        headerShown: false,
         tabBarActiveTintColor: ACTIVE,
         tabBarInactiveTintColor: INACTIVE,
         tabBarStyle: {

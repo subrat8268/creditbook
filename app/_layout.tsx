@@ -67,8 +67,6 @@ function RootLayout() {
     init();
   }, []);
 
-  // Hide native splash once basic app shell is ready.
-  // Profile loading should not block splash; we show an in-app loader instead.
   useEffect(() => {
     if (fontsLoaded && !loading) {
       SplashScreen.hideAsync().catch(() => {

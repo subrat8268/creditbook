@@ -34,16 +34,6 @@ export function useAuth() {
     // Subscribe to auth changes
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        // Deep-link from a password-reset email — route to set-new-password.
-        // Do NOT call setUser() here: setUser() triggers fetchProfile(), which
-        // populates profile in the store. If onboarding_complete===true the root
-        // layout immediately switches the Stack to (main)/dashboard and Expo
-        // Router removes the set-new-password screen before the user can type.
-        // The Supabase client already holds the recovery session internally, so
-        // supabase.auth.updateUser() works in set-new-password without us storing
-        // the user in Zustand first.
-        // isRecoveryMode=true pins the root layout to the set-new-password Screen
-        // so no other guard can evict it — even if profile loads mid-flow.
         if (event === "PASSWORD_RECOVERY") {
           setRecoveryMode(true);
           router.replace("/(auth)/set-new-password" as any);
