@@ -15,6 +15,7 @@ import {
     RecordDeliveryInput,
     recordPaymentMade,
 } from "../api/suppliers";
+import { ApiError } from "../lib/supabaseQuery";
 import { useSuppliersStore } from "../store/suppliersStore";
 import { Supplier } from "../types/supplier";
 import { useDebounce } from "./useDebounce";
@@ -32,7 +33,7 @@ export const useSuppliers = (vendorId?: string, search?: string) => {
   const debouncedSearch = useDebounce(search ?? "", 300);
   const { setSuppliers } = useSuppliersStore();
 
-  const query = useInfiniteQuery<Supplier[], Error>({
+  const query = useInfiniteQuery<Supplier[], ApiError>({
     queryKey: vendorId
       ? supplierKeys.list(vendorId, debouncedSearch)
       : ["suppliers-disabled"],
@@ -65,7 +66,7 @@ export const useAddSupplier = (vendorId: string) => {
 
   return useMutation<
     Supplier,
-    Error,
+    ApiError,
     Omit<Supplier, "id" | "vendor_id" | "created_at" | "balanceOwed">
   >({
     mutationFn: (values) => addSupplier(vendorId, values),
@@ -77,7 +78,8 @@ export const useAddSupplier = (vendorId: string) => {
       });
       Alert.alert("Success", "Supplier added successfully");
     },
-    onError: (err) => console.error("Failed to add supplier:", err),
+    onError: (err: ApiError) =>
+      console.error("Failed to add supplier:", err.code, err.message),
   });
 };
 
@@ -98,7 +100,7 @@ export function useSupplierDetail(supplierId?: string) {
 export const useRecordDelivery = (vendorId: string, supplierId: string) => {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, RecordDeliveryInput>({
+  return useMutation<void, ApiError, RecordDeliveryInput>({
     mutationFn: (data) => recordDelivery(vendorId, supplierId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -110,8 +112,8 @@ export const useRecordDelivery = (vendorId: string, supplierId: string) => {
       });
       queryClient.invalidateQueries({ queryKey: ["dashboard", vendorId] });
     },
-    onError: (err) => {
-      console.error("Failed to record delivery:", err);
+    onError: (err: ApiError) => {
+      console.error("Failed to record delivery:", err.code, err.message);
       Alert.alert("Error", err.message || "Failed to record delivery");
     },
   });
@@ -124,7 +126,7 @@ export const useRecordPaymentMade = (vendorId: string, supplierId: string) => {
 
   return useMutation<
     void,
-    Error,
+    ApiError,
     { amount: number; payment_mode: string; notes?: string }
   >({
     mutationFn: ({ amount, payment_mode, notes }) =>
@@ -139,8 +141,8 @@ export const useRecordPaymentMade = (vendorId: string, supplierId: string) => {
       });
       queryClient.invalidateQueries({ queryKey: ["dashboard", vendorId] });
     },
-    onError: (err) => {
-      console.error("Failed to record payment:", err);
+    onError: (err: ApiError) => {
+      console.error("Failed to record payment:", err.code, err.message);
       Alert.alert("Error", err.message || "Failed to record payment");
     },
   });

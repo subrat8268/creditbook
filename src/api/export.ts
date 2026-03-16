@@ -1,3 +1,4 @@
+import { toApiError } from "../lib/supabaseQuery";
 import { supabase } from "../services/supabase";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -75,7 +76,7 @@ export async function fetchOrdersForExport(
   if (end) query = query.lte("created_at", end);
 
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) throw toApiError(error);
 
   return (data ?? []).map((o: any) => {
     const total = Number(o.total_amount ?? 0);
@@ -128,7 +129,7 @@ export async function fetchPaymentsForExport(
   if (end) query = query.lte("payment_date", end);
 
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) throw toApiError(error);
 
   return (data ?? []).map((p: any) => {
     const order = Array.isArray(p.orders)
@@ -158,7 +159,7 @@ export async function fetchCustomersForExport(
     .select("id, name, phone, address")
     .eq("vendor_id", vendorId)
     .order("name", { ascending: true });
-  if (error) throw error;
+  if (error) throw toApiError(error);
 
   if (!customers || customers.length === 0) return [];
 
@@ -167,7 +168,7 @@ export async function fetchCustomersForExport(
     .from("orders")
     .select("customer_id, total_amount, amount_paid")
     .eq("vendor_id", vendorId);
-  if (oErr) throw oErr;
+  if (oErr) throw toApiError(oErr);
 
   const balanceMap: Record<string, number> = {};
   for (const o of orders ?? []) {
@@ -205,7 +206,7 @@ export async function fetchSupplierPurchasesForExport(
   if (end) query = query.lte("delivery_date", end);
 
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) throw toApiError(error);
 
   return (data ?? []).map((d: any) => {
     const supplier = Array.isArray(d.suppliers)

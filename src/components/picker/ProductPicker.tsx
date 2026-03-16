@@ -13,7 +13,7 @@ interface Variant {
 interface Product {
   id: string;
   name: string;
-  base_price: number;
+  base_price: number | null;
   image?: string;
   variants: Variant[];
 }
@@ -65,7 +65,7 @@ export default function ProductPicker({
     Keyboard.dismiss(); // 🔑 dismiss keyboard
     if (item.variants && item.variants.length > 0) {
       setVariantSelection(item);
-    } else {
+    } else if (item.base_price !== null) {
       addToCart(item.id, item.name, item.base_price);
     }
     onClose();
@@ -91,7 +91,9 @@ export default function ProductPicker({
         >
           <View className="flex-row justify-between">
             <Text className="text-gray-900 font-medium">{item.name}</Text>
-            <Text className="text-gray-700">₹{item.base_price}</Text>
+            <Text className="text-gray-700">
+              {item.base_price !== null ? `₹${item.base_price}` : ""}
+            </Text>
           </View>
           {item.variants?.length > 0 && (
             <Text className="text-xs text-gray-500 mt-1">

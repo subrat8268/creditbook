@@ -1,10 +1,14 @@
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
 import { colors } from "@/src/utils/theme";
 import { FieldArray, Formik } from "formik";
-import { Plus, Trash2 } from "lucide-react-native";
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Plus, Trash2, X } from "lucide-react-native";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import * as Yup from "yup";
 import Button from "../ui/Button";
-import AppModal from "../ui/Modal";
 
 // ── Types ──────────────────────────────────────────────────
 interface VariantRow {
@@ -120,19 +124,66 @@ export default function NewProductModal({
       })) ?? [],
   };
 
+  const sheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ["90%"], []);
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
+  useEffect(() => {
+    if (visible) {
+      sheetRef.current?.expand();
+    } else {
+      sheetRef.current?.close();
+    }
+  }, [visible]);
+
   return (
-    <AppModal title={`${title} Product`} visible={visible} onClose={onClose}>
-      {/* Subtitle */}
-      <Text
+    <BottomSheet
+      ref={sheetRef}
+      index={-1}
+      snapPoints={snapPoints}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
+      onChange={(idx) => {
+        if (idx === -1) onClose();
+      }}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
+      backgroundStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
+    >
+      {/* Header */}
+      <View
         style={{
-          color: colors.neutral[500],
-          fontSize: 13,
-          marginBottom: 16,
-          lineHeight: 18,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: 20,
+          paddingTop: 4,
+          paddingBottom: 12,
         }}
       >
-        Products appear in search when creating a bill
-      </Text>
+        <Text
+          style={{ fontSize: 18, fontWeight: "700", color: colors.neutral[900] }}
+        >
+          {`${title} Product`}
+        </Text>
+        <TouchableOpacity
+          onPress={onClose}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <X size={22} color={colors.neutral[600]} strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
 
       <Formik
         initialValues={defaultValues}
@@ -155,12 +206,22 @@ export default function NewProductModal({
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
           <>
-            <ScrollView
-              showsVerticalScrollIndicator={false}
+            <BottomSheetScrollView
+              contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 8 }}
               keyboardShouldPersistTaps="handled"
-              style={{ maxHeight: 420 }}
             >
-              {/* ── Product Name ── */}
+              {/* Subtitle */}
+              <Text
+                style={{
+                  color: colors.neutral[500],
+                  fontSize: 13,
+                  marginBottom: 16,
+                  lineHeight: 18,
+                }}
+              >
+                Products appear in search when creating a bill
+              </Text>
+              {/* ── Product Name ── */
               <Text
                 style={{
                   fontWeight: "600",
@@ -333,15 +394,17 @@ export default function NewProductModal({
               ) : null}
 
               <View style={{ height: 8 }} />
-            </ScrollView>
+            </BottomSheetScrollView>
 
-            {/* ── Sticky CTA ── */}
+            {/* ── Sticky CTA ── */
             <View
               style={{
                 borderTopWidth: 1,
                 borderTopColor: colors.neutral[100],
                 paddingTop: 14,
                 marginTop: 4,
+                paddingHorizontal: 20,
+                paddingBottom: 20,
               }}
             >
               <Button
@@ -353,6 +416,6 @@ export default function NewProductModal({
           </>
         )}
       </Formik>
-    </AppModal>
+    </BottomSheet>
   );
 }

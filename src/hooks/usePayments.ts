@@ -1,4 +1,5 @@
 import { Payment, fetchPayments, recordPayment } from "@/src/api/orders";
+import { ApiError } from "@/src/lib/supabaseQuery";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useOrderStore } from "../store/orderStore";
 import { orderKeys } from "./useOrders";
@@ -28,35 +29,38 @@ export function usePayments(orderId: string, vendorId?: string) {
   });
 
   // Record a payment (partial or full)
-  const recordPaymentMutation = useMutation<void, Error, RecordPaymentProps>({
-    mutationFn: async ({ amount, mode, markFull, notes }) => {
-      if (!vendorId) throw new Error("Vendor ID is required");
-      await recordPayment(orderId, vendorId, amount, mode, markFull, notes);
+  const recordPaymentMutation = useMutation<void, ApiError, RecordPaymentProps>(
+    {
+      mutationFn: async ({ amount, mode, markFull, notes }) => {
+        if (!vendorId) throw new Error("Vendor ID is required");
+        await recordPayment(orderId, vendorId, amount, mode, markFull, notes);
+      },
+
+      onMutate: () => {
+        addUpdatingOrderId(orderId);
+      },
+
+      onSuccess: (_, variables) => {
+        if (!vendorId) return;
+
+        queryClient.invalidateQueries({ queryKey: orderKeys.list(vendorId) });
+        queryClient.invalidateQueries({ queryKey: orderKeys.detail(orderId) });
+        queryClient.invalidateQueries({ queryKey: ["payments", orderId] });
+        queryClient.invalidateQueries({
+          queryKey: ["customers", vendorId],
+          exact: false,
+        });
+        queryClient.invalidateQueries({ queryKey: ["dashboard", vendorId] });
+      },
+
+      onSettled: () => {
+        removeUpdatingOrderId(orderId);
+      },
+
+      onError: (err: ApiError) =>
+        console.error("Failed to record payment:", err.code, err.message),
     },
-
-    onMutate: () => {
-      addUpdatingOrderId(orderId);
-    },
-
-    onSuccess: (_, variables) => {
-      if (!vendorId) return;
-
-      queryClient.invalidateQueries({ queryKey: orderKeys.list(vendorId) });
-      queryClient.invalidateQueries({ queryKey: orderKeys.detail(orderId) });
-      queryClient.invalidateQueries({ queryKey: ["payments", orderId] });
-      queryClient.invalidateQueries({
-        queryKey: ["customers", vendorId],
-        exact: false,
-      });
-      queryClient.invalidateQueries({ queryKey: ["dashboard", vendorId] });
-    },
-
-    onSettled: () => {
-      removeUpdatingOrderId(orderId);
-    },
-
-    onError: (err) => console.error("Failed to record payment:", err),
-  });
+  );
 
   return {
     payments,

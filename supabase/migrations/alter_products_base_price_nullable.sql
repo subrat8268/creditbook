@@ -1,0 +1,29 @@
+-- =============================================================================
+-- KredBook — Make products.base_price nullable
+-- Migration: alter_products_base_price_nullable
+-- Apply: Run once in Supabase SQL Editor.
+--
+-- PROBLEM:
+--   base_price NUMERIC(10,2) NOT NULL forces the API to write base_price = 0
+--   for variant-only products (NewProductModal has no base price field since
+--   v3.6). Storing 0 is silent data corruption — reports and exports treat
+--   it as a valid price.
+--
+-- FIX:
+--   Drop the NOT NULL constraint. NULL now means "variant-only product —
+--   price is defined at the variant level." The per-product base price concept
+--   is preserved for any future single-price product flow.
+--
+-- SAFE TO RUN:
+--   - No data is modified or deleted.
+--   - Existing rows with base_price = 0 (stored as workaround) are NOT updated
+--     here — a follow-up UPDATE can set them to NULL if desired:
+--
+--     UPDATE products SET base_price = NULL
+--     WHERE base_price = 0
+--       AND EXISTS (
+--         SELECT 1 FROM product_variants WHERE product_variants.product_id = products.id
+--       );
+-- =============================================================================
+
+ALTER TABLE products ALTER COLUMN base_price DROP NOT NULL;

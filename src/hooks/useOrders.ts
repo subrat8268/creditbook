@@ -14,6 +14,7 @@ import {
     PAGE_SIZE,
     PaymentMode,
 } from "../api/orders";
+import { ApiError } from "../lib/supabaseQuery";
 import { useDebounce } from "./useDebounce";
 
 export const orderKeys = {
@@ -30,7 +31,7 @@ export function useOrders(
 ) {
   const debounceSearch = useDebounce(search ?? "", 300);
 
-  const query = useInfiniteQuery<Order[], Error>({
+  const query = useInfiniteQuery<Order[], ApiError>({
     queryKey: vendorId
       ? [...orderKeys.list(vendorId), debounceSearch, statusFilter, sortBy]
       : ["orders-disabled"],
@@ -71,7 +72,7 @@ export function useCreateOrder(vendorId: string) {
 
   return useMutation<
     OrderDetail,
-    Error,
+    ApiError,
     {
       vendorId: string;
       customerId: string;

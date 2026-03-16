@@ -1,10 +1,11 @@
+import { toApiError } from "../lib/supabaseQuery";
 import { supabase } from "../services/supabase";
 import {
-  Supplier,
-  SupplierDelivery,
-  SupplierDeliveryItem,
-  SupplierDetail,
-  SupplierTimelineEntry,
+    Supplier,
+    SupplierDelivery,
+    SupplierDeliveryItem,
+    SupplierDetail,
+    SupplierTimelineEntry,
 } from "../types/supplier";
 
 export const PAGE_SIZE = 10;
@@ -28,7 +29,7 @@ export async function fetchSuppliers(
   }
 
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) throw toApiError(error);
 
   const suppliers = (data ?? []) as Supplier[];
   if (suppliers.length === 0) return suppliers;
@@ -85,7 +86,7 @@ export async function addSupplier(
     .insert([{ ...values, vendor_id: vendorId }])
     .select()
     .single();
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data as Supplier;
 }
 
@@ -230,7 +231,7 @@ export async function recordDelivery(
     .select("id")
     .single();
 
-  if (dErr) throw new Error(dErr.message);
+  if (dErr) throw toApiError(dErr);
 
   if (delivery.items.length > 0) {
     const itemRows = delivery.items.map((i) => ({
@@ -243,7 +244,7 @@ export async function recordDelivery(
     const { error: iErr } = await supabase
       .from("supplier_delivery_items")
       .insert(itemRows);
-    if (iErr) throw new Error(iErr.message);
+    if (iErr) throw toApiError(iErr);
   }
 
   // Record advance as a payment_made entry
@@ -258,7 +259,7 @@ export async function recordDelivery(
         notes: "Advance paid at delivery",
       },
     ]);
-    if (pErr) throw new Error(pErr.message);
+    if (pErr) throw toApiError(pErr);
   }
 }
 
@@ -278,5 +279,5 @@ export async function recordPaymentMade(
       notes: notes ?? "",
     },
   ]);
-  if (error) throw new Error(error.message);
+  if (error) throw toApiError(error);
 }

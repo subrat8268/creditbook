@@ -1,3 +1,4 @@
+import { toApiError } from "../lib/supabaseQuery";
 import { supabase } from "../services/supabase";
 
 export interface OrderItem {
@@ -109,7 +110,7 @@ export async function fetchOrders(
   );
 
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) throw toApiError(error);
 
   return (data ?? []).map((o) => ({
     ...o,
@@ -138,7 +139,7 @@ export async function fetchOrderDetail(
     )
     .eq("id", orderId)
     .maybeSingle();
-  if (error) throw error;
+  if (error) throw toApiError(error);
   if (!data) return null;
 
   return {
@@ -169,7 +170,7 @@ export async function fetchPayments(orderId: string): Promise<Payment[]> {
     .eq("order_id", orderId)
     .order("payment_date", { ascending: false });
 
-  if (error) throw error;
+  if (error) throw toApiError(error);
 
   return (data ?? []).map((p) => ({
     ...p,
@@ -193,7 +194,7 @@ export async function recordPayment(
     .eq("id", orderId)
     .single();
 
-  if (orderErr) throw orderErr;
+  if (orderErr) throw toApiError(orderErr);
   if (!order) throw new Error("Order not found");
 
   const totalAmount = Number(order.total_amount);
@@ -216,7 +217,7 @@ export async function recordPayment(
   const { error: insertErr } = await supabase
     .from("payments")
     .insert([paymentRow]);
-  if (insertErr) throw insertErr;
+  if (insertErr) throw toApiError(insertErr);
 
   // 4. Update order
   const newPaid = currentPaid + paymentAmount;
@@ -235,7 +236,7 @@ export async function recordPayment(
     })
     .eq("id", orderId);
 
-  if (updateErr) throw updateErr;
+  if (updateErr) throw toApiError(updateErr);
 }
 
 /**
@@ -353,7 +354,7 @@ export async function createOrder(
     .select("*")
     .single();
 
-  if (orderErr) throw orderErr;
+  if (orderErr) throw toApiError(orderErr);
   if (!orderData) throw new Error("Failed to create order");
 
   // 4. Insert order_items
@@ -371,7 +372,7 @@ export async function createOrder(
     .from("order_items")
     .insert(orderItems);
 
-  if (itemsErr) throw itemsErr;
+  if (itemsErr) throw toApiError(itemsErr);
 
   // 5. Record payment if amountPaid > 0
   if (amountPaid > 0 && paymentMode) {
@@ -383,7 +384,7 @@ export async function createOrder(
         payment_mode: paymentMode,
       },
     ]);
-    if (paymentErr) throw paymentErr;
+    if (paymentErr) throw toApiError(paymentErr);
   }
 
   const orderDetail = await fetchOrderDetail(orderData.id);

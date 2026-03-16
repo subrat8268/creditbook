@@ -1,3 +1,4 @@
+import { ApiError, toApiError } from "../lib/supabaseQuery";
 import { supabase } from "../services/supabase";
 import { Customer, CustomerDetail } from "../types/customer";
 export type { Customer };
@@ -21,7 +22,7 @@ export async function fetchCustomers(
   }
 
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) throw toApiError(error);
   const customers = (data ?? []) as Customer[];
 
   // Determine overdue: balance_due > 0 AND last order > 30 days ago
@@ -82,7 +83,18 @@ export async function addCustomer(
     .insert([payload])
     .select()
     .single();
-  if (error) throw error;
+  if (error) {
+    if (error.code === "23505") {
+      throw new ApiError(
+        "23505",
+        "A customer with this phone number already exists in your account.",
+        409,
+        error.details,
+        error.hint,
+      );
+    }
+    throw toApiError(error);
+  }
   return data as Customer;
 }
 

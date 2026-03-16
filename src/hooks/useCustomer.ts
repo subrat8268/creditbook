@@ -12,6 +12,7 @@ import {
     fetchCustomers,
     PAGE_SIZE,
 } from "../api/customers";
+import { ApiError } from "../lib/supabaseQuery";
 import { useCustomersStore } from "../store/customersStore";
 import { Customer, CustomerDetail } from "../types/customer";
 import { useDebounce } from "./useDebounce";
@@ -26,7 +27,7 @@ export const useCustomers = (vendorId?: string, search?: string) => {
   const debouncedSearch = useDebounce(search ?? "", 300);
   const { setCustomers } = useCustomersStore();
 
-  const query = useInfiniteQuery<Customer[], Error>({
+  const query = useInfiniteQuery<Customer[], ApiError>({
     queryKey: vendorId
       ? customerKeys.list(vendorId, debouncedSearch)
       : ["customers-disabled"],
@@ -58,7 +59,7 @@ export const useAddCustomer = (vendorId: string) => {
 
   return useMutation<
     Customer,
-    Error,
+    ApiError,
     Omit<
       Customer,
       | "id"
@@ -78,7 +79,8 @@ export const useAddCustomer = (vendorId: string) => {
       });
       Alert.alert("Success", "Customer added successfully");
     },
-    onError: (err: any) => console.error("Failed to add customer:", err),
+    onError: (err: ApiError) =>
+      console.error("Failed to add customer:", err.code, err.message),
   });
 };
 

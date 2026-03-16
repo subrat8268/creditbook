@@ -1,15 +1,17 @@
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetFlatList,
+} from "@gorhom/bottom-sheet";
 import * as Contacts from "expo-contacts";
 import { Check, Users, UserX, X } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     ActivityIndicator,
-    FlatList,
     Linking,
     Text,
     TouchableOpacity,
     View,
 } from "react-native";
-import Modal from "react-native-modal";
 import { useCustomersStore } from "../../store/customersStore";
 import { normalizePhone } from "../../utils/phone";
 import { colors } from "../../utils/theme";
@@ -78,6 +80,28 @@ export default function ContactsPickerModal({
   const [status, setStatus] = useState<"idle" | "loading" | "denied" | "ready">(
     "idle",
   );
+
+  const sheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ["90%"], []);
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
+  useEffect(() => {
+    if (visible) {
+      sheetRef.current?.expand();
+    } else {
+      sheetRef.current?.close();
+    }
+  }, [visible]);
   const [contacts, setContacts] = useState<ContactEntry[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
@@ -174,31 +198,18 @@ export default function ContactsPickerModal({
       : "Import Contacts";
 
   return (
-    <Modal
-      isVisible={visible}
-      onBackdropPress={onClose}
-      onBackButtonPress={onClose}
-      style={{ margin: 0, justifyContent: "flex-end" }}
-      statusBarTranslucent
-      backdropOpacity={0.5}
-      avoidKeyboard
-      animationIn="slideInUp"
-      animationOut="slideOutDown"
-      useNativeDriver
+    <BottomSheet
+      ref={sheetRef}
+      index={-1}
+      snapPoints={snapPoints}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
+      onChange={(idx) => {
+        if (idx === -1) onClose();
+      }}
+      handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
+      backgroundStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
     >
-      <View className="bg-white rounded-t-2xl" style={{ maxHeight: "88%" }}>
-        {/* Drag handle */}
-        <View className="items-center pt-3 pb-1">
-          <View
-            className="rounded-full"
-            style={{
-              width: 36,
-              height: 4,
-              backgroundColor: colors.neutral[300],
-            }}
-          />
-        </View>
-
         {/* Header — hidden on denied (full sheet used for permission UI) */}
         {status !== "denied" && (
           <View className="flex-row items-start justify-between px-5 pt-3 pb-4">
@@ -332,10 +343,10 @@ export default function ContactsPickerModal({
         )}
 
         {status === "ready" && filtered.length > 0 && (
-          <FlatList
+          <BottomSheetFlatList
             data={filtered}
             keyExtractor={(item) => item.id}
-            style={{ flexShrink: 1 }}
+            style={{ flex: 1 }}
             keyboardShouldPersistTaps="handled"
             renderItem={({ item }) => {
               const isSelected = selected.has(item.id);
@@ -474,6 +485,6 @@ export default function ContactsPickerModal({
           </View>
         )}
       </View>
-    </Modal>
+    </BottomSheet>
   );
 }

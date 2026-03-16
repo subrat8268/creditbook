@@ -1,7 +1,8 @@
 import { colors } from "@/src/utils/theme";
+import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { AlertTriangle } from "lucide-react-native";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
-import AppModal from "./Modal";
 
 interface ConfirmModalProps {
   visible: boolean;
@@ -28,9 +29,49 @@ export default function ConfirmModal({
   onCancel,
   loading = false,
 }: ConfirmModalProps) {
+  const sheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ["50%"], []);
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
+  useEffect(() => {
+    if (visible) {
+      sheetRef.current?.expand();
+    } else {
+      sheetRef.current?.close();
+    }
+  }, [visible]);
+
   return (
-    <AppModal visible={visible} onClose={onCancel}>
-      <View style={{ alignItems: "center", paddingVertical: 8 }}>
+    <BottomSheet
+      ref={sheetRef}
+      index={-1}
+      snapPoints={snapPoints}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
+      onChange={(idx) => {
+        if (idx === -1) onCancel();
+      }}
+      handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
+      backgroundStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
+    >
+      <View
+        style={{
+          alignItems: "center",
+          paddingHorizontal: 20,
+          paddingTop: 8,
+          paddingBottom: 24,
+        }}
+      >
         {/* ── Warning icon circle ── */}
         <View
           style={{
@@ -97,9 +138,7 @@ export default function ConfirmModal({
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text
-              style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}
-            >
+            <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
               {confirmLabel}
             </Text>
           )}
@@ -131,6 +170,6 @@ export default function ConfirmModal({
           </Text>
         </TouchableOpacity>
       </View>
-    </AppModal>
+    </BottomSheet>
   );
 }

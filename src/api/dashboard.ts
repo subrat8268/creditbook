@@ -1,3 +1,4 @@
+import { toApiError } from "@/src/lib/supabaseQuery";
 import { supabase } from "@/src/services/supabase";
 
 export interface RecentActivityItem {
@@ -40,7 +41,7 @@ export async function getDashboardData(
     .select("amount")
     .eq("vendor_id", vendorId);
 
-  if (payErr) throw new Error(payErr.message);
+  if (payErr) throw toApiError(payErr);
 
   const totalRevenue =
     payments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0;
@@ -51,7 +52,7 @@ export async function getDashboardData(
     .select("customer_id, balance_due, status")
     .eq("vendor_id", vendorId);
 
-  if (orderErr) throw new Error(orderErr.message);
+  if (orderErr) throw toApiError(orderErr);
 
   if (!orders)
     return {

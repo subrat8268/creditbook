@@ -1,15 +1,12 @@
+import BottomSheet, {
+    BottomSheetBackdrop,
+    BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
 import { AlertTriangle } from "lucide-react-native";
-import { useState } from "react";
-import {
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { colors } from "../../utils/theme";
 import Button from "../ui/Button";
-import AppModal from "../ui/Modal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Props {
@@ -74,6 +71,28 @@ export default function RecordPaymentMadeModal({
   const [mode, setMode] = useState("NEFT");
   const [notes, setNotes] = useState("");
 
+  const sheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ["85%"], []);
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
+  useEffect(() => {
+    if (visible) {
+      sheetRef.current?.expand();
+    } else {
+      sheetRef.current?.close();
+    }
+  }, [visible]);
+
   const reset = () => {
     setAmount(String(balanceOwed || ""));
     setMode("NEFT");
@@ -101,11 +120,42 @@ export default function RecordPaymentMadeModal({
   const initials = supplierName ? getInitials(supplierName) : "?";
 
   return (
-    <AppModal title="Pay Supplier" onClose={onClose} visible={visible}>
-      <ScrollView
+    <BottomSheet
+      ref={sheetRef}
+      index={-1}
+      snapPoints={snapPoints}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
+      onChange={(idx) => {
+        if (idx === -1) onClose();
+      }}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
+      backgroundStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
+    >
+      {/* Header */}
+      <View
+        style={{
+          paddingHorizontal: 20,
+          paddingTop: 4,
+          paddingBottom: 12,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "700",
+            color: colors.neutral[900],
+          }}
+        >
+          Pay Supplier
+        </Text>
+      </View>
+      <BottomSheetScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: 8 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 8 }}
       >
         {/* ── Supplier card ── */}
         {supplierName ? (
@@ -262,10 +312,12 @@ export default function RecordPaymentMadeModal({
             </Text>
           </View>
         )}
-      </ScrollView>
+      </BottomSheetScrollView>
 
       {/* ── Sticky CTA ── */}
-      <View className="pt-4">
+      <View
+        style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 20 }}
+      >
         <Button
           title="Record Payment"
           onPress={handleSubmit}
@@ -273,6 +325,6 @@ export default function RecordPaymentMadeModal({
           disabled={loading || !isValid}
         />
       </View>
-    </AppModal>
+    </BottomSheet>
   );
 }

@@ -1,3 +1,4 @@
+import { toApiError } from "../lib/supabaseQuery";
 import { supabase } from "../services/supabase";
 
 export interface ProductVariant {
@@ -11,7 +12,8 @@ export interface Product {
   id: string;
   vendor_id: string;
   name: string;
-  base_price: number;
+  /** null for variant-only products — price is defined at the variant level */
+  base_price: number | null;
   image_url: string | null;
   variants: ProductVariant[];
   created_at: string;
@@ -39,7 +41,7 @@ export async function fetchProducts(
   }
 
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) throw toApiError(error);
 
   // Reshape: Supabase returns joined rows as `product_variants`;
   // map to `variants` to keep the Product interface stable across the app.
@@ -66,7 +68,7 @@ export async function addProduct(
     .insert([{ ...values, vendor_id: vendorId }])
     .select()
     .single();
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data as Product;
 }
 
@@ -80,7 +82,7 @@ export async function updateProduct(
     .eq("id", productId)
     .select()
     .single();
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return data as Product;
 }
 
@@ -89,6 +91,6 @@ export async function deleteProduct(productId: string) {
     .from("products")
     .delete()
     .eq("id", productId);
-  if (error) throw error;
+  if (error) throw toApiError(error);
   return productId;
 }

@@ -1,0 +1,24 @@
+-- =============================================================================
+-- KredBook — Drop global customers_phone_idx (Data Integrity: CRITICAL)
+-- Migration: drop_global_customers_phone_idx
+-- Apply: Run once in Supabase SQL Editor.
+--
+-- PROBLEM:
+--   customers_phone_idx is a DB-wide unique constraint on customers(phone).
+--   This means two different vendors cannot add a customer with the same phone
+--   number, even though they are completely separate tenants. In practice,
+--   the same shopkeeper's phone will appear across many vendors' ledgers.
+--
+-- FIX:
+--   Drop the global index. The per-vendor composite index
+--   customers_vendor_phone_idx ON customers(vendor_id, phone) already exists
+--   and enforces the correct business rule: unique phone per vendor.
+--
+-- SAFE TO RUN:
+--   - No data is modified or deleted.
+--   - customers_vendor_phone_idx remains in place — uniqueness is preserved
+--     within each vendor's own customer list.
+--   - idx_customers_phone (non-unique) remains in place for phone lookups.
+-- =============================================================================
+
+DROP INDEX IF EXISTS customers_phone_idx;

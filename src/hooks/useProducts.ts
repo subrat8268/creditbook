@@ -1,16 +1,17 @@
 import {
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient,
+    useInfiniteQuery,
+    useMutation,
+    useQueryClient,
 } from "@tanstack/react-query";
 import {
-  addProduct,
-  deleteProduct,
-  fetchProducts,
-  PAGE_SIZE,
-  Product,
-  updateProduct,
+    addProduct,
+    deleteProduct,
+    fetchProducts,
+    PAGE_SIZE,
+    Product,
+    updateProduct,
 } from "../api/products";
+import { ApiError } from "../lib/supabaseQuery";
 import { useDebounce } from "./useDebounce";
 
 export const productKeys = {
@@ -22,7 +23,7 @@ export const productKeys = {
 export const useProducts = (vendorId?: string, search?: string) => {
   const debouncedSearch = useDebounce(search ?? "", 300);
 
-  const query = useInfiniteQuery<Product[], Error>({
+  const query = useInfiniteQuery<Product[], ApiError>({
     queryKey: vendorId
       ? productKeys.list(vendorId, debouncedSearch)
       : ["products-disabled"],
