@@ -12,84 +12,84 @@
 
 ### AUTH SCREENS
 
-| # | File | Screen Name | Purpose | Role Context | Confidence |
-|---|---|---|---|---|---|
-| B2-01 | `Welcome_-_Soft_Minimal.png` | Welcome / Splash | First impression, value prop, entry to auth | All | ✅ High |
-| B2-13 | `Refined_Log_In_Screen.png` | Login | Email + password authentication | All | ✅ High |
-| B2-15 | `Refined_Sign_Up_Screen.png` | Sign Up | Account creation | All | ✅ High |
+| #     | File                         | Screen Name      | Purpose                                     | Role Context | Confidence |
+| ----- | ---------------------------- | ---------------- | ------------------------------------------- | ------------ | ---------- |
+| B2-01 | `Welcome_-_Soft_Minimal.png` | Welcome / Splash | First impression, value prop, entry to auth | All          | ✅ High    |
+| B2-13 | `Refined_Log_In_Screen.png`  | Login            | Email + password authentication             | All          | ✅ High    |
+| B2-15 | `Refined_Sign_Up_Screen.png` | Sign Up          | Account creation                            | All          | ✅ High    |
 
 ### ONBOARDING SCREENS
 
-| # | File | Screen Name | Purpose | Role Context | Confidence |
-|---|---|---|---|---|---|
-| B2-14 | `Refined_Role_Selection_Screen.png` | Role Selection | Maps user to dashboard_mode | All | ✅ High |
-| B1-06 | `Business_Setup_-_Step_1.png` | Business Setup Step 1 | Business Name, GSTIN, Bill Prefix | All | ✅ High |
-| B1-07 | `Business_Setup_-_Step_2.png` | Business Setup Step 2 / Bank Details | UPI, Bank Name, Account, IFSC | All | ✅ High |
-| B2-09 | `Onboarding_Completion_Refined.png` | Onboarding Complete / Ready Screen | Confirms setup, nudge to first action | All | ✅ High |
+| #     | File                                | Screen Name                          | Purpose                               | Role Context | Confidence |
+| ----- | ----------------------------------- | ------------------------------------ | ------------------------------------- | ------------ | ---------- |
+| B2-14 | `Refined_Role_Selection_Screen.png` | Role Selection                       | Maps user to dashboard_mode           | All          | ✅ High    |
+| B1-06 | `Business_Setup_-_Step_1.png`       | Business Setup Step 1                | Business Name, GSTIN, Bill Prefix     | All          | ✅ High    |
+| B1-07 | `Business_Setup_-_Step_2.png`       | Business Setup Step 2 / Bank Details | UPI, Bank Name, Account, IFSC         | All          | ✅ High    |
+| B2-09 | `Onboarding_Completion_Refined.png` | Onboarding Complete / Ready Screen   | Confirms setup, nudge to first action | All          | ✅ High    |
 
 ### DASHBOARD SCREENS
 
-| # | File | Screen Name | Purpose | Role Context | Confidence |
-|---|---|---|---|---|---|
-| B1-04 | `Seller_Dashboard_-_Spec_V1.png` | Seller Dashboard | Customer receivables hero card | Seller only | ✅ High |
-| B2-03 | `Distributor_Dashboard.png` | Distributor Dashboard | Supplier payables hero card | Distributor only | ✅ High |
-| B1-15 | `Dashboard__Both_View_.png` | Combined Dashboard | 3 stacked gradient cards | Both | ✅ High |
-| B1-03 | `Retailer_Dashboard.png` | **OBSOLETE MOCK** | PKR currency, Pakistani data | — | ✅ Discard |
+| #     | File                             | Screen Name           | Purpose                        | Role Context     | Confidence |
+| ----- | -------------------------------- | --------------------- | ------------------------------ | ---------------- | ---------- |
+| B1-04 | `Seller_Dashboard_-_Spec_V1.png` | Seller Dashboard      | Customer receivables hero card | Seller only      | ✅ High    |
+| B2-03 | `Distributor_Dashboard.png`      | Distributor Dashboard | Supplier payables hero card    | Distributor only | ✅ High    |
+| B1-15 | `Dashboard__Both_View_.png`      | Combined Dashboard    | 3 stacked gradient cards       | Both             | ✅ High    |
+| B1-03 | `Retailer_Dashboard.png`         | **OBSOLETE MOCK**     | PKR currency, Pakistani data   | —                | ✅ Discard |
 
 ### CUSTOMER SCREENS
 
-| # | File | Screen Name | Purpose | Role Context | Confidence |
-|---|---|---|---|---|---|
-| B2-02 | `Customers_List.png` | Customers List | Browse customers, filter by status | Seller / Both | ✅ High |
-| B1-08 | `Customer_Detail_-_Mohit_Sharma.png` | Customer Detail (active balance) | Transaction feed, overdue state | Seller / Both | ✅ High |
-| B1-14 | `Customer_Detail_-_Empty_State.png` | Customer Detail (₹0 balance) | Zero balance / new customer state | Seller / Both | ✅ High |
-| B1-05 | `Add_New_Customer_Modal.png` | Add Customer Modal | Create new customer | Seller / Both | ✅ High |
-| B2-04 | `Empty_State__Customers_List.png` | Customers Empty State | No customers added yet | Seller / Both | ✅ High |
-| B1-13 | `Contact_Picker_Modal.png` | Import Contacts Modal | Bulk import from phone contacts | All | ✅ High |
-| B1-01 | `Generated_Screen.png` | Contacts Permission Denied | Permission fallback state | All | ✅ High |
-| B2-12 | `Record_Payment_Modal.png` | Record Customer Payment Modal | Receive payment from customer | Seller / Both | ✅ High |
+| #     | File                                 | Screen Name                      | Purpose                            | Role Context  | Confidence |
+| ----- | ------------------------------------ | -------------------------------- | ---------------------------------- | ------------- | ---------- |
+| B2-02 | `Customers_List.png`                 | Customers List                   | Browse customers, filter by status | Seller / Both | ✅ High    |
+| B1-08 | `Customer_Detail_-_Mohit_Sharma.png` | Customer Detail (active balance) | Transaction feed, overdue state    | Seller / Both | ✅ High    |
+| B1-14 | `Customer_Detail_-_Empty_State.png`  | Customer Detail (₹0 balance)     | Zero balance / new customer state  | Seller / Both | ✅ High    |
+| B1-05 | `Add_New_Customer_Modal.png`         | Add Customer Modal               | Create new customer                | Seller / Both | ✅ High    |
+| B2-04 | `Empty_State__Customers_List.png`    | Customers Empty State            | No customers added yet             | Seller / Both | ✅ High    |
+| B1-13 | `Contact_Picker_Modal.png`           | Import Contacts Modal            | Bulk import from phone contacts    | All           | ✅ High    |
+| B1-01 | `Generated_Screen.png`               | Contacts Permission Denied       | Permission fallback state          | All           | ✅ High    |
+| B2-12 | `Record_Payment_Modal.png`           | Record Customer Payment Modal    | Receive payment from customer      | Seller / Both | ✅ High    |
 
 ### SUPPLIER SCREENS
 
-| # | File | Screen Name | Purpose | Role Context | Confidence |
-|---|---|---|---|---|---|
-| B2-18 | `Suppliers_List.png` | Suppliers List | Browse suppliers, balance owed | Distributor / Both | ✅ High |
-| B2-17 | `Supplier_Detail_-_Metro_Distributors.png` | Supplier Detail | Balance, bank details, delivery history | Distributor / Both | ✅ High |
-| B1-11 | `Add_Supplier_-_Vibrant.png` | Add Supplier Modal (PRIMARY) | Create new supplier | Distributor / Both | ✅ High |
-| B1-10 | `Add_Supplier_-_Minimalist.png` | Add Supplier Modal (ALT) | Simpler variant — use Vibrant instead | — | ⚠️ Redundant |
-| B2-05 | `Empty_State__Suppliers_List.png` | Suppliers Empty State | No suppliers added yet | Distributor / Both | ✅ High |
-| B2-11 | `Record_Delivery_Modal.png` | Record Delivery Modal | Log goods received from supplier | Distributor / Both | ✅ High |
-| B1-02 | `Pay_Supplier_Modal.png` | Pay Supplier Modal | Record payment made to supplier | Distributor / Both | ✅ High |
+| #     | File                                       | Screen Name                  | Purpose                                 | Role Context       | Confidence   |
+| ----- | ------------------------------------------ | ---------------------------- | --------------------------------------- | ------------------ | ------------ |
+| B2-18 | `Suppliers_List.png`                       | Suppliers List               | Browse suppliers, balance owed          | Distributor / Both | ✅ High      |
+| B2-17 | `Supplier_Detail_-_Metro_Distributors.png` | Supplier Detail              | Balance, bank details, delivery history | Distributor / Both | ✅ High      |
+| B1-11 | `Add_Supplier_-_Vibrant.png`               | Add Supplier Modal (PRIMARY) | Create new supplier                     | Distributor / Both | ✅ High      |
+| B1-10 | `Add_Supplier_-_Minimalist.png`            | Add Supplier Modal (ALT)     | Simpler variant — use Vibrant instead   | —                  | ⚠️ Redundant |
+| B2-05 | `Empty_State__Suppliers_List.png`          | Suppliers Empty State        | No suppliers added yet                  | Distributor / Both | ✅ High      |
+| B2-11 | `Record_Delivery_Modal.png`                | Record Delivery Modal        | Log goods received from supplier        | Distributor / Both | ✅ High      |
+| B1-02 | `Pay_Supplier_Modal.png`                   | Pay Supplier Modal           | Record payment made to supplier         | Distributor / Both | ✅ High      |
 
 ### BILLING SCREENS
 
-| # | File | Screen Name | Purpose | Role Context | Confidence |
-|---|---|---|---|---|---|
-| B2-08 | `New_Bill_-_Refined_Item_Cards.png` | New Bill / Create Order | Create itemized bill for customer | Seller / Both | ✅ High |
-| B1-09 | `Add_Product_Modal_-_Balanced.png` | Add Product Modal | Add new product with variants | All | ✅ High |
-| B1-16 | `Edit_Product_Modal_-_Standard.png` | Edit Product Modal | Edit existing product | All | ✅ High |
-| B1-17 | `Edit_Product_Modal_-_Standard-1.png` | Delete Product Confirmation | Confirm product deletion | All | ✅ High |
-| B1-12 | `Body___Main_Wrapper.png` | Products List | Browse product catalog | All | ✅ High |
+| #     | File                                  | Screen Name                 | Purpose                           | Role Context  | Confidence |
+| ----- | ------------------------------------- | --------------------------- | --------------------------------- | ------------- | ---------- |
+| B2-08 | `New_Bill_-_Refined_Item_Cards.png`   | New Bill / Create Order     | Create itemized bill for customer | Seller / Both | ✅ High    |
+| B1-09 | `Add_Product_Modal_-_Balanced.png`    | Add Product Modal           | Add new product with variants     | All           | ✅ High    |
+| B1-16 | `Edit_Product_Modal_-_Standard.png`   | Edit Product Modal          | Edit existing product             | All           | ✅ High    |
+| B1-17 | `Edit_Product_Modal_-_Standard-1.png` | Delete Product Confirmation | Confirm product deletion          | All           | ✅ High    |
+| B1-12 | `Body___Main_Wrapper.png`             | Products List               | Browse product catalog            | All           | ✅ High    |
 
 ### REPORTING SCREENS
 
-| # | File | Screen Name | Purpose | Role Context | Confidence |
-|---|---|---|---|---|---|
-| B2-07 | `Financial_Position_with_Reports.png` | Financial Position | Aggregate receivables vs payables | Both | ✅ High |
-| B1-18 | `Export_data_screen.png` | Export Data | CSV export with date filter | All | ✅ High |
+| #     | File                                  | Screen Name        | Purpose                           | Role Context | Confidence |
+| ----- | ------------------------------------- | ------------------ | --------------------------------- | ------------ | ---------- |
+| B2-07 | `Financial_Position_with_Reports.png` | Financial Position | Aggregate receivables vs payables | Both         | ✅ High    |
+| B1-18 | `Export_data_screen.png`              | Export Data        | CSV export with date filter       | All          | ✅ High    |
 
 ### SETTINGS SCREENS
 
-| # | File | Screen Name | Purpose | Role Context | Confidence |
-|---|---|---|---|---|---|
-| B2-10 | `Profile___Settings_-_Detailed_Icons.png` | Profile & Settings | Business details, mode toggle, language | All | ✅ High |
+| #     | File                                      | Screen Name        | Purpose                                 | Role Context | Confidence |
+| ----- | ----------------------------------------- | ------------------ | --------------------------------------- | ------------ | ---------- |
+| B2-10 | `Profile___Settings_-_Detailed_Icons.png` | Profile & Settings | Business details, mode toggle, language | All          | ✅ High    |
 
 ### SHARED COMPONENT SCREENS
 
-| # | File | Screen Name | Purpose | Role Context | Confidence |
-|---|---|---|---|---|---|
-| B2-16 | `Success_Toast.png` | Success Toast | Positive feedback notification | All | ✅ High |
-| B2-06 | `Empty_State__Transaction_Feed.png` | Transaction Feed Empty State | No transactions in customer/order context | All | ✅ High |
+| #     | File                                | Screen Name                  | Purpose                                   | Role Context | Confidence |
+| ----- | ----------------------------------- | ---------------------------- | ----------------------------------------- | ------------ | ---------- |
+| B2-16 | `Success_Toast.png`                 | Success Toast                | Positive feedback notification            | All          | ✅ High    |
+| B2-06 | `Empty_State__Transaction_Feed.png` | Transaction Feed Empty State | No transactions in customer/order context | All          | ✅ High    |
 
 ---
 
@@ -170,28 +170,28 @@ SHARED COMPONENTS (appear across flows)
 
 ### Seller (dashboard_mode = 'seller')
 
-| Screen | What changes |
-|---|---|
-| Dashboard | Red gradient hero card. Label: "CUSTOMERS OWE YOU". Action bar: "View Report" + "Send Reminder". Stat cards: Active Buyers + Overdue count |
-| Tab bar | Home / Customers / Orders / Suppliers / Profile |
-| Customers List | Primary list — high frequency use |
-| Suppliers List | Available but secondary — user mostly looks outward at receivables |
+| Screen         | What changes                                                                                                                               |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Dashboard      | Red gradient hero card. Label: "CUSTOMERS OWE YOU". Action bar: "View Report" + "Send Reminder". Stat cards: Active Buyers + Overdue count |
+| Tab bar        | Home / Customers / Orders / Suppliers / Profile                                                                                            |
+| Customers List | Primary list — high frequency use                                                                                                          |
+| Suppliers List | Available but secondary — user mostly looks outward at receivables                                                                         |
 
 ### Distributor (dashboard_mode = 'distributor')
 
-| Screen | What changes |
-|---|---|
-| Dashboard | Pink gradient hero card. Label: "I OWE SUPPLIERS". Action bar: "View Suppliers →" + "Record Delivery". Stat cards: Active Suppliers + Overdue Payments |
-| Tab bar | Same 5 tabs — no tab-level changes |
-| Customers List | Available but secondary — user mostly looks inward at payables |
-| Suppliers List | Primary list — high frequency use |
+| Screen         | What changes                                                                                                                                           |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Dashboard      | Pink gradient hero card. Label: "I OWE SUPPLIERS". Action bar: "View Suppliers →" + "Record Delivery". Stat cards: Active Suppliers + Overdue Payments |
+| Tab bar        | Same 5 tabs — no tab-level changes                                                                                                                     |
+| Customers List | Available but secondary — user mostly looks inward at payables                                                                                         |
+| Suppliers List | Primary list — high frequency use                                                                                                                      |
 
 ### Both (dashboard_mode = 'both')
 
-| Screen | What changes |
-|---|---|
-| Dashboard | 3 stacked gradient cards: red (Customers Owe Me) + pink (I Owe Suppliers) + dark (Net Position). No action bar — replaced by View Report + Send Reminder below cards |
-| Financial Position | Shows all 3 cards: Customers Owe Me + I Owe Suppliers + Net Position calculation |
+| Screen             | What changes                                                                                                                                                         |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dashboard          | 3 stacked gradient cards: red (Customers Owe Me) + pink (I Owe Suppliers) + dark (Net Position). No action bar — replaced by View Report + Send Reminder below cards |
+| Financial Position | Shows all 3 cards: Customers Owe Me + I Owe Suppliers + Net Position calculation                                                                                     |
 
 ### Role-Specific Logic Summary
 
@@ -217,19 +217,19 @@ These are grouped by severity. Each item includes the affected screen(s) and the
 
 This is the single largest design system failure across the entire file set.
 
-| Screen | Shows | Should Show |
-|---|---|---|
-| Seller Dashboard (B1-04) | Home / Customers / Bills / Suppliers / Profile | Home / Customers / **Orders** / Suppliers / Profile |
-| Distributor Dashboard (B2-03) | Home / Customers / Bills / Suppliers / Profile | Home / Customers / **Orders** / Suppliers / Profile |
-| Customers List (B2-02) | Home / Customers / Bills / Suppliers / Profile | Home / Customers / **Orders** / Suppliers / Profile |
-| Products Screen (B1-12) | Home / Customers / Bills / Suppliers / Profile | Home / Customers / **Orders** / Suppliers / Profile |
-| Customers Empty State (B2-04) | Home / Customers / **Cashbook** / **Settings** | Home / Customers / Orders / Suppliers / Profile |
-| Suppliers Empty State (B2-05) | Home / **Suppliers** / **Orders** / **Inventory** / Profile | Home / Customers / Orders / Suppliers / Profile |
-| Transaction Empty State (B2-06) | Home / **Transactions** / Customers / Suppliers / **More** | This is inside Customer Detail — no tab bar needed |
-| Financial Position (B2-07) | Home / Customers / **[center FAB]** / Suppliers / **Reports** | No tab bar — this is a pushed stack screen |
-| Profile (B2-10) | Home / **Transactions** / **Reports** / Profile | Home / Customers / Orders / Suppliers / Profile |
-| Supplier Detail (B2-17) | Home / Suppliers / Customers / **Reports** / **Menu** | Home / Customers / Orders / Suppliers / Profile |
-| Suppliers List (B2-18) | Home / Customers / **[center FAB]** / Suppliers / Profile | Home / Customers / Orders / Suppliers / Profile |
+| Screen                          | Shows                                                         | Should Show                                         |
+| ------------------------------- | ------------------------------------------------------------- | --------------------------------------------------- |
+| Seller Dashboard (B1-04)        | Home / Customers / Bills / Suppliers / Profile                | Home / Customers / **Orders** / Suppliers / Profile |
+| Distributor Dashboard (B2-03)   | Home / Customers / Bills / Suppliers / Profile                | Home / Customers / **Orders** / Suppliers / Profile |
+| Customers List (B2-02)          | Home / Customers / Bills / Suppliers / Profile                | Home / Customers / **Orders** / Suppliers / Profile |
+| Products Screen (B1-12)         | Home / Customers / Bills / Suppliers / Profile                | Home / Customers / **Orders** / Suppliers / Profile |
+| Customers Empty State (B2-04)   | Home / Customers / **Cashbook** / **Settings**                | Home / Customers / Orders / Suppliers / Profile     |
+| Suppliers Empty State (B2-05)   | Home / **Suppliers** / **Orders** / **Inventory** / Profile   | Home / Customers / Orders / Suppliers / Profile     |
+| Transaction Empty State (B2-06) | Home / **Transactions** / Customers / Suppliers / **More**    | This is inside Customer Detail — no tab bar needed  |
+| Financial Position (B2-07)      | Home / Customers / **[center FAB]** / Suppliers / **Reports** | No tab bar — this is a pushed stack screen          |
+| Profile (B2-10)                 | Home / **Transactions** / **Reports** / Profile               | Home / Customers / Orders / Suppliers / Profile     |
+| Supplier Detail (B2-17)         | Home / Suppliers / Customers / **Reports** / **Menu**         | Home / Customers / Orders / Suppliers / Profile     |
+| Suppliers List (B2-18)          | Home / Customers / **[center FAB]** / Suppliers / Profile     | Home / Customers / Orders / Suppliers / Profile     |
 
 **Fix**: Define one master tab bar component and apply it to every screen. Spec: 5 tabs, equal width, labels: **Home · Customers · Orders · Suppliers · Profile**. Active: `#22C55E`. Inactive: `#9CA3AF`. Height: 64dp + insets.bottom.
 
@@ -241,7 +241,7 @@ This is the single largest design system failure across the entire file set.
 
 Affected: `Refined_Log_In_Screen.png` (B2-13), `Refined_Sign_Up_Screen.png` (B2-15)
 
-Google OAuth is not in the tech stack. The PRD explicitly states: *"MVP authentication uses email + password to avoid SMS costs. Phone OTP is Phase 7."* There is no Google auth in Supabase config.
+Google OAuth is not in the tech stack. The PRD explicitly states: _"MVP authentication uses email + password to avoid SMS costs. Phone OTP is Phase 7."_ There is no Google auth in Supabase config.
 
 **Fix**: Remove the "Continue with Google" button entirely from both screens. The divider line and "or" text above it also disappear.
 
@@ -251,7 +251,7 @@ Google OAuth is not in the tech stack. The PRD explicitly states: *"MVP authenti
 
 Affected: `New_Bill_-_Refined_Item_Cards.png` (B2-08)
 
-Grand Total shows `₹10,143` in green text. P-20 fix in `PRODUCTION_SIGNOFF.md` explicitly states: *"Grand Total is dark text (#1C1C1E)."* Green on Grand Total creates a false signal — it suggests the total is a positive/received amount, not what the customer owes.
+Grand Total shows `₹10,143` in green text. P-20 fix in `PRODUCTION_SIGNOFF.md` explicitly states: _"Grand Total is dark text (#1C1C1E)."_ Green on Grand Total creates a false signal — it suggests the total is a positive/received amount, not what the customer owes.
 
 **Fix**: Grand Total label and amount → `color: #1C1C1E`, `fontSize: 28`, `fontWeight: 700`. Only Previous Balance stays red (`#E74C3C`).
 
@@ -261,7 +261,7 @@ Grand Total shows `₹10,143` in green text. P-20 fix in `PRODUCTION_SIGNOFF.md`
 
 Affected: `New_Bill_-_Refined_Item_Cards.png` (B2-08)
 
-Customer selector shows "Wholesale Customer" as a subtitle under "Mohit Sharma". P-20 spec: *"No customer subtitle."* The subtitle also uses a non-existent customer attribute — there is no "customer type" field in the customers table.
+Customer selector shows "Wholesale Customer" as a subtitle under "Mohit Sharma". P-20 spec: _"No customer subtitle."_ The subtitle also uses a non-existent customer attribute — there is no "customer type" field in the customers table.
 
 **Fix**: Remove the subtitle row. Show only customer name + previous balance warning.
 
@@ -281,7 +281,7 @@ The customer selector card shows a real photo. The app uses initials-based avata
 
 Affected: `Profile___Settings_-_Detailed_Icons.png` (B2-10)
 
-P-21 fix: *"Profile avatar: FILLED green circle."* The screen shows `RK` inside a green-bordered hollow circle. Should be a solid green circle `#22C55E` with white initials.
+P-21 fix: _"Profile avatar: FILLED green circle."_ The screen shows `RK` inside a green-bordered hollow circle. Should be a solid green circle `#22C55E` with white initials.
 
 **Fix**: `backgroundColor: #22C55E`, `borderRadius: 9999`, `width: 72, height: 72`. White bold initials centered inside.
 
@@ -304,7 +304,7 @@ This matters because "Both" is the most comprehensive mode and should be at the 
 
 Affected: `Customer_Detail_-_Mohit_Sharma.png` (B1-08), `Customer_Detail_-_Empty_State.png` (B1-14)
 
-P-19 fix: *"Quick action labels exactly: New Bill | Received | Send Reminder."* The third card shows "Reminder" only.
+P-19 fix: _"Quick action labels exactly: New Bill | Received | Send Reminder."_ The third card shows "Reminder" only.
 
 **Fix**: Label → "Send Reminder" (exact string, no truncation).
 
@@ -340,7 +340,7 @@ Affected: `Suppliers_List.png` (B2-18), `Pay_Supplier_Modal.png` (B1-02), `Suppl
 
 All supplier avatar circles are orange/amber. The design system specifies a deterministic 8-color palette for initials avatars. Orange exists in the palette (`#F97316`) but should not be the default for all suppliers. Each supplier should get a color based on a hash of their name.
 
-Also: the design system rule is *"Never use red or amber as decorative colors. Reserve them strictly for financial states."* Using amber/orange for avatars (a purely decorative context) violates this principle.
+Also: the design system rule is _"Never use red or amber as decorative colors. Reserve them strictly for financial states."_ Using amber/orange for avatars (a purely decorative context) violates this principle.
 
 **Fix**: Apply the deterministic `AVATAR_COLORS` hash. Metro Distributors "MD" → hashed to a specific palette color. No supplier should have the same avatar color by default.
 
@@ -356,7 +356,7 @@ Shows PKR currency, "CreditBooo" typo, Pakistani names, wrong layout. This must 
 
 Affected: `Body___Main_Wrapper.png` (B1-12)
 
-FAB shows green `+`. The design system: *"FAB: `#2563EB` (Blue). This is the highest-elevation element on every list screen."*
+FAB shows green `+`. The design system: _"FAB: `#2563EB` (Blue). This is the highest-elevation element on every list screen."_
 
 **Fix**: FAB background → `#2563EB`.
 
@@ -367,7 +367,7 @@ FAB shows green `+`. The design system: *"FAB: `#2563EB` (Blue). This is the hig
 Affected: `Export_data_screen.png` (B1-18)
 
 - Orders & Bills → green ✅
-- Payments Received → green ✅  
+- Payments Received → green ✅
 - Customer Balances → **blue**
 - Supplier Purchases → **orange**
 
@@ -380,6 +380,7 @@ All four buttons perform the same action (export CSV). They must all be the same
 Affected: `Financial_Position_with_Reports.png` (B2-07)
 
 The screen shows two sections that do not exist in the current codebase:
+
 1. **"Quick Insights"** — with overdue count, largest debt, collection rate
 2. **"Monthly Financial Report"** — PDF download card
 
@@ -488,7 +489,7 @@ Affected: `Refined_Role_Selection_Screen.png` (B2-14)
 - Wholesaler: orange truck icon ❌ (orange not in theme)
 - Small Business: blue briefcase icon ❌ (info blue used as decorative)
 
-Per design system: *"Never use red or amber as decorative colors."* Same applies to orange. Icon colors should be from the semantic token set.
+Per design system: _"Never use red or amber as decorative colors."_ Same applies to orange. Icon colors should be from the semantic token set.
 
 **Fix options**: Either use neutral gray for unselected role icons, or use `#22C55E` consistently for all 3. Selected role gets the green ring/checkmark.
 
@@ -514,56 +515,56 @@ Top-right shows a pink badge "I Owe: ₹54,200". This is useful context but shou
 
 ### Typography
 
-| Check | Status | Detail |
-|---|---|---|
-| Financial amounts bold + large | ✅ Mostly correct | Dashboard heroes all use large bold amounts |
-| Grand Total dark not green | 🔴 Broken | B2-08 New Bill — green Grand Total |
-| Captions use `#6B7280` | ⚠️ Inconsistent | Some screens use lighter gray, some use darker |
-| Inter font family | ✅ Consistent | All screens appear to use Inter |
+| Check                          | Status            | Detail                                         |
+| ------------------------------ | ----------------- | ---------------------------------------------- |
+| Financial amounts bold + large | ✅ Mostly correct | Dashboard heroes all use large bold amounts    |
+| Grand Total dark not green     | 🔴 Broken         | B2-08 New Bill — green Grand Total             |
+| Captions use `#6B7280`         | ⚠️ Inconsistent   | Some screens use lighter gray, some use darker |
+| Inter font family              | ✅ Consistent     | All screens appear to use Inter                |
 
 ### Color Tokens
 
-| Check | Status | Detail |
-|---|---|---|
-| Primary green `#22C55E` | ✅ Consistent | CTAs, active tabs, chips all correctly green |
-| FAB blue `#2563EB` | 🟠 Broken on 1 screen | Products List uses green FAB |
-| Danger red `#E74C3C` | ⚠️ Check needed | Some screens show `#EF4444` (Tailwind red-500) — verify in export screen |
-| Warning amber `#F59E0B` | ⚠️ Inconsistent | Supplier avatars use orange not amber |
-| Background `#F6F7F9` | ✅ Consistent | All screen backgrounds correct |
-| Success chip `#DCFCE7` bg / `#166534` text | ✅ Correct | Customers list PAID chip looks correct |
+| Check                                      | Status                | Detail                                                                   |
+| ------------------------------------------ | --------------------- | ------------------------------------------------------------------------ |
+| Primary green `#22C55E`                    | ✅ Consistent         | CTAs, active tabs, chips all correctly green                             |
+| FAB blue `#2563EB`                         | 🟠 Broken on 1 screen | Products List uses green FAB                                             |
+| Danger red `#E74C3C`                       | ⚠️ Check needed       | Some screens show `#EF4444` (Tailwind red-500) — verify in export screen |
+| Warning amber `#F59E0B`                    | ⚠️ Inconsistent       | Supplier avatars use orange not amber                                    |
+| Background `#F6F7F9`                       | ✅ Consistent         | All screen backgrounds correct                                           |
+| Success chip `#DCFCE7` bg / `#166534` text | ✅ Correct            | Customers list PAID chip looks correct                                   |
 
 ### Button Patterns
 
-| Check | Status | Detail |
-|---|---|---|
-| Primary: full-width green, 52dp, radius 14dp | ✅ Consistent | All primary CTAs follow this pattern |
-| Outline: green border, green text | ✅ Consistent | "Record Partial", "New Bill" outline buttons correct |
-| Dual CTA layout (outline + filled) | ✅ Consistent | Payment modals, New Bill use correct split |
-| Loading state: green spinner | Can't verify from static screens | Ensure spinner `color="#22C55E"` |
+| Check                                        | Status                           | Detail                                               |
+| -------------------------------------------- | -------------------------------- | ---------------------------------------------------- |
+| Primary: full-width green, 52dp, radius 14dp | ✅ Consistent                    | All primary CTAs follow this pattern                 |
+| Outline: green border, green text            | ✅ Consistent                    | "Record Partial", "New Bill" outline buttons correct |
+| Dual CTA layout (outline + filled)           | ✅ Consistent                    | Payment modals, New Bill use correct split           |
+| Loading state: green spinner                 | Can't verify from static screens | Ensure spinner `color="#22C55E"`                     |
 
 ### Card Patterns
 
-| Check | Status | Detail |
-|---|---|---|
-| White surface, radius 12–20dp, soft shadow | ✅ Consistent | All cards follow this |
-| 16dp horizontal margin from screen edge | ✅ Consistent | Cards don't touch edges |
-| Financial amounts right-aligned in lists | ✅ Consistent | All list screens correct |
+| Check                                      | Status        | Detail                   |
+| ------------------------------------------ | ------------- | ------------------------ |
+| White surface, radius 12–20dp, soft shadow | ✅ Consistent | All cards follow this    |
+| 16dp horizontal margin from screen edge    | ✅ Consistent | Cards don't touch edges  |
+| Financial amounts right-aligned in lists   | ✅ Consistent | All list screens correct |
 
 ### Navigation Headers
 
-| Check | Status | Detail |
-|---|---|---|
-| Stack screens: back arrow + title | ✅ Correct on auth screens | Business setup, login, signup all correct |
-| Tab screens: large title top-left | ⚠️ Inconsistent | Some tab screens show back arrows (B2-04, B2-05) |
-| Detail screens: back + name + action icons | ✅ Mostly correct | Customer Detail, Supplier Detail correct |
+| Check                                      | Status                     | Detail                                           |
+| ------------------------------------------ | -------------------------- | ------------------------------------------------ |
+| Stack screens: back arrow + title          | ✅ Correct on auth screens | Business setup, login, signup all correct        |
+| Tab screens: large title top-left          | ⚠️ Inconsistent            | Some tab screens show back arrows (B2-04, B2-05) |
+| Detail screens: back + name + action icons | ✅ Mostly correct          | Customer Detail, Supplier Detail correct         |
 
 ### Bottom Sheets
 
-| Check | Status | Detail |
-|---|---|---|
-| Handle pill at top (40×4dp, `#E5E5EA`) | ✅ All modals have it | |
-| White background, radius-top 24dp | ✅ Consistent | |
-| Backdrop `rgba(0,0,0,0.4)` | Cannot verify in static | |
+| Check                                  | Status                  | Detail |
+| -------------------------------------- | ----------------------- | ------ |
+| Handle pill at top (40×4dp, `#E5E5EA`) | ✅ All modals have it   |        |
+| White background, radius-top 24dp      | ✅ Consistent           |        |
+| Backdrop `rgba(0,0,0,0.4)`             | Cannot verify in static |        |
 
 ---
 
@@ -571,100 +572,118 @@ Top-right shows a pink badge "I Owe: ₹54,200". This is useful context but shou
 
 These screens are implied by the product flow but are absent from the uploaded set.
 
-| Missing Screen | Where It Appears | Priority |
-|---|---|---|
-| **Orders List** | `app/(main)/orders/index.tsx` — the main orders/bills tab | 🔴 High — entire tab missing |
-| **Order Detail** | `app/(main)/orders/[orderId].tsx` — tap any order row | 🔴 High |
-| **Reset Password** | `app/(auth)/resetPassword.tsx` — "Forgot password?" link on Login | 🟠 Medium |
-| **Onboarding Step 1** (phone/intro) | `app/(auth)/onboarding/index.tsx` | 🟡 Low — may be simple |
-| **Distributor Dashboard hero — "Both" split card close-up** | When isBothMode and user zooms | 🟡 Low |
-| **Record Payment — partial state** | After entering amount < full balance | 🟡 Low |
-| **Record Payment — success state** | After confirming payment | 🟡 Low — covered by toast |
-| **Supplier Delivery — empty history** | When no deliveries yet | 🟡 Low |
-| **Product Detail / View** | Tap on product row in Products screen | 🟡 Low |
-| **Error State screens** | Network failure, API error in any list | 🟡 Low |
-| **Loading Skeleton screens** | While data is fetching on first load | 🟡 Low |
+| Missing Screen                                              | Where It Appears                                                  | Priority                     |
+| ----------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------- |
+| **Orders List**                                             | `app/(main)/orders/index.tsx` — the main orders/bills tab         | 🔴 High — entire tab missing |
+| **Order Detail**                                            | `app/(main)/orders/[orderId].tsx` — tap any order row             | 🔴 High                      |
+| **Reset Password**                                          | `app/(auth)/resetPassword.tsx` — "Forgot password?" link on Login | 🟠 Medium                    |
+| **Onboarding Step 1** (phone/intro)                         | `app/(auth)/onboarding/index.tsx`                                 | 🟡 Low — may be simple       |
+| **Distributor Dashboard hero — "Both" split card close-up** | When isBothMode and user zooms                                    | 🟡 Low                       |
+| **Record Payment — partial state**                          | After entering amount < full balance                              | 🟡 Low                       |
+| **Record Payment — success state**                          | After confirming payment                                          | 🟡 Low — covered by toast    |
+| **Supplier Delivery — empty history**                       | When no deliveries yet                                            | 🟡 Low                       |
+| **Product Detail / View**                                   | Tap on product row in Products screen                             | 🟡 Low                       |
+| **Error State screens**                                     | Network failure, API error in any list                            | 🟡 Low                       |
+| **Loading Skeleton screens**                                | While data is fetching on first load                              | 🟡 Low                       |
 
 ---
 
 ## STEP 7 — UX IMPROVEMENTS BY SCREEN
 
 ### Welcome Screen (B2-01) — No changes needed
+
 The screen is clean, on-brand, and communicates value clearly. The three feature pills (Fast Entry / Always Visible / Works Offline) are effective trust builders for non-technical users. The "SECURE & ENCRYPTED" badge at the bottom is good for a financial app.
 
-### Login / Signup (B2-13, B2-15) — Remove Google auth
-Removing Google removes cognitive split. The user has one clear path. Error state on login ("Invalid email or password") is well-placed — just below the form, above the sign-up link.
-
 ### Role Selection (B2-14) — Good structure, fix icon colors
+
 The 3-card layout is the right UX. One selection at a time, full descriptions, clear visual feedback on selection. Descriptions are excellent ("Kirana store, medical shop, clothing — sell to local customers on credit"). Icon colors need to be neutral/consistent (see N-05).
 
 **Improvement**: Add a subtle "Most Popular" chip on Retailer card. Data shows most CreditBook users are kirana store owners.
 
 ### Business Setup (B1-06, B1-07) — Good, add field count
+
 The 2-step layout with progress bar is correct. Step 1 is lightweight (Name, GSTIN, Prefix). Step 2 handles bank details (UPI, Bank, Account, IFSC).
 
 **Improvement**: On Step 2, add a note: "These details print on every bill you send." This gives users a reason to fill it out rather than skip.
 
 ### Onboarding Complete (B2-09) — Fix truncated pill
+
 The screen is warm and motivating. "Add Your First Customer" is the right primary CTA — it gets the user into the core loop immediately.
 
 ### Seller Dashboard (B1-04) — Strong, fix tab label
+
 The red gradient hero, time-based greeting, overdue bell dot, and action bar are all correct per spec. This is the strongest dashboard design.
 
 **Improvement**: The "See All" link for Recent Activity should be replaced with "View Report" to connect it to the Financial Position screen. Keeps navigation predictable.
 
 ### Distributor Dashboard (B2-03) — Fix action bar, fix tab label
+
 The pink gradient correctly communicates "money I owe" as distinct from the red "money owed to me". Good differentiation.
 
 **Improvement**: The action bar inside the hero card ("View Suppliers →" + "Record Delivery") should be moved below the hero card and standardised to match the Seller Dashboard's action bar pattern. In-card actions make the card feel cluttered.
 
 ### Customers List (B2-02) — Strong, fix tab label only
+
 Initials avatars with deterministic colors, filter tabs, balance right-aligned, status chips, dual FAB — all excellent. This is the strongest list screen design.
 
 ### Customer Detail — Active (B1-08) — Fix 2 labels
+
 The transaction feed with date groups and running balance per row is the right pattern for a khata book replacement. Users understand chronological debt history.
 
 ### Customer Detail — Zero Balance (B1-14) — Strong
+
 The green hero for ₹0 is the correct P-19 implementation. "ALL SETTLED" messaging is motivating. Dual CTA (New Bill + Record Payment) gives the right options for a new customer with no history.
 
 ### New Bill (B2-08) — Fix 3 items
+
 Good item card structure (item name, rate, quantity stepper, subtotal). The formula breakdown at the bottom (Items Total → GST → Loading → Previous Balance → Grand Total) is exactly right for Indian billing context.
 
 **Improvement**: The bill number "INV-043" badge is well-placed top-right. Make it tappable with a tooltip explaining it's auto-assigned.
 
 ### Products List (B1-12) — Fix FAB color
+
 Category filter chips are a Phase 7 addition (not in current schema) — remove from v3.x production design. The base list with variant count per product is correct.
 
 ### Add/Edit Product (B1-09, B1-16) — Both clean
+
 The variant rows (Unit/Size + Price) side by side is the right density for a modal. "+ Add Variant" in green is correctly placed.
 
 ### Delete Confirmation (B1-17) — Clean
+
 The warning icon in a light red circle communicates severity without alarming. "This action cannot be undone" is the right copy. Correct use of danger color for the destructive action.
 
 ### Suppliers List (B2-18) — Fix avatar colors, fix FAB position
+
 The "I Owe: ₹54,200" total at top is a useful context — it mirrors what the Dashboard hero shows. Good design decision.
 
 **Improvement**: Add an "Add Supplier" option accessible without scrolling — currently only via FAB. Consider a secondary FAB (import-style) for bulk add.
 
 ### Supplier Detail (B2-17) — Fix tab bar, fix delivery icon
+
 Bank Details with "Copy UPI" is excellent UX — one tap to copy UPI ID for bank transfers. The delivery history with date groups mirrors the customer transaction feed pattern correctly.
 
 ### Record Delivery (B2-11) — Strong
+
 The summary row at the bottom (Items: ₹5,400 · Loading: ₹200 · Advance: -₹500) with red "Net Added to Balance: ₹5,100" is perfect financial clarity. Users understand what's being added to what they owe.
 
 ### Record Customer Payment (B2-12) — Fix avatar color
+
 The two-button layout "Record Partial" + "Mark Full Paid" is the right split. Full balance pre-filled is a good shortcut for common case (user paying exact amount).
 
 ### Pay Supplier (B1-02) — Fix warning logic
+
 Good layout, correct field order. See C-09 for the warning issue.
 
 ### Financial Position (B2-07) — Remove Phase 7 content
+
 The 3 gradient cards are the correct v3.x design. Quick Insights and Monthly Report are Phase 7 — design them separately.
 
 ### Export Data (B1-18) — Fix button colors
+
 Date range with "All time"/"This month" quick chips is a good shortcut. The 4 export types with icons and descriptions are clear.
 
 ### Profile (B2-10) — Fix avatar, fix mode order
+
 The grouped sections (Business Details / Bank Account / App Preferences / Data) are the right information architecture. Data section (Export) is correctly at the bottom.
 
 ### Success Toast (B2-16) — Correct, annotate positioning
@@ -758,24 +777,24 @@ PROFILE EXTENSION
 
 Use this table to instruct Copilot in priority order. Each row = one Copilot prompt session.
 
-| Priority | Screens | Fix | Code File |
-|---|---|---|---|
-| 1 | All screens | Standardise tab bar to: Home / Customers / **Orders** / Suppliers / Profile | `app/(main)/_layout.tsx` |
-| 2 | Login, Signup | Remove "Continue with Google" button | `login.tsx`, `signup.tsx` |
-| 3 | New Bill | Grand Total → `color: #1C1C1E`. Remove customer subtitle. Replace photo with initials avatar | `CreateOrderScreen.tsx` |
-| 4 | Profile | Avatar → filled green circle. Mode order → Seller/Distributor/Both | `ProfileScreen.tsx` |
-| 5 | Customer Detail | Quick action 3rd label → "Send Reminder" | `[customerId].tsx` |
-| 6 | Pay Supplier | Warning only shows when `amount > balance` (not `>=`) | `RecordPaymentMadeModal.tsx` |
-| 7 | Contact Picker | Replace +92 numbers and Pakistani names with Indian data | `ContactsPickerModal.tsx` |
-| 8 | Export Screen | All 4 Export CSV buttons → `#22C55E` | `ExportScreen.tsx` |
-| 9 | Products Screen | FAB → `#2563EB` | `ProductsScreen.tsx` |
-| 10 | Both Dashboard | Remove hamburger menu. Add initials avatar header | `DashboardHeader.tsx` |
-| 11 | Empty States B2-04, B2-05 | Remove back arrow from tab-level screens | `CustomersScreen.tsx`, `SuppliersScreen.tsx` |
-| 12 | Distributor Dashboard | Standardise action bar to "View Report" + "Send Reminder" | `DashboardActionBar.tsx` |
-| 13 | Add Supplier (Vibrant) | Fix bank placeholder text → Indian banks. IBAN → Account Number | `NewSupplierModal.tsx` |
-| 14 | Financial Position | Remove Quick Insights + Monthly Report (Phase 7) | `reports/index.tsx` |
-| 15 | All avatars | Apply deterministic AVATAR_COLORS hash to supplier avatars | `SupplierCard.tsx` |
+| Priority | Screens                   | Fix                                                                                          | Code File                                    |
+| -------- | ------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| 1        | All screens               | Standardise tab bar to: Home / Customers / **Orders** / Suppliers / Profile                  | `app/(main)/_layout.tsx`                     |
+| 2        | Login, Signup             | Remove "Continue with Google" button                                                         | `login.tsx`, `signup.tsx`                    |
+| 3        | New Bill                  | Grand Total → `color: #1C1C1E`. Remove customer subtitle. Replace photo with initials avatar | `CreateOrderScreen.tsx`                      |
+| 4        | Profile                   | Avatar → filled green circle. Mode order → Seller/Distributor/Both                           | `ProfileScreen.tsx`                          |
+| 5        | Customer Detail           | Quick action 3rd label → "Send Reminder"                                                     | `[customerId].tsx`                           |
+| 6        | Pay Supplier              | Warning only shows when `amount > balance` (not `>=`)                                        | `RecordPaymentMadeModal.tsx`                 |
+| 7        | Contact Picker            | Replace +92 numbers and Pakistani names with Indian data                                     | `ContactsPickerModal.tsx`                    |
+| 8        | Export Screen             | All 4 Export CSV buttons → `#22C55E`                                                         | `ExportScreen.tsx`                           |
+| 9        | Products Screen           | FAB → `#2563EB`                                                                              | `ProductsScreen.tsx`                         |
+| 10       | Both Dashboard            | Remove hamburger menu. Add initials avatar header                                            | `DashboardHeader.tsx`                        |
+| 11       | Empty States B2-04, B2-05 | Remove back arrow from tab-level screens                                                     | `CustomersScreen.tsx`, `SuppliersScreen.tsx` |
+| 12       | Distributor Dashboard     | Standardise action bar to "View Report" + "Send Reminder"                                    | `DashboardActionBar.tsx`                     |
+| 13       | Add Supplier (Vibrant)    | Fix bank placeholder text → Indian banks. IBAN → Account Number                              | `NewSupplierModal.tsx`                       |
+| 14       | Financial Position        | Remove Quick Insights + Monthly Report (Phase 7)                                             | `reports/index.tsx`                          |
+| 15       | All avatars               | Apply deterministic AVATAR_COLORS hash to supplier avatars                                   | `SupplierCard.tsx`                           |
 
 ---
 
-*This audit covers all 36 screens uploaded across Batch 1 and Batch 2. Ready to proceed to Copilot-assisted implementation in priority order.*
+_This audit covers all 36 screens uploaded across Batch 1 and Batch 2. Ready to proceed to Copilot-assisted implementation in priority order._

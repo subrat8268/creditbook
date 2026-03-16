@@ -88,9 +88,9 @@ export const DashboardScreen = () => {
               label="I OWE SUPPLIERS"
               amount={data.iOweSuppliers}
               subInfo={`${data.activeSuppliers} active supplier${data.activeSuppliers !== 1 ? "s" : ""}`}
-              onPrimaryAction={() => router.push("/(main)/suppliers" as any)}
+              onPrimaryAction={() => router.push("/(main)/reports" as any)}
               onSecondaryAction={() => {
-                // TODO(v3.6): Record Delivery sheet
+                // TODO(Phase 7): Record Delivery sheet
               }}
             />
             <DashboardHeroCard
@@ -109,11 +109,7 @@ export const DashboardScreen = () => {
                 ? `${data.activeSuppliers} active supplier${data.activeSuppliers !== 1 ? "s" : ""}`
                 : undefined
             }
-            onPrimaryAction={() =>
-              isDistributor
-                ? router.push("/(main)/suppliers" as any)
-                : router.push("/(main)/reports" as any)
-            }
+            onPrimaryAction={() => router.push("/(main)/reports" as any)}
             onSecondaryAction={() => {
               // TODO(v3.6): distributor → RecordDeliverySheet; seller → WhatsApp bulk reminder
             }}
@@ -164,7 +160,7 @@ export const DashboardScreen = () => {
           shadowRadius: 12,
           elevation: 8,
         }}
-        onPress={() => router.push("/orders/createOrderScreen")}
+        onPress={() => router.push("/(main)/orders/create" as any)}
       >
         <Plus size={26} color="#FFFFFF" strokeWidth={2.5} />
       </Pressable>
