@@ -43,7 +43,7 @@ export const CustomerSchema = Yup.object().shape({
 
 export const ProductSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
-  base_price: Yup.number().positive("Must be positive").required("Required"),
+  base_price: Yup.number().positive("Must be positive").nullable(),
   variants: Yup.array()
     .of(
       Yup.object().shape({

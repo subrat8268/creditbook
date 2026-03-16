@@ -1,17 +1,17 @@
 import { Package, Search, X } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
-  FlatList,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    FlatList,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import NewProductModal, {
-  type ProductSubmitValues,
+    type ProductSubmitValues,
 } from "../components/products/NewProductModal";
 import ProductActionsModal from "../components/products/ProductActionsModal";
 import ProductCard from "../components/products/ProductCard";
@@ -19,10 +19,10 @@ import ConfirmModal from "../components/ui/ConfirmModal";
 import FloatingActionButton from "../components/ui/FloatingActionButton";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import {
-  useAddProduct,
-  useDeleteProduct,
-  useProducts,
-  useUpdateProduct,
+    useAddProduct,
+    useDeleteProduct,
+    useProducts,
+    useUpdateProduct,
 } from "../hooks/useProducts";
 import { useAuthStore } from "../store/authStore";
 import { colors } from "../utils/theme";
@@ -70,17 +70,14 @@ export default function ProductsScreen() {
   const updateProductMutation = useUpdateProduct(vendorId!);
   const deleteProductMutation = useDeleteProduct(vendorId!);
 
-  const totalCount = useMemo(
-    () => (products ?? []).length,
-    [products],
-  );
+  const totalCount = useMemo(() => (products ?? []).length, [products]);
 
   // ── Handlers ────────────────────────────────────────────
   const handleAddProduct = async (values: ProductSubmitValues) => {
     try {
       await addProductMutation.mutateAsync({
         name: values.name,
-        base_price: values.variants.length > 0 ? values.variants[0].price : 0,
+        base_price: null,
         image_url: null,
         variants: values.variants as any,
       });
@@ -98,7 +95,7 @@ export default function ProductsScreen() {
         id: editingProduct.id,
         values: {
           name: values.name,
-          base_price: values.variants.length > 0 ? values.variants[0].price : 0,
+          base_price: null,
           image_url: null,
           variants: values.variants as any,
         },
@@ -156,7 +153,7 @@ export default function ProductsScreen() {
 
   const handleSelectCategory = (keyword: string) => {
     setActiveCategory(keyword);
-    setSearch("");           // clear free-text when picking a chip
+    setSearch(""); // clear free-text when picking a chip
     setSearchVisible(false); // hide search bar
   };
 
@@ -198,7 +195,14 @@ export default function ProductsScreen() {
         }}
       >
         {/* Title + count */}
-        <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
           <Text
             style={{
               fontSize: 22,

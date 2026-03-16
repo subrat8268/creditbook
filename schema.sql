@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   vendor_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
-  base_price NUMERIC(10,2) NOT NULL,
+  base_price NUMERIC(10,2),                -- nullable: NULL = variant-only product (no single base price)
   variants JSONB,                    -- live has this column (pos 6); legacy variant storage
   image_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -108,14 +108,17 @@ CREATE TABLE IF NOT EXISTS orders (
   loading_charge NUMERIC(10,2) NOT NULL DEFAULT 0,    -- transport/delivery (not taxed)
   tax_percent NUMERIC(5,2) NOT NULL DEFAULT 0,        -- GST % applied to items only
 
-  -- Status: 'Unpaid' is the initial default.
-  -- NOTE: No CHECK constraint on status values exists in live DB (never applied).
-  -- A CHECK constraint is desirable and listed in the migrations section below.
+  -- Status: 'Unpaid' is the column default for new rows.
+  -- CHECK constraint orders_status_check enforces the allowed value set.
+  -- Applied via migration: apply_orders_constraints.sql
   status TEXT NOT NULL DEFAULT 'Unpaid',
 
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-  -- NOTE: UNIQUE(vendor_id, bill_number) is NOT in the live DB (bill_number is nullable).
-  -- Desirable constraint listed in migrations section below.
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+  -- Per-vendor bill number uniqueness (NULLs are allowed — Postgres treats them as distinct).
+  -- Applied via migration: apply_orders_constraints.sql
+  CONSTRAINT orders_status_check CHECK (status IN ('Unpaid', 'Pending', 'Partially Paid', 'Paid')),
+  CONSTRAINT orders_vendor_bill_unique UNIQUE (vendor_id, bill_number)
 );
 
 -- -----------------------------------------------------------------------------
@@ -157,9 +160,10 @@ CREATE TABLE IF NOT EXISTS payments (
 
 -- customers
 CREATE INDEX IF NOT EXISTS idx_customers_vendor           ON customers(vendor_id);
-CREATE INDEX IF NOT EXISTS idx_customers_phone            ON customers(phone);
-CREATE UNIQUE INDEX IF NOT EXISTS customers_phone_idx     ON customers(phone);           -- live: unique phone per DB (global)
-CREATE UNIQUE INDEX IF NOT EXISTS customers_vendor_phone_idx ON customers(vendor_id, phone); -- live: unique phone per vendor
+CREATE INDEX IF NOT EXISTS idx_customers_phone               ON customers(phone);
+-- customers_phone_idx (global UNIQUE on phone) has been dropped — it blocked legitimate
+-- inserts where two vendors share a customer. See migration: drop_global_customers_phone_idx.sql
+CREATE UNIQUE INDEX IF NOT EXISTS customers_vendor_phone_idx ON customers(vendor_id, phone); -- unique phone per vendor (correct constraint)
 
 -- products
 CREATE INDEX IF NOT EXISTS idx_products_vendor            ON products(vendor_id);
@@ -537,8 +541,7 @@ CREATE OR REPLACE TRIGGER link_profile_after_signup
   FOR EACH ROW EXECUTE FUNCTION link_user_profile();
 
 -- Recalculate parent order's amount_paid + status after any payment change.
--- NOTE: Not found in live trigger scan (scan was limited to auth.users table).
--- Run the migration below if this trigger is missing in your live DB.
+-- Applied via migration: apply_orders_constraints.sql (includes existence guard).
 CREATE OR REPLACE TRIGGER on_payment_upsert
   AFTER INSERT OR UPDATE ON public.payments
   FOR EACH ROW EXECUTE FUNCTION update_order_status();
@@ -726,13 +729,9 @@ ALTER TABLE orders ALTER COLUMN bill_number DROP NOT NULL;
 -- 6. total_amount has no DEFAULT in live (remove the default)
 ALTER TABLE orders ALTER COLUMN total_amount DROP DEFAULT;
 
--- 7. status CHECK and UNIQUE(vendor_id, bill_number) do NOT exist in live DB.
---    Apply these to add proper integrity constraints:
-ALTER TABLE orders ADD CONSTRAINT orders_status_check
-  CHECK (status IN ('Paid', 'Pending', 'Partially Paid', 'Unpaid'));
-
-ALTER TABLE orders ADD CONSTRAINT orders_vendor_bill_unique
-  UNIQUE (vendor_id, bill_number);
+-- 7. orders_status_check and orders_vendor_bill_unique are now applied via
+--    migration: apply_orders_constraints.sql (includes duplicate-detection
+--    query, remediation helper, and idempotent DO $$ existence guards).
 
 -- -----------------------------------------------------------------------------
 -- order_items table: product_id is NOT NULL in live

@@ -5,7 +5,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 interface ProductCardProps {
   name: string;
-  basePrice: number;
+  basePrice: number | null;
   variants?: ProductVariant[];
   onOptionsPress: () => void;
 }
@@ -17,8 +17,9 @@ export default function ProductCard({
   onOptionsPress,
 }: ProductCardProps) {
   const variantCount = variants?.length ?? 0;
-  // Display price: if variants exist, show lowest variant price; otherwise base price
-  const displayPrice =
+  // Display price: lowest variant price when variants exist, base_price as fallback,
+  // null when neither is set (variant-only product with no variants added yet).
+  const displayPrice: number | null =
     variantCount > 0 ? Math.min(...variants!.map((v) => v.price)) : basePrice;
 
   return (
@@ -84,7 +85,9 @@ export default function ProductCard({
             color: colors.neutral[900],
           }}
         >
-          ₹{displayPrice.toLocaleString("en-IN")}
+          {displayPrice !== null
+            ? `₹${displayPrice.toLocaleString("en-IN")}`
+            : "—"}
         </Text>
         <ChevronRight size={16} color={colors.neutral[400]} strokeWidth={2} />
       </View>

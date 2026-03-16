@@ -82,7 +82,14 @@ export async function addCustomer(
     .insert([payload])
     .select()
     .single();
-  if (error) throw error;
+  if (error) {
+    if (error.code === "23505") {
+      throw new Error(
+        "A customer with this phone number already exists in your account.",
+      );
+    }
+    throw error;
+  }
   return data as Customer;
 }
 
