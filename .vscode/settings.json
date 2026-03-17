@@ -3,5 +3,11 @@
     "source.fixAll": "explicit",
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
-  }
+  },
+  "json.schemas": [
+    {
+      "fileMatch": ["app.json"],
+      "url": "https://raw.githubusercontent.com/expo/vscode-expo/main/schema/expo-xdl.json"
+    }
+  ]
 }

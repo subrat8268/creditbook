@@ -6,11 +6,11 @@ import * as Contacts from "expo-contacts";
 import { Check, Users, UserX, X } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Linking,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Linking,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useCustomersStore } from "../../store/customersStore";
 import { normalizePhone } from "../../utils/phone";
@@ -210,281 +210,272 @@ export default function ContactsPickerModal({
       handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
       backgroundStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
     >
-        {/* Header — hidden on denied (full sheet used for permission UI) */}
-        {status !== "denied" && (
-          <View className="flex-row items-start justify-between px-5 pt-3 pb-4">
-            <View style={{ flex: 1, marginRight: 12 }}>
-              <Text
-                className="text-[18px] font-bold"
-                style={{ color: colors.neutral[900] }}
-              >
-                Import Contacts
-              </Text>
-              <Text
-                className="text-[13px] mt-0.5"
-                style={{ color: colors.neutral[500] }}
-              >
-                Select contacts to add as customers
-              </Text>
-            </View>
-            <TouchableOpacity onPress={onClose} hitSlop={8} className="mt-0.5">
-              <X size={22} color={colors.neutral[500]} strokeWidth={2} />
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Search */}
-        {status === "ready" && (
-          <View className="px-5 pb-3">
-            <SearchBar
-              value={search}
-              onChangeText={setSearch}
-              placeholder="Search contacts..."
-            />
-          </View>
-        )}
-
-        {/* Select All / count row */}
-        {status === "ready" && filtered.length > 0 && (
-          <View className="flex-row items-center justify-between px-5 pb-2">
-            <TouchableOpacity
-              onPress={allFilteredSelected ? clearAll : selectAll}
-              activeOpacity={0.7}
-            >
-              <Text
-                className="text-[14px] font-semibold"
-                style={{ color: colors.primary.DEFAULT }}
-              >
-                {allFilteredSelected ? "Deselect All" : "Select All"}
-              </Text>
-            </TouchableOpacity>
+      {/* Header — hidden on denied (full sheet used for permission UI) */}
+      {status !== "denied" && (
+        <View className="flex-row items-start justify-between px-5 pt-3 pb-4">
+          <View style={{ flex: 1, marginRight: 12 }}>
             <Text
-              className="text-[13px]"
-              style={{ color: colors.neutral[500] }}
-            >
-              {filtered.length} contact{filtered.length === 1 ? "" : "s"}
-            </Text>
-          </View>
-        )}
-
-        {/* Divider — hidden on denied */}
-        {status !== "denied" && (
-          <View style={{ height: 1, backgroundColor: colors.neutral[200] }} />
-        )}
-
-        {/* Body states */}
-        {status === "loading" && (
-          <View className="items-center justify-center py-16">
-            <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
-          </View>
-        )}
-
-        {status === "denied" && (
-          <View className="items-center justify-center px-8 py-12">
-            {/* Icon in a soft red circle */}
-            <View
-              className="rounded-full items-center justify-center mb-6"
-              style={{
-                width: 96,
-                height: 96,
-                backgroundColor: colors.danger.bg,
-              }}
-            >
-              <UserX
-                size={48}
-                color={colors.danger.DEFAULT}
-                strokeWidth={1.5}
-              />
-            </View>
-
-            <Text
-              className="text-[18px] font-bold text-center mb-2"
+              className="text-[18px] font-bold"
               style={{ color: colors.neutral[900] }}
             >
-              Contacts access denied
+              Import Contacts
             </Text>
-
             <Text
-              className="text-[13px] text-center mb-8 leading-5"
+              className="text-[13px] mt-0.5"
               style={{ color: colors.neutral[500] }}
             >
-              Enable in Settings &#8594; Privacy &#8594; Contacts
+              Select contacts to add as customers
             </Text>
+          </View>
+          <TouchableOpacity onPress={onClose} hitSlop={8} className="mt-0.5">
+            <X size={22} color={colors.neutral[500]} strokeWidth={2} />
+          </TouchableOpacity>
+        </View>
+      )}
 
-            {/* Outlined CTA */}
-            <TouchableOpacity
-              onPress={() => Linking.openSettings()}
-              activeOpacity={0.8}
-              className="w-full items-center justify-center rounded-xl"
-              style={{
-                height: 52,
-                borderWidth: 1.5,
-                borderColor: colors.neutral[300],
-                backgroundColor: "#FFFFFF",
-              }}
+      {/* Search */}
+      {status === "ready" && (
+        <View className="px-5 pb-3">
+          <SearchBar
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search contacts..."
+          />
+        </View>
+      )}
+
+      {/* Select All / count row */}
+      {status === "ready" && filtered.length > 0 && (
+        <View className="flex-row items-center justify-between px-5 pb-2">
+          <TouchableOpacity
+            onPress={allFilteredSelected ? clearAll : selectAll}
+            activeOpacity={0.7}
+          >
+            <Text
+              className="text-[14px] font-semibold"
+              style={{ color: colors.primary.DEFAULT }}
             >
-              <Text
-                className="text-[16px] font-semibold"
-                style={{ color: colors.neutral[900] }}
-              >
-                Open Settings
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {status === "ready" && filtered.length === 0 && (
-          <View className="items-center justify-center py-16">
-            <Users size={48} color={colors.neutral[400]} strokeWidth={1.5} />
-            <Text className="mt-3" style={{ color: colors.neutral[500] }}>
-              No contacts found
+              {allFilteredSelected ? "Deselect All" : "Select All"}
             </Text>
+          </TouchableOpacity>
+          <Text className="text-[13px]" style={{ color: colors.neutral[500] }}>
+            {filtered.length} contact{filtered.length === 1 ? "" : "s"}
+          </Text>
+        </View>
+      )}
+
+      {/* Divider — hidden on denied */}
+      {status !== "denied" && (
+        <View style={{ height: 1, backgroundColor: colors.neutral[200] }} />
+      )}
+
+      {/* Body states */}
+      {status === "loading" && (
+        <View className="items-center justify-center py-16">
+          <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
+        </View>
+      )}
+
+      {status === "denied" && (
+        <View className="items-center justify-center px-8 py-12">
+          {/* Icon in a soft red circle */}
+          <View
+            className="rounded-full items-center justify-center mb-6"
+            style={{
+              width: 96,
+              height: 96,
+              backgroundColor: colors.danger.bg,
+            }}
+          >
+            <UserX size={48} color={colors.danger.DEFAULT} strokeWidth={1.5} />
           </View>
-        )}
 
-        {status === "ready" && filtered.length > 0 && (
-          <BottomSheetFlatList
-            data={filtered}
-            keyExtractor={(item) => item.id}
-            style={{ flex: 1 }}
-            keyboardShouldPersistTaps="handled"
-            renderItem={({ item }) => {
-              const isSelected = selected.has(item.id);
-              const alreadyExists = existingPhones.has(item.phone);
-              const avatarColor = getAvatarColor(item.name);
+          <Text
+            className="text-[18px] font-bold text-center mb-2"
+            style={{ color: colors.neutral[900] }}
+          >
+            Contacts access denied
+          </Text>
 
-              return (
-                <TouchableOpacity
-                  onPress={() => !alreadyExists && toggle(item.id)}
-                  activeOpacity={alreadyExists ? 1 : 0.7}
-                  className="flex-row items-center px-5 py-3"
+          <Text
+            className="text-[13px] text-center mb-8 leading-5"
+            style={{ color: colors.neutral[500] }}
+          >
+            Enable in Settings &#8594; Privacy &#8594; Contacts
+          </Text>
+
+          {/* Outlined CTA */}
+          <TouchableOpacity
+            onPress={() => Linking.openSettings()}
+            activeOpacity={0.8}
+            className="w-full items-center justify-center rounded-xl"
+            style={{
+              height: 52,
+              borderWidth: 1.5,
+              borderColor: colors.neutral[300],
+              backgroundColor: "#FFFFFF",
+            }}
+          >
+            <Text
+              className="text-[16px] font-semibold"
+              style={{ color: colors.neutral[900] }}
+            >
+              Open Settings
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {status === "ready" && filtered.length === 0 && (
+        <View className="items-center justify-center py-16">
+          <Users size={48} color={colors.neutral[400]} strokeWidth={1.5} />
+          <Text className="mt-3" style={{ color: colors.neutral[500] }}>
+            No contacts found
+          </Text>
+        </View>
+      )}
+
+      {status === "ready" && filtered.length > 0 && (
+        <BottomSheetFlatList
+          data={filtered}
+          keyExtractor={(item: ContactEntry) => item.id}
+          style={{ flex: 1 }}
+          keyboardShouldPersistTaps="handled"
+          renderItem={({ item }: { item: ContactEntry }) => {
+            const isSelected = selected.has(item.id);
+            const alreadyExists = existingPhones.has(item.phone);
+            const avatarColor = getAvatarColor(item.name);
+
+            return (
+              <TouchableOpacity
+                onPress={() => !alreadyExists && toggle(item.id)}
+                activeOpacity={alreadyExists ? 1 : 0.7}
+                className="flex-row items-center px-5 py-3"
+                style={{
+                  backgroundColor: isSelected ? colors.success.bg : "#FFFFFF",
+                  borderBottomWidth: 1,
+                  borderBottomColor: colors.neutral[200],
+                }}
+              >
+                {/* Checkbox */}
+                <View
+                  className="mr-3 items-center justify-center rounded"
                   style={{
-                    backgroundColor: isSelected ? colors.success.bg : "#FFFFFF",
-                    borderBottomWidth: 1,
-                    borderBottomColor: colors.neutral[200],
+                    width: 22,
+                    height: 22,
+                    borderWidth: 2,
+                    borderColor: isSelected
+                      ? colors.primary.DEFAULT
+                      : alreadyExists
+                        ? colors.neutral[300]
+                        : colors.neutral[400],
+                    backgroundColor: isSelected
+                      ? colors.primary.DEFAULT
+                      : "#FFFFFF",
                   }}
                 >
-                  {/* Checkbox */}
-                  <View
-                    className="mr-3 items-center justify-center rounded"
-                    style={{
-                      width: 22,
-                      height: 22,
-                      borderWidth: 2,
-                      borderColor: isSelected
-                        ? colors.primary.DEFAULT
-                        : alreadyExists
-                          ? colors.neutral[300]
-                          : colors.neutral[400],
-                      backgroundColor: isSelected
-                        ? colors.primary.DEFAULT
-                        : "#FFFFFF",
-                    }}
+                  {isSelected && (
+                    <Check size={13} color="#FFFFFF" strokeWidth={3} />
+                  )}
+                </View>
+
+                {/* Avatar */}
+                <View
+                  className="rounded-full mr-3 items-center justify-center"
+                  style={{
+                    width: 44,
+                    height: 44,
+                    backgroundColor: avatarColor,
+                    opacity: alreadyExists ? 0.5 : 1,
+                  }}
+                >
+                  <Text
+                    className="font-bold text-white"
+                    style={{ fontSize: 15 }}
                   >
-                    {isSelected && (
-                      <Check size={13} color="#FFFFFF" strokeWidth={3} />
+                    {getInitials(item.name)}
+                  </Text>
+                </View>
+
+                {/* Name + phone */}
+                <View className="flex-1">
+                  <View
+                    className="flex-row items-center flex-wrap"
+                    style={{ gap: 6 }}
+                  >
+                    <Text
+                      className="font-semibold"
+                      style={{
+                        color: alreadyExists
+                          ? colors.neutral[400]
+                          : colors.neutral[900],
+                        fontSize: 15,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {item.name}
+                    </Text>
+                    {alreadyExists && (
+                      <View
+                        className="rounded-full px-2 py-0.5"
+                        style={{ backgroundColor: colors.success.light }}
+                      >
+                        <Text
+                          className="text-[11px] font-semibold"
+                          style={{ color: colors.success.text }}
+                        >
+                          Already in CreditBook
+                        </Text>
+                      </View>
                     )}
                   </View>
-
-                  {/* Avatar */}
-                  <View
-                    className="rounded-full mr-3 items-center justify-center"
-                    style={{
-                      width: 44,
-                      height: 44,
-                      backgroundColor: avatarColor,
-                      opacity: alreadyExists ? 0.5 : 1,
-                    }}
+                  <Text
+                    className="text-[13px] mt-0.5"
+                    style={{ color: colors.neutral[500] }}
                   >
-                    <Text
-                      className="font-bold text-white"
-                      style={{ fontSize: 15 }}
-                    >
-                      {getInitials(item.name)}
-                    </Text>
-                  </View>
+                    {item.phone}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          }}
+        />
+      )}
 
-                  {/* Name + phone */}
-                  <View className="flex-1">
-                    <View
-                      className="flex-row items-center flex-wrap"
-                      style={{ gap: 6 }}
-                    >
-                      <Text
-                        className="font-semibold"
-                        style={{
-                          color: alreadyExists
-                            ? colors.neutral[400]
-                            : colors.neutral[900],
-                          fontSize: 15,
-                        }}
-                        numberOfLines={1}
-                      >
-                        {item.name}
-                      </Text>
-                      {alreadyExists && (
-                        <View
-                          className="rounded-full px-2 py-0.5"
-                          style={{ backgroundColor: colors.success.light }}
-                        >
-                          <Text
-                            className="text-[11px] font-semibold"
-                            style={{ color: colors.success.text }}
-                          >
-                            Already in CreditBook
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                    <Text
-                      className="text-[13px] mt-0.5"
-                      style={{ color: colors.neutral[500] }}
-                    >
-                      {item.phone}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              );
+      {/* Footer */}
+      {status === "ready" && (
+        <View
+          className="px-5 py-4"
+          style={{ borderTopWidth: 1, borderTopColor: colors.neutral[200] }}
+        >
+          <TouchableOpacity
+            onPress={handleImport}
+            disabled={selected.size === 0 || importing}
+            activeOpacity={0.8}
+            className="rounded-full items-center justify-center"
+            style={{
+              height: 52,
+              backgroundColor:
+                selected.size === 0 || importing
+                  ? colors.neutral[200]
+                  : colors.primary.DEFAULT,
             }}
-          />
-        )}
-
-        {/* Footer */}
-        {status === "ready" && (
-          <View
-            className="px-5 py-4"
-            style={{ borderTopWidth: 1, borderTopColor: colors.neutral[200] }}
           >
-            <TouchableOpacity
-              onPress={handleImport}
-              disabled={selected.size === 0 || importing}
-              activeOpacity={0.8}
-              className="rounded-full items-center justify-center"
-              style={{
-                height: 52,
-                backgroundColor:
-                  selected.size === 0 || importing
-                    ? colors.neutral[200]
-                    : colors.primary.DEFAULT,
-              }}
-            >
-              {importing ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text
-                  className="text-[16px] font-bold"
-                  style={{
-                    color:
-                      selected.size === 0 ? colors.neutral[500] : "#FFFFFF",
-                  }}
-                >
-                  {importLabel}
-                </Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
+            {importing ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text
+                className="text-[16px] font-bold"
+                style={{
+                  color: selected.size === 0 ? colors.neutral[500] : "#FFFFFF",
+                }}
+              >
+                {importLabel}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      )}
     </BottomSheet>
   );
 }

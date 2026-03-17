@@ -1,8 +1,8 @@
+import { colors } from "@/src/utils/theme";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
-import { colors } from "@/src/utils/theme";
 import { FieldArray, Formik } from "formik";
 import { Plus, Trash2, X } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef } from "react";
@@ -23,7 +23,7 @@ interface FormValues {
 
 export interface ProductSubmitValues {
   name: string;
-  variants: Array<{ variant_name: string; price: number }>;
+  variants: { variant_name: string; price: number }[];
 }
 
 export interface NewProductModalProps {
@@ -34,7 +34,7 @@ export interface NewProductModalProps {
   onSubmit: (values: ProductSubmitValues) => Promise<void>;
   initialValues?: {
     name: string;
-    variants?: Array<{ variant_name: string; price: number }>;
+    variants?: { variant_name: string; price: number }[];
   };
   loading?: boolean;
   errorMessage?: string;
@@ -173,7 +173,11 @@ export default function NewProductModal({
         }}
       >
         <Text
-          style={{ fontSize: 18, fontWeight: "700", color: colors.neutral[900] }}
+          style={{
+            fontSize: 18,
+            fontWeight: "700",
+            color: colors.neutral[900],
+          }}
         >
           {`${title} Product`}
         </Text>
@@ -204,10 +208,20 @@ export default function NewProductModal({
           }
         }}
       >
-        {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+        {({
+          handleChange,
+          handleBlur,
+          handleSubmit,
+          values,
+          errors,
+          touched,
+        }) => (
           <>
             <BottomSheetScrollView
-              contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 8 }}
+              contentContainerStyle={{
+                paddingHorizontal: 20,
+                paddingBottom: 8,
+              }}
               keyboardShouldPersistTaps="handled"
             >
               {/* Subtitle */}
@@ -221,7 +235,7 @@ export default function NewProductModal({
               >
                 Products appear in search when creating a bill
               </Text>
-              {/* ── Product Name ── */
+              {/* ── Product Name ── */}
               <Text
                 style={{
                   fontWeight: "600",
@@ -349,9 +363,7 @@ export default function NewProductModal({
                           onChangeText={handleChange(
                             `variants[${index}].price`,
                           )}
-                          onBlur={() =>
-                            handleBlur(`variants[${index}].price`)
-                          }
+                          onBlur={() => handleBlur(`variants[${index}].price`)}
                         />
                         <TouchableOpacity
                           onPress={() => remove(index)}
@@ -396,7 +408,7 @@ export default function NewProductModal({
               <View style={{ height: 8 }} />
             </BottomSheetScrollView>
 
-            {/* ── Sticky CTA ── */
+            {/* ── Sticky CTA ── */}
             <View
               style={{
                 borderTopWidth: 1,

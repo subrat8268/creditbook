@@ -50,15 +50,7 @@
       "expo-secure-store"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "2d6f89f5-dcb0-4987-b420-4ef5f1b393ed"
-      }
-    },
-    "owner": "subratjenas-organization"
+      "typedRoutes": true
+    }
   }
 }

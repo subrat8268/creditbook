@@ -1,6 +1,6 @@
 import BottomSheet, {
-    BottomSheetBackdrop,
-    BottomSheetScrollView,
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { Formik } from "formik";
 import { X } from "lucide-react-native";
@@ -308,7 +308,7 @@ export default function NewCustomerModal({
                     Opening Balance (optional)
                   </Text>
                   <View
-                    className="flex-row items-center border rounded-xl px-4 py-3"
+                    className="flex-row items-center border rounded-xl px-4"
                     style={{ borderColor: colors.neutral[200] }}
                   >
                     {/* ₹ prefix */}

@@ -14,6 +14,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import * as Yup from "yup";
 import Button from "../../src/components/ui/Button";
 import Input from "../../src/components/ui/Input";
@@ -60,137 +61,148 @@ export default function SetNewPasswordPage() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-white"
-      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "#F6F7F9" }}
+      edges={["top"]}
     >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1 bg-white"
+        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
       >
-        <View className="flex-1 px-6 py-10 justify-center">
-          {/* Icon */}
-          <View className="w-16 h-16 rounded-full bg-success-light items-center justify-center self-center mb-6">
-            <KeyRound size={32} color={colors.primary.dark} strokeWidth={1.5} />
-          </View>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View className="flex-1 px-6 py-10 justify-center">
+            {/* Icon */}
+            <View className="w-16 h-16 rounded-full bg-success-light items-center justify-center self-center mb-6">
+              <KeyRound
+                size={32}
+                color={colors.primary.dark}
+                strokeWidth={1.5}
+              />
+            </View>
 
-          {/* Heading */}
-          <Text className="text-2xl font-bold text-neutral-900 text-center mb-2">
-            Set New Password
-          </Text>
-          <Text className="text-neutral-500 text-sm text-center mb-8">
-            Choose a strong password for your CreditBook account.
-          </Text>
-
-          <Formik
-            initialValues={{ password: "", confirmPassword: "" }}
-            validationSchema={SetNewPasswordSchema}
-            onSubmit={handleSubmit}
-          >
-            {({
-              handleChange,
-              handleSubmit: submit,
-              values,
-              errors,
-              touched,
-              isSubmitting,
-            }) => (
-              <>
-                {/* New Password */}
-                <Text className="text-[13px] font-semibold text-textDark mb-2">
-                  New Password
-                </Text>
-                <Input
-                  placeholder="Min. 6 characters"
-                  value={values.password}
-                  onChangeText={handleChange("password")}
-                  secureTextEntry={!showPassword}
-                  error={touched.password ? errors.password : undefined}
-                  variant="white"
-                  icon={
-                    <TouchableOpacity
-                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                      onPress={() => setShowPassword((p) => !p)}
-                      accessibilityLabel="Toggle password visibility"
-                    >
-                      {showPassword ? (
-                        <EyeOff
-                          size={20}
-                          color={colors.neutral[400]}
-                          strokeWidth={1.8}
-                        />
-                      ) : (
-                        <Eye
-                          size={20}
-                          color={colors.neutral[400]}
-                          strokeWidth={1.8}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  }
-                  iconPosition="right"
-                />
-
-                {/* Confirm Password */}
-                <Text className="text-[13px] font-semibold text-textDark mb-2 mt-4">
-                  Confirm Password
-                </Text>
-                <Input
-                  placeholder="Re-enter your password"
-                  value={values.confirmPassword}
-                  onChangeText={handleChange("confirmPassword")}
-                  secureTextEntry={!showConfirm}
-                  error={
-                    touched.confirmPassword ? errors.confirmPassword : undefined
-                  }
-                  variant="white"
-                  icon={
-                    <TouchableOpacity
-                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                      onPress={() => setShowConfirm((p) => !p)}
-                      accessibilityLabel="Toggle confirm password visibility"
-                    >
-                      {showConfirm ? (
-                        <EyeOff
-                          size={20}
-                          color={colors.neutral[400]}
-                          strokeWidth={1.8}
-                        />
-                      ) : (
-                        <Eye
-                          size={20}
-                          color={colors.neutral[400]}
-                          strokeWidth={1.8}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  }
-                  iconPosition="right"
-                />
-
-                <Button
-                  title="Update Password"
-                  onPress={submit}
-                  loading={isSubmitting}
-                  className="mt-6"
-                />
-              </>
-            )}
-          </Formik>
-
-          <TouchableOpacity
-            onPress={() => router.replace("/(auth)/login")}
-            className="mt-6 items-center"
-          >
-            <Text className="text-textSecondary text-sm">
-              {"Back to "}
-              <Text className="text-primary font-semibold">Log In</Text>
+            {/* Heading */}
+            <Text className="text-2xl font-bold text-neutral-900 text-center mb-2">
+              Set New Password
             </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+            <Text className="text-neutral-500 text-sm text-center mb-8">
+              Choose a strong password for your CreditBook account.
+            </Text>
+
+            <Formik
+              initialValues={{ password: "", confirmPassword: "" }}
+              validationSchema={SetNewPasswordSchema}
+              onSubmit={handleSubmit}
+            >
+              {({
+                handleChange,
+                handleSubmit: submit,
+                values,
+                errors,
+                touched,
+                isSubmitting,
+              }) => (
+                <>
+                  {/* New Password */}
+                  <Text className="text-[13px] font-semibold text-textDark mb-2">
+                    New Password
+                  </Text>
+                  <Input
+                    placeholder="Min. 6 characters"
+                    value={values.password}
+                    onChangeText={handleChange("password")}
+                    secureTextEntry={!showPassword}
+                    error={touched.password ? errors.password : undefined}
+                    variant="white"
+                    icon={
+                      <TouchableOpacity
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        onPress={() => setShowPassword((p) => !p)}
+                        accessibilityLabel="Toggle password visibility"
+                      >
+                        {showPassword ? (
+                          <EyeOff
+                            size={20}
+                            color={colors.neutral[400]}
+                            strokeWidth={1.8}
+                          />
+                        ) : (
+                          <Eye
+                            size={20}
+                            color={colors.neutral[400]}
+                            strokeWidth={1.8}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    }
+                    iconPosition="right"
+                  />
+
+                  {/* Confirm Password */}
+                  <Text className="text-[13px] font-semibold text-textDark mb-2 mt-4">
+                    Confirm Password
+                  </Text>
+                  <Input
+                    placeholder="Re-enter your password"
+                    value={values.confirmPassword}
+                    onChangeText={handleChange("confirmPassword")}
+                    secureTextEntry={!showConfirm}
+                    error={
+                      touched.confirmPassword
+                        ? errors.confirmPassword
+                        : undefined
+                    }
+                    variant="white"
+                    icon={
+                      <TouchableOpacity
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        onPress={() => setShowConfirm((p) => !p)}
+                        accessibilityLabel="Toggle confirm password visibility"
+                      >
+                        {showConfirm ? (
+                          <EyeOff
+                            size={20}
+                            color={colors.neutral[400]}
+                            strokeWidth={1.8}
+                          />
+                        ) : (
+                          <Eye
+                            size={20}
+                            color={colors.neutral[400]}
+                            strokeWidth={1.8}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    }
+                    iconPosition="right"
+                  />
+
+                  <Button
+                    title="Update Password"
+                    onPress={submit}
+                    loading={isSubmitting}
+                    className="mt-6"
+                  />
+                </>
+              )}
+            </Formik>
+
+            <TouchableOpacity
+              onPress={() => router.replace("/(auth)/login")}
+              className="mt-6 items-center"
+            >
+              <Text className="text-textSecondary text-sm">
+                {"Back to "}
+                <Text className="text-primary font-semibold">Log In</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }

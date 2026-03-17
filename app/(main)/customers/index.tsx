@@ -1,3 +1,16 @@
+import ContactsPickerModal from "@/src/components/customers/ContactsPickerModal";
+import CustomerList, {
+  CustomerFilter,
+} from "@/src/components/customers/CustomerList";
+import CustomersHeader from "@/src/components/customers/CustomersHeader";
+import NewCustomerModal from "@/src/components/customers/NewCustomerModal";
+import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
+import SearchBar from "@/src/components/ui/SearchBar";
+import { useAddCustomer, useCustomers } from "@/src/hooks/useCustomer";
+import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
+import { useAuthStore } from "@/src/store/authStore";
+import { useCustomersStore } from "@/src/store/customersStore";
+import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { Users } from "lucide-react-native";
 import { useCallback, useState } from "react";
@@ -12,19 +25,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import ContactsPickerModal from "@/src/components/customers/ContactsPickerModal";
-import CustomerList, {
-  CustomerFilter,
-} from "@/src/components/customers/CustomerList";
-import CustomersHeader from "@/src/components/customers/CustomersHeader";
-import NewCustomerModal from "@/src/components/customers/NewCustomerModal";
-import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
-import SearchBar from "@/src/components/ui/SearchBar";
-import { useAddCustomer, useCustomers } from "@/src/hooks/useCustomer";
-import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
-import { useAuthStore } from "@/src/store/authStore";
-import { useCustomersStore } from "@/src/store/customersStore";
-import { colors } from "@/src/utils/theme";
 
 const FILTERS: CustomerFilter[] = ["All", "Overdue", "Paid", "Pending"];
 
@@ -111,7 +111,10 @@ export default function CustomersScreen() {
   };
 
   return (
-    <SafeAreaView edges={["left", "right"]} className="flex-1 bg-white">
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "#F6F7F9" }}
+      edges={["top"]}
+    >
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* ── Screen header ── */}

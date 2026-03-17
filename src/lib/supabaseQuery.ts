@@ -42,10 +42,6 @@ interface RawPostgrestError {
   hint: string;
 }
 
-/**
- * Convert a raw PostgrestError into a typed ApiError.
- * Does not throw — call `throw toApiError(err)` at the call site.
- */
 export function toApiError(err: RawPostgrestError): ApiError {
   const status = PG_STATUS[err.code] ?? 500;
   return new ApiError(err.code, err.message, status, err.details, err.hint);
