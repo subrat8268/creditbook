@@ -9,5 +9,6 @@
       "fileMatch": ["app.json"],
       "url": "https://raw.githubusercontent.com/expo/vscode-expo/main/schema/expo-xdl.json"
     }
-  ]
+  ],
+  "java.configuration.updateBuildConfiguration": "interactive"
 }

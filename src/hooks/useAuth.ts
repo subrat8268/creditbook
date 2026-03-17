@@ -1,5 +1,4 @@
 // src/hooks/useAuth.ts
-import { Sentry } from "@/src/services/sentry";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
@@ -72,13 +71,6 @@ export function useLogin() {
       await fetchProfile();
       const { profile } = useAuthStore.getState();
 
-      Sentry.addBreadcrumb({
-        category: "auth",
-        message: "auth_login_success",
-        level: "info",
-        data: { userId: user?.id, hasProfile: !!profile },
-      });
-
       if (!profile) {
         // fetchProfile completed but returned null (DB fetch + upsert both failed).
         // Routing to dashboard would target a Stack.Screen that is not registered
@@ -115,13 +107,6 @@ export function useGoogleSignIn() {
 
   return useMutation({
     mutationFn: async () => {
-      // Emit the breadcrumb here — before openAuthSessionAsync — so it fires
-      // at the true start of the OAuth flow, not after completion.
-      Sentry.addBreadcrumb({
-        category: "auth",
-        message: "google_oauth_start",
-        level: "info",
-      });
       return signInWithGoogleApi();
     },
     onSuccess: async (user) => {
@@ -146,25 +131,9 @@ export function useGoogleSignIn() {
         // onboarding_complete defaults to false → user will go through onboarding.
         if (user) await createMinimalProfile(user.id);
         await fetchProfile(); // re-read the row we just inserted
-        Sentry.addBreadcrumb({
-          category: "auth",
-          message: "google_oauth_success",
-          level: "info",
-          data: { userId: user?.id, profileCreated: true },
-        });
         router.replace("/(auth)/onboarding/role" as any);
         return;
       }
-
-      Sentry.addBreadcrumb({
-        category: "auth",
-        message: "google_oauth_success",
-        level: "info",
-        data: {
-          userId: user?.id,
-          onboardingComplete: profile.onboarding_complete,
-        },
-      });
 
       if (!profile.onboarding_complete) {
         router.replace("/(auth)/onboarding/role" as any);
@@ -223,12 +192,6 @@ export function useSignUp() {
         await new Promise((r) => setTimeout(r, 600));
         retries--;
       }
-      Sentry.addBreadcrumb({
-        category: "auth",
-        message: "signup_success",
-        level: "info",
-        data: { userId: user?.id },
-      });
 
       const { profile: signedUpProfile } = useAuthStore.getState();
       if (!signedUpProfile) {
@@ -268,11 +231,6 @@ export function useLogout() {
   return useMutation({
     mutationFn: logoutApi,
     onSuccess: async () => {
-      Sentry.addBreadcrumb({
-        category: "auth",
-        message: "logout",
-        level: "info",
-      });
       // Do NOT call setUser(null) here. supabase.auth.signOut() synchronously
       // fires onAuthStateChange(SIGNED_OUT) which already calls setUser(null)
       // — clearing user + profile in the store. Calling it a second time here

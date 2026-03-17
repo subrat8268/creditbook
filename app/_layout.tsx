@@ -2,7 +2,6 @@ import Loader from "@/src/components/feedback/Loader";
 import { ToastProvider } from "@/src/components/feedback/Toast";
 import { useAuth } from "@/src/hooks/useAuth";
 import { useFontsLoader } from "@/src/hooks/useFontsLoader";
-import { initSentry, Sentry } from "@/src/services/sentry";
 import { ThemeProvider } from "@/src/utils/ThemeProvider";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -17,14 +16,8 @@ import "../src/i18n"; // initialise i18n (side-effect import)
 import { useAuthStore } from "../src/store/authStore";
 import { useLanguageStore } from "../src/store/languageStore";
 
-// Initialise Sentry as early as possible — before any component mounts
-initSentry();
-
-// Required for expo-web-browser OAuth redirect handling (noop on Android/iOS,
-// closes the auth session tab on web)
 WebBrowser.maybeCompleteAuthSession();
 
-// Keep native splash visible until first app frame is intentionally ready.
 SplashScreen.preventAutoHideAsync().catch(() => {
   // Ignore if already prevented/hidden by the runtime.
 });
@@ -32,8 +25,6 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 const queryClient = new QueryClient();
 
 function RootLayout() {
-  // useAuth sets up supabase.auth.onAuthStateChange + restores the persisted
-  // session on startup — this keeps auth.uid() valid for all RLS policies.
   useAuth();
 
   const {
@@ -65,7 +56,7 @@ function RootLayout() {
       }
     };
     init();
-  }, []);
+  }, [loadLanguage]);
 
   useEffect(() => {
     if (fontsLoaded && !loading) {
@@ -123,4 +114,4 @@ function RootLayout() {
   );
 }
 
-export default Sentry.wrap(RootLayout);
+export default RootLayout;

@@ -1,5 +1,4 @@
 import { useToast } from "@/src/components/feedback/Toast";
-import { Sentry } from "@/src/services/sentry";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { useRouter } from "expo-router";
@@ -24,13 +23,6 @@ export default function OnboardingReady() {
       if (dbErr) throw dbErr;
       const current = useAuthStore.getState().profile;
       if (current) setProfile({ ...current, onboarding_complete: true });
-
-      Sentry.addBreadcrumb({
-        category: "auth",
-        message: "onboarding_complete",
-        level: "info",
-        data: { userId: user?.id, next },
-      });
 
       if (next === "customer") {
         router.replace("/(main)/customers" as any);

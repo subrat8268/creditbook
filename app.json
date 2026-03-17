@@ -32,7 +32,6 @@
     "plugins": [
       "expo-router",
       "expo-web-browser",
-      "@sentry/react-native/expo",
       [
         "expo-splash-screen",
         {

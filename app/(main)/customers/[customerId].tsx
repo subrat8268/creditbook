@@ -1,6 +1,7 @@
 import RecordCustomerPaymentModal from "@/src/components/customers/RecordCustomerPaymentModal";
 import EmptyState from "@/src/components/feedback/EmptyState";
 import Loader from "@/src/components/feedback/Loader";
+import { useToast } from "@/src/components/feedback/Toast";
 import { useCustomerDetail } from "@/src/hooks/useCustomer";
 import { useAuthStore } from "@/src/store/authStore";
 import { Transaction } from "@/src/types/customer";
@@ -24,7 +25,6 @@ import {
 } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import {
-  Alert,
   Linking,
   ScrollView,
   Text,
@@ -231,6 +231,8 @@ export default function CustomerDetailScreen() {
   } = useCustomerDetail(customerId);
   const profile = useAuthStore((s) => s.profile);
 
+  const { show: showToast } = useToast();
+
   const [txFilter, setTxFilter] = useState<TxFilter>("All");
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -251,6 +253,13 @@ export default function CustomerDetailScreen() {
 
   const downloadStatement = async () => {
     if (!customer) return;
+    if (customer.transactions.length === 0) {
+      showToast({
+        message: "No transactions yet — add a bill or payment first.",
+        type: "error",
+      });
+      return;
+    }
     setExporting(true);
     try {
       const html = buildStatementHtml(
@@ -266,7 +275,7 @@ export default function CustomerDetailScreen() {
         UTI: ".pdf",
       });
     } catch {
-      Alert.alert("Error", "Could not generate statement.");
+      showToast({ message: "Could not generate statement.", type: "error" });
     } finally {
       setExporting(false);
     }
@@ -303,7 +312,7 @@ export default function CustomerDetailScreen() {
   return (
     <SafeAreaView
       className="flex-1 bg-background"
-      edges={["top", "left", "right", "bottom"]}
+      edges={["top", "left", "right"]}
     >
       <Stack.Screen options={{ headerShown: false }} />
 
@@ -326,16 +335,18 @@ export default function CustomerDetailScreen() {
           ) : null}
         </View>
         <View className="flex-row gap-2">
-          <TouchableOpacity
-            className="w-[38px] h-[38px] rounded-full bg-search items-center justify-center"
-            onPress={downloadStatement}
-          >
-            <FileText
-              size={20}
-              color={colors.primary.DEFAULT}
-              strokeWidth={2}
-            />
-          </TouchableOpacity>
+          {customer.transactions.length > 0 && (
+            <TouchableOpacity
+              className="w-[38px] h-[38px] rounded-full bg-search items-center justify-center"
+              onPress={downloadStatement}
+            >
+              <FileText
+                size={20}
+                color={colors.primary.DEFAULT}
+                strokeWidth={2}
+              />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             className="w-[38px] h-[38px] rounded-full bg-search items-center justify-center"
             onPress={callCustomer}
@@ -472,10 +483,10 @@ export default function CustomerDetailScreen() {
             activeOpacity={0.8}
             onPress={() => {
               if (!hasPendingPayment) {
-                Alert.alert(
-                  "No Balance",
-                  "This customer has no outstanding balance.",
-                );
+                showToast({
+                  message: "No outstanding balance for this customer.",
+                  type: "error",
+                });
                 return;
               }
               setPaymentModalVisible(true);
@@ -645,7 +656,7 @@ export default function CustomerDetailScreen() {
       </ScrollView>
 
       {/* ── Download Statement Footer ── */}
-      <View className="px-6 py-4 bg-white border-t border-border">
+      <View className="px-6 py-6 bg-white border-t border-border">
         <TouchableOpacity
           className={`flex-row items-center justify-center gap-2 rounded-[30px] py-4 ${
             exporting ? "opacity-60" : ""
@@ -657,7 +668,7 @@ export default function CustomerDetailScreen() {
                 : colors.neutral[900],
           }}
           onPress={downloadStatement}
-          disabled={exporting}
+          disabled={exporting || customer.transactions.length === 0}
           activeOpacity={0.85}
         >
           <Download
