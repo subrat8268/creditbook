@@ -35,10 +35,10 @@ function isValidPhone(phone: string): boolean {
 
 // ── Avatar utilities (mirrors CustomerCard / NewCustomerModal) ───────────────
 const AVATAR_COLORS = [
-  colors.danger.DEFAULT,
-  colors.warning.DEFAULT,
-  colors.primary.DEFAULT,
-  colors.info.DEFAULT,
+  colors.danger,
+  colors.warning,
+  colors.primary,
+  "#4F9CFF",
   "#9B59B6",
   "#E91E8C",
   "#00BCD4",
@@ -207,7 +207,7 @@ export default function ContactsPickerModal({
       onChange={(idx) => {
         if (idx === -1) onClose();
       }}
-      handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
+      handleIndicatorStyle={{ backgroundColor: colors.border, width: 40 }}
       backgroundStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
     >
       {/* Header — hidden on denied (full sheet used for permission UI) */}
@@ -216,19 +216,19 @@ export default function ContactsPickerModal({
           <View style={{ flex: 1, marginRight: 12 }}>
             <Text
               className="text-[18px] font-bold"
-              style={{ color: colors.neutral[900] }}
+              style={{ color: colors.textPrimary }}
             >
               Import Contacts
             </Text>
             <Text
               className="text-[13px] mt-0.5"
-              style={{ color: colors.neutral[500] }}
+              style={{ color: colors.textSecondary }}
             >
               Select contacts to add as customers
             </Text>
           </View>
           <TouchableOpacity onPress={onClose} hitSlop={8} className="mt-0.5">
-            <X size={22} color={colors.neutral[500]} strokeWidth={2} />
+            <X size={22} color={colors.textSecondary} strokeWidth={2} />
           </TouchableOpacity>
         </View>
       )}
@@ -253,12 +253,12 @@ export default function ContactsPickerModal({
           >
             <Text
               className="text-[14px] font-semibold"
-              style={{ color: colors.primary.DEFAULT }}
+              style={{ color: colors.primary }}
             >
               {allFilteredSelected ? "Deselect All" : "Select All"}
             </Text>
           </TouchableOpacity>
-          <Text className="text-[13px]" style={{ color: colors.neutral[500] }}>
+          <Text className="text-[13px]" style={{ color: colors.textSecondary }}>
             {filtered.length} contact{filtered.length === 1 ? "" : "s"}
           </Text>
         </View>
@@ -266,13 +266,13 @@ export default function ContactsPickerModal({
 
       {/* Divider — hidden on denied */}
       {status !== "denied" && (
-        <View style={{ height: 1, backgroundColor: colors.neutral[200] }} />
+        <View style={{ height: 1, backgroundColor: colors.border }} />
       )}
 
       {/* Body states */}
       {status === "loading" && (
         <View className="items-center justify-center py-16">
-          <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       )}
 
@@ -284,22 +284,22 @@ export default function ContactsPickerModal({
             style={{
               width: 96,
               height: 96,
-              backgroundColor: colors.danger.bg,
+              backgroundColor: colors.dangerBg,
             }}
           >
-            <UserX size={48} color={colors.danger.DEFAULT} strokeWidth={1.5} />
+            <UserX size={48} color={colors.danger} strokeWidth={1.5} />
           </View>
 
           <Text
             className="text-[18px] font-bold text-center mb-2"
-            style={{ color: colors.neutral[900] }}
+            style={{ color: colors.textPrimary }}
           >
             Contacts access denied
           </Text>
 
           <Text
             className="text-[13px] text-center mb-8 leading-5"
-            style={{ color: colors.neutral[500] }}
+            style={{ color: colors.textSecondary }}
           >
             Enable in Settings &#8594; Privacy &#8594; Contacts
           </Text>
@@ -312,13 +312,13 @@ export default function ContactsPickerModal({
             style={{
               height: 52,
               borderWidth: 1.5,
-              borderColor: colors.neutral[300],
+              borderColor: colors.border,
               backgroundColor: "#FFFFFF",
             }}
           >
             <Text
               className="text-[16px] font-semibold"
-              style={{ color: colors.neutral[900] }}
+              style={{ color: colors.textPrimary }}
             >
               Open Settings
             </Text>
@@ -328,8 +328,8 @@ export default function ContactsPickerModal({
 
       {status === "ready" && filtered.length === 0 && (
         <View className="items-center justify-center py-16">
-          <Users size={48} color={colors.neutral[400]} strokeWidth={1.5} />
-          <Text className="mt-3" style={{ color: colors.neutral[500] }}>
+          <Users size={48} color={"#AEAEB2"} strokeWidth={1.5} />
+          <Text className="mt-3" style={{ color: colors.textSecondary }}>
             No contacts found
           </Text>
         </View>
@@ -352,9 +352,9 @@ export default function ContactsPickerModal({
                 activeOpacity={alreadyExists ? 1 : 0.7}
                 className="flex-row items-center px-5 py-3"
                 style={{
-                  backgroundColor: isSelected ? colors.success.bg : "#FFFFFF",
+                  backgroundColor: isSelected ? colors.successBg : "#FFFFFF",
                   borderBottomWidth: 1,
-                  borderBottomColor: colors.neutral[200],
+                  borderBottomColor: colors.border,
                 }}
               >
                 {/* Checkbox */}
@@ -365,12 +365,12 @@ export default function ContactsPickerModal({
                     height: 22,
                     borderWidth: 2,
                     borderColor: isSelected
-                      ? colors.primary.DEFAULT
+                      ? colors.primary
                       : alreadyExists
-                        ? colors.neutral[300]
-                        : colors.neutral[400],
+                        ? colors.border
+                        : "#AEAEB2",
                     backgroundColor: isSelected
-                      ? colors.primary.DEFAULT
+                      ? colors.primary
                       : "#FFFFFF",
                   }}
                 >
@@ -407,8 +407,8 @@ export default function ContactsPickerModal({
                       className="font-semibold"
                       style={{
                         color: alreadyExists
-                          ? colors.neutral[400]
-                          : colors.neutral[900],
+                          ? "#AEAEB2"
+                          : colors.textPrimary,
                         fontSize: 15,
                       }}
                       numberOfLines={1}
@@ -418,11 +418,11 @@ export default function ContactsPickerModal({
                     {alreadyExists && (
                       <View
                         className="rounded-full px-2 py-0.5"
-                        style={{ backgroundColor: colors.success.light }}
+                        style={{ backgroundColor: colors.paid.bg }}
                       >
                         <Text
                           className="text-[11px] font-semibold"
-                          style={{ color: colors.success.text }}
+                          style={{ color: colors.paid.text }}
                         >
                           Already in CreditBook
                         </Text>
@@ -431,7 +431,7 @@ export default function ContactsPickerModal({
                   </View>
                   <Text
                     className="text-[13px] mt-0.5"
-                    style={{ color: colors.neutral[500] }}
+                    style={{ color: colors.textSecondary }}
                   >
                     {item.phone}
                   </Text>
@@ -446,7 +446,7 @@ export default function ContactsPickerModal({
       {status === "ready" && (
         <View
           className="px-5 py-4"
-          style={{ borderTopWidth: 1, borderTopColor: colors.neutral[200] }}
+          style={{ borderTopWidth: 1, borderTopColor: colors.border }}
         >
           <TouchableOpacity
             onPress={handleImport}
@@ -457,8 +457,8 @@ export default function ContactsPickerModal({
               height: 52,
               backgroundColor:
                 selected.size === 0 || importing
-                  ? colors.neutral[200]
-                  : colors.primary.DEFAULT,
+                  ? colors.border
+                  : colors.primary,
             }}
           >
             {importing ? (
@@ -467,7 +467,7 @@ export default function ContactsPickerModal({
               <Text
                 className="text-[16px] font-bold"
                 style={{
-                  color: selected.size === 0 ? colors.neutral[500] : "#FFFFFF",
+                  color: selected.size === 0 ? colors.textSecondary : "#FFFFFF",
                 }}
               >
                 {importLabel}

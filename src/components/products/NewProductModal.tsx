@@ -82,7 +82,7 @@ function RupeeInput({
         flexDirection: "row",
         alignItems: "center",
         borderWidth: 1,
-        borderColor: colors.neutral[200],
+        borderColor: colors.border,
         borderRadius: 12,
         overflow: "hidden",
       }}
@@ -92,15 +92,15 @@ function RupeeInput({
           paddingHorizontal: 10,
           paddingVertical: 12,
           borderRightWidth: 1,
-          borderRightColor: colors.neutral[200],
-          backgroundColor: colors.neutral[100],
+          borderRightColor: colors.border,
+          backgroundColor: colors.background,
         }}
       >
-        <Text style={{ color: colors.neutral[500], fontSize: 14 }}>₹</Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 14 }}>₹</Text>
       </View>
       <TextInput
         placeholder="0"
-        placeholderTextColor={colors.neutral[400]}
+        placeholderTextColor={"#AEAEB2"}
         value={value}
         onChangeText={onChangeText}
         onBlur={onBlur}
@@ -110,7 +110,7 @@ function RupeeInput({
           paddingHorizontal: 10,
           paddingVertical: 12,
           fontSize: 14,
-          color: colors.neutral[900],
+          color: colors.textPrimary,
         }}
       />
     </View>
@@ -172,7 +172,7 @@ export default function NewProductModal({
       }}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
-      handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
+      handleIndicatorStyle={{ backgroundColor: colors.border, width: 40 }}
       backgroundStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
     >
       {/* Header */}
@@ -190,7 +190,7 @@ export default function NewProductModal({
           style={{
             fontSize: 18,
             fontWeight: "700",
-            color: colors.neutral[900],
+            color: colors.textPrimary,
           }}
         >
           {`${title} Product`}
@@ -199,7 +199,7 @@ export default function NewProductModal({
           onPress={onClose}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <X size={22} color={colors.neutral[600]} strokeWidth={2} />
+          <X size={22} color={colors.textPrimary} strokeWidth={2} />
         </TouchableOpacity>
       </View>
 
@@ -245,7 +245,7 @@ export default function NewProductModal({
               {/* Subtitle */}
               <Text
                 style={{
-                  color: colors.neutral[500],
+                  color: colors.textSecondary,
                   fontSize: 13,
                   marginBottom: 16,
                   lineHeight: 18,
@@ -258,7 +258,7 @@ export default function NewProductModal({
                 style={{
                   fontWeight: "600",
                   fontSize: 14,
-                  color: colors.neutral[900],
+                  color: colors.textPrimary,
                   marginBottom: 8,
                 }}
               >
@@ -266,7 +266,7 @@ export default function NewProductModal({
               </Text>
               <TextInput
                 placeholder="e.g. Basmati Rice"
-                placeholderTextColor={colors.neutral[400]}
+                placeholderTextColor={"#AEAEB2"}
                 value={values.name}
                 onChangeText={handleChange("name")}
                 onBlur={handleBlur("name")}
@@ -274,20 +274,20 @@ export default function NewProductModal({
                   borderWidth: 1,
                   borderColor:
                     touched.name && errors.name
-                      ? colors.danger.DEFAULT
-                      : colors.neutral[200],
+                      ? colors.danger
+                      : colors.border,
                   borderRadius: 12,
                   paddingHorizontal: 16,
                   paddingVertical: 12,
                   fontSize: 14,
-                  color: colors.neutral[900],
+                  color: colors.textPrimary,
                   marginBottom: 4,
                 }}
               />
               {touched.name && errors.name ? (
                 <Text
                   style={{
-                    color: colors.danger.DEFAULT,
+                    color: colors.danger,
                     fontSize: 12,
                     marginBottom: 12,
                   }}
@@ -305,7 +305,7 @@ export default function NewProductModal({
                     style={{
                       fontWeight: "600",
                       fontSize: 14,
-                      color: colors.neutral[900],
+                      color: colors.textPrimary,
                       marginBottom: 8,
                     }}
                   >
@@ -319,7 +319,7 @@ export default function NewProductModal({
                   {touched.base_price && errors.base_price ? (
                     <Text
                       style={{
-                        color: colors.danger.DEFAULT,
+                        color: colors.danger,
                         fontSize: 12,
                         marginTop: 4,
                         marginBottom: 4,
@@ -350,7 +350,7 @@ export default function NewProductModal({
                         style={{
                           fontWeight: "700",
                           fontSize: 15,
-                          color: colors.neutral[900],
+                          color: colors.textPrimary,
                         }}
                       >
                         Variants
@@ -366,12 +366,12 @@ export default function NewProductModal({
                       >
                         <Plus
                           size={13}
-                          color={colors.primary.DEFAULT}
+                          color={colors.primary}
                           strokeWidth={2.5}
                         />
                         <Text
                           style={{
-                            color: colors.primary.DEFAULT,
+                            color: colors.primary,
                             fontWeight: "700",
                             fontSize: 14,
                           }}
@@ -394,7 +394,7 @@ export default function NewProductModal({
                       >
                         <TextInput
                           placeholder="e.g. 1kg"
-                          placeholderTextColor={colors.neutral[400]}
+                          placeholderTextColor={"#AEAEB2"}
                           value={variant.variant_name}
                           onChangeText={handleChange(
                             `variants[${index}].variant_name`,
@@ -403,12 +403,12 @@ export default function NewProductModal({
                           style={{
                             flex: 1,
                             borderWidth: 1,
-                            borderColor: colors.neutral[200],
+                            borderColor: colors.border,
                             borderRadius: 12,
                             paddingHorizontal: 12,
                             paddingVertical: 12,
                             fontSize: 14,
-                            color: colors.neutral[900],
+                            color: colors.textPrimary,
                           }}
                         />
                         <RupeeInput
@@ -424,7 +424,7 @@ export default function NewProductModal({
                         >
                           <Trash2
                             size={20}
-                            color={colors.danger.DEFAULT}
+                            color={colors.danger}
                             strokeWidth={2}
                           />
                         </TouchableOpacity>
@@ -434,7 +434,7 @@ export default function NewProductModal({
                     {typeof errors.variants === "string" && (
                       <Text
                         style={{
-                          color: colors.danger.DEFAULT,
+                          color: colors.danger,
                           fontSize: 12,
                           marginBottom: 8,
                         }}
@@ -449,7 +449,7 @@ export default function NewProductModal({
               {errorMessage ? (
                 <Text
                   style={{
-                    color: colors.danger.DEFAULT,
+                    color: colors.danger,
                     fontSize: 12,
                     marginTop: 4,
                   }}
@@ -465,7 +465,7 @@ export default function NewProductModal({
             <View
               style={{
                 borderTopWidth: 1,
-                borderTopColor: colors.neutral[100],
+                borderTopColor: colors.background,
                 paddingTop: 14,
                 marginTop: 4,
                 paddingHorizontal: 20,

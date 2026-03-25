@@ -7,8 +7,8 @@ import { colors } from "../../utils/theme";
 // ── Avatar helpers — soft pastel bg + dark text (supplier visual identity) ───
 const AVATAR_BG = [
   "#EEF2FF", // indigo-50
-  colors.success.light, // green-100
-  colors.info.light, // blue-100
+  colors.paid.bg, // green-100
+  "#EAF0FB", // blue-100
   "#FDF4FF", // fuchsia-50
   "#EDE9FE", // purple-100
   "#FCE7F3", // pink-100
@@ -18,8 +18,8 @@ const AVATAR_BG = [
 
 const AVATAR_TEXT = [
   "#4338CA", // indigo-700
-  colors.primary.dark, // #16A34A
-  colors.info.dark, // #2563EB
+  colors.primaryDark, // #16A34A
+  colors.fab, // #2563EB
   "#9333EA", // fuchsia-700
   "#6D28D9", // purple-700
   "#9D174D", // pink-800
@@ -64,24 +64,24 @@ const STATUS_CONFIG: Record<
 > = {
   Overdue: {
     label: "OVERDUE",
-    text: colors.danger.text,
-    border: colors.danger.DEFAULT,
-    bg: colors.danger.light,
-    amountColor: colors.danger.DEFAULT,
+    text: colors.overdue.text,
+    border: colors.danger,
+    bg: colors.overdue.bg,
+    amountColor: colors.danger,
   },
   Pending: {
     label: "PENDING",
-    text: colors.warning.text,
-    border: colors.warning.DEFAULT,
-    bg: colors.warning.light,
-    amountColor: colors.warning.DEFAULT,
+    text: "#92400E",
+    border: colors.warning,
+    bg: colors.pending.bg,
+    amountColor: colors.warning,
   },
   Paid: {
     label: "PAID",
-    text: colors.success.text,
-    border: colors.primary.DEFAULT,
-    bg: colors.success.light,
-    amountColor: colors.neutral[900],
+    text: colors.paid.text,
+    border: colors.primary,
+    bg: colors.paid.bg,
+    amountColor: colors.textPrimary,
   },
 };
 

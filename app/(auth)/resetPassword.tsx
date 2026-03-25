@@ -30,7 +30,7 @@ export default function ResetPasswordPage() {
       >
         <View className="flex-1 bg-white justify-center items-center px-6">
           <View className="w-20 h-20 rounded-full bg-success-light items-center justify-center mb-6">
-            <MailOpen size={40} color={colors.primary.dark} strokeWidth={1.5} />
+            <MailOpen size={40} color={colors.primaryDark} strokeWidth={1.5} />
           </View>
           <Text className="text-2xl font-bold text-neutral-900 text-center mb-2">
             Check Your Inbox!
@@ -75,7 +75,7 @@ export default function ResetPasswordPage() {
             <View className="w-16 h-16 rounded-full bg-success-light items-center justify-center self-center mb-5">
               <LockOpen
                 size={32}
-                color={colors.primary.dark}
+                color={colors.primaryDark}
                 strokeWidth={1.5}
               />
             </View>
@@ -106,7 +106,7 @@ export default function ResetPasswordPage() {
                     icon={
                       <Mail
                         size={20}
-                        color={colors.neutral[500]}
+                        color={colors.textSecondary}
                         strokeWidth={1.8}
                       />
                     }

@@ -56,24 +56,24 @@ function ChargeRow({
 }) {
   return (
     <View className="flex-row items-center justify-between mb-3">
-      <Text className="text-[15px]" style={{ color: colors.neutral[700] }}>
+      <Text className="text-[15px]" style={{ color: colors.textSecondary }}>
         {label}
       </Text>
       <View
         className="flex-row items-center border rounded-lg overflow-hidden"
-        style={{ borderColor: colors.neutral[200], width: 110 }}
+        style={{ borderColor: colors.border, width: 110 }}
       >
-        <Text className="pl-3 text-sm" style={{ color: colors.neutral[500] }}>
+        <Text className="pl-3 text-sm" style={{ color: colors.textSecondary }}>
           ₹
         </Text>
         <TextInput
           placeholder="0"
-          placeholderTextColor={colors.neutral[400]}
+          placeholderTextColor={"#AEAEB2"}
           value={value}
           onChangeText={onChange}
           keyboardType="numeric"
           className="flex-1 px-2 py-2.5 text-sm"
-          style={{ color: colors.neutral[900] }}
+          style={{ color: colors.textPrimary }}
         />
       </View>
     </View>
@@ -156,14 +156,14 @@ export default function RecordDeliveryModal({
         <View
           className="flex-row items-center self-start gap-1.5 px-3 py-1.5 rounded-full mb-4"
           style={{
-            backgroundColor: colors.primary.light ?? "#DCFCE7",
+            backgroundColor: colors.paid.bg ?? "#DCFCE7",
             marginTop: -4,
           }}
         >
-          <Truck size={13} color={colors.primary.DEFAULT} strokeWidth={2} />
+          <Truck size={13} color={colors.primary} strokeWidth={2} />
           <Text
             className="text-[13px] font-semibold"
-            style={{ color: colors.primary.DEFAULT }}
+            style={{ color: colors.primary }}
           >
             {supplierName}
           </Text>
@@ -179,7 +179,7 @@ export default function RecordDeliveryModal({
         {/* Section label */}
         <Text
           className="text-[11px] font-bold tracking-widest mb-3"
-          style={{ color: colors.neutral[500] }}
+          style={{ color: colors.textSecondary }}
         >
           DELIVERY ITEMS
         </Text>
@@ -193,24 +193,24 @@ export default function RecordDeliveryModal({
               {idx > 0 && (
                 <View
                   className="h-px mb-3"
-                  style={{ backgroundColor: colors.neutral[200] }}
+                  style={{ backgroundColor: colors.border }}
                 />
               )}
               {/* Name + amount + trash */}
               <View className="flex-row items-center mb-1.5">
                 <TextInput
                   placeholder="Item name (e.g. Flour 50kg)"
-                  placeholderTextColor={colors.neutral[400]}
+                  placeholderTextColor={"#AEAEB2"}
                   value={it.item_name}
                   onChangeText={(v) => updateItem(idx, "item_name", v)}
                   className="flex-1 text-[15px] font-semibold"
-                  style={{ color: colors.neutral[900] }}
+                  style={{ color: colors.textPrimary }}
                 />
                 <View className="flex-row items-center gap-2 ml-2">
                   {subtotal > 0 && (
                     <Text
                       className="text-[15px] font-semibold"
-                      style={{ color: colors.neutral[900] }}
+                      style={{ color: colors.textPrimary }}
                     >
                       {fmtINR(subtotal)}
                     </Text>
@@ -222,7 +222,7 @@ export default function RecordDeliveryModal({
                     >
                       <Trash2
                         size={17}
-                        color={colors.danger.DEFAULT}
+                        color={colors.danger}
                         strokeWidth={2}
                       />
                     </TouchableOpacity>
@@ -233,48 +233,48 @@ export default function RecordDeliveryModal({
               <View className="flex-row items-center gap-2 mb-4">
                 <View
                   className="flex-row items-center border rounded-lg overflow-hidden"
-                  style={{ borderColor: colors.neutral[200], flex: 1 }}
+                  style={{ borderColor: colors.border, flex: 1 }}
                 >
                   <Text
                     className="pl-2 pr-0.5 text-sm"
-                    style={{ color: colors.neutral[500] }}
+                    style={{ color: colors.textSecondary }}
                   >
                     Qty
                   </Text>
                   <TextInput
                     placeholder="0"
-                    placeholderTextColor={colors.neutral[400]}
+                    placeholderTextColor={"#AEAEB2"}
                     value={it.quantity}
                     onChangeText={(v) => updateItem(idx, "quantity", v)}
                     keyboardType="numeric"
                     className="flex-1 px-1.5 py-2 text-sm"
-                    style={{ color: colors.neutral[900] }}
+                    style={{ color: colors.textPrimary }}
                   />
                 </View>
                 <Text
                   className="text-sm"
-                  style={{ color: colors.neutral[400] }}
+                  style={{ color: "#AEAEB2" }}
                 >
                   ×
                 </Text>
                 <View
                   className="flex-row items-center border rounded-lg overflow-hidden"
-                  style={{ borderColor: colors.neutral[200], flex: 1.6 }}
+                  style={{ borderColor: colors.border, flex: 1.6 }}
                 >
                   <Text
                     className="pl-2 pr-0.5 text-sm"
-                    style={{ color: colors.neutral[500] }}
+                    style={{ color: colors.textSecondary }}
                   >
                     Rate ₹
                   </Text>
                   <TextInput
                     placeholder="0"
-                    placeholderTextColor={colors.neutral[400]}
+                    placeholderTextColor={"#AEAEB2"}
                     value={it.rate}
                     onChangeText={(v) => updateItem(idx, "rate", v)}
                     keyboardType="numeric"
                     className="flex-1 px-1.5 py-2 text-sm"
-                    style={{ color: colors.neutral[900] }}
+                    style={{ color: colors.textPrimary }}
                   />
                 </View>
               </View>
@@ -289,13 +289,13 @@ export default function RecordDeliveryModal({
           className="items-center justify-center rounded-xl py-3 mb-5"
           style={{
             borderWidth: 1.5,
-            borderColor: colors.primary.DEFAULT,
+            borderColor: colors.primary,
             borderStyle: "dashed",
           }}
         >
           <Text
             className="text-[14px] font-semibold"
-            style={{ color: colors.primary.DEFAULT }}
+            style={{ color: colors.primary }}
           >
             + Add Item
           </Text>
@@ -316,25 +316,25 @@ export default function RecordDeliveryModal({
         {/* Summary divider */}
         <View
           className="h-px mt-2 mb-4"
-          style={{ backgroundColor: colors.neutral[200] }}
+          style={{ backgroundColor: colors.border }}
         />
 
         {/* Summary pill bar */}
         <View className="flex-row flex-wrap items-center gap-x-1.5 gap-y-1 mb-3">
-          <Text className="text-xs" style={{ color: colors.neutral[500] }}>
+          <Text className="text-xs" style={{ color: colors.textSecondary }}>
             Items:{" "}
-            <Text style={{ color: colors.neutral[700], fontWeight: "600" }}>
+            <Text style={{ color: colors.textSecondary, fontWeight: "600" }}>
               {fmtINR(itemsTotal)}
             </Text>
           </Text>
           {loadingNum > 0 && (
             <>
-              <Text className="text-xs" style={{ color: colors.neutral[400] }}>
+              <Text className="text-xs" style={{ color: "#AEAEB2" }}>
                 •
               </Text>
-              <Text className="text-xs" style={{ color: colors.neutral[500] }}>
+              <Text className="text-xs" style={{ color: colors.textSecondary }}>
                 Loading:{" "}
-                <Text style={{ color: colors.neutral[700], fontWeight: "600" }}>
+                <Text style={{ color: colors.textSecondary, fontWeight: "600" }}>
                   {fmtINR(loadingNum)}
                 </Text>
               </Text>
@@ -342,13 +342,13 @@ export default function RecordDeliveryModal({
           )}
           {advanceNum > 0 && (
             <>
-              <Text className="text-xs" style={{ color: colors.neutral[400] }}>
+              <Text className="text-xs" style={{ color: "#AEAEB2" }}>
                 •
               </Text>
-              <Text className="text-xs" style={{ color: colors.neutral[500] }}>
+              <Text className="text-xs" style={{ color: colors.textSecondary }}>
                 Advance:{" "}
                 <Text
-                  style={{ color: colors.danger.DEFAULT, fontWeight: "600" }}
+                  style={{ color: colors.danger, fontWeight: "600" }}
                 >
                   -{fmtINR(advanceNum)}
                 </Text>
@@ -361,13 +361,13 @@ export default function RecordDeliveryModal({
         <View className="flex-row items-center justify-between">
           <Text
             className="text-[15px] font-semibold"
-            style={{ color: colors.neutral[700] }}
+            style={{ color: colors.textSecondary }}
           >
             Net Added to Balance
           </Text>
           <Text
             className="text-[20px] font-bold"
-            style={{ color: colors.danger.DEFAULT }}
+            style={{ color: colors.danger }}
           >
             {fmtINR(netBalance)}
           </Text>

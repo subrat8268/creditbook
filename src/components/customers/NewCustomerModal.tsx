@@ -12,7 +12,7 @@ import Button from "../ui/Button";
 
 // ─── Avatar utilities (mirrors CustomerCard) ─────────────────────────────────
 const AVATAR_COLORS = [
-  colors.danger.DEFAULT,
+  colors.danger,
   "#3498DB",
   "#9B59B6",
   "#1ABC9C",
@@ -110,7 +110,7 @@ export default function NewCustomerModal({
       onChange={(idx) => {
         if (idx === -1) onClose();
       }}
-      handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
+      handleIndicatorStyle={{ backgroundColor: colors.border, width: 40 }}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
       backgroundStyle={{
@@ -129,7 +129,7 @@ export default function NewCustomerModal({
             Add Customer
           </Text>
           <Pressable onPress={onClose} disabled={loading}>
-            <X size={22} color={colors.neutral[600]} strokeWidth={2} />
+            <X size={22} color={colors.textPrimary} strokeWidth={2} />
           </Pressable>
         </View>
         <Formik
@@ -164,7 +164,7 @@ export default function NewCustomerModal({
             // Live avatar derived from current name value
             const avatarColor = values.name.trim()
               ? getAvatarColor(values.name)
-              : colors.primary.DEFAULT;
+              : colors.primary;
             const avatarLabel = getInitials(values.name);
 
             return (
@@ -187,7 +187,7 @@ export default function NewCustomerModal({
                   </View>
                   <Text
                     className="text-xs"
-                    style={{ color: colors.neutral[500] }}
+                    style={{ color: colors.textSecondary }}
                   >
                     Avatar auto-generated from name
                   </Text>
@@ -197,13 +197,13 @@ export default function NewCustomerModal({
                 <View>
                   <Text
                     className="text-sm font-semibold mb-1.5"
-                    style={{ color: colors.neutral[700] }}
+                    style={{ color: colors.textSecondary }}
                   >
                     Customer Name *
                   </Text>
                   <TextInput
                     placeholder="e.g. Mohit Sharma"
-                    placeholderTextColor={colors.neutral[400]}
+                    placeholderTextColor={"#AEAEB2"}
                     value={values.name}
                     onChangeText={handleChange("name")}
                     onBlur={handleBlur("name")}
@@ -211,15 +211,15 @@ export default function NewCustomerModal({
                     style={{
                       borderColor:
                         touched.name && errors.name
-                          ? colors.danger.DEFAULT
-                          : colors.neutral[200],
-                      color: colors.neutral[900],
+                          ? colors.danger
+                          : colors.border,
+                      color: colors.textPrimary,
                     }}
                   />
                   {touched.name && errors.name && (
                     <Text
                       className="text-xs mt-1"
-                      style={{ color: colors.danger.DEFAULT }}
+                      style={{ color: colors.danger }}
                     >
                       {errors.name}
                     </Text>
@@ -230,7 +230,7 @@ export default function NewCustomerModal({
                 <View>
                   <Text
                     className="text-sm font-semibold mb-1.5"
-                    style={{ color: colors.neutral[700] }}
+                    style={{ color: colors.textSecondary }}
                   >
                     Phone Number *
                   </Text>
@@ -239,38 +239,38 @@ export default function NewCustomerModal({
                     style={{
                       borderColor:
                         touched.phone && errors.phone
-                          ? colors.danger.DEFAULT
-                          : colors.neutral[200],
+                          ? colors.danger
+                          : colors.border,
                     }}
                   >
                     {/* +91 prefix */}
                     <View
                       className="px-3 py-3 border-r justify-center"
-                      style={{ borderRightColor: colors.neutral[200] }}
+                      style={{ borderRightColor: colors.border }}
                     >
                       <Text
                         className="text-base font-semibold"
-                        style={{ color: colors.neutral[700] }}
+                        style={{ color: colors.textSecondary }}
                       >
                         +91
                       </Text>
                     </View>
                     <TextInput
                       placeholder="98765 43210"
-                      placeholderTextColor={colors.neutral[400]}
+                      placeholderTextColor={"#AEAEB2"}
                       value={values.phone}
                       onChangeText={handleChange("phone")}
                       onBlur={handleBlur("phone")}
                       keyboardType="phone-pad"
                       maxLength={10}
                       className="flex-1 px-3 py-3 text-base"
-                      style={{ color: colors.neutral[900] }}
+                      style={{ color: colors.textPrimary }}
                     />
                   </View>
                   {touched.phone && errors.phone && (
                     <Text
                       className="text-xs mt-1"
-                      style={{ color: colors.danger.DEFAULT }}
+                      style={{ color: colors.danger }}
                     >
                       {errors.phone}
                     </Text>
@@ -281,20 +281,20 @@ export default function NewCustomerModal({
                 <View>
                   <Text
                     className="text-sm font-semibold mb-1.5"
-                    style={{ color: colors.neutral[700] }}
+                    style={{ color: colors.textSecondary }}
                   >
                     Address (optional)
                   </Text>
                   <TextInput
                     placeholder="Area / locality"
-                    placeholderTextColor={colors.neutral[400]}
+                    placeholderTextColor={"#AEAEB2"}
                     value={values.address}
                     onChangeText={handleChange("address")}
                     onBlur={handleBlur("address")}
                     className="border rounded-xl px-4 py-3 text-base"
                     style={{
-                      borderColor: colors.neutral[200],
-                      color: colors.neutral[900],
+                      borderColor: colors.border,
+                      color: colors.textPrimary,
                     }}
                   />
                 </View>
@@ -303,24 +303,24 @@ export default function NewCustomerModal({
                 <View>
                   <Text
                     className="text-sm font-semibold mb-1.5"
-                    style={{ color: colors.neutral[700] }}
+                    style={{ color: colors.textSecondary }}
                   >
                     Opening Balance (optional)
                   </Text>
                   <View
                     className="flex-row items-center border rounded-xl px-4"
-                    style={{ borderColor: colors.neutral[200] }}
+                    style={{ borderColor: colors.border }}
                   >
                     {/* ₹ prefix */}
                     <Text
                       className="text-base mr-2"
-                      style={{ color: colors.neutral[600] }}
+                      style={{ color: colors.textPrimary }}
                     >
                       ₹
                     </Text>
                     <TextInput
                       placeholder="0.00"
-                      placeholderTextColor={colors.neutral[400]}
+                      placeholderTextColor={"#AEAEB2"}
                       value={
                         values.openingBalance === ("" as unknown as number)
                           ? ""
@@ -338,19 +338,19 @@ export default function NewCustomerModal({
                       onBlur={handleBlur("openingBalance")}
                       keyboardType="decimal-pad"
                       className="flex-1 text-base text-right"
-                      style={{ color: colors.neutral[900] }}
+                      style={{ color: colors.textPrimary }}
                     />
                   </View>
                   <Text
                     className="text-xs mt-1.5"
-                    style={{ color: colors.neutral[500] }}
+                    style={{ color: colors.textSecondary }}
                   >
                     If this customer already owes you money
                   </Text>
                   {touched.openingBalance && errors.openingBalance && (
                     <Text
                       className="text-xs mt-1"
-                      style={{ color: colors.danger.DEFAULT }}
+                      style={{ color: colors.danger }}
                     >
                       {errors.openingBalance as string}
                     </Text>
@@ -360,7 +360,7 @@ export default function NewCustomerModal({
                 {errorMessage && (
                   <Text
                     className="text-xs"
-                    style={{ color: colors.danger.DEFAULT }}
+                    style={{ color: colors.danger }}
                   >
                     {errorMessage}
                   </Text>

@@ -26,10 +26,10 @@ const PAYMENT_MODES = ["Cash", "UPI", "NEFT", "Draft", "Cheque"];
 
 // ─── Avatar helpers ───────────────────────────────────────────────────────────
 const AVATAR_COLORS = [
-  colors.danger.DEFAULT,
+  colors.danger,
   "#0D9488", // teal-600 — replaces amber (financial state reserved)
-  colors.primary.DEFAULT,
-  colors.info.DEFAULT,
+  colors.primary,
+  "#4F9CFF",
   "#9B59B6",
   "#E91E8C",
   "#00BCD4",
@@ -116,7 +116,7 @@ export default function RecordPaymentMadeModal({
 
   const avatarColor = supplierName
     ? getAvatarColor(supplierName)
-    : colors.warning.DEFAULT;
+    : colors.warning;
   const initials = supplierName ? getInitials(supplierName) : "?";
 
   return (
@@ -131,7 +131,7 @@ export default function RecordPaymentMadeModal({
       }}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
-      handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
+      handleIndicatorStyle={{ backgroundColor: colors.border, width: 40 }}
       backgroundStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
     >
       {/* Header */}
@@ -146,7 +146,7 @@ export default function RecordPaymentMadeModal({
           style={{
             fontSize: 18,
             fontWeight: "700",
-            color: colors.neutral[900],
+            color: colors.textPrimary,
           }}
         >
           Pay Supplier
@@ -161,7 +161,7 @@ export default function RecordPaymentMadeModal({
         {supplierName ? (
           <View
             className="flex-row items-center px-4 py-3 rounded-2xl mb-5"
-            style={{ backgroundColor: colors.neutral[100] }}
+            style={{ backgroundColor: colors.background }}
           >
             <View
               className="rounded-full mr-3 items-center justify-center"
@@ -174,13 +174,13 @@ export default function RecordPaymentMadeModal({
             <View>
               <Text
                 className="text-[15px] font-bold"
-                style={{ color: colors.neutral[900] }}
+                style={{ color: colors.textPrimary }}
               >
                 {supplierName}
               </Text>
               <Text
                 className="text-[13px] font-semibold mt-0.5"
-                style={{ color: colors.danger.DEFAULT }}
+                style={{ color: colors.danger }}
               >
                 You Owe: ₹{fmtINR(balanceOwed)}
               </Text>
@@ -191,7 +191,7 @@ export default function RecordPaymentMadeModal({
         {/* ── Amount Paying ── */}
         <Text
           className="text-[13px] font-semibold mb-2"
-          style={{ color: colors.neutral[600] }}
+          style={{ color: colors.textPrimary }}
         >
           Amount Paying
         </Text>
@@ -199,7 +199,7 @@ export default function RecordPaymentMadeModal({
         <View className="flex-row items-center mb-1">
           <Text
             className="font-bold mr-1"
-            style={{ fontSize: 30, color: colors.danger.DEFAULT }}
+            style={{ fontSize: 30, color: colors.danger }}
           >
             ₹
           </Text>
@@ -208,11 +208,11 @@ export default function RecordPaymentMadeModal({
             onChangeText={setAmount}
             keyboardType="numeric"
             placeholder="0"
-            placeholderTextColor={colors.neutral[300]}
+            placeholderTextColor={colors.border}
             style={{
               fontSize: 36,
               fontWeight: "700",
-              color: colors.neutral[900],
+              color: colors.textPrimary,
               flex: 1,
               padding: 0,
             }}
@@ -222,7 +222,7 @@ export default function RecordPaymentMadeModal({
         {/* Underline */}
         <View
           className="h-px mb-2"
-          style={{ backgroundColor: colors.neutral[200] }}
+          style={{ backgroundColor: colors.border }}
         />
 
         {/* Full balance tap-to-fill */}
@@ -233,7 +233,7 @@ export default function RecordPaymentMadeModal({
         >
           <Text
             className="text-[13px] font-semibold"
-            style={{ color: colors.primary.DEFAULT }}
+            style={{ color: colors.primary }}
           >
             Full balance: ₹{fmtINR(balanceOwed)}
           </Text>
@@ -242,7 +242,7 @@ export default function RecordPaymentMadeModal({
         {/* ── Payment Mode ── */}
         <Text
           className="text-[13px] font-semibold mb-2.5"
-          style={{ color: colors.neutral[700] }}
+          style={{ color: colors.textSecondary }}
         >
           Payment Mode
         </Text>
@@ -255,15 +255,15 @@ export default function RecordPaymentMadeModal({
               className="px-4 py-2 rounded-full border"
               style={{
                 backgroundColor:
-                  mode === m ? colors.primary.DEFAULT : "transparent",
+                  mode === m ? colors.primary : "transparent",
                 borderColor:
-                  mode === m ? colors.primary.DEFAULT : colors.neutral[300],
+                  mode === m ? colors.primary : colors.border,
               }}
             >
               <Text
                 className="text-[14px] font-semibold"
                 style={{
-                  color: mode === m ? "#FFFFFF" : colors.neutral[700],
+                  color: mode === m ? "#FFFFFF" : colors.textSecondary,
                 }}
               >
                 {m}
@@ -275,21 +275,21 @@ export default function RecordPaymentMadeModal({
         {/* ── Notes ── */}
         <Text
           className="text-[13px] font-semibold mb-2"
-          style={{ color: colors.neutral[700] }}
+          style={{ color: colors.textSecondary }}
         >
           Notes (optional)
         </Text>
         <View
           className="border rounded-xl px-3 py-2.5 mb-4"
-          style={{ borderColor: colors.neutral[200] }}
+          style={{ borderColor: colors.border }}
         >
           <TextInput
             placeholder="e.g. Payment for Nov delivery #D-021"
-            placeholderTextColor={colors.neutral[400]}
+            placeholderTextColor={"#AEAEB2"}
             value={notes}
             onChangeText={setNotes}
             className="text-sm"
-            style={{ color: colors.neutral[900] }}
+            style={{ color: colors.textPrimary }}
           />
         </View>
 
@@ -297,16 +297,16 @@ export default function RecordPaymentMadeModal({
         {showWarning && (
           <View
             className="flex-row items-center gap-2 px-3 py-2.5 rounded-xl mb-2"
-            style={{ backgroundColor: colors.danger.light ?? "#FEE2E2" }}
+            style={{ backgroundColor: colors.overdue.bg ?? "#FEE2E2" }}
           >
             <AlertTriangle
               size={16}
-              color={colors.danger.DEFAULT}
+              color={colors.danger}
               strokeWidth={2}
             />
             <Text
               className="text-[13px] font-semibold"
-              style={{ color: colors.danger.DEFAULT }}
+              style={{ color: colors.danger }}
             >
               Amount exceeds balance (₹{fmtINR(balanceOwed)})
             </Text>

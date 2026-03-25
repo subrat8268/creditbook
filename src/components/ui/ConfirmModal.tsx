@@ -61,7 +61,7 @@ export default function ConfirmModal({
       onChange={(idx) => {
         if (idx === -1) onCancel();
       }}
-      handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
+      handleIndicatorStyle={{ backgroundColor: colors.border, width: 40 }}
       backgroundStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
     >
       <View
@@ -78,7 +78,7 @@ export default function ConfirmModal({
             width: 64,
             height: 64,
             borderRadius: 32,
-            backgroundColor: colors.danger.bg ?? "#FEF2F2",
+            backgroundColor: colors.dangerBg ?? "#FEF2F2",
             alignItems: "center",
             justifyContent: "center",
             marginBottom: 20,
@@ -86,7 +86,7 @@ export default function ConfirmModal({
         >
           <AlertTriangle
             size={28}
-            color={colors.danger.DEFAULT}
+            color={colors.danger}
             strokeWidth={2}
           />
         </View>
@@ -96,7 +96,7 @@ export default function ConfirmModal({
           style={{
             fontSize: 18,
             fontWeight: "700",
-            color: colors.neutral[900],
+            color: colors.textPrimary,
             marginBottom: 10,
             textAlign: "center",
           }}
@@ -108,7 +108,7 @@ export default function ConfirmModal({
         <Text
           style={{
             fontSize: 14,
-            color: colors.neutral[500],
+            color: colors.textSecondary,
             textAlign: "center",
             lineHeight: 21,
             paddingHorizontal: 8,
@@ -126,8 +126,8 @@ export default function ConfirmModal({
           style={{
             width: "100%",
             backgroundColor: loading
-              ? colors.danger.DEFAULT + "88"
-              : colors.danger.DEFAULT,
+              ? colors.danger + "88"
+              : colors.danger,
             borderRadius: 50,
             paddingVertical: 16,
             alignItems: "center",
@@ -156,12 +156,12 @@ export default function ConfirmModal({
             alignItems: "center",
             justifyContent: "center",
             borderWidth: 1,
-            borderColor: colors.neutral[200],
+            borderColor: colors.border,
           }}
         >
           <Text
             style={{
-              color: colors.neutral[700],
+              color: colors.textSecondary,
               fontWeight: "600",
               fontSize: 16,
             }}

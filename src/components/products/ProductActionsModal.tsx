@@ -26,7 +26,7 @@ export default function ProductActionsModal({
             onPress={onClose}
             className="absolute top-4 right-4"
           >
-            <X size={20} color={colors.neutral[700]} strokeWidth={2} />
+            <X size={20} color={colors.textSecondary} strokeWidth={2} />
           </TouchableOpacity>
 
           <TouchableOpacity

@@ -29,13 +29,13 @@ export default function ProductCard({
       style={{
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: colors.white,
+        backgroundColor: "#FFFFFF",
         borderRadius: 14,
         paddingHorizontal: 16,
         paddingVertical: 14,
         marginBottom: 10,
         borderWidth: 1,
-        borderColor: colors.neutral[100],
+        borderColor: colors.background,
       }}
     >
       {/* Icon box */}
@@ -44,14 +44,14 @@ export default function ProductCard({
           width: 44,
           height: 44,
           borderRadius: 10,
-          backgroundColor: colors.neutral[100],
+          backgroundColor: colors.background,
           alignItems: "center",
           justifyContent: "center",
           marginRight: 14,
           flexShrink: 0,
         }}
       >
-        <Package size={22} color={colors.neutral[500]} strokeWidth={1.5} />
+        <Package size={22} color={colors.textSecondary} strokeWidth={1.5} />
       </View>
 
       {/* Name + variant count */}
@@ -60,14 +60,14 @@ export default function ProductCard({
           style={{
             fontSize: 15,
             fontWeight: "700",
-            color: colors.neutral[900],
+            color: colors.textPrimary,
             marginBottom: 2,
           }}
           numberOfLines={1}
         >
           {name}
         </Text>
-        <Text style={{ fontSize: 13, color: colors.neutral[400] }}>
+        <Text style={{ fontSize: 13, color: "#AEAEB2" }}>
           {variantCount === 1
             ? "1 variant"
             : variantCount > 1
@@ -82,14 +82,14 @@ export default function ProductCard({
           style={{
             fontSize: 15,
             fontWeight: "700",
-            color: colors.neutral[900],
+            color: colors.textPrimary,
           }}
         >
           {displayPrice !== null
             ? `₹${displayPrice.toLocaleString("en-IN")}`
             : "—"}
         </Text>
-        <ChevronRight size={16} color={colors.neutral[400]} strokeWidth={2} />
+        <ChevronRight size={16} color={"#AEAEB2"} strokeWidth={2} />
       </View>
     </TouchableOpacity>
   );

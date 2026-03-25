@@ -10,19 +10,19 @@ const FEATURE_CHIPS = [
     icon: (
       <Zap
         size={14}
-        color={colors.primary.dark}
+        color={colors.primaryDark}
         strokeWidth={2.2}
-        fill={colors.primary.dark}
+        fill={colors.primaryDark}
       />
     ),
     label: "Fast Entry",
   },
   {
-    icon: <Eye size={14} color={colors.primary.dark} strokeWidth={2} />,
+    icon: <Eye size={14} color={colors.primaryDark} strokeWidth={2} />,
     label: "Always Visible",
   },
   {
-    icon: <WifiOff size={14} color={colors.primary.dark} strokeWidth={2} />,
+    icon: <WifiOff size={14} color={colors.primaryDark} strokeWidth={2} />,
     label: "Works Offline",
   },
 ];
@@ -84,7 +84,7 @@ export default function WelcomePage() {
       <TouchableOpacity
         className="w-full bg-primary rounded-[14px] h-14 items-center justify-center mb-4"
         style={{
-          shadowColor: colors.primary.DEFAULT,
+          shadowColor: colors.primary,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.3,
           shadowRadius: 8,
@@ -111,7 +111,7 @@ export default function WelcomePage() {
 
       {/* Security badge */}
       <View className="flex-row items-center gap-1">
-        <ShieldCheck size={13} color={colors.neutral[400]} strokeWidth={2} />
+        <ShieldCheck size={13} color={"#AEAEB2"} strokeWidth={2} />
         <Text className="text-[11px] text-gray-400 font-semibold tracking-widest">
           SECURE &amp; ENCRYPTED
         </Text>

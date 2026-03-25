@@ -44,10 +44,10 @@ interface CartItem {
 }
 
 const AVATAR_COLORS = [
-  colors.danger.DEFAULT,
+  colors.danger,
   "#F97316",
   "#EAB308",
-  colors.primary.DEFAULT,
+  colors.primary,
   "#14B8A6",
   "#3B82F6",
   "#8B5CF6",

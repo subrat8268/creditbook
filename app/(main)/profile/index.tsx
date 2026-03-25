@@ -143,7 +143,7 @@ export default function ProfileScreen() {
   if (!profile) {
     return (
       <SafeAreaView style={styles.loaderScreen}>
-        <ActivityIndicator color={colors.primary.DEFAULT} />
+        <ActivityIndicator color={colors.primary} />
       </SafeAreaView>
     );
   }

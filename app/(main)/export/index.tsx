@@ -116,7 +116,7 @@ function DateInput({
         <TextInput
           style={styles.dateInput}
           placeholder={placeholder}
-          placeholderTextColor={colors.neutral[400]}
+          placeholderTextColor={"#AEAEB2"}
           value={value}
           onChangeText={onChangeText}
           keyboardType="numeric"
@@ -124,7 +124,7 @@ function DateInput({
         />
         <CalendarDays
           size={16}
-          color={colors.neutral[400]}
+          color={"#AEAEB2"}
           strokeWidth={1.6}
           style={styles.calendarIcon}
         />
@@ -256,9 +256,9 @@ export default function ExportScreen() {
       label: "Orders & Bills",
       desc: "Invoice history with items",
       Icon: Receipt,
-      pillColor: colors.white,
-      pillBg: colors.primary.DEFAULT,
-      iconColor: colors.primary.dark,
+      pillColor: "#FFFFFF",
+      pillBg: colors.primary,
+      iconColor: colors.primaryDark,
       iconBg: "#DCFCE7",
     },
     {
@@ -266,9 +266,9 @@ export default function ExportScreen() {
       label: "Payments Received",
       desc: "All customer payments",
       Icon: FileText,
-      pillColor: colors.white,
-      pillBg: colors.primary.DEFAULT,
-      iconColor: colors.primary.dark,
+      pillColor: "#FFFFFF",
+      pillBg: colors.primary,
+      iconColor: colors.primaryDark,
       iconBg: "#DCFCE7",
     },
     {
@@ -276,20 +276,20 @@ export default function ExportScreen() {
       label: "Customer Balances",
       desc: "Outstanding balances per customer",
       Icon: Users,
-      pillColor: colors.white,
-      pillBg: colors.primary.DEFAULT,
-      iconColor: colors.info.dark,
-      iconBg: colors.info.bg,
+      pillColor: "#FFFFFF",
+      pillBg: colors.primary,
+      iconColor: colors.fab,
+      iconBg: "#EFF6FF",
     },
     {
       type: "suppliers",
       label: "Supplier Purchases",
       desc: "Deliveries and payments made",
       Icon: Truck,
-      pillColor: colors.white,
-      pillBg: colors.primary.DEFAULT,
-      iconColor: colors.warning.dark,
-      iconBg: colors.warning.bg,
+      pillColor: "#FFFFFF",
+      pillBg: colors.primary,
+      iconColor: colors.pending.text,
+      iconBg: colors.warningBg,
     },
   ];
 
@@ -308,7 +308,7 @@ export default function ExportScreen() {
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           style={styles.backBtn}
         >
-          <ArrowLeft size={22} color={colors.neutral[900]} strokeWidth={1.75} />
+          <ArrowLeft size={22} color={colors.textPrimary} strokeWidth={1.75} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>Export Data</Text>
@@ -418,7 +418,7 @@ export default function ExportScreen() {
         <View style={styles.infoBanner}>
           <Info
             size={16}
-            color={colors.info.dark}
+            color={colors.fab}
             strokeWidth={1.8}
             style={styles.infoIcon}
           />
@@ -440,7 +440,7 @@ export default function ExportScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.neutral.bg,
+    backgroundColor: colors.background,
   },
 
   // Header
@@ -449,9 +449,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: colors.neutral.surface,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: colors.neutral[200],
+    borderBottomColor: colors.border,
   },
   backBtn: {
     width: 36,
@@ -464,11 +464,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 17,
     fontWeight: "700",
-    color: colors.neutral[900],
+    color: colors.textPrimary,
   },
   headerSubtitle: {
     fontSize: 12,
-    color: colors.neutral[500],
+    color: colors.textSecondary,
     marginTop: 1,
   },
 
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
 
   // Card
   card: {
-    backgroundColor: colors.neutral.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     shadowColor: "#000",
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 11,
     fontWeight: "700",
-    color: colors.neutral[500],
+    color: colors.textSecondary,
     letterSpacing: 0.8,
     marginBottom: 14,
   },
@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
   },
   dateLabel: {
     fontSize: 12,
-    color: colors.neutral[500],
+    color: colors.textSecondary,
     marginBottom: 6,
     fontWeight: "500",
   },
@@ -519,16 +519,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: colors.neutral[200],
+    borderColor: colors.border,
     borderRadius: 10,
-    backgroundColor: colors.neutral.bg,
+    backgroundColor: colors.background,
     paddingHorizontal: 12,
     height: 44,
   },
   dateInput: {
     flex: 1,
     fontSize: 14,
-    color: colors.neutral[900],
+    color: colors.textPrimary,
   },
   calendarIcon: { marginLeft: 4 },
   dateSeparator: { width: 1 },
@@ -545,28 +545,28 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   chipActive: {
-    backgroundColor: colors.primary.light,
-    borderColor: colors.primary.DEFAULT,
+    backgroundColor: colors.paid.bg,
+    borderColor: colors.primary,
   },
   chipInactive: {
-    backgroundColor: colors.neutral.surface,
-    borderColor: colors.neutral[300],
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
   },
   chipText: {
     fontSize: 13,
     fontWeight: "600",
   },
   chipTextActive: {
-    color: colors.primary.dark,
+    color: colors.primaryDark,
   },
   chipTextInactive: {
-    color: colors.neutral[500],
+    color: colors.textSecondary,
   },
 
   // Export rows
   divider: {
     height: 1,
-    backgroundColor: colors.neutral[200],
+    backgroundColor: colors.border,
     marginVertical: 4,
   },
   exportRow: {
@@ -588,11 +588,11 @@ const styles = StyleSheet.create({
   exportRowLabel: {
     fontSize: 14,
     fontWeight: "700",
-    color: colors.neutral[900],
+    color: colors.textPrimary,
   },
   exportRowDesc: {
     fontSize: 12,
-    color: colors.neutral[500],
+    color: colors.textSecondary,
     marginTop: 2,
   },
   exportPill: {
@@ -612,9 +612,9 @@ const styles = StyleSheet.create({
   infoBanner: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: colors.info.bg,
+    backgroundColor: "#EFF6FF",
     borderWidth: 1,
-    borderColor: colors.info.light,
+    borderColor: "#EAF0FB",
     borderRadius: 12,
     padding: 12,
     gap: 8,
@@ -623,7 +623,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 13,
-    color: colors.info.dark,
+    color: colors.fab,
     lineHeight: 18,
   },
 
@@ -631,7 +631,7 @@ const styles = StyleSheet.create({
   footer: {
     textAlign: "center",
     fontSize: 12,
-    color: colors.neutral[400],
+    color: "#AEAEB2",
     marginTop: 4,
   },
 });

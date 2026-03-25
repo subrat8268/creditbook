@@ -88,12 +88,12 @@ const HERO_GRADIENT: [string, string] = ["#BE2D5C", "#E8427D"];
 // ─── Timeline row ─────────────────────────────────────────────────────────────
 function TimelineRow({ entry }: { entry: SupplierTimelineEntry }) {
   const isDelivery = entry.type === "delivery";
-  const borderColor = isDelivery ? colors.neutral[300] : colors.success.DEFAULT;
-  const iconBg = isDelivery ? colors.neutral[100] : colors.success.bg;
-  const iconColor = isDelivery ? colors.neutral[500] : colors.success.DEFAULT;
+  const borderColor = isDelivery ? colors.border : colors.primary;
+  const iconBg = isDelivery ? colors.background : colors.successBg;
+  const iconColor = isDelivery ? colors.textSecondary : colors.primary;
   const amountColor = isDelivery
-    ? colors.danger.DEFAULT
-    : colors.success.DEFAULT;
+    ? colors.danger
+    : colors.primary;
 
   const d = entry.delivery;
   const itemCount = d?.items?.length ?? 0;
@@ -124,7 +124,7 @@ function TimelineRow({ entry }: { entry: SupplierTimelineEntry }) {
       className="bg-white rounded-[14px] px-3.5 py-3.5 mb-[10px] border-l-4"
       style={{
         borderLeftColor: borderColor,
-        shadowColor: colors.black,
+        shadowColor: "#000000",
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
         shadowRadius: 4,
@@ -162,7 +162,7 @@ function TimelineRow({ entry }: { entry: SupplierTimelineEntry }) {
           </Text>
           <Text
             className="text-xs mt-[2px]"
-            style={{ color: colors.neutral[500] }}
+            style={{ color: colors.textSecondary }}
           >
             Bal: {formatINR(entry.runningBalance)}
           </Text>
@@ -251,12 +251,12 @@ export default function SupplierDetailScreen() {
       {supplier.bank_name ? (
         <View
           className="bg-white rounded-2xl px-4 py-4 mb-4 border"
-          style={{ borderColor: colors.neutral[200] }}
+          style={{ borderColor: colors.border }}
         >
           <View className="flex-row items-center justify-between mb-3">
             <Text
               className="text-[15px] font-bold"
-              style={{ color: colors.neutral[900] }}
+              style={{ color: colors.textPrimary }}
             >
               Bank Details
             </Text>
@@ -269,12 +269,12 @@ export default function SupplierDetailScreen() {
               >
                 <Copy
                   size={13}
-                  color={colors.primary.DEFAULT}
+                  color={colors.primary}
                   strokeWidth={2.5}
                 />
                 <Text
                   className="text-[13px] font-bold"
-                  style={{ color: colors.primary.DEFAULT }}
+                  style={{ color: colors.primary }}
                 >
                   Copy UPI
                 </Text>
@@ -286,18 +286,18 @@ export default function SupplierDetailScreen() {
           <View className="flex-row items-center gap-3 mb-2">
             <View
               className="w-9 h-9 rounded-full items-center justify-center"
-              style={{ backgroundColor: colors.info.bg }}
+              style={{ backgroundColor: "#EFF6FF" }}
             >
               <Building2
                 size={18}
-                color={colors.info.DEFAULT}
+                color={"#4F9CFF"}
                 strokeWidth={1.8}
               />
             </View>
             <View>
               <Text
                 className="text-[14px] font-semibold"
-                style={{ color: colors.neutral[900] }}
+                style={{ color: colors.textPrimary }}
               >
                 {supplier.bank_name}
                 {supplier.account_number
@@ -307,7 +307,7 @@ export default function SupplierDetailScreen() {
               {supplier.ifsc_code ? (
                 <Text
                   className="text-xs mt-px"
-                  style={{ color: colors.neutral[500] }}
+                  style={{ color: colors.textSecondary }}
                 >
                   IFSC: {supplier.ifsc_code}
                 </Text>
@@ -315,7 +315,7 @@ export default function SupplierDetailScreen() {
               {supplier.upi ? (
                 <Text
                   className="text-xs mt-px"
-                  style={{ color: colors.neutral[500] }}
+                  style={{ color: colors.textSecondary }}
                 >
                   UPI: {supplier.upi}
                 </Text>
@@ -331,17 +331,17 @@ export default function SupplierDetailScreen() {
           onPress={() => setDeliveryModalOpen(true)}
           activeOpacity={0.8}
           className="flex-1 bg-white rounded-2xl py-4 items-center gap-2 border"
-          style={{ borderColor: colors.neutral[200] }}
+          style={{ borderColor: colors.border }}
         >
           <View
             className="w-10 h-10 rounded-full items-center justify-center"
-            style={{ backgroundColor: colors.warning.light }}
+            style={{ backgroundColor: colors.pending.bg }}
           >
-            <Truck size={20} color={colors.warning.DEFAULT} strokeWidth={2} />
+            <Truck size={20} color={colors.warning} strokeWidth={2} />
           </View>
           <Text
             className="text-[13px] font-bold"
-            style={{ color: colors.neutral[700] }}
+            style={{ color: colors.textSecondary }}
           >
             Record Delivery
           </Text>
@@ -351,21 +351,21 @@ export default function SupplierDetailScreen() {
           onPress={() => setPaymentModalOpen(true)}
           activeOpacity={0.8}
           className="flex-1 bg-white rounded-2xl py-4 items-center gap-2 border"
-          style={{ borderColor: colors.neutral[200] }}
+          style={{ borderColor: colors.border }}
         >
           <View
             className="w-10 h-10 rounded-full items-center justify-center"
-            style={{ backgroundColor: colors.success.bg }}
+            style={{ backgroundColor: colors.successBg }}
           >
             <ArrowUpRight
               size={20}
-              color={colors.success.DEFAULT}
+              color={colors.primary}
               strokeWidth={2}
             />
           </View>
           <Text
             className="text-[13px] font-bold"
-            style={{ color: colors.neutral[700] }}
+            style={{ color: colors.textSecondary }}
           >
             Pay Supplier
           </Text>
@@ -376,7 +376,7 @@ export default function SupplierDetailScreen() {
       {timeline.length > 0 && (
         <Text
           className="text-[17px] font-bold mb-3"
-          style={{ color: colors.neutral[900] }}
+          style={{ color: colors.textPrimary }}
         >
           Delivery History
         </Text>
@@ -390,32 +390,32 @@ export default function SupplierDetailScreen() {
       <SafeAreaView
         edges={["top", "left", "right"]}
         className="flex-1"
-        style={{ backgroundColor: colors.neutral.bg }}
+        style={{ backgroundColor: colors.background }}
       >
         {/* ── Custom header ── */}
         <View
           className="flex-row items-center px-4 py-3 bg-white border-b"
-          style={{ borderBottomColor: colors.neutral[200] }}
+          style={{ borderBottomColor: colors.border }}
         >
           <TouchableOpacity
             onPress={() => router.back()}
             className="p-1 mr-2"
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <ArrowLeft size={22} color={colors.neutral[900]} strokeWidth={2} />
+            <ArrowLeft size={22} color={colors.textPrimary} strokeWidth={2} />
           </TouchableOpacity>
 
           <View className="flex-1">
             <Text
               className="font-bold text-[17px]"
-              style={{ color: colors.neutral[900] }}
+              style={{ color: colors.textPrimary }}
               numberOfLines={1}
             >
               {supplier.name}
             </Text>
             <Text
               className="text-xs mt-px"
-              style={{ color: colors.neutral[500] }}
+              style={{ color: colors.textSecondary }}
             >
               Last delivery: {formatRelativeActivity(supplier.lastDeliveryAt)}
             </Text>
@@ -429,7 +429,7 @@ export default function SupplierDetailScreen() {
               >
                 <Phone
                   size={20}
-                  color={colors.primary.DEFAULT}
+                  color={colors.primary}
                   strokeWidth={2}
                 />
               </TouchableOpacity>
@@ -437,7 +437,7 @@ export default function SupplierDetailScreen() {
             <TouchableOpacity
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Pencil size={18} color={colors.neutral[500]} strokeWidth={2} />
+              <Pencil size={18} color={colors.textSecondary} strokeWidth={2} />
             </TouchableOpacity>
           </View>
         </View>
@@ -464,7 +464,7 @@ export default function SupplierDetailScreen() {
               return (
                 <Text
                   className="text-xs font-bold tracking-wider mb-2 mt-1"
-                  style={{ color: colors.neutral[500] }}
+                  style={{ color: colors.textSecondary }}
                 >
                   {item._sectionHeader}
                 </Text>

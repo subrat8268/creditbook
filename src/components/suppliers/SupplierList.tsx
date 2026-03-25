@@ -10,7 +10,7 @@ import SupplierCard from "./SupplierCard";
 
 // ── Supplier-specific empty state icon: truck (amber, no badge) ───────────────
 const SupplierEmptyIcon = (
-  <Truck size={56} color={colors.warning.DEFAULT} strokeWidth={1.5} />
+  <Truck size={56} color={colors.warning} strokeWidth={1.5} />
 );
 
 export default function SupplierList({
@@ -60,7 +60,7 @@ export default function SupplierList({
           title="No suppliers added"
           description="Track what you owe your distributors and suppliers"
           icon={SupplierEmptyIcon}
-          iconBgColor={colors.warning.bg}
+          iconBgColor={colors.warningBg}
           iconSize={112}
           cta={onAddSupplier ? "Add Supplier" : undefined}
           onCta={onAddSupplier}

@@ -56,10 +56,10 @@ export default function Input({
             onChangeText={onChangeText}
             secureTextEntry={secureTextEntry}
             keyboardType={keyboardType}
-            placeholderTextColor={colors.neutral[400]}
+            placeholderTextColor={"#AEAEB2"}
             style={{
               flex: 1,
-              color: colors.neutral[900],
+              color: colors.textPrimary,
               fontSize: 16,
               paddingVertical: 0, // ✅ ensures true vertical centering
             }}

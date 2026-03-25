@@ -22,7 +22,7 @@ export default function FloatingActionButton({
       accessibilityLabel="Add"
       style={[styles.fab, { bottom, right }, style]}
     >
-      <Plus size={24} color={colors.white} strokeWidth={2.5} />
+      <Plus size={24} color={"#FFFFFF"} strokeWidth={2.5} />
     </TouchableOpacity>
   );
 }
@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     elevation: 6,
-    shadowColor: colors.black,
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
     shadowRadius: 6,

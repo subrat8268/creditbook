@@ -9,7 +9,7 @@ function PaymentItem({ item }: { item: Payment }) {
   return (
     <View className="flex-row justify-between items-end mb-4">
       <View className="flex-row items-start gap-4">
-        <CheckCircle2 size={24} color={colors.success.dark} strokeWidth={2} />
+        <CheckCircle2 size={24} color={colors.primaryDark} strokeWidth={2} />
         <View>
           <Text className="text-neutral-600 text-sm font-inter">
             {formatDate(item.payment_date)}

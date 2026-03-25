@@ -80,7 +80,7 @@ export default function SetNewPasswordPage() {
             <View className="w-16 h-16 rounded-full bg-success-light items-center justify-center self-center mb-6">
               <KeyRound
                 size={32}
-                color={colors.primary.dark}
+                color={colors.primaryDark}
                 strokeWidth={1.5}
               />
             </View>
@@ -127,13 +127,13 @@ export default function SetNewPasswordPage() {
                         {showPassword ? (
                           <EyeOff
                             size={20}
-                            color={colors.neutral[400]}
+                            color={"#AEAEB2"}
                             strokeWidth={1.8}
                           />
                         ) : (
                           <Eye
                             size={20}
-                            color={colors.neutral[400]}
+                            color={"#AEAEB2"}
                             strokeWidth={1.8}
                           />
                         )}
@@ -166,13 +166,13 @@ export default function SetNewPasswordPage() {
                         {showConfirm ? (
                           <EyeOff
                             size={20}
-                            color={colors.neutral[400]}
+                            color={"#AEAEB2"}
                             strokeWidth={1.8}
                           />
                         ) : (
                           <Eye
                             size={20}
-                            color={colors.neutral[400]}
+                            color={"#AEAEB2"}
                             strokeWidth={1.8}
                           />
                         )}

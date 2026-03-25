@@ -86,13 +86,13 @@ export default function LoginPage() {
                           {showPassword ? (
                             <EyeOff
                               size={20}
-                              color={colors.neutral[400]}
+                              color={"#AEAEB2"}
                               strokeWidth={1.8}
                             />
                           ) : (
                             <Eye
                               size={20}
-                              color={colors.neutral[400]}
+                              color={"#AEAEB2"}
                               strokeWidth={1.8}
                             />
                           )}
@@ -134,7 +134,7 @@ export default function LoginPage() {
               <View className="flex-row items-center self-center gap-2 rounded-full px-4 py-3 mt-4 bg-danger-bg border border-red-200">
                 <AlertCircle
                   size={16}
-                  color={colors.danger.strong}
+                  color={colors.damgerStrong}
                   strokeWidth={2}
                 />
                 <Text className="text-danger-strong text-sm">

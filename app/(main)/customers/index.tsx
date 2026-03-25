@@ -191,7 +191,7 @@ export default function CustomersScreen() {
         accessibilityLabel="Import from contacts"
         style={styles.secondaryFab}
       >
-        <Users size={20} color={colors.primary.DEFAULT} strokeWidth={2} />
+        <Users size={20} color={colors.primary} strokeWidth={2} />
       </TouchableOpacity>
 
       <NewCustomerModal
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     backgroundColor: "#FFFFFF",
     borderWidth: 1.5,
-    borderColor: colors.primary.DEFAULT,
+    borderColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
     elevation: 4,

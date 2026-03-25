@@ -30,7 +30,7 @@ export default function OrderItemCard({
       <View className="flex-row items-start justify-between mb-0.5">
         <Text
           className="flex-1 text-[15px] font-bold mr-2"
-          style={{ color: colors.neutral[900] }}
+          style={{ color: colors.textPrimary }}
           numberOfLines={2}
         >
           {label}
@@ -39,12 +39,12 @@ export default function OrderItemCard({
           onPress={onRemove}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <X size={16} color={colors.neutral[400]} strokeWidth={2.5} />
+          <X size={16} color={"#AEAEB2"} strokeWidth={2.5} />
         </TouchableOpacity>
       </View>
 
       {/* Rate subtitle */}
-      <Text className="text-sm mb-2.5" style={{ color: colors.neutral[500] }}>
+      <Text className="text-sm mb-2.5" style={{ color: colors.textSecondary }}>
         Rate: ₹{price.toLocaleString("en-IN")}
       </Text>
 
@@ -53,7 +53,7 @@ export default function OrderItemCard({
         {/* Bordered pill stepper */}
         <View
           className="flex-row items-center rounded-lg overflow-hidden border"
-          style={{ borderColor: colors.neutral[200] }}
+          style={{ borderColor: colors.border }}
         >
           <TouchableOpacity
             onPress={() =>
@@ -64,7 +64,7 @@ export default function OrderItemCard({
           >
             <Text
               className="text-[18px] font-semibold"
-              style={{ color: colors.neutral[500] }}
+              style={{ color: colors.textSecondary }}
             >
               −
             </Text>
@@ -73,8 +73,8 @@ export default function OrderItemCard({
           <Text
             className="px-3 text-[15px] font-bold border-l border-r"
             style={{
-              borderColor: colors.neutral[200],
-              color: colors.neutral[900],
+              borderColor: colors.border,
+              color: colors.textPrimary,
             }}
           >
             {String(quantity).padStart(2, "0")}
@@ -87,7 +87,7 @@ export default function OrderItemCard({
           >
             <Text
               className="text-[18px] font-semibold"
-              style={{ color: colors.neutral[500] }}
+              style={{ color: colors.textSecondary }}
             >
               +
             </Text>
@@ -97,7 +97,7 @@ export default function OrderItemCard({
         {/* Subtotal */}
         <Text
           className="text-[16px] font-bold"
-          style={{ color: colors.neutral[900] }}
+          style={{ color: colors.textPrimary }}
         >
           ₹{subtotal.toLocaleString("en-IN")}
         </Text>

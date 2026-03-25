@@ -35,10 +35,10 @@ const MODES: PaymentMode[] = ["Cash", "UPI", "NEFT", "Draft", "Cheque"];
 
 // ── Avatar utilities ─────────────────────────────────────────────────────────
 const AVATAR_COLORS = [
-  colors.danger.DEFAULT,
-  colors.warning.DEFAULT,
-  colors.primary.DEFAULT,
-  colors.info.DEFAULT,
+  colors.danger,
+  colors.warning,
+  colors.primary,
+  "#4F9CFF",
   "#9B59B6",
   "#E91E8C",
   "#00BCD4",
@@ -163,7 +163,7 @@ export default function RecordCustomerPaymentModal({
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
       handleIndicatorStyle={{
-        backgroundColor: colors.neutral[300],
+        backgroundColor: colors.border,
         width: 40,
       }}
       backgroundStyle={{ borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
@@ -179,7 +179,7 @@ export default function RecordCustomerPaymentModal({
         {/* ── Title ── */}
         <Text
           className="text-[20px] font-bold mb-4"
-          style={{ color: colors.neutral[900] }}
+          style={{ color: colors.textPrimary }}
         >
           Record Payment
         </Text>
@@ -187,7 +187,7 @@ export default function RecordCustomerPaymentModal({
         {/* ── Customer card ── */}
         <View
           className="flex-row items-center px-4 py-3 rounded-2xl mb-5"
-          style={{ backgroundColor: colors.neutral[100] }}
+          style={{ backgroundColor: colors.background }}
         >
           {/* Avatar */}
           <View
@@ -203,13 +203,13 @@ export default function RecordCustomerPaymentModal({
           <View className="flex-1">
             <Text
               className="font-bold text-[15px]"
-              style={{ color: colors.neutral[900] }}
+              style={{ color: colors.textPrimary }}
             >
               {customerName}
             </Text>
             <Text
               className="text-[13px] font-semibold"
-              style={{ color: colors.danger.DEFAULT }}
+              style={{ color: colors.danger }}
             >
               Balance: ₹{formatINR(balanceDue)}
             </Text>
@@ -217,14 +217,14 @@ export default function RecordCustomerPaymentModal({
 
           {/* History icon */}
           <TouchableOpacity hitSlop={8} activeOpacity={0.7}>
-            <History size={20} color={colors.primary.DEFAULT} strokeWidth={2} />
+            <History size={20} color={colors.primary} strokeWidth={2} />
           </TouchableOpacity>
         </View>
 
         {/* ── Amount Received ── */}
         <Text
           className="text-[13px] font-semibold mb-3"
-          style={{ color: colors.neutral[600] }}
+          style={{ color: colors.textPrimary }}
         >
           Amount Received
         </Text>
@@ -234,12 +234,12 @@ export default function RecordCustomerPaymentModal({
           className="flex-row items-center pb-3 mb-1"
           style={{
             borderBottomWidth: 2,
-            borderBottomColor: colors.primary.DEFAULT,
+            borderBottomColor: colors.primary,
           }}
         >
           <Text
             className="text-[28px] font-bold mr-2"
-            style={{ color: colors.neutral[900] }}
+            style={{ color: colors.textPrimary }}
           >
             ₹
           </Text>
@@ -248,12 +248,12 @@ export default function RecordCustomerPaymentModal({
             onChangeText={setAmount}
             keyboardType="decimal-pad"
             placeholder="0"
-            placeholderTextColor={colors.neutral[400]}
+            placeholderTextColor={"#AEAEB2"}
             style={{
               flex: 1,
               fontSize: 36,
               fontWeight: "800",
-              color: colors.neutral[900],
+              color: colors.textPrimary,
               padding: 0,
             }}
           />
@@ -267,7 +267,7 @@ export default function RecordCustomerPaymentModal({
         >
           <Text
             className="text-[13px] font-semibold"
-            style={{ color: colors.primary.DEFAULT }}
+            style={{ color: colors.primary }}
           >
             Full balance: ₹{formatINR(balanceDue)}
           </Text>
@@ -276,7 +276,7 @@ export default function RecordCustomerPaymentModal({
         {/* ── Payment Mode ── */}
         <Text
           className="text-[13px] font-semibold mb-3"
-          style={{ color: colors.neutral[600] }}
+          style={{ color: colors.textPrimary }}
         >
           Payment Mode
         </Text>
@@ -294,15 +294,15 @@ export default function RecordCustomerPaymentModal({
               className="px-5 py-2 rounded-full border"
               style={{
                 backgroundColor:
-                  mode === m ? colors.primary.DEFAULT : "#FFFFFF",
+                  mode === m ? colors.primary : "#FFFFFF",
                 borderColor:
-                  mode === m ? colors.primary.DEFAULT : colors.neutral[200],
+                  mode === m ? colors.primary : colors.border,
               }}
             >
               <Text
                 className="text-[14px] font-semibold"
                 style={{
-                  color: mode === m ? "#FFFFFF" : colors.neutral[700],
+                  color: mode === m ? "#FFFFFF" : colors.textSecondary,
                 }}
               >
                 {m}
@@ -314,7 +314,7 @@ export default function RecordCustomerPaymentModal({
         {/* ── Notes (optional) ── */}
         <Text
           className="text-[13px] font-semibold mb-2"
-          style={{ color: colors.neutral[600] }}
+          style={{ color: colors.textPrimary }}
         >
           Notes (optional)
         </Text>
@@ -322,16 +322,16 @@ export default function RecordCustomerPaymentModal({
           value={notes}
           onChangeText={setNotes}
           placeholder="Write a note about this payment..."
-          placeholderTextColor={colors.neutral[400]}
+          placeholderTextColor={"#AEAEB2"}
           multiline
           numberOfLines={3}
           textAlignVertical="top"
           className="rounded-xl px-4 py-3 text-[14px] mb-6"
           style={{
             borderWidth: 1,
-            borderColor: colors.neutral[200],
-            backgroundColor: colors.neutral[100],
-            color: colors.neutral[900],
+            borderColor: colors.border,
+            backgroundColor: colors.background,
+            color: colors.textPrimary,
             minHeight: 80,
           }}
         />
@@ -353,10 +353,10 @@ export default function RecordCustomerPaymentModal({
             className="flex-1 flex-row items-center justify-center rounded-xl h-14"
             style={{
               backgroundColor: loading
-                ? colors.neutral[200]
-                : colors.primary.DEFAULT,
+                ? colors.border
+                : colors.primary,
               gap: 6,
-              shadowColor: colors.primary.DEFAULT,
+              shadowColor: colors.primary,
               shadowOffset: { width: 0, height: 6 },
               shadowOpacity: 0.25,
               shadowRadius: 10,

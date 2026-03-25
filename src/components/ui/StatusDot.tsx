@@ -9,9 +9,9 @@ type StatusDotProps = {
 };
 
 const DOT_COLOR: Record<Status, string> = {
-  Paid: colors.success.DEFAULT,
-  Pending: colors.warning.DEFAULT,
-  "Partially Paid": colors.danger.DEFAULT,
+  Paid: colors.primary,
+  Pending: colors.warning,
+  "Partially Paid": colors.danger,
 };
 
 export default function StatusDot({ status }: StatusDotProps) {

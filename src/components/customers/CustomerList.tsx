@@ -11,7 +11,7 @@ import CustomerCard from "./CustomerCard";
 // ── Customer-specific empty state icon: open book + green plus badge ──────────
 const CustomerEmptyIcon = (
   <View style={{ width: 64, height: 64 }}>
-    <BookOpen size={64} color={colors.primary.DEFAULT} strokeWidth={1.5} />
+    <BookOpen size={64} color={colors.primary} strokeWidth={1.5} />
     <View
       style={{
         position: "absolute",
@@ -20,7 +20,7 @@ const CustomerEmptyIcon = (
         width: 22,
         height: 22,
         borderRadius: 11,
-        backgroundColor: colors.primary.DEFAULT,
+        backgroundColor: colors.primary,
         alignItems: "center",
         justifyContent: "center",
         borderWidth: 2,
@@ -106,7 +106,7 @@ export default function CustomerList({
           title="Your customer list is empty"
           description="Add your first customer to start tracking credit"
           icon={CustomerEmptyIcon}
-          iconBgColor={colors.success.bg}
+          iconBgColor={colors.successBg}
           iconSize={112}
           cta={onAddCustomer ? "Add Customer" : undefined}
           onCta={onAddCustomer}

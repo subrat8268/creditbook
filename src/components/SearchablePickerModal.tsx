@@ -52,7 +52,7 @@ export default function SearchablePickerModal<T extends Item>({
         <View className="flex-row items-center justify-between p-4 border-b border-gray-200 bg-white">
           <Text className="text-xl font-inter-bold">{title}</Text>
           <TouchableOpacity onPress={onClose}>
-            <X size={26} color={colors.neutral[700]} strokeWidth={2} />
+            <X size={26} color={colors.textSecondary} strokeWidth={2} />
           </TouchableOpacity>
         </View>
 

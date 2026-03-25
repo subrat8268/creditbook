@@ -53,11 +53,11 @@ function FieldLabel({
   return (
     <Text
       className="text-[11px] font-bold tracking-widest mb-1.5"
-      style={{ color: colors.neutral[500] }}
+      style={{ color: colors.textSecondary }}
     >
       {children.toUpperCase()}
       {required ? (
-        <Text style={{ color: colors.danger.DEFAULT }}> *</Text>
+        <Text style={{ color: colors.danger }}> *</Text>
       ) : null}
     </Text>
   );
@@ -74,8 +74,8 @@ function InputBase({
     <View
       className="flex-row items-center border rounded-xl overflow-hidden"
       style={{
-        borderColor: hasError ? colors.danger.DEFAULT : colors.neutral[200],
-        backgroundColor: colors.neutral[100],
+        borderColor: hasError ? colors.danger : colors.border,
+        backgroundColor: colors.background,
       }}
     >
       {children}
@@ -105,26 +105,26 @@ function BankField({
     <View
       className="flex-row items-center rounded-xl overflow-hidden border"
       style={{
-        borderColor: colors.warning.light,
+        borderColor: colors.pending.bg,
         backgroundColor: "#F0FDF4",
       }}
     >
       <View
         className="w-11 h-11 items-center justify-center"
-        style={{ backgroundColor: colors.primary.light ?? "#DCFCE7" }}
+        style={{ backgroundColor: colors.paid.bg ?? "#DCFCE7" }}
       >
         {icon}
       </View>
       <TextInput
         placeholder={placeholder}
-        placeholderTextColor={colors.neutral[400]}
+        placeholderTextColor={"#AEAEB2"}
         value={value}
         onChangeText={onChangeText}
         onBlur={onBlur}
         keyboardType={keyboardType ?? "default"}
         autoCapitalize={autoCapitalize ?? "none"}
         className="flex-1 px-3 py-3 text-sm"
-        style={{ color: colors.neutral[900] }}
+        style={{ color: colors.textPrimary }}
       />
     </View>
   );
@@ -186,7 +186,7 @@ export default function NewSupplierModal({
           setBankExpanded(false);
         }
       }}
-      handleIndicatorStyle={{ backgroundColor: colors.neutral[300], width: 40 }}
+      handleIndicatorStyle={{ backgroundColor: colors.border, width: 40 }}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
       backgroundStyle={{
@@ -205,7 +205,7 @@ export default function NewSupplierModal({
             Add Supplier
           </Text>
           <Pressable onPress={onClose} disabled={loading}>
-            <X size={22} color={colors.neutral[600]} strokeWidth={2} />
+            <X size={22} color={colors.textPrimary} strokeWidth={2} />
           </Pressable>
         </View>
         <Formik
@@ -245,18 +245,18 @@ export default function NewSupplierModal({
                 <InputBase hasError={!!(touched.name && errors.name)}>
                   <TextInput
                     placeholder="Metro Distributors"
-                    placeholderTextColor={colors.neutral[400]}
+                    placeholderTextColor={"#AEAEB2"}
                     value={values.name}
                     onChangeText={handleChange("name")}
                     onBlur={handleBlur("name")}
                     className="flex-1 px-4 py-3 text-base"
-                    style={{ color: colors.neutral[900] }}
+                    style={{ color: colors.textPrimary }}
                   />
                 </InputBase>
                 {touched.name && errors.name && (
                   <Text
                     className="text-xs mt-1"
-                    style={{ color: colors.danger.DEFAULT }}
+                    style={{ color: colors.danger }}
                   >
                     {errors.name}
                   </Text>
@@ -271,38 +271,38 @@ export default function NewSupplierModal({
                   style={{
                     borderColor:
                       touched.phone && errors.phone
-                        ? colors.danger.DEFAULT
-                        : colors.neutral[200],
+                        ? colors.danger
+                        : colors.border,
                     backgroundColor: "#FFFFFF",
                   }}
                 >
                   <View
                     className="px-3 py-3 border-r justify-center"
-                    style={{ borderRightColor: colors.neutral[200] }}
+                    style={{ borderRightColor: colors.border }}
                   >
                     <Text
                       className="text-[15px] font-semibold"
-                      style={{ color: colors.neutral[600] }}
+                      style={{ color: colors.textPrimary }}
                     >
                       +91
                     </Text>
                   </View>
                   <TextInput
                     placeholder="98765 43210"
-                    placeholderTextColor={colors.neutral[400]}
+                    placeholderTextColor={"#AEAEB2"}
                     value={values.phone}
                     onChangeText={handleChange("phone")}
                     onBlur={handleBlur("phone")}
                     keyboardType="phone-pad"
                     maxLength={10}
                     className="flex-1 px-3 py-3 text-base"
-                    style={{ color: colors.neutral[900] }}
+                    style={{ color: colors.textPrimary }}
                   />
                 </View>
                 {touched.phone && errors.phone && (
                   <Text
                     className="text-xs mt-1"
-                    style={{ color: colors.danger.DEFAULT }}
+                    style={{ color: colors.danger }}
                   >
                     {errors.phone}
                   </Text>
@@ -315,12 +315,12 @@ export default function NewSupplierModal({
                 <InputBase>
                   <TextInput
                     placeholder="e.g. M-42"
-                    placeholderTextColor={colors.neutral[400]}
+                    placeholderTextColor={"#AEAEB2"}
                     value={values.basket_mark}
                     onChangeText={handleChange("basket_mark")}
                     onBlur={handleBlur("basket_mark")}
                     className="flex-1 px-4 py-3 text-base"
-                    style={{ color: colors.neutral[900] }}
+                    style={{ color: colors.textPrimary }}
                   />
                 </InputBase>
               </View>
@@ -334,29 +334,29 @@ export default function NewSupplierModal({
                 {/* green-tinted square icon */}
                 <View
                   className="w-9 h-9 rounded-lg items-center justify-center mr-3"
-                  style={{ backgroundColor: colors.primary.light ?? "#DCFCE7" }}
+                  style={{ backgroundColor: colors.paid.bg ?? "#DCFCE7" }}
                 >
                   <Landmark
                     size={18}
-                    color={colors.primary.DEFAULT}
+                    color={colors.primary}
                     strokeWidth={2}
                   />
                 </View>
                 <Text
                   className="flex-1 text-[15px] font-semibold"
-                  style={{ color: colors.neutral[700] }}
+                  style={{ color: colors.textSecondary }}
                 >
                   Bank Details
                 </Text>
                 <Text
                   className="text-sm mr-0.5"
-                  style={{ color: colors.neutral[400] }}
+                  style={{ color: "#AEAEB2" }}
                 >
                   Optional
                 </Text>
                 <ChevronRight
                   size={16}
-                  color={colors.neutral[400]}
+                  color={"#AEAEB2"}
                   strokeWidth={2.5}
                   style={{
                     transform: [{ rotate: bankExpanded ? "90deg" : "0deg" }],
@@ -368,7 +368,7 @@ export default function NewSupplierModal({
               {bankExpanded && (
                 <View
                   className="gap-3 pt-1 pb-2 px-3 rounded-xl"
-                  style={{ backgroundColor: colors.neutral[100] }}
+                  style={{ backgroundColor: colors.background }}
                 >
                   {/* Bank Name */}
                   <View>
@@ -377,7 +377,7 @@ export default function NewSupplierModal({
                       icon={
                         <Landmark
                           size={16}
-                          color={colors.primary.DEFAULT}
+                          color={colors.primary}
                           strokeWidth={2}
                         />
                       }
@@ -394,7 +394,7 @@ export default function NewSupplierModal({
                       icon={
                         <CreditCard
                           size={16}
-                          color={colors.primary.DEFAULT}
+                          color={colors.primary}
                           strokeWidth={2}
                         />
                       }
@@ -412,7 +412,7 @@ export default function NewSupplierModal({
                       icon={
                         <Hash
                           size={16}
-                          color={colors.primary.DEFAULT}
+                          color={colors.primary}
                           strokeWidth={2}
                         />
                       }
@@ -430,7 +430,7 @@ export default function NewSupplierModal({
                       icon={
                         <Hash
                           size={16}
-                          color={colors.primary.DEFAULT}
+                          color={colors.primary}
                           strokeWidth={2}
                         />
                       }

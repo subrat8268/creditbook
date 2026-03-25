@@ -30,7 +30,7 @@ function ChargeInput({
     <View className="flex-1">
       <Text
         className="text-sm font-semibold mb-2"
-        style={{ color: colors.neutral[600] }}
+        style={{ color: colors.textPrimary }}
       >
         {label}
       </Text>
@@ -40,14 +40,14 @@ function ChargeInput({
           onChangeText={onChange}
           keyboardType="numeric"
           placeholder="0"
-          placeholderTextColor={colors.neutral[300]}
+          placeholderTextColor={colors.border}
           className="text-[16px] font-bold"
-          style={{ color: colors.neutral[900], minWidth: 40 }}
+          style={{ color: colors.textPrimary, minWidth: 40 }}
         />
         {suffix ? (
           <Text
             className="text-[14px] ml-1"
-            style={{ color: colors.neutral[500] }}
+            style={{ color: colors.textSecondary }}
           >
             {suffix}
           </Text>
@@ -79,7 +79,7 @@ function SummaryRow({
         style={{
           fontSize: large ? 16 : 14,
           fontWeight: bold ? "700" : "400",
-          color: labelColor ?? colors.neutral[500],
+          color: labelColor ?? colors.textSecondary,
         }}
       >
         {label}
@@ -88,7 +88,7 @@ function SummaryRow({
         style={{
           fontSize: large ? 28 : 14,
           fontWeight: bold ? "700" : "500",
-          color: valueColor ?? colors.neutral[700],
+          color: valueColor ?? colors.textSecondary,
         }}
       >
         {value}
@@ -139,10 +139,10 @@ export default function OrderBillSummary({
       <View
         className="rounded-2xl p-4 mb-3"
         style={{
-          backgroundColor: colors.white,
+          backgroundColor: "#FFFFFF",
           borderWidth: 1,
-          borderColor: colors.neutral[100],
-          shadowColor: colors.black,
+          borderColor: colors.background,
+          shadowColor: "#000000",
           shadowOffset: { width: 0, height: 1 },
           shadowOpacity: 0.04,
           shadowRadius: 4,
@@ -151,7 +151,7 @@ export default function OrderBillSummary({
       >
         <Text
           className="text-[15px] font-bold mb-4"
-          style={{ color: colors.neutral[900] }}
+          style={{ color: colors.textPrimary }}
         >
           Other Charges
         </Text>
@@ -165,7 +165,7 @@ export default function OrderBillSummary({
           {/* Divider */}
           <View
             className="w-px self-stretch"
-            style={{ backgroundColor: colors.neutral[200] }}
+            style={{ backgroundColor: colors.border }}
           />
           {/* Loading */}
           <ChargeInput
@@ -181,10 +181,10 @@ export default function OrderBillSummary({
       <View
         className="rounded-2xl p-4 mb-3"
         style={{
-          backgroundColor: colors.white,
+          backgroundColor: "#FFFFFF",
           borderWidth: 1,
-          borderColor: colors.neutral[100],
-          shadowColor: colors.black,
+          borderColor: colors.background,
+          shadowColor: "#000000",
           shadowOffset: { width: 0, height: 1 },
           shadowOpacity: 0.04,
           shadowRadius: 4,
@@ -206,15 +206,15 @@ export default function OrderBillSummary({
 
         {/* Previous Balance */}
         <View className="flex-row justify-between items-center mb-1.5">
-          <Text className="text-sm" style={{ color: colors.neutral[500] }}>
+          <Text className="text-sm" style={{ color: colors.textSecondary }}>
             Previous Balance
           </Text>
           {isFetchingBalance ? (
-            <ActivityIndicator size="small" color={colors.danger.DEFAULT} />
+            <ActivityIndicator size="small" color={colors.danger} />
           ) : (
             <Text
               className="text-sm font-semibold"
-              style={{ color: colors.danger.DEFAULT }}
+              style={{ color: colors.danger }}
             >
               {fmtINR(previousBalance)}
             </Text>
@@ -224,15 +224,15 @@ export default function OrderBillSummary({
         {/* Divider */}
         <View
           className="h-px my-2"
-          style={{ backgroundColor: colors.neutral[100] }}
+          style={{ backgroundColor: colors.background }}
         />
 
         {/* Grand Total */}
         <SummaryRow
           label="Grand Total"
           value={fmtINR(grandTotal)}
-          labelColor={colors.neutral[900]}
-          valueColor={colors.neutral[900]}
+          labelColor={colors.textPrimary}
+          valueColor={colors.textPrimary}
           bold
           large
         />

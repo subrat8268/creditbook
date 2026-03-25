@@ -8,10 +8,10 @@ import Loader from "../feedback/Loader";
 
 // ── Avatar helpers ────────────────────────────────────────────────────────────
 const AVATAR_COLORS = [
-  colors.danger.DEFAULT,
-  colors.warning.DEFAULT,
-  colors.primary.DEFAULT,
-  colors.info.DEFAULT,
+  colors.danger,
+  colors.warning,
+  colors.primary,
+  "#4F9CFF",
   "#9B59B6",
   "#E91E8C",
   "#00BCD4",

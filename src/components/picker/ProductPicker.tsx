@@ -91,14 +91,14 @@ export default function ProductPicker({
         borderRadius: 14,
         borderWidth: 1.5,
         borderStyle: "dashed",
-        borderColor: colors.primary.DEFAULT,
-        backgroundColor: colors.success.bg,
+        borderColor: colors.primary,
+        backgroundColor: colors.successBg,
       }}
     >
-      <Plus size={16} color={colors.primary.DEFAULT} strokeWidth={2.5} />
+      <Plus size={16} color={colors.primary} strokeWidth={2.5} />
       <Text
         style={{
-          color: colors.primary.DEFAULT,
+          color: colors.primary,
           fontWeight: "700",
           fontSize: 14,
         }}

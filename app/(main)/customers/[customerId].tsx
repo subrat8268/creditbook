@@ -102,7 +102,7 @@ function buildStatementHtml(
     .map((tx) => {
       const sign = tx.type === "payment" ? "+" : "";
       const color =
-        tx.type === "payment" ? colors.success.DEFAULT : colors.danger.DEFAULT;
+        tx.type === "payment" ? colors.primary : colors.danger;
       const label =
         tx.type === "bill"
           ? `Invoice ${tx.billNumber ?? ""}`
@@ -123,7 +123,7 @@ function buildStatementHtml(
   table{width:100%;border-collapse:collapse;margin-top:20px;}
   th{background:#5B3FFF;color:white;padding:10px 8px;text-align:left;}
   td{padding:10px 8px;border-bottom:1px solid #E5E5EA;}
-  .balance{font-size:18px;font-weight:700;color:${colors.danger.DEFAULT};}
+  .balance{font-size:18px;font-weight:700;color:${colors.danger};}
 </style></head><body>
 <h1>${businessName} — Customer Statement</h1>
 <p><b>Customer:</b> ${name}<br/><b>Phone:</b> ${phone}</p>
@@ -146,13 +146,13 @@ const MODE_LABEL: Record<string, string> = {
 function TransactionRow({ tx }: { tx: Transaction }) {
   const isPayment = tx.type === "payment";
   const borderColor = isPayment
-    ? colors.success.DEFAULT
-    : colors.danger.DEFAULT;
-  const iconBg = isPayment ? colors.success.bg : colors.danger.bg;
-  const iconColor = isPayment ? colors.success.DEFAULT : colors.danger.DEFAULT;
+    ? colors.primary
+    : colors.danger;
+  const iconBg = isPayment ? colors.successBg : colors.dangerBg;
+  const iconColor = isPayment ? colors.primary : colors.danger;
   const amountColor = isPayment
-    ? colors.success.DEFAULT
-    : colors.danger.DEFAULT;
+    ? colors.primary
+    : colors.danger;
   const title = isPayment
     ? "Payment Received"
     : `Bill${tx.billNumber ? ` #${tx.billNumber}` : ""}`;
@@ -171,7 +171,7 @@ function TransactionRow({ tx }: { tx: Transaction }) {
       className={`bg-white rounded-[14px] px-3.5 py-3.5 mb-[10px] border-l-4`}
       style={{
         borderLeftColor: borderColor,
-        shadowColor: colors.black,
+        shadowColor: "#000000",
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.04,
         shadowRadius: 4,
@@ -319,7 +319,7 @@ export default function CustomerDetailScreen() {
       {/* ── Header ── */}
       <View className="flex-row items-center px-4 py-3 bg-white border-b border-border">
         <TouchableOpacity onPress={() => router.back()} className="p-1 mr-2">
-          <ArrowLeft size={24} color={colors.neutral[900]} strokeWidth={2} />
+          <ArrowLeft size={24} color={colors.textPrimary} strokeWidth={2} />
         </TouchableOpacity>
         <View className="flex-1">
           <Text
@@ -342,7 +342,7 @@ export default function CustomerDetailScreen() {
             >
               <FileText
                 size={20}
-                color={colors.primary.DEFAULT}
+                color={colors.primary}
                 strokeWidth={2}
               />
             </TouchableOpacity>
@@ -351,7 +351,7 @@ export default function CustomerDetailScreen() {
             className="w-[38px] h-[38px] rounded-full bg-search items-center justify-center"
             onPress={callCustomer}
           >
-            <Phone size={20} color={colors.success.DEFAULT} strokeWidth={2} />
+            <Phone size={20} color={colors.primary} strokeWidth={2} />
           </TouchableOpacity>
         </View>
       </View>
@@ -365,8 +365,8 @@ export default function CustomerDetailScreen() {
         <LinearGradient
           colors={
             customer.outstandingBalance === 0
-              ? [colors.primary.DEFAULT, colors.primary.dark]
-              : [colors.danger.DEFAULT, colors.danger.dark]
+              ? [colors.primary, colors.primaryDark]
+              : [colors.danger, "#B33226"]
           }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -446,7 +446,7 @@ export default function CustomerDetailScreen() {
           <TouchableOpacity
             className="flex-1 bg-white rounded-2xl py-[18px] items-center gap-2"
             style={{
-              shadowColor: colors.black,
+              shadowColor: "#000000",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.05,
               shadowRadius: 6,
@@ -462,9 +462,9 @@ export default function CustomerDetailScreen() {
           >
             <View
               className="w-11 h-11 rounded-full items-center justify-center"
-              style={{ backgroundColor: colors.danger.bg }}
+              style={{ backgroundColor: colors.dangerBg }}
             >
-              <Plus size={22} color={colors.danger.DEFAULT} strokeWidth={2.5} />
+              <Plus size={22} color={colors.danger} strokeWidth={2.5} />
             </View>
             <Text className="text-[13px] font-semibold text-textDark">
               New Bill
@@ -474,7 +474,7 @@ export default function CustomerDetailScreen() {
           <TouchableOpacity
             className="flex-1 bg-white rounded-2xl py-[18px] items-center gap-2"
             style={{
-              shadowColor: colors.black,
+              shadowColor: "#000000",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.05,
               shadowRadius: 6,
@@ -494,11 +494,11 @@ export default function CustomerDetailScreen() {
           >
             <View
               className="w-11 h-11 rounded-full items-center justify-center"
-              style={{ backgroundColor: colors.success.bg }}
+              style={{ backgroundColor: colors.successBg }}
             >
               <Banknote
                 size={22}
-                color={colors.success.DEFAULT}
+                color={colors.primary}
                 strokeWidth={2}
               />
             </View>
@@ -510,7 +510,7 @@ export default function CustomerDetailScreen() {
           <TouchableOpacity
             className="flex-1 bg-white rounded-2xl py-[18px] items-center gap-2"
             style={{
-              shadowColor: colors.black,
+              shadowColor: "#000000",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.05,
               shadowRadius: 6,
@@ -521,11 +521,11 @@ export default function CustomerDetailScreen() {
           >
             <View
               className="w-11 h-11 rounded-full items-center justify-center"
-              style={{ backgroundColor: colors.warning.light }}
+              style={{ backgroundColor: colors.pending.bg }}
             >
               <MessageCircle
                 size={22}
-                color={colors.warning.DEFAULT}
+                color={colors.warning}
                 strokeWidth={2}
               />
             </View>
@@ -540,7 +540,7 @@ export default function CustomerDetailScreen() {
           {/* Underline tab bar */}
           <View
             className="flex-row border-b"
-            style={{ borderBottomColor: colors.neutral[200] }}
+            style={{ borderBottomColor: colors.border }}
           >
             {(["All", "Bills Given", "Payments"] as TxFilter[]).map((f) => {
               const active = txFilter === f;
@@ -553,7 +553,7 @@ export default function CustomerDetailScreen() {
                   style={{
                     borderBottomWidth: active ? 2 : 0,
                     borderBottomColor: active
-                      ? colors.primary.DEFAULT
+                      ? colors.primary
                       : "transparent",
                     marginBottom: active ? -1 : 0,
                   }}
@@ -562,8 +562,8 @@ export default function CustomerDetailScreen() {
                     className="text-[13px] font-semibold"
                     style={{
                       color: active
-                        ? colors.primary.DEFAULT
-                        : colors.neutral[500],
+                        ? colors.primary
+                        : colors.textSecondary,
                     }}
                   >
                     {f}
@@ -582,13 +582,13 @@ export default function CustomerDetailScreen() {
                 style={{
                   borderWidth: 2,
                   borderStyle: "dashed",
-                  borderColor: colors.primary.light,
-                  backgroundColor: colors.success.bg,
+                  borderColor: colors.paid.bg,
+                  backgroundColor: colors.successBg,
                 }}
               >
                 <Receipt
                   size={48}
-                  color={colors.primary.light}
+                  color={colors.paid.bg}
                   strokeWidth={1.5}
                 />
               </View>
@@ -602,7 +602,7 @@ export default function CustomerDetailScreen() {
               <View className="flex-row gap-3 mt-2 w-full">
                 <TouchableOpacity
                   className="flex-1 items-center justify-center py-3 rounded-full border"
-                  style={{ borderColor: colors.primary.DEFAULT }}
+                  style={{ borderColor: colors.primary }}
                   activeOpacity={0.8}
                   onPress={() =>
                     router.push({
@@ -613,14 +613,14 @@ export default function CustomerDetailScreen() {
                 >
                   <Text
                     className="text-[14px] font-bold"
-                    style={{ color: colors.primary.DEFAULT }}
+                    style={{ color: colors.primary }}
                   >
                     New Bill
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   className="flex-1 items-center justify-center py-3 rounded-full"
-                  style={{ backgroundColor: colors.primary.DEFAULT }}
+                  style={{ backgroundColor: colors.primary }}
                   activeOpacity={0.8}
                   onPress={() => setPaymentModalVisible(true)}
                 >
@@ -664,8 +664,8 @@ export default function CustomerDetailScreen() {
           style={{
             backgroundColor:
               customer.transactions.length === 0
-                ? colors.neutral[200]
-                : colors.neutral[900],
+                ? colors.border
+                : colors.textPrimary,
           }}
           onPress={downloadStatement}
           disabled={exporting || customer.transactions.length === 0}
@@ -675,8 +675,8 @@ export default function CustomerDetailScreen() {
             size={18}
             color={
               customer.transactions.length === 0
-                ? colors.neutral[500]
-                : colors.white
+                ? colors.textSecondary
+                : "#FFFFFF"
             }
             strokeWidth={2}
           />
@@ -685,8 +685,8 @@ export default function CustomerDetailScreen() {
             style={{
               color:
                 customer.transactions.length === 0
-                  ? colors.neutral[500]
-                  : colors.white,
+                  ? colors.textSecondary
+                  : "#FFFFFF",
             }}
           >
             {exporting ? "Generating…" : "Download Statement"}

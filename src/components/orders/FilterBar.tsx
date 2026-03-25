@@ -59,11 +59,11 @@ export function FilterBar({
           activeOpacity={0.8}
           className="flex-row items-center px-3 py-1.5 bg-search border border-default rounded-full"
         >
-          <Sliders size={16} color={colors.neutral[600]} />
+          <Sliders size={16} color={colors.textPrimary} />
           <Text className="ml-1 text-sm text-textPrimary font-inter-medium">
             Filter
           </Text>
-          <ChevronDown size={14} color={colors.neutral[500]} className="ml-1" />
+          <ChevronDown size={14} color={colors.textSecondary} className="ml-1" />
         </TouchableOpacity>
 
         {/* Sort Button */}
@@ -72,11 +72,11 @@ export function FilterBar({
           activeOpacity={0.8}
           className="flex-row items-center px-3 py-1.5 bg-search border border-default rounded-full"
         >
-          <SortAsc size={16} color={colors.neutral[600]} />
+          <SortAsc size={16} color={colors.textPrimary} />
           <Text className="ml-1 text-sm text-textPrimary font-inter-medium capitalize">
             {sortBy}
           </Text>
-          <ChevronDown size={14} color={colors.neutral[500]} className="ml-1" />
+          <ChevronDown size={14} color={colors.textSecondary} className="ml-1" />
         </TouchableOpacity>
       </View>
     </View>

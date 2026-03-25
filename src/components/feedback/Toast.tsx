@@ -95,7 +95,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   );
 
   const isSuccess = toast?.type !== "error";
-  const bg = isSuccess ? colors.success.DEFAULT : colors.danger.DEFAULT;
+  const bg = isSuccess ? colors.primary : colors.danger;
 
   return (
     <ToastContext.Provider value={{ show }}>
@@ -110,9 +110,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           pointerEvents="none"
         >
           {isSuccess ? (
-            <CheckCircle size={18} color={colors.white} strokeWidth={2.5} />
+            <CheckCircle size={18} color={"#FFFFFF"} strokeWidth={2.5} />
           ) : (
-            <XCircle size={18} color={colors.white} strokeWidth={2.5} />
+            <XCircle size={18} color={"#FFFFFF"} strokeWidth={2.5} />
           )}
           <Text style={styles.message}>{toast.message}</Text>
         </Animated.View>
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 18,
-    shadowColor: colors.black,
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 10,
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
   },
   message: {
     flex: 1,
-    color: colors.white,
+    color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "600",
     lineHeight: 20,

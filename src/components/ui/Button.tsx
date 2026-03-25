@@ -61,7 +61,7 @@ export default function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === "outline" ? colors.primary.DEFAULT : colors.white}
+          color={variant === "outline" ? colors.primary : "#FFFFFF"}
         />
       ) : (
         <View className="flex-row items-center justify-center">

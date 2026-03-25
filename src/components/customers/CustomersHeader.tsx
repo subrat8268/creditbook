@@ -19,17 +19,17 @@ export default function CustomersHeader({ count, onMenuPress }: Props) {
       <View className="flex-row items-center gap-2.5">
         <Text
           className="font-bold"
-          style={{ fontSize: 22, color: colors.neutral[900] }}
+          style={{ fontSize: 22, color: colors.textPrimary }}
         >
           Customers
         </Text>
         <View
           className="rounded-full px-2.5 py-[3px]"
-          style={{ backgroundColor: colors.primary.light }}
+          style={{ backgroundColor: colors.paid.bg }}
         >
           <Text
             className="font-bold"
-            style={{ fontSize: 13, color: colors.primary.DEFAULT }}
+            style={{ fontSize: 13, color: colors.primary }}
           >
             {count}
           </Text>
@@ -42,7 +42,7 @@ export default function CustomersHeader({ count, onMenuPress }: Props) {
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         activeOpacity={0.7}
       >
-        <MoreVertical size={22} color={colors.neutral[500]} strokeWidth={2} />
+        <MoreVertical size={22} color={colors.textSecondary} strokeWidth={2} />
       </TouchableOpacity>
     </View>
   );

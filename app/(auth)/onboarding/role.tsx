@@ -112,7 +112,7 @@ export default function OnboardingRole() {
           <View className="flex-row gap-1.5">
             <View
               className="flex-1 h-1 rounded-full"
-              style={{ backgroundColor: colors.primary.DEFAULT }}
+              style={{ backgroundColor: colors.primary }}
             />
             <View className="flex-1 h-1 rounded-full bg-neutral-200" />
             <View className="flex-1 h-1 rounded-full bg-neutral-200" />

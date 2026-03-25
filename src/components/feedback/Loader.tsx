@@ -16,7 +16,7 @@ export default function Loader({ message }: { message?: string }) {
 
   return (
     <View className="flex-1 items-center justify-center mt-6">
-      <ActivityIndicator size="large" color={colors.primary.dark} />
+      <ActivityIndicator size="large" color={colors.primaryDark} />
       {displayText ? (
         <Text className="mt-3 text-neutral-500">{displayText}</Text>
       ) : null}
