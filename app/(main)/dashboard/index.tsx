@@ -13,6 +13,7 @@ import Loader from "@/src/components/feedback/Loader";
 import { useAddCustomer } from "@/src/hooks/useCustomer";
 import { useDashboard } from "@/src/hooks/useDashboard";
 import { useAuthStore } from "@/src/store/authStore";
+import { colors, spacing } from "@/src/utils/theme";
 
 // ─────────────── Main Screen ────────────
 export default function DashboardScreen() {
@@ -59,8 +60,8 @@ export default function DashboardScreen() {
         : "CreditBook Seller";
 
   return (
-    <View className="flex-1 bg-background">
-      <StatusBar barStyle="dark-content" backgroundColor="#F6F7F9" />
+    <View className="flex-1" style={{ backgroundColor: colors.background }}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       <DashboardHeader
         variant={isBothMode ? "both" : "default"}
@@ -69,7 +70,10 @@ export default function DashboardScreen() {
       />
 
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }}
+        contentContainerStyle={{
+          paddingHorizontal: spacing.screenPadding,
+          paddingBottom: 120,
+        }}
         showsVerticalScrollIndicator={false}
       >
         {isBothMode ? (
@@ -148,13 +152,14 @@ export default function DashboardScreen() {
       </ScrollView>
 
       <Pressable
-        className="absolute items-center justify-center bg-primary rounded-full"
+        className="absolute items-center justify-center rounded-full"
         style={{
-          bottom: 96,
-          right: 24,
-          width: 58,
-          height: 58,
-          shadowColor: "#22C55E",
+          backgroundColor: colors.fab,
+          bottom: spacing.tabBarHeight - spacing.fabSize / 2,
+          right: spacing.fabMargin,
+          width: spacing.fabSize,
+          height: spacing.fabSize,
+          shadowColor: colors.fab,
           shadowOffset: { width: 0, height: 6 },
           shadowOpacity: 0.4,
           shadowRadius: 12,
@@ -162,7 +167,7 @@ export default function DashboardScreen() {
         }}
         onPress={() => router.push("/(main)/orders/create" as any)}
       >
-        <Plus size={26} color="#FFFFFF" strokeWidth={2.5} />
+        <Plus size={26} color={colors.surface} strokeWidth={2.5} />
       </Pressable>
 
       <NewCustomerModal

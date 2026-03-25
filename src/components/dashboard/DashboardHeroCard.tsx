@@ -1,5 +1,5 @@
 import { formatINR } from "@/src/utils/dashboardUi";
-import { colors } from "@/src/utils/theme";
+import { colors, gradients, spacing, typography } from "@/src/utils/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { BarChart2, Smartphone } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -28,11 +28,6 @@ const SELLER_CONFIG = {
   secondary: { icon: Smartphone, label: "Send Reminder" },
 } as const;
 
-// Distributor gradient: deep crimson-rose → magenta-rose
-const DISTRIBUTOR_GRADIENT: readonly [string, string] = ["#B91C6A", "#E8336E"];
-// Net Position gradient: dark navy (both mode)
-const NET_GRADIENT: readonly [string, string] = ["#1E293B", "#0F172A"];
-
 // ─── DashboardHeroCard ───────────────────────────────────────────────────────
 export default function DashboardHeroCard({
   variant = "seller",
@@ -54,7 +49,7 @@ export default function DashboardHeroCard({
   if (isNet) {
     return (
       <LinearGradient
-        colors={NET_GRADIENT}
+        colors={[gradients.netPosition, gradients.netPosition]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         className="rounded-3xl p-6 mb-3"
@@ -67,14 +62,21 @@ export default function DashboardHeroCard({
         }}
       >
         <Text
-          className="text-[11px] font-bold tracking-[1.6px] mb-2.5"
-          style={{ color: "rgba(255,255,255,0.6)" }}
+          className="mb-2.5"
+          style={{
+            ...typography.label,
+            color: "rgba(255,255,255,0.6)",
+          }}
         >
           {label}
         </Text>
         <Text
-          className="font-extrabold tracking-tight"
-          style={{ color: colors.white, fontSize: 40, lineHeight: 48 }}
+          className="tracking-tight"
+          style={{
+            ...typography.heroAmount,
+            fontSize: 40,
+            lineHeight: 48,
+          }}
         >
           {amount < 0 ? "−" : ""}
           {formatINR(Math.abs(amount))}
@@ -106,16 +108,24 @@ export default function DashboardHeroCard({
 
       {/* Label */}
       <Text
-        className="text-[11px] font-bold tracking-[1.6px] mb-2.5"
-        style={{ color: "rgba(255,255,255,0.75)" }}
+        style={{
+          ...typography.label,
+          marginBottom: spacing.md,
+          color: "rgba(255,255,255,0.75)",
+        }}
       >
         {label}
       </Text>
 
       {/* Amount */}
       <Text
-        className="font-extrabold tracking-tight mb-1"
-        style={{ color: colors.white, fontSize: 40, lineHeight: 48 }}
+        className="tracking-tight"
+        style={{
+          ...typography.heroAmount,
+          fontSize: 40,
+          lineHeight: 48,
+          marginBottom: spacing.xs,
+        }}
       >
         {formatINR(amount)}
       </Text>
@@ -123,8 +133,11 @@ export default function DashboardHeroCard({
       {/* Sub-info line — e.g. "4 active suppliers" */}
       {subInfo && (
         <Text
-          className="text-[13px] mb-0.5"
-          style={{ color: "rgba(255,255,255,0.82)" }}
+          style={{
+            ...typography.subtitle,
+            marginBottom: spacing.lg,
+            color: "rgba(255,255,255,0.82)",
+          }}
         >
           {subInfo}
         </Text>
@@ -134,8 +147,11 @@ export default function DashboardHeroCard({
       <View className="mb-4">
         {showDelta && (
           <Text
-            className="text-[13px] mt-1"
-            style={{ color: "rgba(255,255,255,0.85)" }}
+            style={{
+              ...typography.subtitle,
+              marginTop: spacing.xs,
+              color: "rgba(255,255,255,0.85)",
+            }}
           >
             {deltaUp ? "↑" : "↓"} {formatINR(Math.abs(weekDelta!))} this week
           </Text>
@@ -145,30 +161,40 @@ export default function DashboardHeroCard({
       {/* Action buttons */}
       <View className="flex-row gap-3">
         <TouchableOpacity
-          className="flex-1 flex-row items-center justify-center gap-2 py-3 rounded-xl"
-          style={{ backgroundColor: "rgba(255,255,255,0.22)" }}
+          className="flex-1 flex-row items-center justify-center gap-2 rounded-xl"
+          style={{
+            backgroundColor: "rgba(255,255,255,0.22)",
+            paddingVertical: spacing.md,
+          }}
           onPress={onPrimaryAction}
           activeOpacity={0.72}
         >
-          <PrimaryIcon size={17} color={colors.white} strokeWidth={2} />
+          <PrimaryIcon size={17} color={colors.surface} strokeWidth={2} />
           <Text
-            className="text-sm font-semibold"
-            style={{ color: colors.white }}
+            style={{
+              ...typography.body,
+              color: colors.surface,
+            }}
           >
             {config.primary.label}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          className="flex-1 flex-row items-center justify-center gap-2 py-3 rounded-xl"
-          style={{ backgroundColor: "rgba(255,255,255,0.22)" }}
+          className="flex-1 flex-row items-center justify-center gap-2 rounded-xl"
+          style={{
+            backgroundColor: "rgba(255,255,255,0.22)",
+            paddingVertical: spacing.md,
+          }}
           onPress={onSecondaryAction}
           activeOpacity={0.72}
         >
-          <SecondaryIcon size={17} color={colors.white} strokeWidth={2} />
+          <SecondaryIcon size={17} color={colors.surface} strokeWidth={2} />
           <Text
-            className="text-sm font-semibold"
-            style={{ color: colors.white }}
+            style={{
+              ...typography.body,
+              color: colors.surface,
+            }}
           >
             {config.secondary.label}
           </Text>
@@ -181,12 +207,12 @@ export default function DashboardHeroCard({
   if (isDistributor) {
     return (
       <LinearGradient
-        colors={DISTRIBUTOR_GRADIENT}
+        colors={[gradients.supplierHero.start, gradients.supplierHero.end]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         className="rounded-3xl p-6 mb-3 overflow-hidden"
         style={{
-          shadowColor: "#B91C6A",
+          shadowColor: gradients.supplierHero.start,
           shadowOffset: { width: 0, height: 8 },
           shadowOpacity: 0.35,
           shadowRadius: 16,
@@ -203,8 +229,8 @@ export default function DashboardHeroCard({
     <View
       className="rounded-3xl p-6 mb-3"
       style={{
-        backgroundColor: colors.danger.DEFAULT,
-        shadowColor: colors.danger.dark,
+        backgroundColor: colors.damgerStrong,
+        shadowColor: colors.damgerStrong,
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.35,
         shadowRadius: 16,

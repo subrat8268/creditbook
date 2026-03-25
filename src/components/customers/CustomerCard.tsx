@@ -1,6 +1,6 @@
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { formatRelativeActivity } from "../../utils/helper";
-import { colors } from "../../utils/theme";
+import { colors, spacing, typography } from "../../utils/theme";
 
 type CustomerStatus = "Overdue" | "Pending" | "Paid" | "Advance";
 
@@ -18,10 +18,10 @@ type Props = {
 // --- Helpers ---
 
 const AVATAR_COLORS = [
-  colors.danger.DEFAULT, // #E74C3C  red
-  colors.warning.DEFAULT, // #F59E0B  amber/orange
-  colors.primary.DEFAULT, // #22C55E  green
-  colors.info.DEFAULT, // #4F9CFF  blue
+  colors.danger, // Red
+  colors.warning, // Amber
+  colors.primary, // Green
+  colors.fab, // Blue
   "#9B59B6", // purple — decorative avatar only
   "#E91E8C", // pink   — decorative avatar only
   "#00BCD4", // teal   — decorative avatar only
@@ -60,32 +60,32 @@ const STATUS_STYLES: Record<
   { text: string; border: string; bg: string }
 > = {
   Overdue: {
-    text: colors.danger.DEFAULT,
-    border: colors.danger.DEFAULT,
-    bg: colors.danger.light,
+    text: colors.overdue.text,
+    border: colors.danger,
+    bg: colors.overdue.bg,
   },
   Pending: {
-    text: colors.warning.DEFAULT,
-    border: colors.warning.DEFAULT,
-    bg: colors.warning.light,
+    text: colors.pending.text,
+    border: colors.warning,
+    bg: colors.pending.bg,
   },
   Paid: {
-    text: colors.success.text,
-    border: colors.primary.light,
-    bg: colors.success.light,
+    text: colors.paid.text,
+    border: colors.primary,
+    bg: colors.paid.bg,
   },
   Advance: {
-    text: colors.info.text,
-    border: colors.info.DEFAULT,
-    bg: colors.info.light,
+    text: colors.textPrimary,
+    border: colors.fab,
+    bg: "#EFF6FF",
   },
 };
 
 const AMOUNT_COLOR: Record<CustomerStatus, string> = {
-  Overdue: colors.danger.DEFAULT,
-  Pending: colors.warning.DEFAULT,
-  Paid: colors.neutral[900],
-  Advance: colors.neutral[900],
+  Overdue: colors.danger,
+  Pending: colors.warning,
+  Paid: colors.textPrimary,
+  Advance: colors.textPrimary,
 };
 
 // --- Component ---
@@ -108,22 +108,46 @@ export default function CustomerCard({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      className="flex-row items-center bg-white px-5 py-[15px] border-b border-light"
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: colors.surface,
+        paddingHorizontal: spacing.screenPadding,
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
+      }}
     >
       {/* Avatar */}
       {avatar ? (
         <Image
           source={{ uri: avatar }}
-          className="w-[52px] h-[52px] rounded-full mr-[14px]"
+          style={{
+            width: spacing.avatarMd,
+            height: spacing.avatarMd,
+            borderRadius: spacing.avatarMd / 2,
+            marginRight: 14,
+          }}
         />
       ) : (
         <View
-          className="w-[52px] h-[52px] rounded-full mr-[14px] items-center justify-center"
-          style={{ backgroundColor: avatarColor }}
+          style={{
+            width: spacing.avatarMd,
+            height: spacing.avatarMd,
+            borderRadius: spacing.avatarMd / 2,
+            marginRight: 14,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: avatarColor,
+          }}
         >
           <Text
-            className="text-[17px] font-bold tracking-[0.3px]"
-            style={{ color: "#FFFFFF" }}
+            style={{
+              fontSize: 17,
+              fontWeight: "700",
+              letterSpacing: 0.3,
+              color: colors.surface,
+            }}
           >
             {getInitials(name)}
           </Text>
@@ -131,33 +155,53 @@ export default function CustomerCard({
       )}
 
       {/* Name + Phone */}
-      <View className="flex-1 mr-[10px]">
+      <View style={{ flex: 1, marginRight: 10 }}>
         <Text
-          className="text-[15px] font-semibold mb-[3px] text-textDark"
+          style={{
+            ...typography.cardTitle,
+            marginBottom: 3,
+            color: colors.textPrimary,
+          }}
           numberOfLines={1}
         >
           {name}
         </Text>
-        <Text className="text-[13px] text-textSecondary">
+        <Text
+          style={{
+            ...typography.caption,
+            color: colors.textSecondary,
+          }}
+        >
           Last activity: {formatRelativeActivity(lastActiveAt)}
         </Text>
       </View>
 
       {/* Amount + Badge */}
-      <View className="items-end gap-[5px]">
+      <View style={{ alignItems: "flex-end", gap: 5 }}>
         <Text
-          className="text-[16px] font-bold"
-          style={{ color: AMOUNT_COLOR[status] }}
+          style={{
+            fontSize: 16,
+            fontWeight: "700",
+            color: AMOUNT_COLOR[status],
+          }}
         >
           {amountText}
         </Text>
         <View
-          className="border rounded-[6px] px-2 py-[3px]"
-          style={{ borderColor: border, backgroundColor: bg }}
+          style={{
+            borderWidth: 1,
+            borderRadius: 6,
+            paddingHorizontal: spacing.sm,
+            paddingVertical: 3,
+            borderColor: border,
+            backgroundColor: bg,
+          }}
         >
           <Text
-            className="text-[11px] font-bold tracking-[0.4px]"
-            style={{ color: badgeText }}
+            style={{
+              ...typography.label,
+              color: badgeText,
+            }}
           >
             {status.toUpperCase()}
           </Text>

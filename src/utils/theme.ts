@@ -1,178 +1,297 @@
-// ─── Core Palette ────────────────────────────────────────────────────────────
-// Single source of truth for the CreditBook fintech color system.
-// All components and screens must reference tokens from here.
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * KREDBOOK DESIGN SYSTEM — Theme Tokens
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * Single source of truth for all design tokens.
+ * Components MUST NEVER use raw hex values, pixel values, or hardcoded styles.
+ * Every visual detail must reference a token defined here.
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COLOR TOKENS
+// ═══════════════════════════════════════════════════════════════════════════════
+
 export const colors = {
-  white: "#FFFFFF",
-  black: "#000000",
+  // ─ Primary Green (Brand, CTAs, Active States)
+  primary: "#22C55E",
+  primaryDark: "#16A34A",
 
-  // Brand — Green-first, growth-oriented
-  primary: {
-    DEFAULT: "#22C55E", // Brand green — CTAs, active nav, FAB
-    gradient: "#4F9CFF", // Gradient end (green → blue hero cards)
-    light: "#DCFCE7", // Tinted surface / chip background
-    dark: "#16A34A", // Pressed / dark variant
+  // ─ Semantic Blues
+  fab: "#2563EB", // Floating Action Button (highest elevation)
+
+  // ─ Semantic Reds / Pinks
+  danger: "#EF4444", // Owed, Overdue states
+  damgerStrong: "#DC2626", // Dashboard-level alert red (gradient start)
+
+  // ─ Semantic Amber
+  warning: "#F59E0B", // Pending, Reminder, Caution
+
+  // ─ Neutrals
+  background: "#F6F7F9", // App canvas (very light gray)
+  surface: "#FFFFFF", // Cards, modals, panels
+  textPrimary: "#1C1C1E", // Primary text (near-black)
+  textSecondary: "#6B7280", // Secondary text, captions
+  border: "#E5E7EB", // Dividers, input borders, subtle separators
+
+  // ─ Semantic backgrounds (tinted panels)
+  successBg: "#F0FDF4", // Green-50: YOU RECEIVE panel
+  dangerBg: "#FEF2F2", // Red-50: YOU OWE panel
+  warningBg: "#FFFBEB", // Amber-50: Pending/Caution panel
+
+  // ─ Status chip colors
+  paid: {
+    bg: "#DCFCE7", // Green-100
+    text: "#16A34A", // Green-700
+  },
+  pending: {
+    bg: "#FEF3C7", // Amber-100
+    text: "#D97706", // Amber-600
+  },
+  overdue: {
+    bg: "#FEE2E2", // Red-100
+    text: "#DC2626", // Red-600
   },
 
-  // Semantic — Emotion-aware financial signals
-  success: {
-    DEFAULT: "#22C55E", // Credit In / Paid — relief, resolution (matches primary)
-    bg: "#F0FDF4", // Panel/section background (green-50)
-    light: "#DCFCE7", // Paid chip background (green-100)
-    text: "#166534", // Paid chip label
-    dark: "#16A34A", // Pressed / dark
-    gradient: "#4ADE80", // Gradient end — subscription / active state cards
-  },
-  danger: {
-    DEFAULT: "#E74C3C", // Dues / Credit Out — urgency, delete
-    bg: "#FEF2F2", // Panel/section background (red-50)
-    light: "#FEE2E2", // Overdue chip background / danger surface
-    text: "#991B1B", // Overdue chip label
-    dark: "#B33226", // Pressed / dark
-    strong: "#DC2626", // Dashboard-level alert red (gradient start)
-    gradient: "#F87171", // Gradient end — unsubscribed / expired state cards
-  },
-  warning: {
-    DEFAULT: "#F59E0B", // Pending / Reminder — attention, not alarm
-    bg: "#FFFBEB", // Panel/section background (amber-50)
-    light: "#FEF3C7", // Pending chip background
-    text: "#92400E", // Pending chip label
-    dark: "#D97706", // Pressed / dark
-  },
-  info: {
-    DEFAULT: "#4F9CFF", // Informational / partial state
-    bg: "#EFF6FF", // Panel/section background (blue-50)
-    light: "#EAF0FB", // Partial chip background
-    text: "#0369A1", // Partial chip label
-    dark: "#2563EB", // Pressed / dark
-  },
-
-  // Neutrals — Soft, low-fatigue grays
-  neutral: {
-    bg: "#F6F7F9", // App background — low-stress canvas
-    surface: "#FFFFFF", // Card / modal surface
-    100: "#F6F7F9",
-    200: "#E5E7EB", // Dividers / borders
-    300: "#E2E8F0",
-    400: "#AEAEB2", // Muted labels, captions
-    500: "#6B7280", // Secondary text
-    600: "#636366", // Body text
-    700: "#48484A",
-    900: "#1C1C1E", // Primary text (near-black)
-  },
-
-  // UI tokens
-  icon: {
-    bg: "#22C55E22", // Translucent brand green icon backing
-  },
-  border: {
-    tabborder: "#E5E7EB",
-  },
-  // FAB — highest-elevation element on list screens (spec: #2563EB blue)
-  fab: "#2563EB",
-};
-
-// ─── Dashboard Palette ───────────────────────────────────────────────────────
-// Derived from `colors` — used by all dashboard components and screens.
-// Import `dashboardPalette` from here (or via re-export in dashboardUi.ts).
-export const dashboardPalette = {
-  // Surfaces
-  bg: colors.neutral.bg,
-  white: colors.white,
-  heroDecor: "#F5ECD8", // Warm cream blob on hero card
-
-  // Dashboard "Both" mode — split hero panels
-  receivePanelBg: colors.success.bg, // #F0FDF4 — YOU RECEIVE panel
-  owePanelBg: colors.danger.bg, // #FEF2F2 — YOU OWE panel
-  dashboardRed: colors.danger.strong, // #DC2626 — gradient & alert red
-
-  // Hero card text
-  heroLabel: colors.neutral[500],
-  heroAmount: colors.warning.DEFAULT,
-  heroSub: colors.neutral[500],
-
-  // Brand accent (replaces old blue)
-  blue: colors.primary.DEFAULT,
-  blueLight: colors.primary.light,
-
-  // Danger
-  red: colors.danger.DEFAULT,
-  redLight: colors.danger.light,
-
-  // Typography
-  heading: colors.neutral[900],
-  body: colors.neutral[600],
-  muted: colors.neutral[400],
-  divider: colors.neutral[200],
-
-  // Status chip — Paid
-  paidBg: colors.success.light,
-  paidText: colors.success.text,
-
-  // Status chip — Pending
-  pendingBg: colors.warning.light,
-  pendingText: colors.warning.text,
-
-  // Status chip — Overdue
-  overdueBg: colors.danger.light,
-  overdueText: colors.danger.text,
-
-  // Status chip — Partially Paid
-  partialBg: colors.info.light,
-  partialText: colors.info.text,
+  // ─ Icon backgrounds
+  iconBg: "#22C55E22", // Translucent brand green
 } as const;
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// GRADIENT TOKENS (Hero Cards Only)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const gradients = {
+  // Customer balance card — red gradient
+  customerHero: {
+    start: "#DC2626", // Red-600
+    end: "#B91C1C", // Red-800
+  },
+
+  // Supplier payable card — pink gradient
+  supplierHero: {
+    start: "#DB2777", // Pink-600
+    end: "#BE185D", // Pink-800
+  },
+
+  // Net position card — solid dark navy
+  netPosition: "#1C2333", // Dark slate
+
+  // When customer balance is zero (paid up) — green gradient
+  zeroBalance: {
+    start: "#22C55E", // Primary green
+    end: "#16A34A", // Primary dark
+  },
+} as const;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPACING TOKENS (Component Sizes & Padding)
+// ═══════════════════════════════════════════════════════════════════════════════
+
 export const spacing = {
-  xs: 2, // s0
-  sm: 4, // s1
-  md: 8, // s3
-  lg: 16, // s5
-  xl: 24, // s7
-  "2xl": 32, // s9
-  "3xl": 48, // s13
-  "4xl": 64, // s15
-};
+  // ─ Standard scale (dp)
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  "2xl": 24,
+  "3xl": 32,
+  "4xl": 48,
 
-export const radius = {
-  xs: 2,
-  sm: 4,
-  md: 6,
-  lg: 10,
-  xl: 16,
-  "2xl": 20,
-  "3xl": 24,
-  full: 9999,
-};
+  // ─ Screen-level
+  screenPadding: 16, // Horizontal padding on all screens (16dp)
 
-export const fonts = {
-  regular: "Inter_400Regular",
-  medium: "Inter_500Medium",
-  semiBold: "Inter_600SemiBold",
-  bold: "Inter_700Bold",
-};
+  // ─ Component dimensions
+  inputHeight: 48, // Text input, select input fields
+  buttonHeight: 50, // Primary & secondary button height
+  tabBarHeight: 64, // Tab navigation bar (+ device bottom inset)
+
+  // ─ Cards
+  cardRadius: 16, // Default card border radius (12–20dp range, use 16)
+  cardPadding: 16, // Internal padding in cards
+
+  // ─ Avatar sizes
+  avatarSm: 36, // Compact rows, list indicators
+  avatarMd: 44, // List cards (customer, supplier)
+  avatarLg: 64, // Full-screen profile section
+
+  // ─ FAB
+  fabSize: 56, // Diameter of floating action button
+  fabMargin: 20, // Distance from screen edge
+  fabBottom: 24, // Distance above tab bar
+
+  // ─ Header heights
+  headerHeight: 48, // Custom header bar
+  searchBarHeight: 44, // Search input height
+
+  // ─ Dividers & separators
+  dividerHeight: 1,
+
+  // ─ Status chips
+  chipHeight: 28,
+  chipPadding: 8, // Horizontal padding in chips
+
+  // ─ Sheet & modals
+  bottomSheetHandleHeight: 4,
+  handleWidth: 40,
+  sheets: {
+    snapFull: "95%",
+    snapCustomer: "90%",
+    snapPayment: "65%",
+    snapCategory: "50%",
+  },
+} as const;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TYPOGRAPHY TOKENS
+// ═══════════════════════════════════════════════════════════════════════════════
 
 export const typography = {
+  // ─ Font families
+  fontFamily: "Inter",
+  fontFamilies: {
+    regular: "Inter_400Regular",
+    medium: "Inter_500Medium",
+    semiBold: "Inter_600SemiBold",
+    bold: "Inter_700Bold",
+    extraBold: "Inter_800ExtraBold",
+  },
+
+  // ─ Text styles (size, weight, line-height)
+  heroAmount: {
+    fontSize: 38,
+    fontWeight: "800" as const,
+    lineHeight: 46,
+    color: "#FFFFFF",
+  },
+
+  screenTitle: {
+    fontSize: 22,
+    fontWeight: "700" as const,
+    lineHeight: 28,
+    color: colors.textPrimary,
+  },
+
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "600" as const,
+    lineHeight: 20,
+    color: colors.textPrimary,
+  },
+
+  body: {
+    fontSize: 15,
+    fontWeight: "400" as const,
+    lineHeight: 22,
+    color: colors.textPrimary,
+  },
+
+  caption: {
+    fontSize: 12,
+    fontWeight: "500" as const,
+    lineHeight: 16,
+    color: colors.textSecondary,
+  },
+
+  label: {
+    fontSize: 11,
+    fontWeight: "700" as const,
+    lineHeight: 14,
+    textTransform: "uppercase" as const,
+    color: colors.textSecondary,
+  },
+
+  // ─ Additional text styles
   h1: {
     fontSize: 30,
     fontWeight: "700" as const,
     lineHeight: 40,
-    fontFamily: fonts.bold,
   },
+
   h2: {
     fontSize: 24,
     fontWeight: "600" as const,
     lineHeight: 32,
-    fontFamily: fonts.semiBold,
   },
-  body: {
-    fontSize: 16,
+
+  subtitle: {
+    fontSize: 14,
+    fontWeight: "500" as const,
+    lineHeight: 20,
+    color: colors.textSecondary,
+  },
+
+  small: {
+    fontSize: 13,
     fontWeight: "400" as const,
-    lineHeight: 24,
-    fontFamily: fonts.regular,
+    lineHeight: 18,
   },
-  caption: {
-    fontSize: 12,
-    fontWeight: "400" as const,
-    lineHeight: 16,
-    fontFamily: fonts.regular,
+
+  overline: {
+    fontSize: 10,
+    fontWeight: "700" as const,
+    lineHeight: 12,
+    textTransform: "uppercase" as const,
   },
+} as const;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DERIVED THEME OBJECT (For convenience in components)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const theme = {
+  colors,
+  gradients,
+  spacing,
+  typography,
+} as const;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LEGACY / COMPATIBILITY EXPORTS (Can be removed after migration)
+// These maintain backward compatibility with existing components.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const dashboardPalette = {
+  bg: colors.background,
+  white: colors.surface,
+  heroDecor: "#F5ECD8",
+  receivePanelBg: colors.successBg,
+  owePanelBg: colors.dangerBg,
+  dashboardRed: colors.damgerStrong,
+  heroLabel: colors.textSecondary,
+  heroAmount: colors.warning,
+  heroSub: colors.textSecondary,
+  blue: colors.fab,
+  blueLight: "#EFF6FF",
+  red: colors.danger,
+  redLight: colors.dangerBg,
+  heading: colors.textPrimary,
+  body: colors.textSecondary,
+  muted: "#AEAEB2",
+  divider: colors.border,
+  paidBg: colors.paid.bg,
+  paidText: colors.paid.text,
+  pendingBg: colors.pending.bg,
+  pendingText: colors.pending.text,
+  overdueBg: colors.overdue.bg,
+  overdueText: colors.overdue.text,
+  partialBg: "#EAF0FB",
+  partialText: "#0369A1",
+} as const;
+
+export const radius = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: spacing.cardRadius,
+  xl: 20,
+  "2xl": 24,
+  full: 9999,
+} as const;
+
+export const fonts = {
+  regular: typography.fontFamilies.regular,
+  medium: typography.fontFamilies.medium,
+  semiBold: typography.fontFamilies.semiBold,
+  bold: typography.fontFamilies.bold,
 };

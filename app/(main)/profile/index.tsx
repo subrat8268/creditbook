@@ -1,28 +1,29 @@
 ﻿import { Stack, useRouter } from "expo-router";
 import {
-  ArrowLeft,
-  Building2,
-  ChevronRight,
-  CreditCard,
-  Download,
-  Hash,
-  Info,
-  Languages,
-  LayoutGrid,
-  LogOut,
-  Receipt,
-  Smartphone,
-  Store,
+    ArrowLeft,
+    Building2,
+    ChevronRight,
+    CreditCard,
+    Download,
+    Hash,
+    Info,
+    Languages,
+    LayoutGrid,
+    LogOut,
+    Package,
+    Receipt,
+    Smartphone,
+    Store,
 } from "lucide-react-native";
 import { ComponentType, ReactNode } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -335,6 +336,27 @@ export default function ProfileScreen() {
 
         {/* ── Data ── */}
         <SectionCard title="DATA">
+          <TouchableOpacity
+            onPress={() => router.push("/(main)/products" as never)}
+            activeOpacity={0.75}
+            style={styles.detailRow}
+          >
+            <View style={styles.detailIconBox}>
+              <Package
+                size={18}
+                color={colors.primary.dark}
+                strokeWidth={1.75}
+              />
+            </View>
+            <View style={styles.detailText}>
+              <Text style={styles.detailValue}>Manage Products</Text>
+            </View>
+            <ChevronRight
+              size={16}
+              color={colors.neutral[400]}
+              strokeWidth={1.75}
+            />
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={() => router.push("/(main)/export" as never)}
             activeOpacity={0.75}

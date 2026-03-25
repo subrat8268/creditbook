@@ -1,8 +1,8 @@
 # KredBook UX Context
 
-> **Purpose**: This document provides complete UX context for AI UI generation tools (e.g., Google Stitch, Galileo, Uizard) and human designers onboarding to the KredBook product.
-> **Last Updated**: March 16, 2026
-> **References**: `docs/prd.md`, `docs/design-system.md`, `docs/roadmap.md`, `README.md`
+> **Purpose**: Complete UX reference for designers and AI tools. Documents every screen's exact layout, element positions, feature list, and interaction model.
+> **Last Updated**: March 17, 2026
+> **References**: `docs/prd.md`, `docs/design-system.md`
 
 ---
 
@@ -99,347 +99,674 @@ Every screen should support at least one of these goals:
 
 ## 4. Main Screens
 
+> **Layout notation used below**:
+>
+> - **FIXED TOP** = non-scrollable, sticks to top (status bar area)
+> - **FIXED BOTTOM** = non-scrollable, sticks to bottom above tab bar
+> - **SCROLL BODY** = vertically scrollable content between header and footer
+> - **ABSOLUTE** = overlaid on screen regardless of scroll position
+> - **BOTTOM SHEET** = slides up from bottom, overlays content
+
+---
+
 ### 4.1 Welcome Screen
 
-**Purpose**: First impression; communicate the product value in under 5 seconds.
+**Route**: `/` (app/index.tsx)
+**SafeArea**: Top + Bottom
 
-**Main UI components**:
+#### Layout (fixed, non-scrollable)
 
-- KredBook logo and tagline ("Track Credit. Get Paid Faster.")
-- Illustration communicating the khata-to-digital concept
-- "Get Started" primary button
-- "I already have an account" text link
+| Position     | Element                     | Detail                                                  |
+| ------------ | --------------------------- | ------------------------------------------------------- |
+| TOP CENTER   | KredBook logo image         | ~120×40dp, centered                                     |
+| CENTER       | Illustration / hero image   | Full-width placeholder graphic                          |
+| CENTER       | Tagline text                | "Track Credit. Get Paid Faster." — bold, 24px, centered |
+| LOWER CENTER | "Get Started" button        | Full-width, green filled, rounded-full                  |
+| BELOW BUTTON | "I already have an account" | Text link, centered, primary color                      |
 
-**Key user actions**:
+#### Interactions
 
-- Tap "Get Started" → go to Signup
-- Tap login link → go to Login
-
----
-
-### 4.2 Login / Signup
-
-**Purpose**: Authenticate the user. MVP uses email + password (free tier; no SMS costs).
-
-> **Note**: Phone OTP login is a planned Phase 7 feature and should not be designed for the MVP.
-
-**Main UI components**:
-
-- Email input field
-- Password input field (signup: with confirm password)
-- Primary "Sign In" / "Create Account" button
-- Forgot password text link
-- Toggle: "Don't have an account? Sign up" / "Already have an account? Log in"
-
-**Key user actions**:
-
-- Submit credentials → authenticate via Supabase Auth
-- Forgot password → password reset email flow
+- Tap "Get Started" → navigate to Signup
+- Tap login link → navigate to Login
+- On subsequent launches (AsyncStorage `hasSeenWelcome = true`): this screen is skipped, goes directly to Login
 
 ---
 
-### 4.3 Role Selection
+### 4.2 Login Screen
 
-**Purpose**: Determine which product surfaces to activate based on the user's business type.
+**Route**: `/(auth)/login`
+**SafeArea**: Top only (`edges={["top"]}`)
+**Scroll**: Vertical ScrollView (keyboard avoidance)
 
-**Main UI components**:
+#### Layout (top-to-bottom)
 
-- Screen title: "What describes your business?"
-- Three role cards, each with:
-  - Illustration or icon
-  - Role name (Retailer / Wholesaler / Small Business)
-  - One-line description
-  - Selection indicator (ring or checkmark)
-- "Continue" primary button (active only when a role is selected)
+| Position      | Element                               | Detail                                                                                           |
+| ------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| TOP LEFT      | Back arrow `←`                        | Navigates back to Welcome                                                                        |
+| SCROLL TOP    | `AuthHeader` component                | Title: "Welcome Back" (28px bold), subtitle: "Sign in to your CreditBook" (13px gray) — centered |
+| SCROLL        | White `AuthCard` container            | Rounded-2xl card with shadow                                                                     |
+| INSIDE CARD   | "Email Address" label                 | 13px semibold, textDark                                                                          |
+| INSIDE CARD   | Email `Input`                         | Full-width, keyboard: email-address                                                              |
+| INSIDE CARD   | "Password" label                      | 13px semibold, mt-4                                                                              |
+| INSIDE CARD   | Password `Input`                      | With eye-toggle icon (right), secureTextEntry                                                    |
+| INSIDE CARD   | "Forgot password?" link               | Right-aligned, primary color, below password input                                               |
+| INSIDE CARD   | `Button` "Sign In"                    | Full-width, green filled, loading state                                                          |
+| BELOW CARD    | `AuthDivider` "or"                    | Centered horizontal divider line with "or" text                                                  |
+| BELOW DIVIDER | `GoogleButton` "Continue with Google" | Full-width, white with Google logo                                                               |
+| BOTTOM        | "New to CreditBook? **Sign Up**"      | Centered, tappable "Sign Up" in primary green                                                    |
 
-**Key user actions**:
+#### Conditional elements
 
-- Select role → saves `dashboard_mode` to user profile
-- Tap "Continue" → proceed to Business Setup
+- Submit button shows loading spinner during login mutation
+- Validation errors appear below each field in red (12px)
 
----
+#### Interactions
 
-### 4.4 Business Setup (Onboarding)
-
-**Purpose**: Collect the business details needed to personalise bills and the dashboard.
-
-**Main UI components**:
-
-- Progress indicator (step 1 of 3 / step 2 of 3)
-- Input fields: business name, GSTIN (optional), UPI ID (optional), bill prefix (default: INV), bank account details (bank name, account number, IFSC)
-- "Continue" primary button
-- "Skip for now" text link for optional fields
-
-**Key user actions**:
-
-- Fill business details → save to `profiles` table
-- Tap "Continue" → proceed to Ready screen
+- "Sign In" → `useLogin()` mutation → on success: navigate to Dashboard or Onboarding
+- "Continue with Google" → OAuth browser flow → same result
+- "Forgot password?" → navigate to resetPassword
+- "Sign Up" → navigate to Signup
 
 ---
 
-### 4.5 Ready Screen (Onboarding Completion)
+### 4.3 Signup Screen
 
-**Purpose**: Confirm setup is complete and guide the user to their first action.
+**Route**: `/(auth)/signup`
+**SafeArea**: Top only
+**Scroll**: Vertical ScrollView (keyboard avoidance)
 
-**Main UI components**:
+#### Layout (top-to-bottom)
 
-- Success illustration
-- Summary of what was set up (business name, bill prefix)
-- "Add Your First Customer" primary button
-- "Go to Dashboard" secondary action
+| Position      | Element                               | Detail                                                                   |
+| ------------- | ------------------------------------- | ------------------------------------------------------------------------ |
+| TOP LEFT      | Back arrow `←`                        | Navigates back                                                           |
+| SCROLL TOP    | `AuthHeader`                          | Title: "Create Account", subtitle: "Set up your CreditBook in 2 minutes" |
+| SCROLL        | White `AuthCard`                      | Rounded card                                                             |
+| INSIDE CARD   | "Full Name" label + `Input`           |                                                                          |
+| INSIDE CARD   | "Email Address" label + `Input`       | keyboard: email-address                                                  |
+| INSIDE CARD   | "Password" label + `Input`            | Eye-toggle icon, secureTextEntry                                         |
+| INSIDE CARD   | "Confirm Password" label + `Input`    | Eye-toggle icon, secureTextEntry                                         |
+| INSIDE CARD   | `Button` "Create Account"             | Full-width green                                                         |
+| BELOW CARD    | `AuthDivider` "or"                    |                                                                          |
+| BELOW DIVIDER | `GoogleButton`                        |                                                                          |
+| BOTTOM        | "Already have an account? **Log In**" | Tappable link                                                            |
 
-**Key user actions**:
+#### Conditional elements
 
-- Tap "Add First Customer" → open Customer screen
-- Tap "Go to Dashboard" → navigate to Home Dashboard
-
----
-
-### 4.6 Home Dashboard
-
-**Purpose**: Give the user a single-screen financial health snapshot the moment they open the app.
-
-**Main UI components**:
-
-- Header: avatar, business name, notification icon
-- **Hero card**: for `seller` / `distributor` modes — gradient (`#DC2626 → #B91C1C`) with net receivable amount; for `both` mode — splits into a green `#F0FDF4` **YOU RECEIVE** panel + red `#FEF2F2` **YOU OWE** panel + net position row below
-- Action bar: "View Report" (links to Financial Position screen at `/(main)/reports`) / "Send Reminder" buttons
-- **Stat cards**: Active Buyers count + Overdue count (side by side)
-- **Recent Activity feed**: last 5 transactions with customer name, amount, status chip, and time
-- **Floating Action Button** (gradient): "+" for creating a new bill
-
-**Key user actions**:
-
-- Tap FAB → go to New Bill screen
-- Tap a recent activity row → go to Customer Detail
-- Tap "Send Reminder" → trigger reminder flow for overdue customers
+- Validation errors inline below each field
+- Password must be ≥6 chars; confirm must match
 
 ---
 
-### 4.7 Customers List Screen
+### 4.4 Reset Password Screen
 
-**Purpose**: Browse all customers and quickly assess their credit status.
+**Route**: `/(auth)/resetPassword`
+**SafeArea**: Top only
 
-**Main UI components**:
+#### Layout
 
-- Pill-shaped search bar (background `#F6F7FB`, placeholder in `#8E8E93`)
-- Filter tabs: All / Overdue / Paid / Pending
-- Customer cards (FlatList):
-  - Initials avatar (52×52dp, deterministic background color from 8-color palette)
-  - Customer name (bold)
-  - Last active date (secondary text)
-  - Balance amount (right-aligned, color-coded: red=overdue, amber=pending, black=paid/advance)
-  - Status badge: OVERDUE / PENDING / PAID / ADVANCE
-- FAB: add new customer
-- Secondary FAB (above primary): import from phone contacts
+| Position   | Element                                        | Detail                             |
+| ---------- | ---------------------------------------------- | ---------------------------------- |
+| SCROLL TOP | Logo image                                     | Center-aligned, w-60               |
+| SCROLL     | Lock icon in green circle                      | 64×64dp centered                   |
+| SCROLL     | Title "Forgot Password?"                       | Bold, large                        |
+| SCROLL     | Subtitle text                                  | Gray, explains what happens        |
+| SCROLL     | "Email Address" label + `Input` with mail icon | Left icon                          |
+| SCROLL     | `Button` "Send Reset Link"                     | Full-width                         |
+| SCROLL     | "← Back to Login"                              | Text link, centered, primary color |
 
-**Key user actions**:
+#### Success state (replaces entire screen body)
 
-- Tap a customer card → go to Customer Detail
-- Tap primary FAB → open New Customer modal
-- Tap secondary FAB → open Contacts Picker modal
-- Tap a filter tab → filter list in-memory
-
----
-
-### 4.8 Customer Detail Screen
-
-**Purpose**: Full financial relationship view for a single customer.
-
-**Main UI components**:
-
-- Custom header: back button, customer name, last-active subtitle, PDF icon, call icon
-- **Hero card** (red gradient `#C0392B → #7B1010`): TOTAL BALANCE DUE in large white text, overdue badge if applicable, last bill date
-- 3 **quick-action cards** (side by side): New Bill / Received / Send Reminder
-- Transaction feed sub-tabs: All / Bills Given / Payments
-- **Transaction rows**: date-group pill separators (Today / Yesterday / date), each row shows type icon, description, amount (green=payment, red=bill), running balance ("Bal: ₹X"), left-side colored border
-- **Footer**: "Download Statement" dark pill button (generates full PDF via expo-print)
-
-**Key user actions**:
-
-- Tap "New Bill" → go to New Bill screen
-- Tap "Received" → open Record Payment bottom-sheet
-- Tap "Send Reminder" → open WhatsApp with pre-filled message
-- Tap "Download Statement" → generate PDF and open share sheet
+| Position | Element                                 |
+| -------- | --------------------------------------- |
+| CENTER   | MailOpen icon in green circle (80×80dp) |
+| CENTER   | Title "Check Your Inbox!"               |
+| CENTER   | Subtitle explaining to check email      |
+| CENTER   | "← Back to Login" text link             |
 
 ---
 
-### 4.9 Record Payment Bottom Sheet (Modal)
+### 4.5 Set New Password Screen
 
-**Purpose**: In-context payment recording without leaving the Customer Detail screen.
+**Route**: `/(auth)/set-new-password`
+**SafeArea**: Top only
 
-**Library**: `@gorhom/bottom-sheet` v5.2.6 — snap point `["65%"]`
+#### Layout
 
-**Main UI components**:
-
-- Bottom sheet with handle pill at top
-- Title: "Record Payment"
-- Amount input (numeric keyboard, large font)
-- 5 payment mode chips: Cash / UPI / NEFT / Draft / Cheque (single select)
-- Two buttons side by side:
-  - "Record Partial" (outlined, primary border)
-  - "Mark Full Paid" (filled, primary green)
-- Backdrop overlay dimming the screen behind
-
-**Key user actions**:
-
-- Enter amount + select mode + tap "Record Partial" → save partial payment
-- Tap "Mark Full Paid" (auto-fills full balance) → close the bill
-- Tap backdrop → dismiss without saving
+| Position      | Element                            | Detail           |
+| ------------- | ---------------------------------- | ---------------- |
+| SCROLL TOP    | Title "Set New Password"           | Bold             |
+| SCROLL        | "New Password" label + `Input`     | Eye-toggle icon  |
+| SCROLL        | "Confirm Password" label + `Input` | Eye-toggle icon  |
+| SCROLL        | `Button` "Update Password"         | Full-width green |
+| SCROLL BOTTOM | "Back to **Log In**"               | Link             |
 
 ---
 
-### 4.10 New Bill Screen
+### 4.6 Onboarding — Role Selection
 
-**Purpose**: Create an itemized bill for a customer with live total calculation.
+**Route**: `/(auth)/onboarding/role`
+**SafeArea**: Full
 
-**Main UI components**:
+#### Layout
 
-- Customer selector (shows previous balance auto-populated below)
-- Product search with cart-add interface
-- Line items: product name, quantity, rate, subtotal — editable inline
-- GST % input (applied to items total)
-- Loading charge input (non-taxable, added after GST)
-- Live bill summary: Items + GST + Loading + Previous Balance = **Grand Total**
-- Bill number (auto-assigned, displayed read-only)
-- "Create Bill" primary button
+| Position     | Element                                         | Detail                                                                                         |
+| ------------ | ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| TOP LEFT     | Back arrow                                      |                                                                                                |
+| TOP          | Title "What describes your business?"           | 22px bold                                                                                      |
+| TOP          | Subtitle "Choose the option that fits you best" | Gray                                                                                           |
+| BODY         | 3 role cards (vertical stack)                   | Each: icon in green circle (left), title (bold), subtitle (gray), checkmark ring when selected |
+| —            | Retailer card                                   | Store icon, "Kirana store, medical shop…"                                                      |
+| —            | Wholesaler card                                 | Truck icon, "Distributor, FMCG supplier…"                                                      |
+| —            | Small Business card                             | Briefcase icon, "Auto repair, tiffin service…"                                                 |
+| FIXED BOTTOM | `Button` "Continue"                             | Disabled until selection made; green when active                                               |
 
-**Key user actions**:
+#### Interactions
 
-- Search and add products → build cart
-- Edit rate inline → override catalog price for this bill
-- Tap "Create Bill" → save order, generate PDF, offer share
-
----
-
-### 4.11 Suppliers List Screen
-
-**Purpose**: Browse all suppliers and see outstanding balances at a glance.
-
-**Main UI components**:
-
-- Supplier cards (sorted by highest balance owed):
-  - Supplier name and phone
-  - Balance owed amount (red, large)
-  - Last delivery date
-- FAB: add new supplier
-
-**Key user actions**:
-
-- Tap a supplier → go to Supplier Detail
-- Tap FAB → open New Supplier modal
+- Tap card → visual selection (green checkmark ring), stores selection in state
+- Tap "Continue" → saves `role` + `dashboard_mode` to Supabase → navigate to Business Setup
 
 ---
 
-### 4.12 Supplier Detail Screen
+### 4.7 Onboarding — Business Setup
 
-**Purpose**: Full balance and delivery history for a single supplier.
+**Route**: `/(auth)/onboarding/business`
+**SafeArea**: Full
 
-**Main UI components**:
+#### Layout
 
-- Header: supplier name, contact icons
-- Balance card (red): total amount owed
-- Bank details section (for reference when paying)
-- Delivery history list: date, total, advance paid, items count
-- "Record Delivery" button
-- "Record Payment Made" button
-
-**Key user actions**:
-
-- Tap "Record Delivery" → open Record Delivery modal
-- Tap "Record Payment Made" → open Record Payment Made modal
-
----
-
-### 4.13 Net Position Dashboard (Home — "Both" Mode)
-
-**Purpose**: Aggregate financial health — receivable vs payable visible directly on the home screen when `dashboard_mode = 'both'`.
-
-**Main UI components**:
-
-- **YOU RECEIVE panel** (green `#F0FDF4` background, `#22C55E` amount text): total positive customer balances
-- **YOU OWE panel** (red `#FEF2F2` background, `#E74C3C` amount text): total outstanding supplier balances
-- **Net Position row** below both panels: `receivables − payables`; green if positive, red if negative
-- For `seller` or `distributor` mode, only the relevant single-card summary is shown (not the split layout)
-
-**Key user actions**:
-
-- View net position at a glance — no taps required
-- Tap "View Report" in the action bar → navigate to the dedicated Financial Position screen
+| Position     | Element                            | Detail                                 |
+| ------------ | ---------------------------------- | -------------------------------------- |
+| TOP          | Progress indicator                 | "Step 2 of 3" text or step dots        |
+| TOP          | Title "Setup Your Business"        | Bold                                   |
+| SCROLL       | "Business Name \*" label + `Input` | Required field                         |
+| SCROLL       | "GSTIN" label + `Input`            | Optional badge, placeholder "22XXXXX…" |
+| SCROLL       | "Bill Prefix" label + `Input`      | Default "INV", shows preview "INV-001" |
+| FIXED BOTTOM | `Button` "Continue"                | Full-width green                       |
+| FIXED BOTTOM | "Skip for now"                     | Text link below button                 |
 
 ---
 
-### 4.14 Financial Position Screen
+### 4.8 Onboarding — Bank Details
 
-**Route**: `/(main)/reports`  
-**Purpose**: Dedicated full-screen financial breakdown; accessible from the Dashboard "View Report" button.
+**Route**: `/(auth)/onboarding/bank`
+**SafeArea**: Full
 
-**Main UI components** (v3.6 redesign):
+#### Layout
 
-- Header with back button (`ArrowLeft`) + title "Financial Position" + today's date subtitle
-- **`StatCard` — Customers Owe Me**: green card (`#F0FDF4` bg), `#22C55E` amount text, `TrendingUp` icon in green circle
-- **`StatCard` — I Owe Suppliers**: pinkish-red card (`#FEF2F2` bg), `#E0336E` amount text, `TrendingDown` icon in red circle
-- **`NetCard`**: dark card (`#1C2333` bg), white amount (32px bold), `TrendingUp`/`TrendingDown` icon
-- **`InsightPill`**: contextual health label — "Healthy" (green) / "Monitor" (amber) / "At Risk" (red)
-- Monthly Report download card (placeholder for future PDF export)
-- Loading spinner and graceful error state
-
-**Key user actions**:
-
-- Tap back button → return to Dashboard
-- Tap Monthly Report card → (future: download monthly summary PDF)
-
----
-
-### 4.15 Profile / Settings Screen
-
-**Purpose**: View business profile, bank details, and app preferences. Editing happens through a dedicated Edit Profile flow.
-
-**Main UI components** (v3.6 redesign):
-
-- Custom header: `ArrowLeft` back + centered "Profile & Settings" title
-- **Avatar section**: green-bordered ring + initials derived from business name + business email + "Edit Profile" outlined pill button
-- **`SectionCard` — BUSINESS DETAILS**: 4 `DetailRow` items (Store → business name, Receipt → bill prefix, Hash → GSTIN, Smartphone → phone number)
-- **`SectionCard` — BANK ACCOUNT**: 3 `DetailRow` items (Building2 → bank name, CreditCard → account no. masked as `**** **** 4590`, Info → IFSC code)
-- **`SectionCard` — APP PREFERENCES**:
-  - `LayoutGrid` icon + "Dashboard Mode" + `SegmentControl` [Seller | Both | Distributor]
-  - Languages icon + "Language" + EN / 🇮🇳 solid pills (active = green)
-- **`SectionCard` — DATA**: `Download` icon row → navigates to Export Data screen
-- **Sign Out row**: `LogOut` icon + "Sign Out" red text; triggers `Alert.alert` confirmation before calling `logout()`
-- "KredBook v1.0.0" centered footer
-
-**Key user actions**:
-
-- Tap "Edit Profile" → (future: navigate to editable profile form)
-- Tap Dashboard Mode segment → updates `dashboard_mode` in DB + authStore immediately
-- Tap language pill (EN / 🇮🇳) → updates `languageStore`; persisted via AsyncStorage
-- Tap "Export Data" row → `router.push("/(main)/export")`
-- Tap "Sign Out" → confirmation alert; confirm → `logout()` → login screen
+| Position     | Element                     | Detail                                        |
+| ------------ | --------------------------- | --------------------------------------------- |
+| TOP          | Progress indicator          | "Step 3 of 3"                                 |
+| TOP          | Title "Bank & Payment Info" | Bold                                          |
+| TOP          | Subtitle                    | "Your customers will see this on their bills" |
+| SCROLL       | "UPI ID" + `Input`          | OPTIONAL badge                                |
+| SCROLL       | "Bank Name" + `Input`       | OPTIONAL badge                                |
+| SCROLL       | "Account Number" + `Input`  | OPTIONAL badge, numeric keyboard              |
+| SCROLL       | "IFSC Code" + `Input`       | OPTIONAL badge                                |
+| FIXED BOTTOM | `Button` "Continue"         | Full-width green                              |
+| FIXED BOTTOM | "Skip for now"              | Text link                                     |
 
 ---
 
-### 4.16 Export Data Screen
+### 4.9 Onboarding — Ready Screen
 
-**Route**: `/(main)/export` (hidden tab; navigated to from Profile → DATA section)  
-**Purpose**: Export business data as CSV for external review or accounting.
+**Route**: `/(auth)/onboarding/ready`
+**SafeArea**: Full
 
-**Main UI components** (v3.6 redesign):
+#### Layout
 
-- Custom header: `ArrowLeft` back + centered "Export Data" + subtitle "Download your business records"
-- **Date Filter card** (FILTER BY DATE — OPTIONAL): two `DateInput` sub-components (From / To) with `CalendarDays` icon inside; "All time" + "This month" preset chips below
-- **Export Type card** (CHOOSE EXPORT TYPE): 4 `ExportRow` sub-components, each with icon box + label + description + colored "Export CSV" pill button:
-  - Orders & Bills (green pill)
-  - Payments Received (green pill)
-  - Customer Balances (blue pill)
-  - Supplier Purchases (amber pill)
-- Blue info banner explaining CSV format and date-range scoping
-- "KredBook Export" centered footer
+| Position     | Element                            | Detail                                                        |
+| ------------ | ---------------------------------- | ------------------------------------------------------------- |
+| CENTER TOP   | Large checkmark image              | 120×120dp                                                     |
+| CENTER       | Title "You're all set!"            | 24px extrabold                                                |
+| CENTER       | Subtitle                           | "CreditBook is ready to replace your khata book."             |
+| CENTER       | Summary pills row                  | Business name pill (green border if set), "Ledger ready" pill |
+| FIXED BOTTOM | `Button` "Add Your First Customer" | Full-width, primary green                                     |
+| FIXED BOTTOM | "Go to Dashboard"                  | Underlined text link below button                             |
 
-**Key user actions**:
+---
 
-- Select "All time" or "This month" preset → fills From/To inputs automatically
-- Enter custom From/To dates manually → clears preset chip
-- Tap "Export CSV" on any row → fetches data → generates CSV → opens native share sheet
+### 4.10 Home / Dashboard
+
+**Route**: `/(main)/dashboard`
+**SafeArea**: Top (via tab layout)
+**Scroll**: Vertical ScrollView
+
+#### Layout (top-to-bottom)
+
+| Position              | Element                   | Detail                                                                                                                                                                                                                       |
+| --------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FIXED TOP             | `DashboardHeader`         | Left: time-based greeting + business name. Right: initials avatar circle with notification dot if overdue                                                                                                                    |
+| SCROLL                | `DashboardHeroCard`       | **Seller mode**: full-width red gradient card (`#DC2626→#B91C1C`), "TOTAL BALANCE DUE" label (11px white/75 uppercase), large amount (38px extrabold white), overdue badge pill (bottom-left), last bill date (bottom-right) |
+| SCROLL                | —                         | **Distributor mode**: same card style but "I OWE SUPPLIERS"                                                                                                                                                                  |
+| SCROLL                | —                         | **Both mode**: 2 side-by-side panels in one card: green YOU RECEIVE panel + red YOU OWE panel, net position row below                                                                                                        |
+| SCROLL                | `DashboardActionBar`      | Two buttons side-by-side: "View Report" (outlined) + "Send Reminder" (outlined)                                                                                                                                              |
+| SCROLL                | `DashboardStatCards`      | Two white cards side by side: "Active Buyers" count (left) + "Overdue" count (right, red number)                                                                                                                             |
+| SCROLL                | "Recent Activity" heading | 16px semibold, with "See All" link right                                                                                                                                                                                     |
+| SCROLL                | `DashboardRecentActivity` | Up to 5 transaction rows; each: left colored dot + customer name + amount (right, color coded) + status chip + date                                                                                                          |
+| ABSOLUTE BOTTOM-RIGHT | Blue FAB `+`              | 56dp circle, `#2563EB`, 20dp from edge, 24dp above tab bar                                                                                                                                                                   |
+
+#### Conditional elements
+
+- Overdue dot on avatar: shown when any customer is overdue
+- Recent Activity empty state: "No transactions yet" when no data
+
+#### Interactions
+
+- Tap FAB → Create Bill (`/(main)/orders/create`)
+- Tap "View Report" → Financial Position (`/(main)/reports`)
+- Tap "Send Reminder" → WhatsApp deeplink with overdue customers
+- Tap any recent activity row → Customer Detail
+
+---
+
+### 4.11 Customers List
+
+**Route**: `/(main)/customers`
+**SafeArea**: Top
+**Scroll**: FlatList (infinite scroll)
+
+#### Layout (top-to-bottom)
+
+| Position                          | Element                       | Detail                                                                                                                                                                                                     |
+| --------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FIXED TOP                         | `CustomersHeader`             | Left: "Customers" title (22px bold) + count badge (green pill). Right: search icon toggle                                                                                                                  |
+| FIXED TOP (conditional)           | Search bar                    | Expands below header when search icon tapped; pill shape, `#F6F7FB` bg                                                                                                                                     |
+| FIXED TOP                         | Filter tab row                | 4 pill tabs: **All** / **Overdue** / **Pending** / **Paid** — active tab underlined in green                                                                                                               |
+| SCROLL                            | `CustomerList` FlatList       | One `CustomerCard` per row                                                                                                                                                                                 |
+| —                                 | `CustomerCard`                | Left: 52×52dp initials avatar (color-coded). Center: customer name (bold 15px), last active date (12px gray). Right: balance amount (bold, color coded) + status badge pill (OVERDUE/PENDING/PAID/ADVANCE) |
+| SCROLL BOTTOM                     | Empty state                   | When no customers: illustration + "No customers yet" + "Add Customer" CTA                                                                                                                                  |
+| ABSOLUTE BOTTOM-RIGHT             | Primary FAB (`Users+` icon)   | Add new customer                                                                                                                                                                                           |
+| ABSOLUTE BOTTOM-RIGHT (above FAB) | Secondary FAB (contacts icon) | Import from phone contacts; sits 72dp above primary FAB                                                                                                                                                    |
+
+#### Interactions
+
+- Tap customer card → Customer Detail
+- Primary FAB → `NewCustomerModal` bottom sheet (90% height)
+- Secondary FAB → `ContactsPickerModal` bottom sheet (90% height)
+- Tap filter tab → in-memory filter, no server call
+- Search → debounced 300ms, server-side filtered
+
+---
+
+### 4.12 Customer Detail
+
+**Route**: `/(main)/customers/[customerId]`
+**SafeArea**: All edges
+**Scroll**: ScrollView
+
+#### Layout (top-to-bottom)
+
+| Position     | Element                       | Detail                                                                                                                                                                                               |
+| ------------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FIXED TOP    | Custom header bar             | Left: back arrow `←`. Center: customer name (17px bold, 1 line) + last-active subtitle (12px gray). Right: PDF icon button (shown only when transactions exist) + phone call icon button             |
+| SCROLL       | Hero card                     | Red gradient (`#C0392B→#7B1010`), "TOTAL BALANCE DUE" label, large balance (38px extrabold white), decorative circles, overdue badge OR last bill date at bottom                                     |
+| SCROLL       | Quick-action row (3 cards)    | Equal-width white cards side by side, each with icon circle + label. **New Bill** (red icon), **Received** (green icon), **Send Reminder** (amber icon)                                              |
+| SCROLL       | Transaction tabs              | 3 tabs in underline style: **All** / **Bills Given** / **Payments**. Border-bottom colored line on active tab                                                                                        |
+| SCROLL       | Transaction feed              | Date-separator pills ("Today", "Yesterday", "15 Feb 2026") + `TransactionRow` items                                                                                                                  |
+| —            | `TransactionRow`              | White rounded card with left colored border (green=payment, red=bill). Left: icon circle + title + subtitle. Right: amount (color-coded, 16px extrabold). Bottom-left: time. Bottom-right: "Bal: ₹X" |
+| SCROLL       | Empty state (no transactions) | Dashed icon box (receipt icon) + "No transactions yet" + two CTA buttons: "New Bill" (outlined) + "Record Payment" (filled)                                                                          |
+| FIXED BOTTOM | Download Statement footer     | White bar with dark pill button "Download Statement" (+ Download icon). Disabled + grayed when no transactions                                                                                       |
+
+#### Conditional elements
+
+- PDF icon in header: **hidden** when transactions.length === 0
+- "Download Statement" button: disabled when transactions.length === 0
+- "Received" action card: shows error toast if no outstanding balance
+- OVERDUE badge on hero card: only when `isOverdue = true`
+
+#### Modals triggered from this screen
+
+- Tap "Received" → `RecordCustomerPaymentModal` bottom sheet (65%)
+- Tap hero card PDF icon / "Download Statement" → PDF generation + system share sheet
+
+---
+
+### 4.13 Record Customer Payment (Bottom Sheet Modal)
+
+**Trigger**: "Received" on Customer Detail
+**Height**: 65% snap point
+
+#### Layout (top-to-bottom inside sheet)
+
+| Position     | Element                | Detail                                                                                                                        |
+| ------------ | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| TOP          | Handle pill            | 40×4dp, centered                                                                                                              |
+| BODY         | "Record Payment" title | 18px bold                                                                                                                     |
+| BODY         | Customer name subtitle | Gray, showing who you're recording for                                                                                        |
+| BODY         | Amount input           | Large numeric input, ₹ prefix, full-width                                                                                     |
+| BODY         | Payment mode chips row | 5 horizontal pill chips: **Cash** / **UPI** / **NEFT** / **Draft** / **Cheque** — single-select, tapping toggles active state |
+| FIXED BOTTOM | Two CTA buttons        | Left: "Record Partial" (outlined, full flex). Right: "Mark Full Paid" (filled green, full flex)                               |
+
+---
+
+### 4.14 Add Customer (Bottom Sheet Modal)
+
+**Trigger**: Primary FAB on Customers List
+**Height**: 90% snap point
+
+#### Layout
+
+| Position     | Element                                | Detail              |
+| ------------ | -------------------------------------- | ------------------- |
+| TOP          | Handle pill                            |                     |
+| BODY         | "Add Customer" header + X close button |                     |
+| BODY         | "Name \*" label + `Input`              | Required            |
+| BODY         | "Phone" label + `Input`                | numeric keyboard    |
+| BODY         | "Address" label + `Input`              | optional, multiline |
+| FIXED BOTTOM | `Button` "Save Customer"               | Full-width green    |
+
+---
+
+### 4.15 Orders List
+
+**Route**: `/(main)/orders`
+**SafeArea**: Top
+**Scroll**: FlatList (infinite scroll)
+
+#### Layout (top-to-bottom)
+
+| Position                | Element              | Detail                                                                                                                                                  |
+| ----------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FIXED TOP               | Header row           | Left: "Orders" title (22px bold) + count badge. Right: search icon toggle                                                                               |
+| FIXED TOP (conditional) | `SearchBar`          | Expands below header when toggled                                                                                                                       |
+| FIXED TOP               | Filter row           | Horizontal scroll chips: **All** / **Paid** / **Partial** / **Pending** / **Overdue** + **Sort** chip (right, with ChevronDown icon)                    |
+| SCROLL                  | `OrderList` FlatList | One order card per row (108dp height, fixed via `getItemLayout`)                                                                                        |
+| —                       | Order card           | Left: 44dp initials avatar + customer name (15px bold) + bill number (13px gray). Right: ₹amount (17px bold) + status chip. Bottom-left: formatted date |
+| SCROLL BOTTOM           | Empty state          | "No orders yet" + "Create Bill" green button                                                                                                            |
+| ABSOLUTE BOTTOM-RIGHT   | Blue FAB `+`         | Create new bill                                                                                                                                         |
+
+#### Conditional elements
+
+- "Overdue" filter: client-side compound — Pending + `daysSinceCreated > 30`
+- Sort bottom sheet: opens when "Sort" chip tapped — options: Newest / Oldest / High Amount / Low Amount
+
+---
+
+### 4.16 Create Bill (New Order)
+
+**Route**: `/(main)/orders/create`
+**SafeArea**: All edges
+**Scroll**: ScrollView
+
+#### Layout (top-to-bottom)
+
+| Position     | Element                | Detail                                                                                                                                                     |
+| ------------ | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FIXED TOP    | Header bar             | Left: back arrow. Center: "New Bill" title. Right: bill number (e.g. "INV-004", read-only, 13px gray)                                                      |
+| SCROLL       | Customer selector card | Full-width white card. When empty: "Select Customer" placeholder + ChevronDown. When selected: customer name (bold) + "Previous Balance: ₹X" in gray below |
+| SCROLL       | Product search bar     | Tappable fake input "🔍 Search products…", opens ProductPicker on tap                                                                                      |
+| SCROLL       | Cart items list        | One `OrderItemCard` per product added                                                                                                                      |
+| —            | `OrderItemCard`        | Product name + variant name. Left: − stepper. Center: qty (bold). Right: + stepper. Far right: ₹price + × remove button. Bottom: line total                |
+| SCROLL       | "+" dashed card        | Dashed border card "+ Add Product" — same as search bar, opens picker                                                                                      |
+| SCROLL       | Bill meta inputs       | "GST %" input row + "Loading Charge ₹" input row (numeric, inline editable)                                                                                |
+| SCROLL       | `OrderBillSummary`     | Breakdown rows: Items Total / GST Amount / Loading Charge / Previous Balance (red if >0) / horizontal divider / **Grand Total** (22px bold)                |
+| FIXED BOTTOM | Footer bar             | Two buttons: "Preview" (outlined, gray) + "Create Bill" (filled green). Disabled when no customer OR no items                                              |
+
+#### Bottom sheets triggered
+
+- Customer search: `CustomerPicker` (`BottomSheetPicker`, 80–95%)
+- Product search: `ProductPicker` (`BottomSheetPicker`, 80–95%) — includes "**+ Add New Product**" dashed button at top
+- Variant selection: `VariantPicker` (`BottomSheetPicker`) — opens automatically after product with variants is selected
+
+---
+
+### 4.17 Order Detail
+
+**Route**: `/(main)/orders/[orderId]`
+**SafeArea**: All edges
+**Scroll**: ScrollView
+
+#### Layout (top-to-bottom)
+
+| Position                       | Element                                       | Detail                                                                                                                                                   |
+| ------------------------------ | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FIXED TOP                      | Header bar                                    | Left: back arrow. Center: "Order #INV-042" title (dynamic). Right: status chip (PAID/PARTIAL/PENDING/OVERDUE)                                            |
+| SCROLL                         | Customer card                                 | White, rounded-2xl. Left: 48dp initials avatar. Center: customer name (bold) + phone (gray). Right: previous balance (red if >0, green if 0)             |
+| SCROLL                         | Items card (top-rounded, flush bottom)        | Each line: product name (bold) + variant if any + "qty × ₹rate" (gray) + ₹subtotal (right, bold)                                                         |
+| SCROLL                         | Bill Summary card (bottom-rounded, flush top) | Subtotal / GST amount (only if >0) / Loading charge (only if >0) / Previous balance (red, only if >0) / horizontal divider / **Grand Total** (22px bold) |
+| SCROLL                         | Payment History card                          | Title "Payment History". Each payment row: mode chip (color-coded) + "₹amount" (green bold, right) + "Remaining: ₹X" below                               |
+| SCROLL BOTTOM (empty payments) | "No payments recorded yet"                    | Gray text, centered                                                                                                                                      |
+| FIXED BOTTOM                   | Action bar                                    | Left: "Send Bill" (outlined green, with Share icon). Right: "Record Payment" (filled green). "Record Payment" hidden when `status === "Paid"`            |
+
+#### Conditional elements
+
+- "Record Payment" button: hidden if order is fully paid
+- GST row in summary: hidden if GST = 0
+- Loading charge row: hidden if = 0
+- Previous balance row: hidden if = 0
+
+---
+
+### 4.18 Products Screen
+
+**Route**: `/(main)/products` (hidden tab — accessed via Profile → Manage Products)
+**SafeArea**: Top + Bottom
+**Scroll**: FlatList (infinite scroll)
+
+#### Layout (top-to-bottom)
+
+| Position                | Element                            | Detail                                                                                                 |
+| ----------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| FIXED TOP               | Header row                         | Left: "Products" title (22px bold) + count badge (green pill). Right: search icon (toggles search bar) |
+| FIXED TOP (conditional) | `SearchBar`                        | Expands below header when toggled; X button clears + hides                                             |
+| FIXED TOP               | Category chips (horizontal scroll) | All / Rice & Grains / Oils / Dairy / Dal / Drinks                                                      |
+| SCROLL                  | `ProductCard` FlatList             | Each card: left icon box + product name (bold) + variant count + ₹price (right) + ⋯ options button     |
+| SCROLL BOTTOM           | Empty state                        | "No products added yet" + subtitle + direction to use FAB                                              |
+| ABSOLUTE BOTTOM-RIGHT   | Green FAB `+`                      | Opens `NewProductModal` bottom sheet                                                                   |
+
+---
+
+### 4.19 Add / Edit Product (Bottom Sheet Modal)
+
+**Trigger**: FAB on Products screen, or Edit from product options
+**Height**: 90% snap point
+
+#### Layout
+
+| Position     | Element                                 | Detail                                                                                                          |
+| ------------ | --------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| TOP          | Header                                  | "Add Product" / "Edit Product" title + X close button                                                           |
+| BODY SCROLL  | Subtitle                                | "Products appear in search when creating a bill" (gray, 13px)                                                   |
+| BODY SCROLL  | "Product Name \*" label + `TextInput`   | Required, validation error shown below                                                                          |
+| BODY SCROLL  | "Price \*" label + `RupeeInput`         | **Shown only when no variants are added**. Disappears when first variant is added                               |
+| BODY SCROLL  | "Variants" section header               | Left: "Variants" (bold). Right: "+ Add Variant" link (green)                                                    |
+| BODY SCROLL  | Variant rows (dynamic)                  | Each: `TextInput` (variant name e.g. "1kg") + `RupeeInput` (₹price) + red trash icon. Added via "+ Add Variant" |
+| FIXED BOTTOM | `Button` "Add Product" / "Save Product" | Full-width green                                                                                                |
+
+#### Logic
+
+- If zero variants → Price field is visible and required
+- If ≥1 variant → Price field hidden; each variant has its own price
+- Saving with variants → `base_price` stored as `null` in DB; variants stored in `product_variants` table
+- Saving without variants → `base_price` stored; no variant rows
+
+---
+
+### 4.20 Suppliers List
+
+**Route**: `/(main)/suppliers`
+**SafeArea**: Top
+**Scroll**: FlatList (infinite scroll)
+
+#### Layout (top-to-bottom)
+
+| Position                | Element                 | Detail                                                                                                  |
+| ----------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
+| FIXED TOP               | Header                  | Left: "Suppliers" title + count badge. Right: search icon                                               |
+| FIXED TOP (conditional) | `SearchBar`             | Same toggle pattern as other screens                                                                    |
+| SCROLL                  | `SupplierCard` FlatList | Left: 52dp initials avatar. Center: supplier name (bold) + phone. Right: balance owed (red, large bold) |
+| SCROLL BOTTOM           | Empty state             | "No suppliers yet"                                                                                      |
+| ABSOLUTE BOTTOM-RIGHT   | Green FAB `+`           | Opens `NewSupplierModal` bottom sheet (90%)                                                             |
+
+#### Sort behavior
+
+- Default sort: highest balance owed first
+
+---
+
+### 4.21 Add Supplier (Bottom Sheet Modal)
+
+**Trigger**: FAB on Suppliers List
+**Height**: 90%
+
+#### Layout
+
+| Position     | Element                          | Detail            |
+| ------------ | -------------------------------- | ----------------- |
+| TOP          | "Add Supplier" header + X button |                   |
+| BODY SCROLL  | "Name \*" label + `Input`        | Required          |
+| BODY SCROLL  | "Phone" label + `Input`          | numeric keyboard  |
+| BODY SCROLL  | "Address" label + `Input`        | optional          |
+| BODY SCROLL  | "Bank Name" label + `Input`      | optional          |
+| BODY SCROLL  | "Account Number" label + `Input` | optional, numeric |
+| BODY SCROLL  | "IFSC Code" label + `Input`      | optional          |
+| FIXED BOTTOM | `Button` "Save Supplier"         | Full-width green  |
+
+---
+
+### 4.22 Supplier Detail
+
+**Route**: `/(main)/suppliers/[supplierId]`
+**SafeArea**: All edges
+**Scroll**: ScrollView
+
+#### Layout (top-to-bottom)
+
+| Position     | Element                            | Detail                                                                                         |
+| ------------ | ---------------------------------- | ---------------------------------------------------------------------------------------------- |
+| FIXED TOP    | Header bar                         | Left: back arrow. Center: supplier name. Right: phone call icon + WhatsApp icon                |
+| SCROLL       | Balance card                       | Red gradient card. Large amount (38px bold white). "TOTAL OWED" label                          |
+| SCROLL       | Bank Details section               | White card. Bank name / Account number (masked) / IFSC / UPI ID — each as a row with copy icon |
+| SCROLL       | "Delivery History" section heading |                                                                                                |
+| SCROLL       | Delivery rows                      | Each: date + total amount + advance paid + item count badge. Tap to expand items               |
+| SCROLL       | Payment History                    | Payments made rows: date + amount (green) + mode chip                                          |
+| FIXED BOTTOM | Two-button bar                     | Left: "Record Delivery" (outlined). Right: "Record Payment Made" (filled green)                |
+
+#### Modals triggered
+
+- "Record Delivery" → `RecordDeliveryModal` bottom sheet (90%)
+- "Record Payment Made" → `RecordPaymentMadeModal` bottom sheet (62%)
+
+---
+
+### 4.23 Record Delivery (Bottom Sheet Modal)
+
+**Trigger**: "Record Delivery" on Supplier Detail
+**Height**: 90%
+
+#### Layout
+
+| Position     | Element                             | Detail                                                               |
+| ------------ | ----------------------------------- | -------------------------------------------------------------------- |
+| TOP          | "Record Delivery" header + X button |                                                                      |
+| BODY SCROLL  | Dynamic item rows                   | Each row: item name `Input` + qty `Input` + rate `Input` + red trash |
+| BODY SCROLL  | "+ Add Item" link                   | Adds new item row                                                    |
+| BODY SCROLL  | "Loading Charge ₹" `Input`          | Transport fee                                                        |
+| BODY SCROLL  | "Advance Paid ₹" `Input`            | Amount paid at delivery                                              |
+| BODY SCROLL  | Delivery total summary              | Calculated total = Σ(items) + loading − advance                      |
+| FIXED BOTTOM | `Button` "Save Delivery"            | Full-width green                                                     |
+
+---
+
+### 4.24 Record Payment Made (Bottom Sheet Modal)
+
+**Trigger**: "Record Payment Made" on Supplier Detail
+**Height**: 62%
+
+#### Layout
+
+| Position     | Element                                 | Detail                                                        |
+| ------------ | --------------------------------------- | ------------------------------------------------------------- |
+| TOP          | "Record Payment Made" header + X button |                                                               |
+| BODY         | Amount `Input`                          | Numeric, ₹ prefix                                             |
+| BODY         | Payment mode chips                      | Cash / UPI / NEFT / Draft / Cheque — same as customer payment |
+| BODY         | Notes `Input`                           | Optional text                                                 |
+| FIXED BOTTOM | `Button` "Save Payment"                 | Full-width green                                              |
+
+---
+
+### 4.25 Financial Position (Reports)
+
+**Route**: `/(main)/reports`
+**SafeArea**: Top + Bottom (via `edges={["top","left","right"]}`)
+**Scroll**: ScrollView
+
+#### Layout (top-to-bottom)
+
+| Position  | Element                         | Detail                                                                                                                      |
+| --------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| FIXED TOP | Custom header                   | Left: back arrow `←`. Center: "Financial Position" title (18px bold). Right: today's date (gray, 12px)                      |
+| SCROLL    | `StatCard` — Customers Owe Me   | Green background `#F0FDF4`. Large amount in `#22C55E`. `TrendingUp` icon in green circle (top-right). Label below amount    |
+| SCROLL    | `StatCard` — I Owe Suppliers    | Pink-red background `#FEF2F2`. Large amount in `#E0336E`. `TrendingDown` icon in red circle                                 |
+| SCROLL    | `NetCard`                       | Dark background `#1C2333`. Large white amount (32px bold). `TrendingUp`/`Down` icon in colored circle. "NET POSITION" label |
+| SCROLL    | `InsightPill`                   | Centered pill below NetCard. Text: "Healthy" (green) / "Monitor" (amber) / "At Risk" (red) based on net value               |
+| SCROLL    | Monthly Report placeholder card | Grayed card with "Monthly Report (Coming Soon)" — non-interactive                                                           |
+
+#### Logic for InsightPill
+
+- Net > 0 → "Healthy" (green `#22C55E`)
+- Net = 0 → "Monitor" (amber `#F59E0B`)
+- Net < 0 → "At Risk" (red `#E74C3C`)
+
+---
+
+### 4.26 Export Data
+
+**Route**: `/(main)/export`
+**SafeArea**: Top + Bottom
+**Scroll**: ScrollView
+
+#### Layout (top-to-bottom)
+
+| Position  | Element                | Detail                                                                                                                                                           |
+| --------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FIXED TOP | Custom header          | Left: back arrow. Center: "Export Data" (bold). Subtitle: "Download your business records" (gray)                                                                |
+| SCROLL    | Date Filter card       | Heading "FILTER BY DATE — OPTIONAL". Two `DateInput` rows (From / To) each with CalendarDays icon. Below: "All time" chip + "This month" chip (preset selectors) |
+| SCROLL    | Export Type card       | Heading "CHOOSE EXPORT TYPE". 4 `ExportRow` items:                                                                                                               |
+| —         | Orders & Bills row     | FileText icon + label + description + green "Export CSV" pill button                                                                                             |
+| —         | Payments Received row  | Receipt icon + label + description + green "Export CSV"                                                                                                          |
+| —         | Customer Balances row  | Users icon + label + description + blue "Export CSV"                                                                                                             |
+| —         | Supplier Purchases row | Truck icon + label + description + amber "Export CSV"                                                                                                            |
+| SCROLL    | Blue info banner       | Info icon + "Exports are in CSV format compatible with Excel/Sheets"                                                                                             |
+| SCROLL    | Footer                 | "KredBook Export" centered gray text                                                                                                                             |
+
+#### Conditional elements
+
+- Each Export CSV button has its own loading state (spinner replaces pill during fetch)
+- Only one export can run at a time (concurrency blocked by `loadingKey` state)
+- Date inputs: typing overrides preset chip selection
+
+---
+
+### 4.27 Profile & Settings
+
+**Route**: `/(main)/profile`
+**SafeArea**: Top + Bottom
+**Scroll**: ScrollView
+
+#### Layout (top-to-bottom)
+
+| Position  | Element                          | Detail                                                                                                                                                   |
+| --------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FIXED TOP | Custom header                    | Left: back arrow. Center: "Profile & Settings" title                                                                                                     |
+| SCROLL    | Avatar section                   | Green-bordered circle (60dp) with initials from business name. Business name (bold, 18px) below. Email (gray, 13px). "Edit Profile" outlined pill button |
+| SCROLL    | `SectionCard` — BUSINESS DETAILS | 4 rows: Store→Business Name / Receipt→Bill Prefix / Hash→GSTIN / Smartphone→Phone                                                                        |
+| SCROLL    | `SectionCard` — BANK ACCOUNT     | 3 rows: Building2→Bank Name / CreditCard→Account No (masked `**** **** XXXX`) / Info→IFSC Code                                                           |
+| SCROLL    | `SectionCard` — APP PREFERENCES  |                                                                                                                                                          |
+| —         | Dashboard Mode row               | LayoutGrid icon + "Dashboard Mode" label. Right: 3-segment pill control: **Seller** \| **Both** \| **Distributor**                                       |
+| —         | Language row                     | Languages icon + "Language" label. Right: two solid pill chips: **EN** (active=green filled) / **🇮🇳**                                                    |
+| SCROLL    | `SectionCard` — DATA             |                                                                                                                                                          |
+| —         | Manage Products row              | Package icon + "Manage Products" label + ChevronRight. Navigates to `/(main)/products`                                                                   |
+| —         | Export Data row                  | Download icon + "Export Business Data" label + ChevronRight. Navigates to `/(main)/export`                                                               |
+| SCROLL    | Sign Out row                     | LogOut icon (red) + "Sign Out" text (red). Tap → confirmation dialog → `logout()`                                                                        |
+| SCROLL    | Footer                           | "KredBook v1.0.0" centered gray caption                                                                                                                  |
+
+#### Conditional elements
+
+- "Edit Profile" pill: currently non-functional (placeholder for future feature)
+- Dashboard Mode segment: saves to DB immediately on tap (no save button)
+- Language: saves to AsyncStorage immediately on tap
 
 ---
 

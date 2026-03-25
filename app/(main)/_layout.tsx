@@ -1,4 +1,4 @@
-import { colors } from "@/src/utils/theme";
+import { colors, spacing, typography } from "@/src/utils/theme";
 import { Tabs } from "expo-router";
 import {
   House,
@@ -9,7 +9,7 @@ import {
 } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const ACTIVE = colors.primary.DEFAULT; // #22C55E
+const ACTIVE = colors.primary; // brand green
 const INACTIVE = "#9CA3AF"; // design-spec inactive tab color
 
 export default function TabLayout() {
@@ -22,21 +22,21 @@ export default function TabLayout() {
         tabBarActiveTintColor: ACTIVE,
         tabBarInactiveTintColor: INACTIVE,
         tabBarStyle: {
-          backgroundColor: colors.white,
+          backgroundColor: colors.surface,
           borderTopWidth: 1,
-          borderTopColor: colors.neutral[200],
+          borderTopColor: colors.border,
           elevation: 4,
-          shadowColor: colors.black,
+          shadowColor: "#000000",
           shadowOffset: { width: 0, height: -1 },
           shadowOpacity: 0.08,
           shadowRadius: 4,
-          height: 64 + insets.bottom,
+          height: spacing.tabBarHeight + insets.bottom,
           paddingBottom: 8 + insets.bottom,
           paddingTop: 6,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: "600",
+          fontSize: typography.label.fontSize,
+          fontWeight: typography.label.fontWeight,
         },
       }}
     >

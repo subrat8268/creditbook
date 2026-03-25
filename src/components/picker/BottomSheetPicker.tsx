@@ -23,6 +23,7 @@ interface BottomSheetPickerProps<T> {
   setSearch?: (text: string) => void;
   keyExtractor: (item: T) => string;
   renderItem: (item: T) => React.ReactNode;
+  headerExtra?: React.ReactNode;
 }
 
 export default function BottomSheetPicker<T>({
@@ -37,6 +38,7 @@ export default function BottomSheetPicker<T>({
   setSearch,
   keyExtractor,
   renderItem,
+  headerExtra,
 }: BottomSheetPickerProps<T>) {
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["80%", "95%"], []);
@@ -94,6 +96,8 @@ export default function BottomSheetPicker<T>({
           />
         </View>
       )}
+
+      {headerExtra ?? null}
 
       {/* Content - Scrollable */}
       {isLoading ? (

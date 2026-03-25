@@ -1,4 +1,4 @@
-import { colors } from "@/src/utils/theme";
+import { colors, spacing, typography } from "@/src/utils/theme";
 import { AlertTriangle, Users, Users2 } from "lucide-react-native";
 import { Text, View } from "react-native";
 
@@ -22,7 +22,7 @@ function StatCard({
   label,
   value,
   descriptor,
-  valueColor = colors.neutral[900],
+  valueColor = colors.textPrimary,
   icon,
   iconBg,
 }: {
@@ -35,8 +35,11 @@ function StatCard({
 }) {
   return (
     <View
-      className="flex-1 bg-white rounded-[20px] p-[18px]"
       style={{
+        flex: 1,
+        backgroundColor: colors.surface,
+        borderRadius: spacing.cardRadius + 4,
+        padding: 18,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
@@ -45,26 +48,45 @@ function StatCard({
       }}
     >
       <Text
-        className="text-[10px] tracking-widest font-bold mb-2"
-        style={{ color: colors.neutral[500] }}
+        style={{
+          ...typography.label,
+          marginBottom: spacing.sm,
+          color: colors.textSecondary,
+        }}
       >
         {label}
       </Text>
       <View className="flex-row justify-between items-end">
         <View>
           <Text
-            className="font-extrabold leading-none mb-1.5"
-            style={{ color: valueColor, fontSize: 32 }}
+            style={{
+              color: valueColor,
+              fontSize: 32,
+              fontWeight: "800",
+              lineHeight: 32,
+              marginBottom: spacing.md,
+            }}
           >
             {value}
           </Text>
-          <Text className="text-[12px]" style={{ color: colors.neutral[500] }}>
+          <Text
+            style={{
+              ...typography.caption,
+              color: colors.textSecondary,
+            }}
+          >
             {descriptor}
           </Text>
         </View>
         <View
-          className="w-[38px] h-[38px] rounded-xl items-center justify-center"
-          style={{ backgroundColor: iconBg }}
+          style={{
+            width: 38,
+            height: 38,
+            borderRadius: 12,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: iconBg,
+          }}
         >
           {icon}
         </View>
@@ -90,9 +112,9 @@ export default function DashboardStatCards({
       value={primaryCount}
       descriptor="customers"
       icon={
-        <Users size={20} color={colors.primary.DEFAULT} strokeWidth={1.8} />
+        <Users size={20} color={colors.primary} strokeWidth={1.8} />
       }
-      iconBg={colors.primary.light}
+      iconBg={colors.paid.bg}
     />
   );
 
@@ -102,9 +124,9 @@ export default function DashboardStatCards({
       value={isBoth ? activeSuppliers : primaryCount}
       descriptor="vendors"
       icon={
-        <Users2 size={20} color={colors.primary.DEFAULT} strokeWidth={1.8} />
+        <Users2 size={20} color={colors.primary} strokeWidth={1.8} />
       }
-      iconBg={colors.primary.light}
+      iconBg={colors.paid.bg}
     />
   );
 
@@ -113,15 +135,15 @@ export default function DashboardStatCards({
       label={isBoth ? "OVERDUE CUSTOMERS" : "OVERDUE"}
       value={overdueCount}
       descriptor="need follow-up"
-      valueColor={colors.danger.DEFAULT}
+      valueColor={colors.danger}
       icon={
         <AlertTriangle
           size={20}
-          color={colors.danger.DEFAULT}
+          color={colors.danger}
           strokeWidth={1.8}
         />
       }
-      iconBg={colors.danger.light}
+      iconBg={colors.overdue.bg}
     />
   );
 
@@ -130,27 +152,27 @@ export default function DashboardStatCards({
       label="OVERDUE SUPPLIERS"
       value={isBoth ? overdueSuppliers : overdueCount}
       descriptor="need follow-up"
-      valueColor={colors.danger.DEFAULT}
+      valueColor={colors.danger}
       icon={
         <AlertTriangle
           size={20}
-          color={colors.danger.DEFAULT}
+          color={colors.danger}
           strokeWidth={1.8}
         />
       }
-      iconBg={colors.danger.light}
+      iconBg={colors.overdue.bg}
     />
   );
 
   // ── Both mode — 2×2 grid ──────────────────────────────────────────────────
   if (isBoth) {
     return (
-      <View className="mb-7 gap-3">
-        <View className="flex-row gap-3">
+      <View style={{ marginBottom: spacing.xl, gap: spacing.md }}>
+        <View className="flex-row" style={{ gap: spacing.md }}>
           {buyerCard}
           {supplierCard}
         </View>
-        <View className="flex-row gap-3">
+        <View className="flex-row" style={{ gap: spacing.md }}>
           {overdueCustomerCard}
           {overdueSupplierCard}
         </View>
@@ -160,7 +182,13 @@ export default function DashboardStatCards({
 
   // ── Seller / Distributor — 2-column ───────────────────────────────────────
   return (
-    <View className="flex-row gap-3 mb-7">
+    <View
+      className="flex-row"
+      style={{
+        gap: spacing.md,
+        marginBottom: spacing.xl,
+      }}
+    >
       {isDistributor ? supplierCard : buyerCard}
       {isDistributor ? overdueSupplierCard : overdueCustomerCard}
     </View>

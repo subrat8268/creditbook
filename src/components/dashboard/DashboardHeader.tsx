@@ -1,4 +1,5 @@
 import { useAuthStore } from "@/src/store/authStore";
+import { colors, spacing } from "@/src/utils/theme";
 import { Bell, Settings } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
@@ -35,23 +36,65 @@ export default function DashboardHeader({
   const initials = getInitials(businessName);
 
   return (
-    <View className="pt-[54px] px-5 pb-4 flex-row items-center bg-background">
+    <View
+      className="flex-row items-center"
+      style={{
+        paddingTop: 54,
+        paddingHorizontal: spacing.screenPadding - 2,
+        paddingBottom: spacing.md,
+        backgroundColor: colors.background,
+      }}
+    >
       {/* Initials avatar */}
-      <View className="w-10 h-10 rounded-full bg-primary items-center justify-center mr-3">
-        <Text className="text-sm font-bold text-white">{initials}</Text>
+      <View
+        className="items-center justify-center rounded-full"
+        style={{
+          width: spacing.avatarSm,
+          height: spacing.avatarSm,
+          marginRight: spacing.md,
+          backgroundColor: colors.primary,
+        }}
+      >
+        <Text
+          className="font-bold"
+          style={{
+            fontSize: 14,
+            color: colors.surface,
+          }}
+        >
+          {initials}
+        </Text>
       </View>
 
       <View className="flex-1">
-        <Text className="text-base font-bold text-textDark" numberOfLines={1}>
+        <Text
+          className="font-bold"
+          numberOfLines={1}
+          style={{
+            fontSize: 16,
+            color: colors.textPrimary,
+          }}
+        >
           {businessName}
         </Text>
-        <Text className="text-xs text-textPrimary">{getGreeting()}</Text>
+        <Text
+          style={{
+            fontSize: 12,
+            color: colors.textSecondary,
+          }}
+        >
+          {getGreeting()}
+        </Text>
       </View>
 
       {/* Bell */}
       <TouchableOpacity
-        className="w-[38px] h-[38px] rounded-full bg-white items-center justify-center mr-2"
+        className="rounded-full items-center justify-center"
         style={{
+          width: 38,
+          height: 38,
+          marginRight: spacing.sm,
+          backgroundColor: colors.surface,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 1 },
           shadowOpacity: 0.06,
@@ -61,16 +104,17 @@ export default function DashboardHeader({
         onPress={onPressNotifications}
       >
         <View style={{ position: "relative" }}>
-          <Bell size={22} color="#1C1C1E" strokeWidth={1.75} />
+          <Bell size={22} color={colors.textPrimary} strokeWidth={1.75} />
           {overdueCount > 0 && (
             <View
-              className="bg-danger rounded-full"
               style={{
                 position: "absolute",
                 top: -2,
                 right: -2,
                 width: 8,
                 height: 8,
+                borderRadius: 4,
+                backgroundColor: colors.danger,
               }}
             />
           )}
@@ -79,8 +123,11 @@ export default function DashboardHeader({
 
       {/* Settings */}
       <TouchableOpacity
-        className="w-[38px] h-[38px] rounded-full bg-white items-center justify-center"
+        className="rounded-full items-center justify-center"
         style={{
+          width: 38,
+          height: 38,
+          backgroundColor: colors.surface,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 1 },
           shadowOpacity: 0.06,
@@ -89,7 +136,7 @@ export default function DashboardHeader({
         }}
         onPress={onPressSettings}
       >
-        <Settings size={20} color="#1C1C1E" strokeWidth={1.8} />
+        <Settings size={20} color={colors.textPrimary} strokeWidth={1.8} />
       </TouchableOpacity>
     </View>
   );

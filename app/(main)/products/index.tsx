@@ -77,7 +77,7 @@ export default function ProductsScreen() {
     try {
       await addProductMutation.mutateAsync({
         name: values.name,
-        base_price: null,
+        base_price: values.base_price,
         image_url: null,
         variants: values.variants as any,
       });
@@ -95,7 +95,7 @@ export default function ProductsScreen() {
         id: editingProduct.id,
         values: {
           name: values.name,
-          base_price: null,
+          base_price: values.base_price,
           image_url: null,
           variants: values.variants as any,
         },
@@ -418,6 +418,7 @@ export default function ProductsScreen() {
           editingProduct
             ? {
                 name: editingProduct.name,
+                base_price: editingProduct.base_price,
                 variants: editingProduct.variants ?? [],
               }
             : undefined

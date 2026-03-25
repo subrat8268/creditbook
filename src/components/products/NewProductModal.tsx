@@ -18,11 +18,13 @@ interface VariantRow {
 
 interface FormValues {
   name: string;
+  base_price: string;
   variants: VariantRow[];
 }
 
 export interface ProductSubmitValues {
   name: string;
+  base_price: number | null;
   variants: { variant_name: string; price: number }[];
 }
 
@@ -34,6 +36,7 @@ export interface NewProductModalProps {
   onSubmit: (values: ProductSubmitValues) => Promise<void>;
   initialValues?: {
     name: string;
+    base_price?: number | null;
     variants?: { variant_name: string; price: number }[];
   };
   loading?: boolean;
@@ -43,6 +46,15 @@ export interface NewProductModalProps {
 // ── Validation ─────────────────────────────────────────────
 const FormSchema = Yup.object().shape({
   name: Yup.string().required("Product name is required"),
+  base_price: Yup.string().test(
+    "price-required-without-variants",
+    "Enter a price (or add variants with prices)",
+    function (value) {
+      const variants = this.parent.variants as VariantRow[];
+      if (variants && variants.length > 0) return true;
+      return !!value && Number(value) > 0;
+    },
+  ),
   variants: Yup.array().of(
     Yup.object().shape({
       variant_name: Yup.string().required("Variant name is required"),
@@ -117,6 +129,8 @@ export default function NewProductModal({
 }: NewProductModalProps) {
   const defaultValues: FormValues = {
     name: initialValues?.name ?? "",
+    base_price:
+      initialValues?.base_price != null ? String(initialValues.base_price) : "",
     variants:
       initialValues?.variants?.map((v) => ({
         variant_name: v.variant_name,
@@ -197,6 +211,10 @@ export default function NewProductModal({
           try {
             await onSubmit({
               name: values.name,
+              base_price:
+                values.variants.length === 0 && values.base_price
+                  ? Number(values.base_price)
+                  : null,
               variants: values.variants.map((v) => ({
                 variant_name: v.variant_name,
                 price: Number(v.price),
@@ -278,6 +296,41 @@ export default function NewProductModal({
                 </Text>
               ) : (
                 <View style={{ height: 16 }} />
+              )}
+
+              {/* ── Price (shown when no variants) ── */}
+              {values.variants.length === 0 && (
+                <View>
+                  <Text
+                    style={{
+                      fontWeight: "600",
+                      fontSize: 14,
+                      color: colors.neutral[900],
+                      marginBottom: 8,
+                    }}
+                  >
+                    Price *
+                  </Text>
+                  <RupeeInput
+                    value={values.base_price}
+                    onChangeText={handleChange("base_price")}
+                    onBlur={handleBlur("base_price") as () => void}
+                  />
+                  {touched.base_price && errors.base_price ? (
+                    <Text
+                      style={{
+                        color: colors.danger.DEFAULT,
+                        fontSize: 12,
+                        marginTop: 4,
+                        marginBottom: 4,
+                      }}
+                    >
+                      {errors.base_price}
+                    </Text>
+                  ) : (
+                    <View style={{ height: 16 }} />
+                  )}
+                </View>
               )}
 
               {/* ── Variants ── */}

@@ -656,7 +656,7 @@ export default function CustomerDetailScreen() {
       </ScrollView>
 
       {/* ── Download Statement Footer ── */}
-      <View className="px-6 py-6 bg-white border-t border-border">
+      <View className="px-6 py-4 bg-white border-t border-border">
         <TouchableOpacity
           className={`flex-row items-center justify-center gap-2 rounded-[30px] py-4 ${
             exporting ? "opacity-60" : ""
