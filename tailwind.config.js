@@ -8,59 +8,70 @@ module.exports = {
     extend: {
       colors: {
         // ── Brand ────────────────────────────────
-        primary: theme.colors.primary.DEFAULT, // #22C55E — CTAs, active nav
-        "primary-dark": theme.colors.primary.dark, // #16A34A — pressed / icon accent
-        "primary-light": theme.colors.primary.light, // #DCFCE7 — chip bg, tinted surfaces
+        primary: theme.colors.primary, // #22C55E — CTAs, active nav
+        "primary-dark": theme.colors.primaryDark, // #16A34A — pressed / icon accent
+        "primary-light": theme.colors.paid.bg, // #DCFCE7 — chip bg, tinted surfaces
 
-        // ── Semantic ─────────────────────────────
-        success: theme.colors.success.DEFAULT, // #22C55E
-        "success-bg": theme.colors.success.bg, // #F0FDF4 — panel bg
-        "success-light": theme.colors.success.light, // #DCFCE7
-        "success-dark": theme.colors.success.dark, // #16A34A
-        "success-text": theme.colors.success.text, // #166534
+        // ── Success ──────────────────────────────
+        success: theme.colors.primary, // #22C55E
+        "success-bg": theme.colors.successBg, // #F0FDF4 — panel bg
+        "success-light": theme.colors.paid.bg, // #DCFCE7
+        "success-dark": theme.colors.primaryDark, // #16A34A
+        "success-text": theme.colors.paid.text, // #16A34A
 
-        danger: theme.colors.danger.DEFAULT, // #E74C3C
-        "danger-bg": theme.colors.danger.bg, // #FEF2F2 — panel bg
-        "danger-light": theme.colors.danger.light, // #FEE2E2
-        "danger-dark": theme.colors.danger.dark, // #B33226
-        "danger-text": theme.colors.danger.text, // #991B1B
-        "danger-strong": theme.colors.danger.strong, // #DC2626
+        // ── Danger / Red ─────────────────────────
+        danger: theme.colors.danger, // #EF4444
+        "danger-bg": theme.colors.dangerBg, // #FEF2F2 — panel bg
+        "danger-light": theme.colors.overdue.bg, // #FEE2E2
+        "danger-dark": "#B33226", // deep red — pressed state
+        "danger-text": theme.colors.overdue.text, // #DC2626
+        "danger-strong": theme.colors.damgerStrong, // #DC2626
 
-        warning: theme.colors.warning.DEFAULT, // #F59E0B
-        "warning-bg": theme.colors.warning.bg, // #FFFBEB — panel bg
-        "warning-light": theme.colors.warning.light, // #FEF3C7
-        "warning-dark": theme.colors.warning.dark, // #D97706
-        "warning-text": theme.colors.warning.text, // #92400E
+        // ── Warning / Amber ───────────────────────
+        warning: theme.colors.warning, // #F59E0B
+        "warning-bg": theme.colors.warningBg, // #FFFBEB — panel bg
+        "warning-light": theme.colors.pending.bg, // #FEF3C7
+        "warning-dark": theme.colors.pending.text, // #D97706
+        "warning-text": "#92400E", // amber-900
 
-        info: theme.colors.info.DEFAULT, // #4F9CFF
-        "info-bg": theme.colors.info.bg, // #EFF6FF — panel bg
-        "info-light": theme.colors.info.light, // #EAF0FB
-        "info-dark": theme.colors.info.dark, // #2563EB
-        "info-text": theme.colors.info.text, // #0369A1
+        // ── Info / Blue ───────────────────────────
+        info: "#4F9CFF", // info blue
+        "info-bg": "#EFF6FF", // blue-50
+        "info-light": "#EAF0FB", // light blue tint
+        "info-dark": theme.colors.fab, // #2563EB
+        "info-text": "#0369A1", // blue-700
 
         // ── Layout surfaces ───────────────────────
-        background: theme.colors.neutral.bg, // #F6F7F9 — app bg
-        surface: theme.colors.neutral.surface, // #FFFFFF — cards / modals
-        fab: theme.colors.info.dark, // #2563EB — FAB
+        background: theme.colors.background, // #F6F7F9 — app bg
+        surface: theme.colors.surface, // #FFFFFF — cards / modals
+        fab: theme.colors.fab, // #2563EB — FAB
 
         // ── Typography ────────────────────────────
-        textDark: theme.colors.neutral[900], // #1C1C1E — headings
-        textPrimary: theme.colors.neutral[600], // #636366 — body
-        textSecondary: theme.colors.neutral[500], // #6B7280 — labels / captions
-        textMuted: theme.colors.neutral[400], // #AEAEB2 — placeholder / muted
+        textDark: theme.colors.textPrimary, // #1C1C1E — headings
+        textPrimary: theme.colors.textPrimary, // #1C1C1E — body
+        textSecondary: theme.colors.textSecondary, // #6B7280 — labels / captions
+        textMuted: "#AEAEB2", // placeholder / muted
 
         // ── Borders & dividers ────────────────────
-        border: theme.colors.neutral[200], // #E5E7EB
-        divider: theme.colors.neutral[200], // #E5E7EB
+        border: theme.colors.border, // #E5E7EB
+        divider: theme.colors.border, // #E5E7EB
+
+        // ── Status chips ──────────────────────────
+        paid: theme.colors.paid.bg,
+        "paid-text": theme.colors.paid.text,
+        pending: theme.colors.pending.bg,
+        "pending-text": theme.colors.pending.text,
+        overdue: theme.colors.overdue.bg,
+        "overdue-text": theme.colors.overdue.text,
 
         // ── Misc ─────────────────────────────────
-        icon: theme.colors.icon.bg, // #22C55E22
-        search: theme.colors.neutral[100], // #F6F7F9
+        icon: theme.colors.iconBg, // #22C55E22
+        search: theme.colors.background, // #F6F7F9
       },
       borderColor: {
-        light: theme.colors.neutral[200],
-        default: theme.colors.neutral[300],
-        dark: theme.colors.neutral[400],
+        light: theme.colors.border,
+        default: theme.colors.border,
+        dark: theme.colors.textSecondary,
       },
       fontFamily: {
         inter: [theme.fonts.regular],

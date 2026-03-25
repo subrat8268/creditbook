@@ -2,6 +2,7 @@ import { colors, spacing, typography } from "@/src/utils/theme";
 import { Tabs } from "expo-router";
 import {
   House,
+  MoreHorizontal,
   ShoppingCart,
   Truck,
   UserCircle,
@@ -100,7 +101,19 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Hidden screens — accessible via router.push, never shown in tab bar */}
+      {/* Tab 6 — More */}
+      <Tabs.Screen
+        name="more"
+        options={{
+          title: "More",
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <MoreHorizontal size={size} color={color} strokeWidth={1.75} />
+          ),
+        }}
+      />
+
+      {/* Hidden screens — accessible via router.push() and through More menu */}
       <Tabs.Screen name="products" options={{ href: null }} />
       <Tabs.Screen name="export" options={{ href: null }} />
       <Tabs.Screen name="reports" options={{ href: null }} />
