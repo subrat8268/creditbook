@@ -7,7 +7,7 @@ import { usePayments } from "@/src/hooks/usePayments";
 import { useAuthStore } from "@/src/store/authStore";
 import { generateBillPdf } from "@/src/utils/generateBillPdf";
 import { daysSince, formatDate } from "@/src/utils/helper";
-import { colors } from "@/src/utils/theme";
+import { colors, spacing, typography } from "@/src/utils/theme";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams } from "expo-router";
 import * as Sharing from "expo-sharing";
@@ -229,7 +229,7 @@ export default function OrderDetailScreen() {
   return (
     <SafeAreaView
       edges={["bottom"]}
-      style={{ flex: 1, backgroundColor: "#F6F7F9" }}
+      style={{ flex: 1, backgroundColor: colors.background }}
     >
       {/* Override stack header title with dynamic bill number */}
       <Stack.Screen options={{ title: `Order #${order.bill_number}` }} />
@@ -244,11 +244,11 @@ export default function OrderDetailScreen() {
         <View
           style={[
             {
-              backgroundColor: "#FFFFFF",
-              borderRadius: 16,
-              marginHorizontal: 16,
-              marginBottom: 12,
-              padding: 16,
+              backgroundColor: colors.surface,
+              borderRadius: spacing.cardRadius,
+              marginHorizontal: spacing.screenPadding,
+              marginBottom: spacing.sm,
+              padding: spacing.lg,
             },
             SHADOW,
           ]}
@@ -268,7 +268,11 @@ export default function OrderDetailScreen() {
               }}
             >
               <Text
-                style={{ color: "#FFFFFF", fontSize: 17, fontWeight: "700" }}
+                style={{
+                  color: colors.surface,
+                  fontSize: 17,
+                  fontWeight: "700",
+                }}
               >
                 {getInitials(customerName)}
               </Text>
@@ -278,23 +282,27 @@ export default function OrderDetailScreen() {
             <View style={{ flex: 1 }}>
               <Text
                 style={{
-                  fontSize: 17,
-                  fontWeight: "700",
-                  color: "#1C1C1E",
+                  ...typography.cardTitle,
                   marginBottom: 2,
                 }}
                 numberOfLines={1}
               >
                 {customerName}
               </Text>
-              <Text style={{ fontSize: 13, color: "#6B7280" }}>
+              <Text style={{ fontSize: 13, color: colors.textSecondary }}>
                 +91 {customerPhone}
               </Text>
             </View>
 
             {/* Previous balance */}
             <View style={{ alignItems: "flex-end", marginLeft: 8 }}>
-              <Text style={{ fontSize: 11, color: "#6B7280", marginBottom: 3 }}>
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: colors.textSecondary,
+                  marginBottom: 3,
+                }}
+              >
                 Previous Balance
               </Text>
               <Text
@@ -302,9 +310,7 @@ export default function OrderDetailScreen() {
                   fontSize: 15,
                   fontWeight: "700",
                   color:
-                    order.previous_balance > 0
-                      ? colors.danger.DEFAULT
-                      : colors.primary.DEFAULT,
+                    order.previous_balance > 0 ? colors.danger : colors.primary,
                 }}
               >
                 ₹{fmt(order.previous_balance)}
@@ -319,24 +325,21 @@ export default function OrderDetailScreen() {
         <View
           style={[
             {
-              backgroundColor: "#FFFFFF",
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
+              backgroundColor: colors.surface,
+              borderTopLeftRadius: spacing.cardRadius,
+              borderTopRightRadius: spacing.cardRadius,
               borderBottomLeftRadius: 0,
               borderBottomRightRadius: 0,
-              marginHorizontal: 16,
+              marginHorizontal: spacing.screenPadding,
             },
             SHADOW,
           ]}
         >
           <Text
             style={{
-              fontSize: 13,
-              fontWeight: "700",
-              color: "#6B7280",
-              letterSpacing: 0.8,
-              textTransform: "uppercase",
-              padding: 16,
+              ...typography.label,
+              color: colors.textSecondary,
+              padding: spacing.lg,
               paddingBottom: 10,
             }}
           >
@@ -349,22 +352,22 @@ export default function OrderDetailScreen() {
                 <View
                   style={{
                     height: 1,
-                    backgroundColor: "#E5E7EB",
-                    marginHorizontal: 16,
+                    backgroundColor: colors.border,
+                    marginHorizontal: spacing.lg,
                   }}
                 />
               )}
               <View
                 style={{
                   flexDirection: "row",
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
+                  paddingHorizontal: spacing.lg,
+                  paddingVertical: spacing.sm,
                   alignItems: "center",
                 }}
               >
                 {/* Product name */}
                 <Text
-                  style={{ flex: 1, fontSize: 15, color: "#1C1C1E" }}
+                  style={{ flex: 1, fontSize: 15, color: colors.textPrimary }}
                   numberOfLines={1}
                 >
                   {item.product_name}
@@ -374,7 +377,7 @@ export default function OrderDetailScreen() {
                 <Text
                   style={{
                     fontSize: 13,
-                    color: "#6B7280",
+                    color: colors.textSecondary,
                     marginRight: 16,
                     flexShrink: 0,
                   }}
@@ -386,7 +389,7 @@ export default function OrderDetailScreen() {
                   style={{
                     fontSize: 15,
                     fontWeight: "700",
-                    color: "#1C1C1E",
+                    color: colors.textPrimary,
                     minWidth: 64,
                     textAlign: "right",
                     flexShrink: 0,
@@ -405,16 +408,16 @@ export default function OrderDetailScreen() {
         <View
           style={[
             {
-              backgroundColor: "#FFFFFF",
+              backgroundColor: colors.surface,
               borderTopLeftRadius: 0,
               borderTopRightRadius: 0,
-              borderBottomLeftRadius: 16,
-              borderBottomRightRadius: 16,
-              marginHorizontal: 16,
-              marginBottom: 12,
-              paddingHorizontal: 16,
+              borderBottomLeftRadius: spacing.cardRadius,
+              borderBottomRightRadius: spacing.cardRadius,
+              marginHorizontal: spacing.screenPadding,
+              marginBottom: spacing.sm,
+              paddingHorizontal: spacing.lg,
               paddingTop: 4,
-              paddingBottom: 16,
+              paddingBottom: spacing.lg,
             },
             SHADOW,
           ]}
@@ -423,8 +426,8 @@ export default function OrderDetailScreen() {
           <View
             style={{
               height: 1,
-              backgroundColor: "#E5E7EB",
-              marginBottom: 12,
+              backgroundColor: colors.border,
+              marginBottom: spacing.sm,
             }}
           />
 
@@ -436,8 +439,10 @@ export default function OrderDetailScreen() {
               paddingVertical: 5,
             }}
           >
-            <Text style={{ fontSize: 14, color: "#6B7280" }}>Subtotal</Text>
-            <Text style={{ fontSize: 14, color: "#1C1C1E" }}>
+            <Text style={{ fontSize: 14, color: colors.textSecondary }}>
+              Subtotal
+            </Text>
+            <Text style={{ fontSize: 14, color: colors.textPrimary }}>
               ₹{fmt(itemsSubtotal)}
             </Text>
           </View>
@@ -451,10 +456,10 @@ export default function OrderDetailScreen() {
                 paddingVertical: 5,
               }}
             >
-              <Text style={{ fontSize: 14, color: "#6B7280" }}>
+              <Text style={{ fontSize: 14, color: colors.textSecondary }}>
                 GST ({order.tax_percent}%)
               </Text>
-              <Text style={{ fontSize: 14, color: "#1C1C1E" }}>
+              <Text style={{ fontSize: 14, color: colors.textPrimary }}>
                 ₹{fmt(taxAmount)}
               </Text>
             </View>
@@ -469,10 +474,10 @@ export default function OrderDetailScreen() {
                 paddingVertical: 5,
               }}
             >
-              <Text style={{ fontSize: 14, color: "#6B7280" }}>
+              <Text style={{ fontSize: 14, color: colors.textSecondary }}>
                 Loading Charge
               </Text>
-              <Text style={{ fontSize: 14, color: "#6B7280" }}>
+              <Text style={{ fontSize: 14, color: colors.textSecondary }}>
                 ₹{fmt(order.loading_charge)}
               </Text>
             </View>
@@ -487,10 +492,10 @@ export default function OrderDetailScreen() {
                 paddingVertical: 5,
               }}
             >
-              <Text style={{ fontSize: 14, color: colors.danger.DEFAULT }}>
+              <Text style={{ fontSize: 14, color: colors.danger }}>
                 Previous Balance
               </Text>
-              <Text style={{ fontSize: 14, color: colors.danger.DEFAULT }}>
+              <Text style={{ fontSize: 14, color: colors.danger }}>
                 ₹{fmt(order.previous_balance)}
               </Text>
             </View>
@@ -500,8 +505,8 @@ export default function OrderDetailScreen() {
           <View
             style={{
               height: 1,
-              backgroundColor: "#E5E7EB",
-              marginVertical: 12,
+              backgroundColor: colors.border,
+              marginVertical: spacing.sm,
             }}
           />
 
@@ -513,13 +518,9 @@ export default function OrderDetailScreen() {
               alignItems: "flex-start",
             }}
           >
-            <Text style={{ fontSize: 22, fontWeight: "700", color: "#1C1C1E" }}>
-              Grand Total
-            </Text>
+            <Text style={{ ...typography.screenTitle }}>Grand Total</Text>
             <View style={{ alignItems: "flex-end" }}>
-              <Text
-                style={{ fontSize: 22, fontWeight: "700", color: "#1C1C1E" }}
-              >
+              <Text style={{ ...typography.screenTitle }}>
                 ₹{fmt(grandTotal)}
               </Text>
               <View
@@ -552,22 +553,19 @@ export default function OrderDetailScreen() {
         <View
           style={[
             {
-              backgroundColor: "#FFFFFF",
-              borderRadius: 16,
-              marginHorizontal: 16,
-              marginBottom: 12,
-              padding: 16,
+              backgroundColor: colors.surface,
+              borderRadius: spacing.cardRadius,
+              marginHorizontal: spacing.screenPadding,
+              marginBottom: spacing.sm,
+              padding: spacing.lg,
             },
             SHADOW,
           ]}
         >
           <Text
             style={{
-              fontSize: 13,
-              fontWeight: "700",
-              color: "#6B7280",
-              letterSpacing: 0.8,
-              textTransform: "uppercase",
+              ...typography.label,
+              color: colors.textSecondary,
               marginBottom: 14,
             }}
           >
@@ -580,7 +578,7 @@ export default function OrderDetailScreen() {
             <Text
               style={{
                 textAlign: "center",
-                color: "#9CA3AF",
+                color: colors.textSecondary,
                 fontSize: 14,
                 paddingVertical: 16,
               }}
@@ -598,8 +596,8 @@ export default function OrderDetailScreen() {
                     <View
                       style={{
                         height: 1,
-                        backgroundColor: "#E5E7EB",
-                        marginVertical: 8,
+                        backgroundColor: colors.border,
+                        marginVertical: spacing.sm,
                       }}
                     />
                   )}
@@ -615,7 +613,7 @@ export default function OrderDetailScreen() {
                       <Text
                         style={{
                           fontSize: 14,
-                          color: "#1C1C1E",
+                          color: colors.textPrimary,
                           fontWeight: "600",
                         }}
                       >
@@ -649,7 +647,7 @@ export default function OrderDetailScreen() {
                         style={{
                           fontSize: 16,
                           fontWeight: "700",
-                          color: "#22C55E",
+                          color: colors.primary,
                         }}
                       >
                         +₹{fmt(payment.amount)}
@@ -657,7 +655,7 @@ export default function OrderDetailScreen() {
                       <Text
                         style={{
                           fontSize: 12,
-                          color: "#6B7280",
+                          color: colors.textSecondary,
                           marginTop: 3,
                         }}
                       >
@@ -681,14 +679,14 @@ export default function OrderDetailScreen() {
           bottom: 0,
           left: 0,
           right: 0,
-          backgroundColor: "#FFFFFF",
+          backgroundColor: colors.surface,
           borderTopWidth: 1,
-          borderTopColor: "#E5E7EB",
-          paddingHorizontal: 16,
-          paddingTop: 12,
-          paddingBottom: 16,
+          borderTopColor: colors.border,
+          paddingHorizontal: spacing.lg,
+          paddingTop: spacing.sm,
+          paddingBottom: spacing.lg,
           flexDirection: "row",
-          gap: 12,
+          gap: spacing.sm,
         }}
       >
         {/* Send Bill button — always visible */}
@@ -699,21 +697,23 @@ export default function OrderDetailScreen() {
           style={[
             {
               flex: 1,
-              height: 50,
+              height: spacing.buttonHeight,
               borderRadius: 12,
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
               borderWidth: 1.5,
-              borderColor: "#22C55E",
-              backgroundColor: "#FFFFFF",
-              gap: 8,
+              borderColor: colors.primary,
+              backgroundColor: colors.surface,
+              gap: spacing.sm,
             },
             sendingBill && { opacity: 0.5 },
           ]}
         >
-          <MessageCircle size={18} color="#22C55E" strokeWidth={2} />
-          <Text style={{ fontSize: 15, fontWeight: "600", color: "#22C55E" }}>
+          <MessageCircle size={18} color={colors.primary} strokeWidth={2} />
+          <Text
+            style={{ fontSize: 15, fontWeight: "600", color: colors.primary }}
+          >
             {sendingBill ? "Generating…" : "Send Bill"}
           </Text>
         </TouchableOpacity>
@@ -725,17 +725,19 @@ export default function OrderDetailScreen() {
             activeOpacity={0.85}
             style={{
               flex: 1,
-              height: 50,
+              height: spacing.buttonHeight,
               borderRadius: 12,
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "#22C55E",
-              gap: 8,
+              backgroundColor: colors.primary,
+              gap: spacing.sm,
             }}
           >
-            <Wallet size={18} color="#FFFFFF" strokeWidth={2} />
-            <Text style={{ fontSize: 15, fontWeight: "600", color: "#FFFFFF" }}>
+            <Wallet size={18} color={colors.surface} strokeWidth={2} />
+            <Text
+              style={{ fontSize: 15, fontWeight: "600", color: colors.surface }}
+            >
               Record Payment
             </Text>
           </TouchableOpacity>

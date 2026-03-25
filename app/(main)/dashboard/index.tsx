@@ -1,7 +1,3 @@
-import { useRouter } from "expo-router";
-import { Plus } from "lucide-react-native";
-import { useState } from "react";
-import { Pressable, ScrollView, StatusBar, View } from "react-native";
 import NewCustomerModal from "@/src/components/customers/NewCustomerModal";
 import DashboardActionBar from "@/src/components/dashboard/DashboardActionBar";
 import DashboardHeader from "@/src/components/dashboard/DashboardHeader";
@@ -14,6 +10,10 @@ import { useAddCustomer } from "@/src/hooks/useCustomer";
 import { useDashboard } from "@/src/hooks/useDashboard";
 import { useAuthStore } from "@/src/store/authStore";
 import { colors, spacing } from "@/src/utils/theme";
+import { useRouter } from "expo-router";
+import { Plus } from "lucide-react-native";
+import { useState } from "react";
+import { Pressable, ScrollView, StatusBar, View } from "react-native";
 
 // ─────────────── Main Screen ────────────
 export default function DashboardScreen() {

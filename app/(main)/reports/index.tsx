@@ -1,25 +1,25 @@
 import { useDashboard } from "@/src/hooks/useDashboard";
 import { useAuthStore } from "@/src/store/authStore";
 import { formatINR } from "@/src/utils/dashboardUi";
-import { colors } from "@/src/utils/theme";
+import { colors, spacing } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import {
-  Activity,
-  CalendarDays,
-  ChevronRight,
-  Download,
-  Info,
-  Truck,
-  Users,
+    Activity,
+    CalendarDays,
+    ChevronRight,
+    Download,
+    Info,
+    Truck,
+    Users,
 } from "lucide-react-native";
 import {
-  ActivityIndicator,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -119,7 +119,7 @@ export default function FinancialPositionScreen() {
 
   return (
     <SafeAreaView style={s.root} edges={["top", "left", "right"]}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.neutral.bg} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       {/* ── Header ── */}
       <View style={s.header}>
@@ -130,7 +130,7 @@ export default function FinancialPositionScreen() {
         <TouchableOpacity hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <CalendarDays
             size={22}
-            color={colors.neutral[600]}
+            color={colors.textSecondary}
             strokeWidth={1.8}
           />
         </TouchableOpacity>
@@ -139,7 +139,7 @@ export default function FinancialPositionScreen() {
       {/* ── Body ── */}
       {isLoading ? (
         <View style={s.center}>
-          <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : isError || !data ? (
         <View style={s.center}>
@@ -155,7 +155,7 @@ export default function FinancialPositionScreen() {
             label="CUSTOMERS OWE ME"
             amount={formatINR(customersOweMe)}
             subtitle={`${activeBuyers} active · ${overdueCustomers} overdue`}
-            bg={colors.primary.DEFAULT}
+            bg={colors.primary}
             icon={
               <Users
                 size={20}
@@ -192,13 +192,13 @@ export default function FinancialPositionScreen() {
           <TouchableOpacity
             onPress={() => router.push("/(main)/export" as any)}
             activeOpacity={0.85}
-            style={[s.exportRow, { backgroundColor: colors.neutral.surface }]}
+            style={[s.exportRow, { backgroundColor: colors.surface }]}
           >
             <View style={s.exportRowLeft}>
               <View style={s.exportIconBox}>
                 <Download
                   size={18}
-                  color={colors.primary.dark}
+                  color={colors.primaryDark}
                   strokeWidth={1.8}
                 />
               </View>
@@ -211,7 +211,7 @@ export default function FinancialPositionScreen() {
             </View>
             <ChevronRight
               size={18}
-              color={colors.neutral[400]}
+              color={colors.textSecondary}
               strokeWidth={1.8}
             />
           </TouchableOpacity>
@@ -225,30 +225,30 @@ export default function FinancialPositionScreen() {
 
 // ── Styles ────────────────────────────────────────────────
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.neutral.bg },
+  root: { flex: 1, backgroundColor: colors.background },
   header: {
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.lg,
     paddingBottom: 16,
     paddingTop: 8,
   },
   headerTitle: {
     fontSize: 22,
     fontWeight: "800",
-    color: colors.neutral[900],
+    color: colors.textPrimary,
     marginBottom: 2,
   },
   headerSub: {
     fontSize: 11,
     fontWeight: "600",
     letterSpacing: 0.8,
-    color: colors.neutral[400],
+    color: colors.textSecondary,
   },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  errorText: { fontSize: 14, color: colors.neutral[400] },
-  scroll: { paddingHorizontal: 16, gap: 12, paddingBottom: 24 },
+  errorText: { fontSize: 14, color: colors.textSecondary },
+  scroll: { paddingHorizontal: spacing.lg, gap: spacing.sm, paddingBottom: 24 },
 
   // ── StatCard ──
   statCard: {
@@ -271,7 +271,7 @@ const s = StyleSheet.create({
   statCardAmount: {
     fontSize: 36,
     fontWeight: "800",
-    color: "#FFFFFF",
+    color: colors.surface,
     letterSpacing: -0.5,
     marginBottom: 14,
   },
@@ -307,7 +307,7 @@ const s = StyleSheet.create({
   netAmount: {
     fontSize: 36,
     fontWeight: "800",
-    color: "#FFFFFF",
+    color: colors.surface,
     letterSpacing: -0.5,
     marginBottom: 14,
   },
@@ -320,7 +320,7 @@ const s = StyleSheet.create({
   // ── Export row ──
   exportRow: {
     borderRadius: 16,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 14,
     flexDirection: "row",
     alignItems: "center",
@@ -329,25 +329,25 @@ const s = StyleSheet.create({
   exportRowLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: spacing.sm,
     flex: 1,
   },
   exportIconBox: {
     width: 38,
     height: 38,
     borderRadius: 10,
-    backgroundColor: colors.primary.light,
+    backgroundColor: colors.paid.bg,
     alignItems: "center",
     justifyContent: "center",
   },
   exportRowTitle: {
     fontSize: 15,
     fontWeight: "700",
-    color: colors.neutral[900],
+    color: colors.textPrimary,
     marginBottom: 2,
   },
   exportRowSub: {
     fontSize: 12,
-    color: colors.neutral[500],
+    color: colors.textSecondary,
   },
 });

@@ -1,37 +1,37 @@
+import { getCustomerPreviousBalance } from "@/src/api/orders";
 import Loader from "@/src/components/feedback/Loader";
 import OrderSummary from "@/src/components/orders/OrderBillSummary";
 import OrderItemCard from "@/src/components/orders/OrderItemCard";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import {
-  ArrowLeft,
-  Barcode,
-  CircleCheck,
-  CirclePlus,
-  Eye,
-  Pencil,
-  Search,
-} from "lucide-react-native";
-import { useCallback, useMemo, useState } from "react";
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Linking,
-  Platform,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { getCustomerPreviousBalance } from "@/src/api/orders";
 import CustomerPicker from "@/src/components/picker/CustomerPicker";
 import ProductPicker from "@/src/components/picker/ProductPicker";
 import VariantPicker from "@/src/components/picker/VariantPicker";
 import { useCreateOrder } from "@/src/hooks/useOrders";
 import { useAuthStore } from "@/src/store/authStore";
 import { BillItem, generateBillPdf } from "@/src/utils/generateBillPdf";
-import { colors } from "@/src/utils/theme";
+import { colors, spacing } from "@/src/utils/theme";
 import { uploadPdfToSupabase } from "@/src/utils/uploadPdfToSupabase";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import {
+    ArrowLeft,
+    Barcode,
+    CircleCheck,
+    CirclePlus,
+    Eye,
+    Pencil,
+    Search,
+} from "lucide-react-native";
+import { useCallback, useMemo, useState } from "react";
+import {
+    Alert,
+    KeyboardAvoidingView,
+    Linking,
+    Platform,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface CartItem {
   id: string;
@@ -312,7 +312,7 @@ export default function CreateOrderScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <SafeAreaView
         className="flex-1"
-        style={{ backgroundColor: colors.neutral[100] }}
+        style={{ backgroundColor: colors.background }}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -322,9 +322,9 @@ export default function CreateOrderScreen() {
           <View
             className="flex-row items-center px-4 py-3"
             style={{
-              backgroundColor: colors.white,
+              backgroundColor: colors.surface,
               borderBottomWidth: 1,
-              borderBottomColor: colors.neutral[100],
+              borderBottomColor: colors.border,
             }}
           >
             <TouchableOpacity
@@ -334,13 +334,13 @@ export default function CreateOrderScreen() {
             >
               <ArrowLeft
                 size={22}
-                color={colors.neutral[900]}
+                color={colors.textPrimary}
                 strokeWidth={2.2}
               />
             </TouchableOpacity>
             <Text
               className="flex-1 text-[18px] font-bold"
-              style={{ color: colors.neutral[900] }}
+              style={{ color: colors.textPrimary }}
             >
               New Bill
             </Text>
@@ -348,13 +348,13 @@ export default function CreateOrderScreen() {
             <View
               className="px-3 py-1 rounded-full border"
               style={{
-                borderColor: colors.primary.DEFAULT,
-                backgroundColor: colors.primary.light ?? "#DCFCE7",
+                borderColor: colors.primary,
+                backgroundColor: colors.paid.bg,
               }}
             >
               <Text
                 className="text-[13px] font-bold"
-                style={{ color: colors.primary.DEFAULT }}
+                style={{ color: colors.primary }}
               >
                 {invoiceRef}
               </Text>
@@ -364,7 +364,11 @@ export default function CreateOrderScreen() {
           {/* ── Scrollable content ── */}
           <ScrollView
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 12 }}
+            contentContainerStyle={{
+              padding: spacing.lg,
+              paddingBottom: 120,
+              gap: spacing.sm,
+            }}
             showsVerticalScrollIndicator={false}
           >
             {/* ── Customer card ── */}
@@ -373,9 +377,9 @@ export default function CreateOrderScreen() {
               onPress={() => setCustomerPickerVisible(true)}
               className="rounded-2xl overflow-hidden"
               style={{
-                backgroundColor: colors.white,
+                backgroundColor: colors.surface,
                 borderWidth: 1,
-                borderColor: colors.neutral[100],
+                borderColor: colors.border,
               }}
             >
               <View className="flex-row items-center px-4 py-3">
@@ -387,7 +391,7 @@ export default function CreateOrderScreen() {
                     height: 52,
                     backgroundColor: selectedCustomer
                       ? getAvatarColor(selectedCustomer.name)
-                      : colors.neutral[200],
+                      : colors.border,
                   }}
                 >
                   <Text
@@ -404,7 +408,7 @@ export default function CreateOrderScreen() {
                 <View className="flex-1">
                   <Text
                     className="text-[16px] font-bold"
-                    style={{ color: colors.neutral[900] }}
+                    style={{ color: colors.textPrimary }}
                     numberOfLines={1}
                   >
                     {selectedCustomer
@@ -414,7 +418,7 @@ export default function CreateOrderScreen() {
                   {!selectedCustomer && (
                     <Text
                       className="text-sm"
-                      style={{ color: colors.neutral[400] }}
+                      style={{ color: colors.textSecondary }}
                     >
                       Tap to select
                     </Text>
@@ -422,11 +426,7 @@ export default function CreateOrderScreen() {
                 </View>
 
                 {/* Edit icon */}
-                <Pencil
-                  size={18}
-                  color={colors.primary.DEFAULT}
-                  strokeWidth={2}
-                />
+                <Pencil size={18} color={colors.primary} strokeWidth={2} />
               </View>
 
               {/* Previous balance warning row */}
@@ -435,16 +435,14 @@ export default function CreateOrderScreen() {
                 !isFetchingBalance && (
                   <View
                     className="flex-row items-center gap-2 px-4 py-2"
-                    style={{ backgroundColor: colors.danger.bg ?? "#FEF2F2" }}
+                    style={{ backgroundColor: colors.overdue.bg }}
                   >
-                    <Text
-                      style={{ color: colors.danger.DEFAULT, fontSize: 13 }}
-                    >
-                      ⚠️ 
+                    <Text style={{ color: colors.overdue.text, fontSize: 13 }}>
+                      ⚠️
                     </Text>
                     <Text
                       className="text-[13px] font-semibold"
-                      style={{ color: colors.danger.DEFAULT }}
+                      style={{ color: colors.overdue.text }}
                     >
                       Previous Balance: ₹
                       {previousBalance.toLocaleString("en-IN")}
@@ -457,15 +455,15 @@ export default function CreateOrderScreen() {
             <View
               className="rounded-2xl overflow-hidden"
               style={{
-                backgroundColor: colors.white,
+                backgroundColor: colors.surface,
                 borderWidth: 1,
-                borderColor: colors.neutral[100],
+                borderColor: colors.border,
               }}
             >
               <View className="px-4 pt-4 pb-2">
                 <Text
                   className="text-[15px] font-bold mb-3"
-                  style={{ color: colors.neutral[900] }}
+                  style={{ color: colors.textPrimary }}
                 >
                   Items
                 </Text>
@@ -475,22 +473,22 @@ export default function CreateOrderScreen() {
                   onPress={() => setProductPickerVisible(true)}
                   activeOpacity={0.7}
                   className="flex-row items-center rounded-xl px-3 py-2.5 mb-3"
-                  style={{ backgroundColor: colors.neutral[100] }}
+                  style={{ backgroundColor: colors.background }}
                 >
                   <Search
                     size={16}
-                    color={colors.neutral[400]}
+                    color={colors.textSecondary}
                     strokeWidth={2}
                   />
                   <Text
                     className="flex-1 ml-2 text-[14px]"
-                    style={{ color: colors.neutral[400] }}
+                    style={{ color: colors.textSecondary }}
                   >
                     Search products...
                   </Text>
                   <Barcode
                     size={18}
-                    color={colors.neutral[400]}
+                    color={colors.textSecondary}
                     strokeWidth={1.5}
                   />
                 </TouchableOpacity>
@@ -504,7 +502,7 @@ export default function CreateOrderScreen() {
                       {idx > 0 && (
                         <View
                           className="h-px mb-4"
-                          style={{ backgroundColor: colors.neutral[100] }}
+                          style={{ backgroundColor: colors.border }}
                         />
                       )}
                       <OrderItemCard
@@ -531,17 +529,13 @@ export default function CreateOrderScreen() {
                 style={{
                   borderWidth: 1.5,
                   borderStyle: "dashed",
-                  borderColor: colors.primary.DEFAULT,
+                  borderColor: colors.primary,
                 }}
               >
-                <CirclePlus
-                  size={16}
-                  color={colors.primary.DEFAULT}
-                  strokeWidth={2}
-                />
+                <CirclePlus size={16} color={colors.primary} strokeWidth={2} />
                 <Text
                   className="ml-1.5 text-[14px] font-semibold"
-                  style={{ color: colors.primary.DEFAULT }}
+                  style={{ color: colors.primary }}
                 >
                   Add Product
                 </Text>
@@ -566,9 +560,9 @@ export default function CreateOrderScreen() {
           <View
             className="flex-row gap-3 px-4 py-3"
             style={{
-              backgroundColor: colors.white,
+              backgroundColor: colors.surface,
               borderTopWidth: 1,
-              borderTopColor: colors.neutral[100],
+              borderTopColor: colors.border,
             }}
           >
             {/* Preview (outline) */}
@@ -576,12 +570,12 @@ export default function CreateOrderScreen() {
               onPress={handleSendBill}
               activeOpacity={0.8}
               className="flex-1 flex-row items-center justify-center py-3.5 rounded-full border"
-              style={{ borderColor: colors.primary.DEFAULT }}
+              style={{ borderColor: colors.primary }}
             >
-              <Eye size={18} color={colors.primary.DEFAULT} strokeWidth={2} />
+              <Eye size={18} color={colors.primary} strokeWidth={2} />
               <Text
                 className="ml-2 text-[15px] font-bold"
-                style={{ color: colors.primary.DEFAULT }}
+                style={{ color: colors.primary }}
               >
                 Preview
               </Text>
@@ -592,9 +586,9 @@ export default function CreateOrderScreen() {
               onPress={handleSaveOrder}
               activeOpacity={0.8}
               className="flex-1 flex-row items-center justify-center py-3.5 rounded-full"
-              style={{ backgroundColor: colors.primary.DEFAULT }}
+              style={{ backgroundColor: colors.primary }}
             >
-              <CircleCheck size={18} color="#FFFFFF" strokeWidth={2} />
+              <CircleCheck size={18} color={colors.surface} strokeWidth={2} />
               <Text className="ml-2 text-[15px] font-bold text-white">
                 Create Bill
               </Text>

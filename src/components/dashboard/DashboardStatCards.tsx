@@ -111,9 +111,7 @@ export default function DashboardStatCards({
       label="ACTIVE BUYERS"
       value={primaryCount}
       descriptor="customers"
-      icon={
-        <Users size={20} color={colors.primary} strokeWidth={1.8} />
-      }
+      icon={<Users size={20} color={colors.primary} strokeWidth={1.8} />}
       iconBg={colors.paid.bg}
     />
   );
@@ -123,9 +121,7 @@ export default function DashboardStatCards({
       label="ACTIVE SUPPLIERS"
       value={isBoth ? activeSuppliers : primaryCount}
       descriptor="vendors"
-      icon={
-        <Users2 size={20} color={colors.primary} strokeWidth={1.8} />
-      }
+      icon={<Users2 size={20} color={colors.primary} strokeWidth={1.8} />}
       iconBg={colors.paid.bg}
     />
   );
@@ -136,13 +132,7 @@ export default function DashboardStatCards({
       value={overdueCount}
       descriptor="need follow-up"
       valueColor={colors.danger}
-      icon={
-        <AlertTriangle
-          size={20}
-          color={colors.danger}
-          strokeWidth={1.8}
-        />
-      }
+      icon={<AlertTriangle size={20} color={colors.danger} strokeWidth={1.8} />}
       iconBg={colors.overdue.bg}
     />
   );
@@ -153,13 +143,7 @@ export default function DashboardStatCards({
       value={isBoth ? overdueSuppliers : overdueCount}
       descriptor="need follow-up"
       valueColor={colors.danger}
-      icon={
-        <AlertTriangle
-          size={20}
-          color={colors.danger}
-          strokeWidth={1.8}
-        />
-      }
+      icon={<AlertTriangle size={20} color={colors.danger} strokeWidth={1.8} />}
       iconBg={colors.overdue.bg}
     />
   );

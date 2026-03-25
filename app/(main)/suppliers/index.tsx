@@ -1,8 +1,3 @@
-import { useRouter } from "expo-router";
-import { useCallback, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import NewSupplierModal from "@/src/components/suppliers/NewSupplierModal";
 import SupplierList from "@/src/components/suppliers/SupplierList";
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
@@ -11,7 +6,12 @@ import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useAddSupplier, useSuppliers } from "@/src/hooks/useSuppliers";
 import { useAuthStore } from "@/src/store/authStore";
 import { useSuppliersStore } from "@/src/store/suppliersStore";
-import { colors } from "@/src/utils/theme";
+import { colors, spacing } from "@/src/utils/theme";
+import { useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SuppliersScreen() {
   const { profile } = useAuthStore();
@@ -69,26 +69,29 @@ export default function SuppliersScreen() {
   const totalOwed = suppliers.reduce((sum, s) => sum + (s.balanceOwed ?? 0), 0);
 
   return (
-    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-white">
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={{ flex: 1, backgroundColor: colors.background }}
+    >
       {/* ── Header ── */}
       <View
         className="flex-row items-center justify-between px-5 pt-2 pb-4 border-b"
-        style={{ borderBottomColor: colors.neutral[200] }}
+        style={{ borderBottomColor: colors.border }}
       >
         <Text
           className="font-bold"
-          style={{ fontSize: 28, color: colors.neutral[900] }}
+          style={{ fontSize: 28, color: colors.textPrimary }}
         >
           Suppliers
         </Text>
         {totalOwed > 0 && (
           <View
             className="rounded-full px-3 py-[5px]"
-            style={{ backgroundColor: "#FCEEF4" }}
+            style={{ backgroundColor: colors.pending.bg }}
           >
             <Text
               className="font-bold text-[13px]"
-              style={{ color: "#DB2777" }}
+              style={{ color: colors.pending.text }}
             >
               I Owe: ₹{totalOwed.toLocaleString("en-IN")}
             </Text>
@@ -97,7 +100,10 @@ export default function SuppliersScreen() {
       </View>
 
       {/* ── Search ── */}
-      <View className="px-5 pt-4 pb-2">
+      <View
+        className="pt-4 pb-2"
+        style={{ paddingHorizontal: spacing.screenPadding }}
+      >
         <SearchBar
           value={search}
           onChangeText={setSearch}

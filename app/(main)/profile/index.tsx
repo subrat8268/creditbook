@@ -30,7 +30,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { useLanguageStore } from "@/src/store/languageStore";
-import { colors } from "@/src/utils/theme";
+import { colors, spacing } from "@/src/utils/theme";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -81,7 +81,7 @@ function DetailRow({ Icon, label, value, last, onPress }: DetailRowProps) {
       style={[styles.detailRow, last && styles.detailRowLast]}
     >
       <View style={styles.detailIconBox}>
-        <Icon size={18} color={colors.primary.dark} strokeWidth={1.75} />
+        <Icon size={18} color={colors.primaryDark} strokeWidth={1.75} />
       </View>
       <View style={styles.detailText}>
         <Text style={styles.detailLabel}>{label}</Text>
@@ -89,7 +89,7 @@ function DetailRow({ Icon, label, value, last, onPress }: DetailRowProps) {
           {value || "—"}
         </Text>
       </View>
-      <ChevronRight size={16} color={colors.neutral[400]} strokeWidth={1.75} />
+      <ChevronRight size={16} color={colors.textSecondary} strokeWidth={1.75} />
     </TouchableOpacity>
   );
 }
@@ -193,7 +193,7 @@ export default function ProfileScreen() {
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           style={styles.headerBtn}
         >
-          <ArrowLeft size={22} color={colors.neutral[900]} strokeWidth={1.75} />
+          <ArrowLeft size={22} color={colors.textPrimary} strokeWidth={1.75} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Profile &amp; Settings</Text>
         <View style={styles.headerBtn} />
@@ -265,7 +265,7 @@ export default function ProfileScreen() {
               <View style={styles.detailIconBox}>
                 <LayoutGrid
                   size={18}
-                  color={colors.primary.dark}
+                  color={colors.primaryDark}
                   strokeWidth={1.75}
                 />
               </View>
@@ -289,7 +289,7 @@ export default function ProfileScreen() {
               <View style={styles.detailIconBox}>
                 <Languages
                   size={18}
-                  color={colors.primary.dark}
+                  color={colors.primaryDark}
                   strokeWidth={1.75}
                 />
               </View>
@@ -344,7 +344,7 @@ export default function ProfileScreen() {
             <View style={styles.detailIconBox}>
               <Package
                 size={18}
-                color={colors.primary.dark}
+                color={colors.primaryDark}
                 strokeWidth={1.75}
               />
             </View>
@@ -353,7 +353,7 @@ export default function ProfileScreen() {
             </View>
             <ChevronRight
               size={16}
-              color={colors.neutral[400]}
+              color={colors.textSecondary}
               strokeWidth={1.75}
             />
           </TouchableOpacity>
@@ -365,7 +365,7 @@ export default function ProfileScreen() {
             <View style={styles.detailIconBox}>
               <Download
                 size={18}
-                color={colors.primary.dark}
+                color={colors.primaryDark}
                 strokeWidth={1.75}
               />
             </View>
@@ -374,7 +374,7 @@ export default function ProfileScreen() {
             </View>
             <ChevronRight
               size={16}
-              color={colors.neutral[400]}
+              color={colors.textSecondary}
               strokeWidth={1.75}
             />
           </TouchableOpacity>
@@ -387,11 +387,7 @@ export default function ProfileScreen() {
             activeOpacity={0.75}
             style={styles.signOutRow}
           >
-            <LogOut
-              size={18}
-              color={colors.danger.DEFAULT}
-              strokeWidth={1.75}
-            />
+            <LogOut size={18} color={colors.danger} strokeWidth={1.75} />
             <Text style={styles.signOutText}>Sign Out</Text>
           </TouchableOpacity>
         </View>
@@ -407,22 +403,22 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.neutral.bg,
+    backgroundColor: colors.background,
   },
   loaderScreen: {
     flex: 1,
-    backgroundColor: colors.neutral.bg,
+    backgroundColor: colors.background,
     alignItems: "center",
     justifyContent: "center",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: colors.neutral.surface,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: colors.neutral[200],
+    borderBottomColor: colors.border,
   },
   headerBtn: {
     width: 36,
@@ -433,13 +429,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 17,
     fontWeight: "700",
-    color: colors.neutral[900],
+    color: colors.textPrimary,
   },
   scroll: { flex: 1 },
   scrollContent: {
-    padding: 16,
+    padding: spacing.lg,
     paddingBottom: 36,
-    gap: 12,
+    gap: spacing.sm,
   },
   avatarSection: {
     alignItems: "center",
@@ -449,7 +445,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: colors.primary.DEFAULT,
+    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 10,
@@ -457,16 +453,16 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#FFFFFF",
+    color: colors.surface,
   },
   businessName: {
     fontSize: 18,
     fontWeight: "700",
-    color: colors.neutral[900],
+    color: colors.textPrimary,
   },
   emailText: {
     fontSize: 13,
-    color: colors.neutral[500],
+    color: colors.textSecondary,
     marginTop: 3,
   },
   editBtn: {
@@ -475,17 +471,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     borderRadius: 24,
     borderWidth: 1.5,
-    borderColor: colors.primary.DEFAULT,
+    borderColor: colors.primary,
   },
   editBtnText: {
     fontSize: 14,
     fontWeight: "600",
-    color: colors.primary.DEFAULT,
+    color: colors.primary,
   },
   sectionCard: {
-    backgroundColor: colors.neutral.surface,
-    borderRadius: 16,
-    paddingHorizontal: 16,
+    backgroundColor: colors.surface,
+    borderRadius: spacing.cardRadius,
+    paddingHorizontal: spacing.lg,
     paddingTop: 14,
     paddingBottom: 4,
     shadowColor: "#000",
@@ -497,7 +493,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 11,
     fontWeight: "700",
-    color: colors.neutral[400],
+    color: colors.textSecondary,
     letterSpacing: 0.8,
     marginBottom: 10,
   },
@@ -506,8 +502,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.neutral[200],
-    gap: 12,
+    borderBottomColor: colors.border,
+    gap: spacing.sm,
   },
   detailRowLast: {
     borderBottomWidth: 0,
@@ -517,7 +513,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: colors.primary.light,
+    backgroundColor: colors.paid.bg,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -525,19 +521,19 @@ const styles = StyleSheet.create({
   detailLabel: {
     fontSize: 10,
     fontWeight: "600",
-    color: colors.neutral[400],
+    color: colors.textSecondary,
     letterSpacing: 0.5,
     marginBottom: 2,
   },
   detailValue: {
     fontSize: 14,
     fontWeight: "600",
-    color: colors.neutral[900],
+    color: colors.textPrimary,
   },
   segmentWrapper: {
     flexDirection: "row",
     borderWidth: 1,
-    borderColor: colors.neutral[200],
+    borderColor: colors.border,
     borderRadius: 10,
     overflow: "hidden",
     marginBottom: 12,
@@ -547,40 +543,40 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 9,
     alignItems: "center",
-    backgroundColor: colors.neutral.surface,
+    backgroundColor: colors.surface,
   },
   segmentItemActive: {
-    backgroundColor: colors.primary.light,
+    backgroundColor: colors.paid.bg,
   },
   segmentText: {
     fontSize: 13,
     fontWeight: "600",
-    color: colors.neutral[500],
+    color: colors.textSecondary,
   },
   segmentTextActive: {
-    color: colors.primary.dark,
+    color: colors.primaryDark,
   },
   prefRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingVertical: 10,
-    gap: 12,
+    gap: spacing.sm,
   },
   prefRowLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: spacing.sm,
     flex: 1,
   },
   prefRowLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: colors.neutral[900],
+    color: colors.textPrimary,
   },
   prefDivider: {
     height: 1,
-    backgroundColor: colors.neutral[200],
+    backgroundColor: colors.border,
     marginVertical: 4,
   },
   langToggle: {
@@ -592,37 +588,37 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.neutral[200],
-    backgroundColor: colors.neutral.bg,
+    borderColor: colors.border,
+    backgroundColor: colors.background,
   },
   langPillActive: {
-    backgroundColor: colors.primary.DEFAULT,
-    borderColor: colors.primary.DEFAULT,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   langPillText: {
     fontSize: 13,
     fontWeight: "700",
-    color: colors.neutral[500],
+    color: colors.textSecondary,
   },
   langPillTextActive: {
-    color: colors.neutral.surface,
+    color: colors.surface,
   },
   signOutRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: spacing.sm,
     paddingVertical: 12,
     marginBottom: 8,
   },
   signOutText: {
     fontSize: 15,
     fontWeight: "700",
-    color: colors.danger.DEFAULT,
+    color: colors.danger,
   },
   footer: {
     textAlign: "center",
     fontSize: 12,
-    color: colors.neutral[400],
+    color: colors.textSecondary,
     marginTop: 8,
   },
 });

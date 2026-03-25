@@ -25,7 +25,7 @@ import {
     useUpdateProduct,
 } from "@/src/hooks/useProducts";
 import { useAuthStore } from "@/src/store/authStore";
-import { colors } from "@/src/utils/theme";
+import { colors, spacing, typography } from "@/src/utils/theme";
 
 // ── Category chips ────────────────────────────────────────
 // "keyword" is sent as the search query when chip is selected.
@@ -180,7 +180,7 @@ export default function ProductsScreen() {
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.neutral.bg }}
+      style={{ flex: 1, backgroundColor: colors.background }}
       edges={["top", "left", "right"]}
     >
       {/* ── Header ── */}
@@ -188,10 +188,10 @@ export default function ProductsScreen() {
         style={{
           flexDirection: "row",
           alignItems: "center",
-          paddingHorizontal: 20,
-          paddingBottom: 12,
+          paddingHorizontal: spacing.screenPadding,
+          paddingBottom: spacing.sm,
           paddingTop: 4,
-          backgroundColor: colors.neutral.bg,
+          backgroundColor: colors.background,
         }}
       >
         {/* Title + count */}
@@ -200,14 +200,12 @@ export default function ProductsScreen() {
             flex: 1,
             flexDirection: "row",
             alignItems: "center",
-            gap: 8,
+            gap: spacing.sm,
           }}
         >
           <Text
             style={{
-              fontSize: 22,
-              fontWeight: "800",
-              color: colors.neutral[900],
+              ...typography.screenTitle,
             }}
           >
             Products
@@ -215,7 +213,7 @@ export default function ProductsScreen() {
           {totalCount > 0 && (
             <View
               style={{
-                backgroundColor: colors.primary.light ?? "#DCFCE7",
+                backgroundColor: colors.paid.bg,
                 borderRadius: 20,
                 paddingHorizontal: 10,
                 paddingVertical: 3,
@@ -223,7 +221,7 @@ export default function ProductsScreen() {
             >
               <Text
                 style={{
-                  color: colors.primary.DEFAULT,
+                  color: colors.primary,
                   fontSize: 13,
                   fontWeight: "700",
                 }}
@@ -240,40 +238,45 @@ export default function ProductsScreen() {
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           {searchVisible ? (
-            <X size={22} color={colors.neutral[700]} strokeWidth={2} />
+            <X size={22} color={colors.textSecondary} strokeWidth={2} />
           ) : (
-            <Search size={22} color={colors.neutral[700]} strokeWidth={2} />
+            <Search size={22} color={colors.textSecondary} strokeWidth={2} />
           )}
         </TouchableOpacity>
       </View>
 
       {/* ── Search input (shown when toggled) ── */}
       {searchVisible && (
-        <View style={{ paddingHorizontal: 20, paddingBottom: 10 }}>
+        <View
+          style={{
+            paddingHorizontal: spacing.screenPadding,
+            paddingBottom: spacing.sm,
+          }}
+        >
           <View
             style={{
               flexDirection: "row",
               alignItems: "center",
-              backgroundColor: colors.white,
+              backgroundColor: colors.surface,
               borderRadius: 12,
               borderWidth: 1,
-              borderColor: colors.neutral[200],
+              borderColor: colors.border,
               paddingHorizontal: 12,
               paddingVertical: 10,
               gap: 8,
             }}
           >
-            <Search size={16} color={colors.neutral[400]} strokeWidth={2} />
+            <Search size={16} color={colors.textSecondary} strokeWidth={2} />
             <TextInput
               autoFocus
               value={search}
               onChangeText={setSearch}
               placeholder="Search products..."
-              placeholderTextColor={colors.neutral[400]}
+              placeholderTextColor={colors.textSecondary}
               style={{
                 flex: 1,
                 fontSize: 14,
-                color: colors.neutral[900],
+                color: colors.textPrimary,
               }}
             />
             {search.length > 0 && (
@@ -281,7 +284,7 @@ export default function ProductsScreen() {
                 onPress={() => setSearch("")}
                 hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
               >
-                <X size={14} color={colors.neutral[400]} strokeWidth={2} />
+                <X size={14} color={colors.textSecondary} strokeWidth={2} />
               </TouchableOpacity>
             )}
           </View>
@@ -294,9 +297,9 @@ export default function ProductsScreen() {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
-            paddingHorizontal: 20,
-            paddingBottom: 12,
-            gap: 8,
+            paddingHorizontal: spacing.screenPadding,
+            paddingBottom: spacing.sm,
+            gap: spacing.sm,
           }}
         >
           {CATEGORIES.map((cat) => {
@@ -310,20 +313,16 @@ export default function ProductsScreen() {
                   paddingHorizontal: 16,
                   paddingVertical: 8,
                   borderRadius: 50,
-                  backgroundColor: isActive
-                    ? colors.primary.DEFAULT
-                    : colors.white,
+                  backgroundColor: isActive ? colors.primary : colors.surface,
                   borderWidth: 1,
-                  borderColor: isActive
-                    ? colors.primary.DEFAULT
-                    : colors.neutral[200],
+                  borderColor: isActive ? colors.primary : colors.border,
                 }}
               >
                 <Text
                   style={{
                     fontSize: 14,
                     fontWeight: isActive ? "700" : "500",
-                    color: isActive ? colors.white : colors.neutral[700],
+                    color: isActive ? colors.surface : colors.textSecondary,
                   }}
                 >
                   {cat.label}
@@ -351,7 +350,10 @@ export default function ProductsScreen() {
           offset: PRODUCT_ITEM_H * i,
           index: i,
         })}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
+        contentContainerStyle={{
+          paddingHorizontal: spacing.lg,
+          paddingBottom: 100,
+        }}
         ListEmptyComponent={
           !isLoading && !error ? (
             <View style={{ alignItems: "center", marginTop: 60 }}>
@@ -360,7 +362,7 @@ export default function ProductsScreen() {
                   width: 80,
                   height: 80,
                   borderRadius: 40,
-                  backgroundColor: colors.neutral[100],
+                  backgroundColor: colors.background,
                   alignItems: "center",
                   justifyContent: "center",
                   marginBottom: 16,
@@ -368,7 +370,7 @@ export default function ProductsScreen() {
               >
                 <Package
                   size={36}
-                  color={colors.neutral[400]}
+                  color={colors.textSecondary}
                   strokeWidth={1.2}
                 />
               </View>
@@ -376,7 +378,7 @@ export default function ProductsScreen() {
                 style={{
                   fontSize: 16,
                   fontWeight: "700",
-                  color: colors.neutral[900],
+                  color: colors.textPrimary,
                   marginBottom: 6,
                 }}
               >
@@ -385,7 +387,7 @@ export default function ProductsScreen() {
               <Text
                 style={{
                   fontSize: 13,
-                  color: colors.neutral[400],
+                  color: colors.textSecondary,
                   textAlign: "center",
                   paddingHorizontal: 40,
                 }}

@@ -1,26 +1,26 @@
+import OrderList from "@/src/components/orders/OrderList";
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import SearchBar from "@/src/components/ui/SearchBar";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useOrders } from "@/src/hooks/useOrders";
 import { useAuthStore } from "@/src/store/authStore";
 import { daysSince } from "@/src/utils/helper";
-import { colors } from "@/src/utils/theme";
+import { colors, spacing, typography } from "@/src/utils/theme";
 import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetView,
+    BottomSheetBackdrop,
+    BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { Check, Search, SortAsc } from "lucide-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import OrderList from "@/src/components/orders/OrderList";
 
 // ── Filter chips declared outside so they're stable references ───────────────
 const FILTER_CHIPS = ["All", "Paid", "Partial", "Pending", "Overdue"] as const;
@@ -105,9 +105,9 @@ export default function OrdersScreen() {
   return (
     <SafeAreaView
       edges={["top"]}
-      style={{ flex: 1, backgroundColor: "#F6F7F9" }}
+      style={{ flex: 1, backgroundColor: colors.background }}
     >
-      <StatusBar barStyle="dark-content" backgroundColor="#F6F7F9" />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       {/* ── Header ───────────────────────────────────────────────────── */}
       <View
@@ -115,16 +115,14 @@ export default function OrdersScreen() {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-          backgroundColor: "#FFFFFF",
+          paddingHorizontal: spacing.screenPadding,
+          paddingVertical: spacing.sm,
+          backgroundColor: colors.surface,
           borderBottomWidth: 1,
-          borderBottomColor: "#E5E7EB",
+          borderBottomColor: colors.border,
         }}
       >
-        <Text style={{ fontSize: 22, fontWeight: "700", color: "#1C1C1E" }}>
-          Orders
-        </Text>
+        <Text style={typography.screenTitle}>Orders</Text>
         <TouchableOpacity
           onPress={() => {
             setShowSearch((v) => !v);
@@ -133,7 +131,7 @@ export default function OrdersScreen() {
           activeOpacity={0.7}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Search size={22} color="#6B7280" strokeWidth={2} />
+          <Search size={22} color={colors.textSecondary} strokeWidth={2} />
         </TouchableOpacity>
       </View>
 
@@ -141,11 +139,11 @@ export default function OrdersScreen() {
       {showSearch && (
         <View
           style={{
-            paddingHorizontal: 16,
-            paddingVertical: 10,
-            backgroundColor: "#FFFFFF",
+            paddingHorizontal: spacing.screenPadding,
+            paddingVertical: spacing.sm,
+            backgroundColor: colors.surface,
             borderBottomWidth: 1,
-            borderBottomColor: "#E5E7EB",
+            borderBottomColor: colors.border,
           }}
         >
           <SearchBar
@@ -159,16 +157,19 @@ export default function OrdersScreen() {
       {/* ── Filter chips ──────────────────────────────────────────────── */}
       <View
         style={{
-          backgroundColor: "#FFFFFF",
+          backgroundColor: colors.surface,
           borderBottomWidth: 1,
-          borderBottomColor: "#E5E7EB",
-          paddingVertical: 10,
+          borderBottomColor: colors.border,
+          paddingVertical: spacing.sm,
         }}
       >
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
+          contentContainerStyle={{
+            paddingHorizontal: spacing.screenPadding,
+            gap: spacing.sm,
+          }}
         >
           {FILTER_CHIPS.map((chip) => {
             const active = selectedChip === chip;
@@ -183,16 +184,16 @@ export default function OrdersScreen() {
                   borderRadius: 999,
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: active ? "#22C55E" : "#F6F7F9",
+                  backgroundColor: active ? colors.primary : colors.background,
                   borderWidth: 1,
-                  borderColor: active ? "#22C55E" : "#E5E7EB",
+                  borderColor: active ? colors.primary : colors.border,
                 }}
               >
                 <Text
                   style={{
                     fontSize: 13,
                     fontWeight: active ? "600" : "400",
-                    color: active ? "#FFFFFF" : "#6B7280",
+                    color: active ? colors.surface : colors.textSecondary,
                   }}
                 >
                   {chip}
@@ -212,13 +213,13 @@ export default function OrdersScreen() {
               flexDirection: "row",
               alignItems: "center",
               gap: 4,
-              backgroundColor: "#F6F7F9",
+              backgroundColor: colors.background,
               borderWidth: 1,
-              borderColor: "#E5E7EB",
+              borderColor: colors.border,
             }}
           >
-            <SortAsc size={14} color="#6B7280" strokeWidth={2} />
-            <Text style={{ fontSize: 13, color: "#6B7280" }}>
+            <SortAsc size={14} color={colors.textSecondary} strokeWidth={2} />
+            <Text style={{ fontSize: 13, color: colors.textSecondary }}>
               {SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? "Sort"}
             </Text>
           </TouchableOpacity>
@@ -250,19 +251,17 @@ export default function OrdersScreen() {
           <BottomSheetBackdrop {...props} pressBehavior="close" />
         )}
         enablePanDownToClose
-        backgroundStyle={{ backgroundColor: colors.white, borderRadius: 24 }}
+        backgroundStyle={{ backgroundColor: colors.surface, borderRadius: 24 }}
         handleIndicatorStyle={{
-          backgroundColor: colors.neutral[300],
+          backgroundColor: colors.border,
           width: 40,
         }}
       >
-        <BottomSheetView style={{ padding: 20 }}>
+        <BottomSheetView style={{ padding: spacing.lg }}>
           <Text
             style={{
-              fontSize: 17,
-              fontWeight: "600",
-              color: "#1C1C1E",
-              marginBottom: 12,
+              ...typography.cardTitle,
+              marginBottom: spacing.md,
             }}
           >
             Sort by
@@ -277,24 +276,24 @@ export default function OrdersScreen() {
                   sortSheetRef.current?.close();
                 }}
                 style={{
-                  paddingVertical: 14,
+                  paddingVertical: spacing.md,
                   flexDirection: "row",
                   justifyContent: "space-between",
                   alignItems: "center",
                   borderBottomWidth: 1,
-                  borderBottomColor: "#F3F4F6",
+                  borderBottomColor: colors.background,
                 }}
               >
                 <Text
                   style={{
-                    fontSize: 15,
-                    color: active ? "#16A34A" : "#1C1C1E",
+                    ...typography.body,
+                    color: active ? colors.primaryDark : colors.textPrimary,
                     fontWeight: active ? "600" : "400",
                   }}
                 >
                   {option.label}
                 </Text>
-                {active && <Check size={18} color="#16A34A" />}
+                {active && <Check size={18} color={colors.primaryDark} />}
               </TouchableOpacity>
             );
           })}
