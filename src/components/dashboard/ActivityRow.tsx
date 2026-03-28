@@ -59,9 +59,9 @@ export default function ActivityRow({ item }: Props) {
         elevation: 2,
       }}
     >
-      {/* Type icon square */}
+      {/* Type icon circle */}
       <View
-        className="w-9 h-9 rounded-xl items-center justify-center"
+        className="w-10 h-10 rounded-full items-center justify-center"
         style={{ backgroundColor: cfg.bg }}
       >
         <IconComp size={18} color={cfg.color} strokeWidth={1.75} />
@@ -69,13 +69,14 @@ export default function ActivityRow({ item }: Props) {
 
       <View className="flex-1">
         <Text
-          className="text-sm font-semibold text-primary mb-0.5"
+          className="text-sm font-semibold mb-0.5"
+          style={{ color: colors.textPrimary }}
           numberOfLines={1}
         >
           {item.title}
         </Text>
         <Text className="text-xs text-textSecondary">
-          {cfg.label} · {formatDashboardDate(item.date)}
+          {formatDashboardDate(item.date)}
         </Text>
       </View>
 

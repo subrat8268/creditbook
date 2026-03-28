@@ -1,12 +1,6 @@
-import { Image } from "expo-image";
+import GoogleSvg from "../../../assets/images/googlelogo.svg";
 
 /** Google logo loaded from local SVG asset */
 export default function GoogleLogo({ size = 20 }: { size?: number }) {
-  return (
-    <Image
-      source={require("../../../assets/images/googlelogo.svg")}
-      style={{ width: size, height: size }}
-      contentFit="contain"
-    />
-  );
+  return <GoogleSvg width={size} height={size} />;
 }

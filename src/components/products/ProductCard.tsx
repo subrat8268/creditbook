@@ -1,6 +1,6 @@
 import { ProductVariant } from "@/src/api/products";
 import { colors } from "@/src/utils/theme";
-import { ChevronRight, Package } from "lucide-react-native";
+import { Package } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
 interface ProductCardProps {
@@ -10,6 +10,23 @@ interface ProductCardProps {
   onOptionsPress: () => void;
 }
 
+// Deterministic color from product name for icon background
+const ICON_COLORS = [
+  { bg: "#DCFCE7", icon: "#16A34A" },
+  { bg: "#DBEAFE", icon: "#2563EB" },
+  { bg: "#FEF3C7", icon: "#D97706" },
+  { bg: "#FCE7F3", icon: "#DB2777" },
+  { bg: "#EDE9FE", icon: "#7C3AED" },
+  { bg: "#FFEDD5", icon: "#EA580C" },
+];
+
+function getIconColor(name: string) {
+  const idx =
+    name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) %
+    ICON_COLORS.length;
+  return ICON_COLORS[idx];
+}
+
 export default function ProductCard({
   name,
   basePrice,
@@ -17,10 +34,14 @@ export default function ProductCard({
   onOptionsPress,
 }: ProductCardProps) {
   const variantCount = variants?.length ?? 0;
-  // Display price: lowest variant price when variants exist, base_price as fallback,
-  // null when neither is set (variant-only product with no variants added yet).
   const displayPrice: number | null =
     variantCount > 0 ? Math.min(...variants!.map((v) => v.price)) : basePrice;
+
+  // Determine unit label from first variant or fallback
+  const unitLabel =
+    variants && variants.length > 0 ? (variants[0].unit ?? "unit") : "unit";
+
+  const { bg, icon: iconColor } = getIconColor(name);
 
   return (
     <TouchableOpacity
@@ -30,67 +51,71 @@ export default function ProductCard({
         flexDirection: "row",
         alignItems: "center",
         backgroundColor: "#FFFFFF",
-        borderRadius: 14,
+        borderRadius: 16,
         paddingHorizontal: 16,
-        paddingVertical: 14,
+        paddingVertical: 16,
         marginBottom: 10,
-        borderWidth: 1,
-        borderColor: colors.background,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 1,
       }}
     >
-      {/* Icon box */}
+      {/* Colored icon box */}
       <View
         style={{
-          width: 44,
-          height: 44,
-          borderRadius: 10,
-          backgroundColor: colors.background,
+          width: 48,
+          height: 48,
+          borderRadius: 14,
+          backgroundColor: bg,
           alignItems: "center",
           justifyContent: "center",
           marginRight: 14,
           flexShrink: 0,
         }}
       >
-        <Package size={22} color={colors.textSecondary} strokeWidth={1.5} />
+        <Package size={22} color={iconColor} strokeWidth={1.75} />
       </View>
 
-      {/* Name + variant count */}
+      {/* Name + subtitle */}
       <View style={{ flex: 1 }}>
         <Text
           style={{
             fontSize: 15,
             fontWeight: "700",
             color: colors.textPrimary,
-            marginBottom: 2,
+            marginBottom: 3,
           }}
           numberOfLines={1}
         >
           {name}
         </Text>
-        <Text style={{ fontSize: 13, color: "#AEAEB2" }}>
-          {variantCount === 1
-            ? "1 variant"
-            : variantCount > 1
-              ? `${variantCount} variants`
-              : "No variants"}
+        <Text style={{ fontSize: 13, color: colors.textSecondary }}>
+          {displayPrice !== null
+            ? `₹${displayPrice.toLocaleString("en-IN")} / ${unitLabel}`
+            : "—"}
+          {variantCount > 0 && (
+            <Text style={{ color: colors.textSecondary }}>
+              {"  •  "}
+              {variantCount === 1 ? "1 variant" : `${variantCount} variants`}
+            </Text>
+          )}
         </Text>
       </View>
 
-      {/* Price + chevron */}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-        <Text
-          style={{
-            fontSize: 15,
-            fontWeight: "700",
-            color: colors.textPrimary,
-          }}
-        >
-          {displayPrice !== null
-            ? `₹${displayPrice.toLocaleString("en-IN")}`
-            : "—"}
-        </Text>
-        <ChevronRight size={16} color={"#AEAEB2"} strokeWidth={2} />
-      </View>
+      {/* Price — large bold right side */}
+      <Text
+        style={{
+          fontSize: 18,
+          fontWeight: "800",
+          color: colors.textPrimary,
+        }}
+      >
+        {displayPrice !== null
+          ? `₹${displayPrice.toLocaleString("en-IN")}`
+          : "—"}
+      </Text>
     </TouchableOpacity>
   );
 }

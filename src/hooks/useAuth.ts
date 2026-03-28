@@ -15,17 +15,16 @@ import { useAuthStore } from "../store/authStore";
 import { LoginValues } from "../types/auth";
 
 export function useAuth() {
-  const { user, profile, setUser, setProfile, logout, setRecoveryMode } =
-    useAuthStore();
+  const { setAuth, logout, setRecoveryMode } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
     let mounted = true;
 
-    // Initialize session
+    // Initialize session — setAuth handles fetchProfile internally
     const initSession = async () => {
       const { data } = await supabase.auth.getSession();
-      if (mounted) setUser(data.session?.user ?? null);
+      if (mounted) setAuth(data.session?.user ?? null);
     };
 
     initSession();
@@ -39,8 +38,7 @@ export function useAuth() {
           return;
         }
 
-        setUser(session?.user ?? null);
-        if (!session) setProfile(null);
+        setAuth(session?.user ?? null);
       },
     );
 
@@ -48,39 +46,24 @@ export function useAuth() {
       mounted = false;
       listener.subscription.unsubscribe();
     };
-  }, [setUser, setProfile, router]);
+  }, [setAuth, setRecoveryMode, router]);
 
-  // fetchProfile is triggered inside setUser — no separate effect needed.
+  // fetchProfile is triggered inside setAuth — no separate effect needed.
 
-  return { user, profile, logout };
+  return { logout };
 }
 
 // 🔹 LOGIN MUTATION
 export function useLogin() {
-  const { setUser, fetchProfile } = useAuthStore();
-  const router = useRouter();
-
   return useMutation({
     mutationFn: (values: LoginValues) => loginApi(values),
-    onSuccess: async (user) => {
-      setUser(user);
+    onSuccess: async () => {
       await AsyncStorage.setItem("hasSeenWelcome", "true");
-
-      // Fetch profile before navigating so the root layout guard
-      // always receives a non-null profile — prevents navigation flicker.
-      await fetchProfile();
-      const { profile } = useAuthStore.getState();
-
-      if (!profile) {
-        // fetchProfile completed but returned null (DB fetch + upsert both failed).
-        // Routing to dashboard would target a Stack.Screen that is not registered
-        // when profile=null — the root layout shows profile-error instead.
-        router.replace("/profile-error" as any);
-      } else if (!profile.onboarding_complete) {
-        router.replace("/(auth)/onboarding/role" as any);
-      } else {
-        router.replace("/(main)/dashboard");
-      }
+      // DO NOTHING ELSE.
+      // supabase.auth.signInWithPassword triggers onAuthStateChange.
+      // onAuthStateChange calls setAuth(user).
+      // setAuth(user) calls fetchProfile(user.id).
+      // _layout.tsx sees the new state and routes perfectly.
     },
     onError: (error: any) => {
       console.error("Login failed:", error.message);
@@ -89,57 +72,27 @@ export function useLogin() {
 }
 
 // 🔹 GOOGLE SIGN-IN MUTATION
-async function createMinimalProfile(userId: string): Promise<void> {
-  const { error } = await supabase
-    .from("profiles")
-    .upsert(
-      { user_id: userId, onboarding_complete: false },
-      { onConflict: "user_id", ignoreDuplicates: true },
-    );
-  if (error) {
-    console.error("createMinimalProfile failed:", error.message);
-  }
-}
-
 export function useGoogleSignIn() {
-  const { setUser, fetchProfile } = useAuthStore();
-  const router = useRouter();
+  const { setAuth, fetchProfile } = useAuthStore();
 
   return useMutation({
-    mutationFn: async () => {
-      return signInWithGoogleApi();
-    },
+    mutationFn: async () => signInWithGoogleApi(),
     onSuccess: async (user) => {
-      if (user) setUser(user);
+      if (user) setAuth(user);
       await AsyncStorage.setItem("hasSeenWelcome", "true");
 
       // Retry fetchProfile — Google OAuth creates the profile row via DB trigger
-      // and it may not be committed immediately
+      // and it may not be committed immediately.
+      // fetchProfile handles the upsert fallback internally if the row is missing.
       let retries = 3;
       while (retries > 0) {
-        await fetchProfile();
+        if (user) await fetchProfile(user.id);
         const { profile } = useAuthStore.getState();
         if (profile) break;
         await new Promise((r) => setTimeout(r, 600));
         retries--;
       }
-      const { profile } = useAuthStore.getState();
-
-      if (!profile) {
-        // DB trigger did not fire or lost the race — create a minimal stub
-        // so the root layout always has a non-null profile to evaluate.
-        // onboarding_complete defaults to false → user will go through onboarding.
-        if (user) await createMinimalProfile(user.id);
-        await fetchProfile(); // re-read the row we just inserted
-        router.replace("/(auth)/onboarding/role" as any);
-        return;
-      }
-
-      if (!profile.onboarding_complete) {
-        router.replace("/(auth)/onboarding/role" as any);
-      } else {
-        router.replace("/(main)/dashboard");
-      }
+      // _layout.tsx reads the updated store state and routes — no router.replace needed.
     },
     onError: (error: any) => {
       // Cancelled by user — suppress noisy console error
@@ -170,8 +123,7 @@ function friendlySignUpError(message: string): string {
 }
 
 export function useSignUp() {
-  const { setUser, fetchProfile } = useAuthStore();
-  const router = useRouter();
+  const { setAuth, fetchProfile } = useAuthStore();
 
   return useMutation({
     mutationFn: (values: {
@@ -180,30 +132,20 @@ export function useSignUp() {
       fullName: string;
     }) => signUpApi(values),
     onSuccess: async (user) => {
-      setUser(user);
+      if (user) setAuth(user);
       await AsyncStorage.setItem("hasSeenWelcome", "true");
       // The DB trigger creates the profile row right after auth.users INSERT.
       // Retry fetchProfile a few times in case the trigger hasn't committed yet.
+      // fetchProfile handles the upsert fallback internally if the row is missing.
       let retries = 3;
       while (retries > 0) {
-        await fetchProfile();
+        if (user) await fetchProfile(user.id);
         const { profile } = useAuthStore.getState();
         if (profile) break;
         await new Promise((r) => setTimeout(r, 600));
         retries--;
       }
-
-      const { profile: signedUpProfile } = useAuthStore.getState();
-      if (!signedUpProfile) {
-        // All retries exhausted and profile is still null (network failure or
-        // DB trigger didn't commit). Route to the error screen so the user
-        // sees a Retry option rather than a blank/broken onboarding screen.
-        router.replace("/profile-error" as any);
-        return;
-      }
-
-      // Go directly to role selection (Step 1 of onboarding)
-      router.replace("/(auth)/onboarding/role" as any);
+      // _layout.tsx reads the updated store state and routes — no router.replace needed.
     },
     onError: (error: any) => {
       // Re-throw with a friendly message so the UI can display it

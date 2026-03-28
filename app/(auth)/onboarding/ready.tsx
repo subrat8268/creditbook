@@ -1,42 +1,33 @@
 import { useToast } from "@/src/components/feedback/Toast";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
-import { useRouter } from "expo-router";
 import { CalendarDays, CheckCircle2 } from "lucide-react-native";
 import { useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
 export default function OnboardingReady() {
-  const router = useRouter();
   const { show } = useToast();
-  const { user, profile, setProfile } = useAuthStore();
-  const [loading, setLoading] = useState<"customer" | "dashboard" | null>(null);
+  const { user, profile, fetchProfile } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const completeOnboarding = async (next: "customer" | "dashboard") => {
+  const completeOnboarding = async () => {
     if (!user) return;
-    setLoading(next);
+    setIsLoading(true);
     try {
       const { error: dbErr } = await supabase
         .from("profiles")
         .update({ onboarding_complete: true })
         .eq("user_id", user.id);
       if (dbErr) throw dbErr;
-      const current = useAuthStore.getState().profile;
-      if (current) setProfile({ ...current, onboarding_complete: true });
-
-      if (next === "customer") {
-        router.replace("/(main)/customers" as any);
-      } else {
-        router.replace("/(main)/dashboard");
-      }
+      // Sync global state — _layout.tsx routing guard will react and navigate.
+      await fetchProfile(user.id);
     } catch (e: any) {
       console.error("Onboarding completion failed:", e);
       show({
         message: "Failed to complete onboarding. Please try again.",
         type: "error",
       });
-    } finally {
-      setLoading(null);
+      setIsLoading(false);
     }
   };
 
@@ -64,7 +55,7 @@ export default function OnboardingReady() {
         {/* Subtitle */}
         <Text className="text-[15px] text-textSecondary text-center leading-[22px] mb-7">
           {
-            "CreditBook is ready to replace your khata book. Start by adding your first customer."
+            "KredBook is ready to replace your khata book. Start tracking credit instantly."
           }
         </Text>
 
@@ -97,25 +88,13 @@ export default function OnboardingReady() {
 
       <View className="px-6 pb-16">
         <TouchableOpacity
-          onPress={() => completeOnboarding("customer")}
-          disabled={loading !== null}
+          onPress={completeOnboarding}
+          disabled={isLoading}
           activeOpacity={0.85}
-          className={`rounded-full py-[17px] items-center ${
-            loading !== null ? "bg-neutral-300" : "bg-primary"
-          }`}
+          className={`rounded-full py-[17px] items-center ${isLoading ? "bg-neutral-300" : "bg-primary"}`}
         >
           <Text className="text-white text-base font-bold">
-            {loading === "customer" ? "Loading…" : "Add Your First Customer"}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => completeOnboarding("dashboard")}
-          disabled={loading !== null}
-          className="items-center mt-4 py-1"
-        >
-          <Text className="text-sm font-semibold text-primary underline">
-            {loading === "dashboard" ? "Loading…" : "Go to Dashboard"}
+            {isLoading ? "Loading…" : "Enter KredBook"}
           </Text>
         </TouchableOpacity>
       </View>

@@ -31,7 +31,7 @@ export const colors = {
   surface: "#FFFFFF", // Cards, modals, panels
   textPrimary: "#1C1C1E", // Primary text (near-black)
   textSecondary: "#6B7280", // Secondary text, captions
-  border: "#E5E7EB", // Dividers, input borders, subtle separators
+  border: "#E2E8F0", // Dividers, input borders, subtle separators
 
   // ─ Semantic backgrounds (tinted panels)
   successBg: "#F0FDF4", // Green-50: YOU RECEIVE panel

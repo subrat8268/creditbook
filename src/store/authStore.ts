@@ -5,123 +5,96 @@ import { Profile, User } from "../types/auth";
 type AuthState = {
   user: User | null;
   profile: Profile | null;
-  loading: boolean; // track loading profile
-  isRecoveryMode: boolean; // true while the user is on the set-new-password screen
-  setUser: (user: User | null) => void;
-  setProfile: (profile: Profile | null) => void;
+  isInitialized: boolean; // True once we've done the first session check
+  isFetchingProfile: boolean; // Replaces ambiguous 'loading'
+  isRecoveryMode: boolean;
+  setAuth: (user: User | null) => void;
   setRecoveryMode: (v: boolean) => void;
-  fetchProfile: () => Promise<void>;
+  fetchProfile: (userId: string) => Promise<void>;
   logout: () => void;
 };
 
-export const useAuthStore = create<AuthState>((set, get) => {
-  // Private concurrency gate — tracks whether a fetchProfile network call is
-  // currently in-progress. Kept separate from the public `loading` state so
-  // setUser can write { user, loading: true } in a single atomic set() without
-  // the in-flight guard inside fetchProfile treating it as a concurrent call
-  // and deadlocking.
-  let _fetchInProgress = false;
+export const useAuthStore = create<AuthState>((set, get) => ({
+  user: null,
+  profile: null,
+  isInitialized: false,
+  isFetchingProfile: false,
+  isRecoveryMode: false,
 
-  return {
-    user: null,
-    profile: null,
-    loading: false,
-    isRecoveryMode: false,
+  setRecoveryMode: (v) => set({ isRecoveryMode: v }),
 
-    setRecoveryMode: (v) => set({ isRecoveryMode: v }),
+  setAuth: (user) => {
+    const currentUser = get().user;
+    set({ user, isInitialized: true });
 
-    setUser: (user) => {
-      if (user) {
-        // Single atomic write — user + loading:true together so no render ever
-        // observes the dangerous (user=truthy, profile=null, loading=false) state.
-        set({ user, loading: true });
-        get().fetchProfile();
+    // Only fetch if we have a user AND (it's a new login OR we lack a profile)
+    if (user && (!get().profile || user.id !== currentUser?.id)) {
+      get().fetchProfile(user.id);
+    } else if (!user) {
+      // Clear profile if user logs out
+      set({ profile: null, isFetchingProfile: false });
+    }
+  },
+
+  fetchProfile: async (userId) => {
+    // Simple boolean gate — no locking promises needed
+    if (get().isFetchingProfile) return;
+
+    set({ isFetchingProfile: true });
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        const today = new Date();
+        const isSubscribed =
+          data.subscription_expiry &&
+          new Date(data.subscription_expiry) >= today;
+        const daysRemaining = data.subscription_expiry
+          ? Math.max(
+              0,
+              Math.ceil(
+                (new Date(data.subscription_expiry).getTime() -
+                  today.getTime()) /
+                  (1000 * 60 * 60 * 24),
+              ),
+            )
+          : 0;
+        set({ profile: { ...data, isSubscribed, daysRemaining } });
       } else {
-        set({ user: null, profile: null, loading: false });
-      }
-    },
-
-    setProfile: (profile) => set({ profile }),
-
-    fetchProfile: async () => {
-      const { user } = get();
-      if (!user) return;
-
-      if (_fetchInProgress) {
-        // A fetch is already in-flight (e.g. setUser called twice by
-        // initSession + onAuthStateChange). Wait for the loading flag to clear
-        // (it is always set false in the finally block) so callers who
-        // `await fetchProfile()` receive up-to-date profile state.
-        await new Promise<void>((resolve) => {
-          // Safety: re-check in case fetch completed between snapshot + subscribe
-          if (!useAuthStore.getState().loading) {
-            resolve();
-            return;
-          }
-          const unsub = useAuthStore.subscribe((s) => {
-            if (!s.loading) {
-              unsub();
-              resolve();
-            }
-          });
-        });
-        return;
-      }
-
-      _fetchInProgress = true;
-      // loading may already be true (set atomically by setUser above); set it
-      // anyway so direct callers (e.g. AuthProfileErrorScreen Retry button) also
-      // show a loader.
-      set({ loading: true });
-      try {
-        const { data, error } = await supabase
+        // Deterministic upsert: If the DB trigger missed it, we create it here natively.
+        const { data: created, error: upsertErr } = await supabase
           .from("profiles")
-          .select("*")
-          .eq("user_id", user.id)
-          .maybeSingle();
+          .upsert(
+            { user_id: userId, name: "", onboarding_complete: false },
+            { onConflict: "user_id" },
+          )
+          .select()
+          .single();
 
-        if (error) throw error;
-
-        if (data) {
-          const today = new Date();
-          const isSubscribed =
-            data.subscription_expiry &&
-            new Date(data.subscription_expiry) >= today;
-          const daysRemaining = data.subscription_expiry
-            ? Math.max(
-                0,
-                Math.ceil(
-                  (new Date(data.subscription_expiry).getTime() -
-                    today.getTime()) /
-                    (1000 * 60 * 60 * 24),
-                ),
-              )
-            : 0;
-          set({ profile: { ...data, isSubscribed, daysRemaining } });
-        } else {
-          // No profile row found — create a minimal one so the app can proceed.
-          // Include name: '' to satisfy any NOT NULL constraint on the live DB.
-          const { data: created, error: upsertErr } = await supabase
-            .from("profiles")
-            .upsert({ user_id: user.id, name: "" }, { onConflict: "user_id" })
-            .select()
-            .single();
-          if (!upsertErr && created) {
-            set({
-              profile: { ...created, isSubscribed: false, daysRemaining: 0 },
-            });
-          } else {
-            console.error("Could not create profile row:", upsertErr?.message);
-          }
+        if (!upsertErr && created) {
+          set({
+            profile: { ...created, isSubscribed: false, daysRemaining: 0 },
+          });
         }
-      } catch (err) {
-        console.error("Failed to fetch profile:", err);
-      } finally {
-        _fetchInProgress = false;
-        set({ loading: false });
       }
-    },
+    } catch (err) {
+      console.error("Failed to fetch profile:", err);
+    } finally {
+      set({ isFetchingProfile: false });
+    }
+  },
 
-    logout: () => set({ user: null, profile: null }),
-  };
-});
+  logout: () =>
+    set({
+      user: null,
+      profile: null,
+      isFetchingProfile: false,
+      isRecoveryMode: false,
+    }),
+}));

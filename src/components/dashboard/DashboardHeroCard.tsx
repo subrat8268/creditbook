@@ -153,7 +153,8 @@ export default function DashboardHeroCard({
               color: "rgba(255,255,255,0.85)",
             }}
           >
-            {deltaUp ? "↑" : "↓"} {formatINR(Math.abs(weekDelta!))} this week
+            {deltaUp ? "↑" : "↓"} {formatINR(Math.abs(weekDelta!))} from last
+            week
           </Text>
         )}
       </View>
@@ -224,13 +225,15 @@ export default function DashboardHeroCard({
     );
   }
 
-  // ── Seller → solid red View wrapper ───────────────────────────────────────
+  // ── Seller → Linear gradient (red) ───────────────────────────────────────
   return (
-    <View
-      className="rounded-3xl p-6 mb-3"
+    <LinearGradient
+      colors={[gradients.customerHero.start, gradients.customerHero.end]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      className="rounded-3xl p-6 mb-3 overflow-hidden"
       style={{
-        backgroundColor: colors.damgerStrong,
-        shadowColor: colors.damgerStrong,
+        shadowColor: gradients.customerHero.start,
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.35,
         shadowRadius: 16,
@@ -238,6 +241,6 @@ export default function DashboardHeroCard({
       }}
     >
       {content}
-    </View>
+    </LinearGradient>
   );
 }

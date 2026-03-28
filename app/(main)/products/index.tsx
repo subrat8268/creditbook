@@ -194,7 +194,6 @@ export default function ProductsScreen() {
           backgroundColor: colors.background,
         }}
       >
-        {/* Title + count */}
         <View
           style={{
             flex: 1,
@@ -203,13 +202,7 @@ export default function ProductsScreen() {
             gap: spacing.sm,
           }}
         >
-          <Text
-            style={{
-              ...typography.screenTitle,
-            }}
-          >
-            Products
-          </Text>
+          <Text style={{ ...typography.screenTitle }}>Products</Text>
           {totalCount > 0 && (
             <View
               style={{
@@ -231,107 +224,92 @@ export default function ProductsScreen() {
             </View>
           )}
         </View>
-
-        {/* Search icon toggle */}
         <TouchableOpacity
           onPress={handleToggleSearch}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          {searchVisible ? (
-            <X size={22} color={colors.textSecondary} strokeWidth={2} />
-          ) : (
-            <Search size={22} color={colors.textSecondary} strokeWidth={2} />
-          )}
+          <Search size={22} color={colors.textSecondary} strokeWidth={2} />
         </TouchableOpacity>
       </View>
 
-      {/* ── Search input (shown when toggled) ── */}
-      {searchVisible && (
+      {/* ── Search bar — always visible ── */}
+      <View
+        style={{
+          paddingHorizontal: spacing.screenPadding,
+          paddingBottom: spacing.sm,
+        }}
+      >
         <View
           style={{
-            paddingHorizontal: spacing.screenPadding,
-            paddingBottom: spacing.sm,
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: colors.surface,
+            borderRadius: 50,
+            borderWidth: 1,
+            borderColor: colors.border,
+            paddingHorizontal: 16,
+            paddingVertical: 11,
+            gap: 8,
           }}
         >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: colors.surface,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: colors.border,
-              paddingHorizontal: 12,
-              paddingVertical: 10,
-              gap: 8,
-            }}
-          >
-            <Search size={16} color={colors.textSecondary} strokeWidth={2} />
-            <TextInput
-              autoFocus
-              value={search}
-              onChangeText={setSearch}
-              placeholder="Search products..."
-              placeholderTextColor={colors.textSecondary}
-              style={{
-                flex: 1,
-                fontSize: 14,
-                color: colors.textPrimary,
-              }}
-            />
-            {search.length > 0 && (
-              <TouchableOpacity
-                onPress={() => setSearch("")}
-                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-              >
-                <X size={14} color={colors.textSecondary} strokeWidth={2} />
-              </TouchableOpacity>
-            )}
-          </View>
+          <Search size={16} color={colors.textSecondary} strokeWidth={2} />
+          <TextInput
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search products to add in bill..."
+            placeholderTextColor={colors.textSecondary}
+            style={{ flex: 1, fontSize: 14, color: colors.textPrimary }}
+          />
+          {search.length > 0 && (
+            <TouchableOpacity
+              onPress={() => setSearch("")}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+            >
+              <X size={14} color={colors.textSecondary} strokeWidth={2} />
+            </TouchableOpacity>
+          )}
         </View>
-      )}
+      </View>
 
-      {/* ── Category chips ── */}
-      {!searchVisible && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingHorizontal: spacing.screenPadding,
-            paddingBottom: spacing.sm,
-            gap: spacing.sm,
-          }}
-        >
-          {CATEGORIES.map((cat) => {
-            const isActive = activeCategory === cat.keyword;
-            return (
-              <TouchableOpacity
-                key={cat.label}
-                onPress={() => handleSelectCategory(cat.keyword)}
-                activeOpacity={0.75}
+      {/* ── Category chips — always visible ── */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingHorizontal: spacing.screenPadding,
+          paddingBottom: spacing.sm,
+          gap: spacing.sm,
+        }}
+      >
+        {CATEGORIES.map((cat) => {
+          const isActive = activeCategory === cat.keyword;
+          return (
+            <TouchableOpacity
+              key={cat.label}
+              onPress={() => handleSelectCategory(cat.keyword)}
+              activeOpacity={0.75}
+              style={{
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderRadius: 50,
+                backgroundColor: isActive ? colors.primary : colors.surface,
+                borderWidth: 1,
+                borderColor: isActive ? colors.primary : colors.border,
+              }}
+            >
+              <Text
                 style={{
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  borderRadius: 50,
-                  backgroundColor: isActive ? colors.primary : colors.surface,
-                  borderWidth: 1,
-                  borderColor: isActive ? colors.primary : colors.border,
+                  fontSize: 14,
+                  fontWeight: isActive ? "700" : "500",
+                  color: isActive ? colors.surface : colors.textSecondary,
                 }}
               >
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: isActive ? "700" : "500",
-                    color: isActive ? colors.surface : colors.textSecondary,
-                  }}
-                >
-                  {cat.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      )}
+                {cat.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
 
       {/* ── List ── */}
       <FlatList

@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "../global.css";
-import "../src/i18n"; // initialise i18n (side-effect import)
+import "../src/i18n";
 import { useAuthStore } from "../src/store/authStore";
 import { useLanguageStore } from "../src/store/languageStore";
 
@@ -27,12 +27,8 @@ const queryClient = new QueryClient();
 function RootLayout() {
   useAuth();
 
-  const {
-    user,
-    profile,
-    loading: profileLoading,
-    isRecoveryMode,
-  } = useAuthStore();
+  const { user, profile, isInitialized, isFetchingProfile, isRecoveryMode } =
+    useAuthStore();
   const loadLanguage = useLanguageStore((s) => s.loadLanguage);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
@@ -67,33 +63,44 @@ function RootLayout() {
     }
   }, [fontsLoaded, loading]);
 
-  // Navigate to the correct screen once ready
+  // Single Source of Truth for Routing
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !isInitialized) return;
+
+    // If we are actively fetching the profile, do nothing (Loader will show)
+    if (user && isFetchingProfile && !profile) return;
 
     if (isRecoveryMode) {
       router.replace("/(auth)/set-new-password" as any);
     } else if (!user) {
       router.replace(showWelcome ? "/" : ("/(auth)/login" as any));
-    } else if (!profile && !profileLoading) {
+    } else if (!profile) {
       router.replace("/profile-error" as any);
-    } else if (profile && !profile.onboarding_complete) {
+    } else if (!profile.onboarding_complete) {
       router.replace("/(auth)/onboarding/role" as any);
-    } else if (profile?.onboarding_complete === true) {
+    } else {
       router.replace("/(main)/dashboard" as any);
     }
   }, [
     ready,
+    isInitialized,
     isRecoveryMode,
     user,
     profile,
-    profileLoading,
+    isFetchingProfile,
     showWelcome,
     router,
   ]);
 
-  // Show loader until fonts, welcome check, AND profile fetch are all done
-  if (!fontsLoaded || loading || (user && profileLoading)) return <Loader />;
+  // Show loader until fonts, welcome check, AND initial auth check are done
+  if (
+    !fontsLoaded ||
+    loading ||
+    !isInitialized ||
+    (user && isFetchingProfile && !profile)
+  ) {
+    return <Loader />;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

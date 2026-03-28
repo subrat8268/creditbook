@@ -1,17 +1,40 @@
-import { colors, spacing, typography } from "@/src/utils/theme";
-import { Tabs } from "expo-router";
 import {
-  House,
-  MoreHorizontal,
-  ShoppingCart,
-  Truck,
-  UserCircle,
-  Users,
-} from "lucide-react-native";
+  BillIcon,
+  CustomerIcon,
+  HomeIcon,
+  MoreIcon,
+  SupplierIcon,
+} from "@/assets/icons/main";
+import { colors, typography } from "@/src/utils/theme";
+import { Tabs, useRouter } from "expo-router";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const ACTIVE = colors.primary; // brand green
-const INACTIVE = "#9CA3AF"; // design-spec inactive tab color
+const ACTIVE = colors.primary;
+const INACTIVE = "#9CA3AF";
+
+function NewBillButton() {
+  const router = useRouter();
+  return (
+    <TouchableOpacity
+      onPress={() => router.push("/orders/create")}
+      activeOpacity={0.85}
+      style={styles.fabWrapper}
+    >
+      <View style={styles.fabContainer}>
+        {/* The Orange Circle with White Border */}
+        <View style={styles.fab}>
+          <BillIcon width={26} height={26} color="#FFFFFF" />
+        </View>
+
+        {/* The Floating Label */}
+        <View style={styles.labelBadge}>
+          <Text style={styles.fabLabelText}>New Bill</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
@@ -26,18 +49,19 @@ export default function TabLayout() {
           backgroundColor: colors.surface,
           borderTopWidth: 1,
           borderTopColor: colors.border,
-          elevation: 4,
+          elevation: 8,
           shadowColor: "#000000",
-          shadowOffset: { width: 0, height: -1 },
+          shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.08,
-          shadowRadius: 4,
-          height: spacing.tabBarHeight + insets.bottom,
-          paddingBottom: 8 + insets.bottom,
-          paddingTop: 6,
+          shadowRadius: 6,
+          height: 62 + insets.bottom,
+          paddingBottom: insets.bottom,
+          paddingTop: 2,
         },
         tabBarLabelStyle: {
           fontSize: typography.label.fontSize,
           fontWeight: typography.label.fontWeight,
+          marginTop: 2,
         },
       }}
     >
@@ -46,9 +70,8 @@ export default function TabLayout() {
         name="dashboard"
         options={{
           title: "Home",
-          headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <House size={size} color={color} strokeWidth={1.75} />
+            <HomeIcon width={size} height={size} color={color} />
           ),
         }}
       />
@@ -58,22 +81,20 @@ export default function TabLayout() {
         name="customers"
         options={{
           title: "Customers",
-          headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Users size={size} color={color} strokeWidth={1.75} />
+            <CustomerIcon width={size} height={size} color={color} />
           ),
         }}
       />
 
-      {/* Tab 3 — Orders */}
+      {/* Tab 3 — New Bill (center FAB) */}
       <Tabs.Screen
         name="orders"
         options={{
-          title: "Orders",
-          headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <ShoppingCart size={size} color={color} strokeWidth={1.75} />
-          ),
+          title: "",
+          tabBarIcon: () => null,
+          tabBarLabel: () => null,
+          tabBarButton: () => <NewBillButton />,
         }}
       />
 
@@ -82,41 +103,71 @@ export default function TabLayout() {
         name="suppliers"
         options={{
           title: "Suppliers",
-          headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Truck size={size} color={color} strokeWidth={1.75} />
+            <SupplierIcon width={size} height={20} color={color} />
           ),
         }}
       />
 
-      {/* Tab 5 — Profile */}
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <UserCircle size={size} color={color} strokeWidth={1.75} />
-          ),
-        }}
-      />
-
-      {/* Tab 6 — More */}
+      {/* Tab 5 — More */}
       <Tabs.Screen
         name="more"
         options={{
           title: "More",
-          headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <MoreHorizontal size={size} color={color} strokeWidth={1.75} />
+            <MoreIcon width={size} height={18} color={color} />
           ),
         }}
       />
 
-      {/* Hidden screens — accessible via router.push() and through More menu */}
+      {/* Hidden routes */}
+      <Tabs.Screen name="profile" options={{ href: null }} />
       <Tabs.Screen name="products" options={{ href: null }} />
       <Tabs.Screen name="export" options={{ href: null }} />
       <Tabs.Screen name="reports" options={{ href: null }} />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  fabWrapper: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  fabContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  fab: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.danger,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 4,
+    borderColor: "#FFFFFF",
+    marginTop: -28,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  labelBadge: {
+    position: "absolute",
+    top: -42,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+  },
+  fabLabelText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#1F2937",
+  },
+});
