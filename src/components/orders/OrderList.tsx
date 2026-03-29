@@ -11,11 +11,7 @@ const AVATAR_COLORS = [
   colors.danger,
   colors.warning,
   colors.primary,
-  "#4F9CFF",
-  "#9B59B6",
-  "#E91E8C",
-  "#00BCD4",
-  "#FF5722",
+  ...colors.avatarPalette,
 ] as const;
 
 function getAvatarColor(name: string): string {
@@ -57,10 +53,22 @@ const STATUS_STYLES: Record<
   string,
   { bg: string; text: string; label: string }
 > = {
-  Paid: { bg: "#DCFCE7", text: "#16A34A", label: "PAID" },
-  "Partially Paid": { bg: "#DBEAFE", text: "#1D4ED8", label: "PARTIAL" },
-  Pending: { bg: "#FEF3C7", text: "#D97706", label: "PENDING" },
-  Overdue: { bg: "#FEE2E2", text: "#DC2626", label: "OVERDUE" },
+  Paid: { bg: colors.paid.bg, text: colors.paid.text, label: "PAID" },
+  "Partially Paid": {
+    bg: colors.partial.bg,
+    text: colors.partial.text,
+    label: "PARTIAL",
+  },
+  Pending: {
+    bg: colors.pending.bg,
+    text: colors.pending.text,
+    label: "PENDING",
+  },
+  Overdue: {
+    bg: colors.overdue.bg,
+    text: colors.overdue.text,
+    label: "OVERDUE",
+  },
 };
 
 interface Props {
@@ -105,7 +113,7 @@ export default function OrderList({
           onPress={() => onPressOrder(item.id)}
           activeOpacity={0.8}
           style={{
-            backgroundColor: "#FFFFFF",
+            backgroundColor: colors.surface,
             borderRadius: 12,
             marginHorizontal: 16,
             marginBottom: 12,
@@ -133,7 +141,11 @@ export default function OrderList({
               }}
             >
               <Text
-                style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF" }}
+                style={{
+                  fontSize: 15,
+                  fontWeight: "700",
+                  color: colors.surface,
+                }}
               >
                 {getInitials(customerName)}
               </Text>
@@ -146,7 +158,7 @@ export default function OrderList({
                   style={{
                     fontSize: 15,
                     fontWeight: "700",
-                    color: "#1C1C1E",
+                    color: colors.textPrimary,
                     flexShrink: 1,
                   }}
                   numberOfLines={1}
@@ -156,7 +168,11 @@ export default function OrderList({
                 {isUpdating && <Loader />}
               </View>
               <Text
-                style={{ fontSize: 13, color: "#6B7280", marginTop: 2 }}
+                style={{
+                  fontSize: 13,
+                  color: colors.textSecondary,
+                  marginTop: 2,
+                }}
                 numberOfLines={1}
               >
                 {item.bill_number}
@@ -171,7 +187,7 @@ export default function OrderList({
                 style={{
                   fontSize: 17,
                   fontWeight: "700",
-                  color: "#1C1C1E",
+                  color: colors.textPrimary,
                   marginBottom: 5,
                 }}
               >
@@ -200,7 +216,9 @@ export default function OrderList({
           </View>
 
           {/* ── Bottom row: date ─────────────────────────────── */}
-          <Text style={{ fontSize: 13, color: "#6B7280", marginTop: 10 }}>
+          <Text
+            style={{ fontSize: 13, color: colors.textSecondary, marginTop: 10 }}
+          >
             {formatDate(item.created_at)}
           </Text>
         </TouchableOpacity>
@@ -258,7 +276,7 @@ export default function OrderList({
                 width: 80,
                 height: 80,
                 borderRadius: 40,
-                backgroundColor: "#F0FDF4",
+                backgroundColor: colors.successBg,
                 alignItems: "center",
                 justifyContent: "center",
                 marginBottom: 20,
@@ -270,7 +288,7 @@ export default function OrderList({
               style={{
                 fontSize: 18,
                 fontWeight: "700",
-                color: "#1C1C1E",
+                color: colors.textPrimary,
                 marginBottom: 8,
                 textAlign: "center",
               }}
@@ -280,7 +298,7 @@ export default function OrderList({
             <Text
               style={{
                 fontSize: 14,
-                color: "#6B7280",
+                color: colors.textSecondary,
                 textAlign: "center",
                 lineHeight: 20,
                 marginBottom: 28,
@@ -292,7 +310,7 @@ export default function OrderList({
               onPress={onCreateBill}
               activeOpacity={0.85}
               style={{
-                backgroundColor: "#22C55E",
+                backgroundColor: colors.primary,
                 borderRadius: 12,
                 paddingVertical: 14,
                 paddingHorizontal: 32,
@@ -300,7 +318,7 @@ export default function OrderList({
             >
               <Text
                 style={{
-                  color: "#FFFFFF",
+                  color: colors.surface,
                   fontSize: 15,
                   fontWeight: "600",
                 }}

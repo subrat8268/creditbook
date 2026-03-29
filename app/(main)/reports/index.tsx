@@ -1,7 +1,7 @@
 import { useDashboard } from "@/src/hooks/useDashboard";
 import { useAuthStore } from "@/src/store/authStore";
 import { formatINR } from "@/src/utils/dashboardUi";
-import { colors, spacing } from "@/src/utils/theme";
+import { colors, gradients, spacing } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import {
     Activity,
@@ -171,7 +171,7 @@ export default function FinancialPositionScreen() {
             label="I OWE SUPPLIERS"
             amount={formatINR(iOweSuppliers)}
             subtitle={`${activeSuppliers} supplier${activeSuppliers !== 1 ? "s" : ""}`}
-            bg="#E0336E"
+            bg={colors.supplierPrimary}
             icon={
               <Truck
                 size={20}
@@ -296,7 +296,7 @@ const s = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 22,
     paddingVertical: 20,
-    backgroundColor: "#1C2333",
+    backgroundColor: gradients.netPosition,
   },
   netLabel: {
     fontSize: 11,

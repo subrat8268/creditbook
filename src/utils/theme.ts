@@ -21,7 +21,8 @@ export const colors = {
 
   // ─ Semantic Reds / Pinks
   danger: "#EF4444", // Owed, Overdue states
-  damgerStrong: "#DC2626", // Dashboard-level alert red (gradient start)
+  dangerStrong: "#DC2626", // Dashboard-level alert red (gradient start)
+  supplierPrimary: "#DB2777", // Supplier card / I Owe Suppliers
 
   // ─ Semantic Amber
   warning: "#F59E0B", // Pending, Reminder, Caution
@@ -43,6 +44,10 @@ export const colors = {
     bg: "#DCFCE7", // Green-100
     text: "#16A34A", // Green-700
   },
+  partial: {
+    bg: "#DBEAFE", // Blue-100
+    text: "#1D4ED8", // Blue-700
+  },
   pending: {
     bg: "#FEF3C7", // Amber-100
     text: "#D97706", // Amber-600
@@ -51,6 +56,16 @@ export const colors = {
     bg: "#FEE2E2", // Red-100
     text: "#DC2626", // Red-600
   },
+
+  // ─ Avatar palette (deterministic, cycled by name hash)
+  avatarPalette: [
+    "#4F9CFF",
+    "#9B59B6",
+    "#E91E8C",
+    "#00BCD4",
+    "#FF5722",
+    "#F59E0B",
+  ] as string[],
 
   // ─ Icon backgrounds
   iconBg: "#22C55E22", // Translucent brand green
@@ -257,7 +272,7 @@ export const dashboardPalette = {
   heroDecor: "#F5ECD8",
   receivePanelBg: colors.successBg,
   owePanelBg: colors.dangerBg,
-  dashboardRed: colors.damgerStrong,
+  dashboardRed: colors.dangerStrong,
   heroLabel: colors.textSecondary,
   heroAmount: colors.warning,
   heroSub: colors.textSecondary,
