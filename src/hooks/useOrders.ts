@@ -1,5 +1,4 @@
 import {
-    InfiniteData,
     useInfiniteQuery,
     useMutation,
     useQuery,
@@ -70,19 +69,24 @@ export function useOrderDetail(orderId?: string) {
 export function useCreateOrder(vendorId: string) {
   const queryClient = useQueryClient();
 
+  // Explicit item type — variant_id carried through for future inventory/reporting
+  // (not yet persisted to order_items: column requires a DB migration)
+  type OrderItemInput = {
+    product_id: string | null;
+    product_name: string;
+    variant_id?: string | null; // future-ready: not written to DB until migration
+    variant_name?: string | null;
+    price: number;
+    quantity: number;
+  };
+
   return useMutation<
     OrderDetail,
     ApiError,
     {
       vendorId: string;
       customerId: string;
-      items: {
-        product_id: string | null;
-        product_name: string;
-        variant_name?: string | null;
-        price: number;
-        quantity: number;
-      }[];
+      items: OrderItemInput[];
       amountPaid: number;
       paymentMode?: PaymentMode;
       loadingCharge?: number;
@@ -111,28 +115,25 @@ export function useCreateOrder(vendorId: string) {
       ),
 
     onSuccess: (newOrder, variables) => {
+      // 1. Seed the detail cache immediately for instant navigation.
       queryClient.setQueryData(orderKeys.detail(newOrder.id), newOrder);
-      queryClient.setQueryData<InfiniteData<Order[]>>(
-        orderKeys.list(vendorId),
-        (oldData) => {
-          if (!oldData) {
-            return { pages: [[newOrder]], pageParams: [0] };
-          }
-          return {
-            ...oldData,
-            pages: [[newOrder, ...oldData.pages[0]], ...oldData.pages.slice(1)],
-            pageParams: oldData.pageParams,
-          };
-        },
-      );
-      queryClient.invalidateQueries({
-        queryKey: ["customers", vendorId],
-        exact: false,
-      });
+
+      // 2. Invalidate the entire orders tree for this vendor — covers all
+      // searched, filtered, and sorted list variants so no stale view appears.
+      queryClient.invalidateQueries({ queryKey: orderKeys.all(vendorId) });
+
+      // 3. Invalidate downstream customer caches.
+      queryClient.invalidateQueries({ queryKey: ["customers", vendorId] });
       queryClient.invalidateQueries({
         queryKey: ["customerDetail", variables.customerId],
       });
+
+      // 4. Force dashboard hero card refresh.
       queryClient.invalidateQueries({ queryKey: ["dashboard", vendorId] });
+    },
+
+    onError: (error) => {
+      console.error("Order creation failed at mutation layer:", error.message);
     },
   });
 }
