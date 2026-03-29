@@ -201,18 +201,23 @@ export default function OrderDetailScreen() {
   const handlePaymentSuccess = useCallback(() => {
     setPaymentModalVisible(false);
     if (profile?.id) {
+      queryClient.invalidateQueries({ queryKey: orderKeys.all(profile.id) });
       queryClient.invalidateQueries({
         queryKey: orderKeys.detail(orderId ?? ""),
       });
-      queryClient.invalidateQueries({ queryKey: orderKeys.list(profile.id) });
       queryClient.invalidateQueries({ queryKey: ["payments", orderId] });
+      if (order?.customer_id) {
+        queryClient.invalidateQueries({
+          queryKey: ["customerDetail", order.customer_id],
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ["dashboard", profile.id] });
     }
     Alert.alert(
       "✅ Payment recorded",
       "The payment has been saved successfully.",
     );
-  }, [orderId, profile?.id, queryClient]);
+  }, [orderId, order?.customer_id, profile?.id, queryClient]);
 
   // ── Loading / Error gates ─────────────────────────────────────────
   if (isLoading) return <Loader />;

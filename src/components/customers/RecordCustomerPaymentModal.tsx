@@ -1,20 +1,19 @@
-import { recordPayment } from "@/src/api/orders";
+import { useRecordPayment } from "@/src/hooks/usePayments";
 import { useAuthStore } from "@/src/store/authStore";
 import { colors } from "@/src/utils/theme";
 import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
+    BottomSheetBackdrop,
+    BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
-import { useQueryClient } from "@tanstack/react-query";
 import { Check, History } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Alert,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Button from "../ui/Button";
 
@@ -34,23 +33,12 @@ type Props = {
 const MODES: PaymentMode[] = ["Cash", "UPI", "NEFT", "Draft", "Cheque"];
 
 // ── Avatar utilities ─────────────────────────────────────────────────────────
-const AVATAR_COLORS = [
-  colors.danger,
-  colors.warning,
-  colors.primary,
-  "#4F9CFF",
-  "#9B59B6",
-  "#E91E8C",
-  "#00BCD4",
-  "#FF5722",
-] as const;
-
 function getAvatarColor(name: string): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  return colors.avatarPalette[Math.abs(hash) % colors.avatarPalette.length];
 }
 
 function getInitials(name: string): string {
@@ -77,9 +65,12 @@ export default function RecordCustomerPaymentModal({
   const [amount, setAmount] = useState("");
   const [mode, setMode] = useState<PaymentMode>("Cash");
   const [notes, setNotes] = useState("");
-  const [loading, setLoading] = useState(false);
   const profile = useAuthStore((s) => s.profile);
-  const queryClient = useQueryClient();
+  const { recordPayment, isRecording } = useRecordPayment(
+    orderId,
+    profile?.id,
+    customerId,
+  );
 
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["75%"], []);
@@ -118,33 +109,18 @@ export default function RecordCustomerPaymentModal({
       Alert.alert("Error", "Amount exceeds balance due.");
       return;
     }
-    if (!profile?.id) return;
-    setLoading(true);
     try {
-      await recordPayment(
-        orderId,
-        profile.id,
-        markFull ? balanceDue : payAmount,
+      await recordPayment({
+        amount: payAmount,
         mode,
-        markFull,
-        notes.trim() || undefined,
-      );
-      queryClient.invalidateQueries({
-        queryKey: ["customerDetail", customerId],
+        notes: notes.trim() || undefined,
       });
-      queryClient.invalidateQueries({
-        queryKey: ["customers", profile.id],
-        exact: false,
-      });
-      queryClient.invalidateQueries({ queryKey: ["dashboard", profile.id] });
       setAmount("");
       setMode("Cash");
       setNotes("");
       onSuccess();
     } catch (e: any) {
       Alert.alert("Error", e.message || "Failed to record payment.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -293,10 +269,8 @@ export default function RecordCustomerPaymentModal({
               activeOpacity={0.75}
               className="px-5 py-2 rounded-full border"
               style={{
-                backgroundColor:
-                  mode === m ? colors.primary : "#FFFFFF",
-                borderColor:
-                  mode === m ? colors.primary : colors.border,
+                backgroundColor: mode === m ? colors.primary : "#FFFFFF",
+                borderColor: mode === m ? colors.primary : colors.border,
               }}
             >
               <Text
@@ -342,19 +316,17 @@ export default function RecordCustomerPaymentModal({
             variant="outline"
             title="Record Partial"
             onPress={() => handleSubmit(false)}
-            loading={loading}
-            disabled={parsedAmount <= 0 || loading}
+            loading={isRecording}
+            disabled={parsedAmount <= 0 || isRecording}
             className="flex-1"
           />
           <TouchableOpacity
             onPress={() => handleSubmit(true)}
-            disabled={loading}
+            disabled={isRecording}
             activeOpacity={0.8}
             className="flex-1 flex-row items-center justify-center rounded-xl h-14"
             style={{
-              backgroundColor: loading
-                ? colors.border
-                : colors.primary,
+              backgroundColor: loading ? colors.border : colors.primary,
               gap: 6,
               shadowColor: colors.primary,
               shadowOffset: { width: 0, height: 6 },
