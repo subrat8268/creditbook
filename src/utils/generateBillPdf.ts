@@ -21,7 +21,7 @@ export type StoreInfo = {
 };
 
 export type InvoiceOptions = {
-  invoiceNumber?: string;
+  invoiceNumber: string; // Required — must be the real sequential bill number
   date?: string;
   notes?: string;
   upiId?: string;
@@ -41,7 +41,7 @@ export async function generateBillPdf(
 ): Promise<string> {
   try {
     const {
-      invoiceNumber = `INV-${Date.now()}`,
+      invoiceNumber,
       date = new Date().toLocaleDateString(),
       notes = "",
       upiId = options.upiId || "",
@@ -204,7 +204,7 @@ export async function generateBillPdf(
               <div class="small">IFSC: ${escapeHtml(store.ifscCode || "")}</div>`
                   : ""
               }
-              <div class="small" style="margin-top:12px; color:#888">Made with ❤️ by CreditBook</div>
+              <div class="small" style="margin-top:12px; color:#888">Made with ❤️ by KredBook</div>
             </div>
 
             <div style="text-align:center">

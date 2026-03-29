@@ -9,22 +9,20 @@ import { useCreateOrder } from "@/src/hooks/useOrders";
 import { useAuthStore } from "@/src/store/authStore";
 import { BillItem, generateBillPdf } from "@/src/utils/generateBillPdf";
 import { colors, spacing } from "@/src/utils/theme";
-import { uploadPdfToSupabase } from "@/src/utils/uploadPdfToSupabase";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
     ArrowLeft,
     Barcode,
     CircleCheck,
     CirclePlus,
-    Eye,
     Pencil,
     Search,
+    Share2,
 } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
     Alert,
     KeyboardAvoidingView,
-    Linking,
     Platform,
     ScrollView,
     Text,
@@ -45,13 +43,9 @@ interface CartItem {
 
 const AVATAR_COLORS = [
   colors.danger,
-  "#F97316",
-  "#EAB308",
+  colors.warning,
   colors.primary,
-  "#14B8A6",
-  "#3B82F6",
-  "#8B5CF6",
-  "#EC4899",
+  ...colors.avatarPalette,
 ];
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/);
@@ -70,7 +64,7 @@ export default function CreateOrderScreen() {
   const { customer: customerParams } = useLocalSearchParams<{
     customer?: string;
   }>();
-  const { profile, loading } = useAuthStore();
+  const { profile, isFetchingProfile } = useAuthStore();
   const vendorId = profile?.id;
   const router = useRouter();
 
@@ -193,38 +187,6 @@ export default function CreateOrderScreen() {
       Alert.alert("Error", err.message || "Failed to save order");
     }
   };
-  //   try {
-  //     if (!selectedCustomer || cart.length === 0) {
-  //       return Alert.alert("Error", "Select a customer and add products");
-  //     }
-
-  //     const pdf = await generateBillPdf(
-  //       cart,
-  //       totalAmount,
-  //       selectedCustomer.name
-  //     );
-
-  //     // Upload to Supabase
-  //     const url = await uploadPdfToSupabase(pdf);
-
-  //     // Send via WhatsApp
-  //     const phone = selectedCustomer.phone.replace(/[^0-9]/g, "");
-
-  //     const waUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(
-  //       `Hello ${selectedCustomer.name}, here is your bill:\n${url}`
-  //     )}`;
-
-  //     const supported = await Linking.canOpenURL(waUrl);
-
-  //     if (!supported) {
-  //       return Alert.alert("WhatsApp Not Installed");
-  //     }
-
-  //     Linking.openURL(waUrl);
-  //   } catch (err: any) {
-  //     Alert.alert("Error", err.message || "Failed to send bill");
-  //   }
-  // };
 
   const handleSendBill = async () => {
     try {
@@ -297,15 +259,10 @@ export default function CreateOrderScreen() {
     }
   };
 
-  // Generate a display invoice reference (actual number assigned on save)
-  const invoiceRef = useMemo(
-    () =>
-      `${profile?.bill_number_prefix || "INV"}-${String(Date.now()).slice(-3)}`,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
+  // Display invoice prefix in the header pill — sequential number is assigned on save.
+  const invoiceRef = `${profile?.bill_number_prefix || "INV"}-NEW`;
 
-  if (loading || !profile) return <Loader />;
+  if (isFetchingProfile || !profile) return <Loader />;
 
   return (
     <>
@@ -565,32 +522,40 @@ export default function CreateOrderScreen() {
               borderTopColor: colors.border,
             }}
           >
-            {/* Preview (outline) */}
+            {/* Save Bill (outline) — saves to DB only, no PDF */}
             <TouchableOpacity
-              onPress={handleSendBill}
+              onPress={handleSaveOrder}
+              disabled={createOrderMutation.isPending}
               activeOpacity={0.8}
               className="flex-1 flex-row items-center justify-center py-3.5 rounded-full border"
-              style={{ borderColor: colors.primary }}
+              style={{
+                borderColor: colors.primary,
+                opacity: createOrderMutation.isPending ? 0.5 : 1,
+              }}
             >
-              <Eye size={18} color={colors.primary} strokeWidth={2} />
+              <CircleCheck size={18} color={colors.primary} strokeWidth={2} />
               <Text
                 className="ml-2 text-[15px] font-bold"
                 style={{ color: colors.primary }}
               >
-                Preview
+                Save Bill
               </Text>
             </TouchableOpacity>
 
-            {/* Create Bill (solid) */}
+            {/* Save & Share (solid) — saves to DB then generates PDF via expo-sharing */}
             <TouchableOpacity
-              onPress={handleSaveOrder}
+              onPress={handleSaveAndShare}
+              disabled={createOrderMutation.isPending}
               activeOpacity={0.8}
               className="flex-1 flex-row items-center justify-center py-3.5 rounded-full"
-              style={{ backgroundColor: colors.primary }}
+              style={{
+                backgroundColor: colors.primary,
+                opacity: createOrderMutation.isPending ? 0.5 : 1,
+              }}
             >
-              <CircleCheck size={18} color={colors.surface} strokeWidth={2} />
+              <Share2 size={18} color={colors.surface} strokeWidth={2} />
               <Text className="ml-2 text-[15px] font-bold text-white">
-                Create Bill
+                {createOrderMutation.isPending ? "Saving..." : "Save & Share"}
               </Text>
             </TouchableOpacity>
           </View>
