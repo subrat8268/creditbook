@@ -1,28 +1,50 @@
 import { X } from "lucide-react-native";
-import { Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { colors } from "../../utils/theme";
 
 interface OrderItemCardProps {
   id: string;
   name: string;
   variantName?: string;
-  price: number;
+  rate: number;
   quantity: number;
   onUpdateQuantity: (quantity: number) => void;
+  /** When provided, the rate row becomes an inline editable TextInput. */
+  onUpdateRate?: (rate: number) => void;
   onRemove: () => void;
 }
 
 export default function OrderItemCard({
   name,
   variantName,
-  price,
+  rate,
   quantity,
   onUpdateQuantity,
+  onUpdateRate,
   onRemove,
 }: OrderItemCardProps) {
-  const subtotal = price * quantity;
+  const subtotal = rate * quantity;
   const label =
     variantName && variantName !== "Base" ? `${name} (${variantName})` : name;
+
+  // Local string state for the rate TextInput.
+  const [rateStr, setRateStr] = useState(String(rate));
+  // Sync if parent pushes a new rate value (e.g. after external updateRate call).
+  useEffect(() => {
+    setRateStr(String(rate));
+  }, [rate]);
+
+  const handleRateBlur = () => {
+    const parsed = parseFloat(rateStr);
+    if (!isNaN(parsed) && parsed > 0) {
+      onUpdateRate?.(parsed);
+      setRateStr(String(parsed));
+    } else {
+      // Revert to last valid rate.
+      setRateStr(String(rate));
+    }
+  };
 
   return (
     <View className="mb-4">
@@ -43,10 +65,35 @@ export default function OrderItemCard({
         </TouchableOpacity>
       </View>
 
-      {/* Rate subtitle */}
-      <Text className="text-sm mb-2.5" style={{ color: colors.textSecondary }}>
-        Rate: ₹{price.toLocaleString("en-IN")}
-      </Text>
+      {/* Rate row — editable TextInput when onUpdateRate is provided */}
+      {onUpdateRate ? (
+        <View className="flex-row items-center mb-2.5">
+          <Text className="text-sm" style={{ color: colors.textSecondary }}>
+            Rate: ₹
+          </Text>
+          <TextInput
+            value={rateStr}
+            onChangeText={setRateStr}
+            onBlur={handleRateBlur}
+            keyboardType="decimal-pad"
+            style={{
+              color: colors.textSecondary,
+              fontSize: 14,
+              padding: 0,
+              minWidth: 50,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.border,
+            }}
+          />
+        </View>
+      ) : (
+        <Text
+          className="text-sm mb-2.5"
+          style={{ color: colors.textSecondary }}
+        >
+          Rate: ₹{rate.toLocaleString("en-IN")}
+        </Text>
+      )}
 
       {/* Stepper + subtotal */}
       <View className="flex-row items-center justify-between">

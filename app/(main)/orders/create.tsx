@@ -11,34 +11,34 @@ import { BillItem, generateBillPdf } from "@/src/utils/generateBillPdf";
 import { colors, spacing } from "@/src/utils/theme";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
-    ArrowLeft,
-    Barcode,
-    CircleCheck,
-    CirclePlus,
-    Pencil,
-    Search,
-    Share2,
+  ArrowLeft,
+  Barcode,
+  CircleCheck,
+  CirclePlus,
+  Pencil,
+  Search,
+  Share2,
 } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface CartItem {
-  id: string;
-  variantId?: string;
+  productId: string; // product UUID
+  variantId?: string; // variant UUID, undefined = base
   name: string;
   variantName?: string;
-  price: number;
+  rate: number; // editable per-row price
   quantity: number;
-  key: string;
+  key: string; // stable: `${productId}-${variantId ?? "base"}`
 }
 
 const AVATAR_COLORS = [
@@ -103,7 +103,7 @@ export default function CreateOrderScreen() {
   );
 
   const itemsTotal = useMemo(
-    () => cart.reduce((sum, i) => sum + i.price * i.quantity, 0),
+    () => cart.reduce((sum, i) => sum + i.rate * i.quantity, 0),
     [cart],
   );
 
@@ -125,37 +125,47 @@ export default function CreateOrderScreen() {
     [todayTotal, previousBalance],
   );
 
-  const addToCart = (
-    productId: string,
-    name: string,
-    price: number,
-    variantId?: string,
-    variantName?: string,
-  ) => {
-    const key = `${productId}-${variantId ?? "base"}-${Date.now()}`;
-
-    setCart([
-      ...cart,
-      {
-        id: productId,
-        variantId,
-        name,
-        variantName,
-        price,
-        quantity: 1,
-        key,
-      },
-    ]);
-  };
+  // Smart dedup: increment quantity if same product+variant already in cart.
+  const addItem = useCallback(
+    (
+      productId: string,
+      name: string,
+      rate: number,
+      variantId?: string,
+      variantName?: string,
+    ) => {
+      const key = `${productId}-${variantId ?? "base"}`;
+      setCart((prev) => {
+        const existing = prev.find((c) => c.key === key);
+        if (existing) {
+          return prev.map((c) =>
+            c.key === key ? { ...c, quantity: c.quantity + 1 } : c,
+          );
+        }
+        return [
+          ...prev,
+          { productId, variantId, name, variantName, rate, quantity: 1, key },
+        ];
+      });
+    },
+    [],
+  );
 
   const handleRemoveProduct = (key: string) =>
-    setCart(cart.filter((c) => c.key !== key));
+    setCart((prev) => prev.filter((c) => c.key !== key));
 
   const handleUpdateQuantity = (key: string, quantity: number) => {
     if (quantity <= 0) return handleRemoveProduct(key);
-
-    setCart(cart.map((c) => (c.key === key ? { ...c, quantity } : c)));
+    setCart((prev) =>
+      prev.map((c) => (c.key === key ? { ...c, quantity } : c)),
+    );
   };
+
+  const updateRate = useCallback((key: string, newRate: number) => {
+    setCart((prev) =>
+      prev.map((c) => (c.key === key ? { ...c, rate: newRate } : c)),
+    );
+  }, []);
 
   const createOrderMutation = useCreateOrder(vendorId!);
 
@@ -168,11 +178,11 @@ export default function CreateOrderScreen() {
         customerId: selectedCustomer.id,
         vendorId: vendorId!,
         items: cart.map((c) => ({
-          product_id: c.id,
+          product_id: c.productId,
           product_name: c.name,
           variant_id: c.variantId ?? null,
           variant_name: c.variantName ?? null,
-          price: c.price,
+          price: c.rate,
           quantity: c.quantity,
         })),
         amountPaid: 0,
@@ -210,7 +220,7 @@ export default function CreateOrderScreen() {
         name: c.name,
         variantName: c.variantName,
         quantity: c.quantity,
-        price: c.price,
+        price: c.rate,
       }));
 
       // Use already-fetched previousBalance state (no duplicate API call)
@@ -463,15 +473,16 @@ export default function CreateOrderScreen() {
                         />
                       )}
                       <OrderItemCard
-                        id={item.id}
+                        id={item.productId}
                         name={item.name}
                         variantName={item.variantName}
-                        price={item.price}
+                        rate={item.rate}
                         quantity={item.quantity}
                         onRemove={() => handleRemoveProduct(item.key)}
                         onUpdateQuantity={(qty) =>
                           handleUpdateQuantity(item.key, qty)
                         }
+                        onUpdateRate={(r) => updateRate(item.key, r)}
                       />
                     </View>
                   ))}
@@ -573,7 +584,7 @@ export default function CreateOrderScreen() {
             visible={isProductPickerVisible}
             onClose={() => setProductPickerVisible(false)}
             vendorId={vendorId!}
-            addToCart={addToCart}
+            addToCart={addItem}
             setVariantSelection={(product: any) => {
               setSelectedProduct(product);
               setProductPickerVisible(false);
@@ -586,7 +597,7 @@ export default function CreateOrderScreen() {
               visible={isVariantPickerVisible}
               product={selectedProduct}
               onSelect={(variantId, variantName, price) => {
-                addToCart(
+                addItem(
                   selectedProduct.id,
                   selectedProduct.name,
                   price,
