@@ -52,10 +52,10 @@ function FieldLabel({
 }) {
   return (
     <Text
-      className="text-[11px] font-bold tracking-widest mb-1.5"
+      className="text-sm font-semibold mb-1.5"
       style={{ color: colors.textSecondary }}
     >
-      {children.toUpperCase()}
+      {children}
       {required ? <Text style={{ color: colors.danger }}> *</Text> : null}
     </Text>
   );

@@ -48,7 +48,7 @@ interface NewCustomerModalProps {
   onClose: () => void;
   onSubmit: (values: {
     name: string;
-    phone: string;
+    phone?: string;
     address?: string;
     openingBalance?: number;
   }) => Promise<void>;
@@ -232,7 +232,7 @@ export default function NewCustomerModal({
                     className="text-sm font-semibold mb-1.5"
                     style={{ color: colors.textSecondary }}
                   >
-                    Phone Number *
+                    Phone Number
                   </Text>
                   <View
                     className="flex-row items-center border rounded-xl overflow-hidden"

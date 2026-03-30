@@ -1,11 +1,18 @@
 import { colors } from "@/src/utils/theme";
 import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
+    BottomSheetBackdrop,
+    BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { FieldArray, Formik } from "formik";
-import { Plus, Trash2, X } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import {
+    Check,
+    ChevronDown,
+    ChevronUp,
+    Plus,
+    Trash2,
+    X,
+} from "lucide-react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import * as Yup from "yup";
 import Button from "../ui/Button";
@@ -19,12 +26,14 @@ interface VariantRow {
 interface FormValues {
   name: string;
   base_price: string;
+  category: string;
   variants: VariantRow[];
 }
 
 export interface ProductSubmitValues {
   name: string;
   base_price: number | null;
+  category: string;
   variants: { variant_name: string; price: number }[];
 }
 
@@ -37,6 +46,7 @@ export interface NewProductModalProps {
   initialValues?: {
     name: string;
     base_price?: number | null;
+    category?: string | null;
     variants?: { variant_name: string; price: number }[];
   };
   loading?: boolean;
@@ -64,6 +74,18 @@ const FormSchema = Yup.object().shape({
     }),
   ),
 });
+
+// ── Default categories (mirrors ProductsScreen filter chips) ──
+const DEFAULT_CATEGORIES = [
+  "General",
+  "Rice & Grains",
+  "Pulses & Dals",
+  "Spices & Masalas",
+  "Oils",
+  "Dairy",
+  "Dal",
+  "Drinks",
+];
 
 // ── Sub-component: rupee-prefixed price input ───────────────
 function RupeeInput({
@@ -131,6 +153,7 @@ export default function NewProductModal({
     name: initialValues?.name ?? "",
     base_price:
       initialValues?.base_price != null ? String(initialValues.base_price) : "",
+    category: initialValues?.category ?? "General",
     variants:
       initialValues?.variants?.map((v) => ({
         variant_name: v.variant_name,
@@ -159,6 +182,15 @@ export default function NewProductModal({
       sheetRef.current?.close();
     }
   }, [visible]);
+
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [customCategories, setCustomCategories] = useState<string[]>([]);
+  const [addingCustom, setAddingCustom] = useState(false);
+  const [newCategoryInput, setNewCategoryInput] = useState("");
+  const allCategories = useMemo(
+    () => [...DEFAULT_CATEGORIES, ...customCategories],
+    [customCategories],
+  );
 
   return (
     <BottomSheet
@@ -215,6 +247,7 @@ export default function NewProductModal({
                 values.variants.length === 0 && values.base_price
                   ? Number(values.base_price)
                   : null,
+              category: values.category || "General",
               variants: values.variants.map((v) => ({
                 variant_name: v.variant_name,
                 price: Number(v.price),
@@ -230,6 +263,7 @@ export default function NewProductModal({
           handleChange,
           handleBlur,
           handleSubmit,
+          setFieldValue,
           values,
           errors,
           touched,
@@ -273,9 +307,7 @@ export default function NewProductModal({
                 style={{
                   borderWidth: 1,
                   borderColor:
-                    touched.name && errors.name
-                      ? colors.danger
-                      : colors.border,
+                    touched.name && errors.name ? colors.danger : colors.border,
                   borderRadius: 12,
                   paddingHorizontal: 16,
                   paddingVertical: 12,
@@ -297,6 +329,177 @@ export default function NewProductModal({
               ) : (
                 <View style={{ height: 16 }} />
               )}
+
+              {/* ── Category (optional) ── */}
+              <Text
+                style={{
+                  fontWeight: "600",
+                  fontSize: 14,
+                  color: colors.textPrimary,
+                  marginBottom: 8,
+                }}
+              >
+                Category
+              </Text>
+              {/* Selector button */}
+              <TouchableOpacity
+                onPress={() => {
+                  setCategoryOpen((v) => !v);
+                  setAddingCustom(false);
+                }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  borderWidth: 1,
+                  borderColor: categoryOpen ? colors.primary : colors.border,
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                }}
+              >
+                <Text
+                  style={{ flex: 1, fontSize: 14, color: colors.textPrimary }}
+                >
+                  {values.category || "General"}
+                </Text>
+                {categoryOpen ? (
+                  <ChevronUp size={18} color={colors.textSecondary} />
+                ) : (
+                  <ChevronDown size={18} color={colors.textSecondary} />
+                )}
+              </TouchableOpacity>
+              {/* Inline dropdown */}
+              {categoryOpen && (
+                <View
+                  style={{
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 12,
+                    marginTop: 4,
+                    overflow: "hidden",
+                    backgroundColor: "white",
+                  }}
+                >
+                  {allCategories.map((cat, idx) => (
+                    <TouchableOpacity
+                      key={cat}
+                      onPress={() => {
+                        setFieldValue("category", cat);
+                        setCategoryOpen(false);
+                      }}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        paddingHorizontal: 16,
+                        paddingVertical: 12,
+                        borderBottomWidth:
+                          idx < allCategories.length - 1 ? 1 : 0,
+                        borderBottomColor: colors.border,
+                        backgroundColor:
+                          values.category === cat ? "#F0FDF4" : "white",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          flex: 1,
+                          fontSize: 14,
+                          color:
+                            values.category === cat
+                              ? colors.primary
+                              : colors.textPrimary,
+                          fontWeight: values.category === cat ? "600" : "400",
+                        }}
+                      >
+                        {cat}
+                      </Text>
+                      {values.category === cat && (
+                        <Check
+                          size={16}
+                          color={colors.primary}
+                          strokeWidth={2.5}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                  {/* Create New Category */}
+                  {addingCustom ? (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        paddingHorizontal: 16,
+                        paddingVertical: 10,
+                        borderTopWidth: 1,
+                        borderTopColor: colors.border,
+                      }}
+                    >
+                      <TextInput
+                        placeholder="New category name"
+                        placeholderTextColor="#AEAEB2"
+                        value={newCategoryInput}
+                        onChangeText={setNewCategoryInput}
+                        autoFocus
+                        style={{
+                          flex: 1,
+                          fontSize: 14,
+                          color: colors.textPrimary,
+                          borderBottomWidth: 1,
+                          borderBottomColor: colors.border,
+                          paddingVertical: 2,
+                        }}
+                      />
+                      <TouchableOpacity
+                        onPress={() => {
+                          const trimmed = newCategoryInput.trim();
+                          if (trimmed) {
+                            setCustomCategories((prev) => [...prev, trimmed]);
+                            setFieldValue("category", trimmed);
+                            setNewCategoryInput("");
+                            setAddingCustom(false);
+                            setCategoryOpen(false);
+                          }
+                        }}
+                        style={{ marginLeft: 10 }}
+                      >
+                        <Check
+                          size={18}
+                          color={colors.primary}
+                          strokeWidth={2.5}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={() => setAddingCustom(true)}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        paddingHorizontal: 16,
+                        paddingVertical: 12,
+                        borderTopWidth: 1,
+                        borderTopColor: colors.border,
+                      }}
+                    >
+                      <Plus
+                        size={15}
+                        color={colors.primary}
+                        strokeWidth={2.5}
+                      />
+                      <Text
+                        style={{
+                          marginLeft: 6,
+                          fontSize: 14,
+                          color: colors.primary,
+                          fontWeight: "600",
+                        }}
+                      >
+                        Create New Category
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
+              <View style={{ height: 16 }} />
 
               {/* ── Price (shown when no variants) ── */}
               {values.variants.length === 0 && (

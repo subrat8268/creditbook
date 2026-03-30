@@ -33,8 +33,11 @@ export const ResetPasswordSchema = Yup.object().shape({
 export const CustomerSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
   phone: Yup.string()
-    .matches(/^\+?[0-9]{10,15}$/, "Invalid phone number")
-    .required("Phone is required"),
+    .matches(/^[0-9]{10}$/, {
+      message: "Enter a valid 10-digit number",
+      excludeEmptyString: true,
+    })
+    .optional(),
   address: Yup.string().optional(),
   openingBalance: Yup.number()
     .min(0, "Opening balance cannot be negative")

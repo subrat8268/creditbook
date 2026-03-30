@@ -7,7 +7,6 @@ import {
     BookOpen,
     ChevronRight,
     Download,
-    HelpCircle,
     LogOut,
     LucideIcon,
     UserRound,
@@ -187,14 +186,6 @@ export default function MoreScreen() {
 
           {/* Bottom Actions */}
           <View style={styles.bottomRow}>
-            <TouchableOpacity style={styles.bottomBtn} activeOpacity={0.7}>
-              <HelpCircle
-                size={24}
-                color={colors.textSecondary}
-                strokeWidth={1.5}
-              />
-              <Text style={styles.bottomBtnText}>Help Center</Text>
-            </TouchableOpacity>
             <TouchableOpacity
               style={[styles.bottomBtn, styles.signOutBtn]}
               onPress={handleSignOut}

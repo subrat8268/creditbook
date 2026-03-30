@@ -78,6 +78,7 @@ export default function ProductsScreen() {
       await addProductMutation.mutateAsync({
         name: values.name,
         base_price: values.base_price,
+        category: values.category || "General",
         image_url: null,
         variants: values.variants as any,
       });
@@ -96,6 +97,7 @@ export default function ProductsScreen() {
         values: {
           name: values.name,
           base_price: values.base_price,
+          category: values.category || "General",
           image_url: null,
           variants: values.variants as any,
         },

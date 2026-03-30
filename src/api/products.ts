@@ -14,6 +14,8 @@ export interface Product {
   name: string;
   /** null for variant-only products — price is defined at the variant level */
   base_price: number | null;
+  /** user-defined product category; defaults to "General" */
+  category?: string | null;
   image_url: string | null;
   variants: ProductVariant[];
   created_at: string;
