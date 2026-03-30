@@ -4,12 +4,12 @@ import OrderSummary from "@/src/components/orders/OrderBillSummary";
 import OrderItemCard from "@/src/components/orders/OrderItemCard";
 import CustomerPicker from "@/src/components/picker/CustomerPicker";
 import ProductPicker from "@/src/components/picker/ProductPicker";
-import VariantPicker from "@/src/components/picker/VariantPicker";
 import { useCreateOrder } from "@/src/hooks/useOrders";
 import { useAuthStore } from "@/src/store/authStore";
 import { BillItem, generateBillPdf } from "@/src/utils/generateBillPdf";
 import { colors, spacing } from "@/src/utils/theme";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import * as Sharing from "expo-sharing";
 import {
   ArrowLeft,
   Barcode,
@@ -74,9 +74,7 @@ export default function CreateOrderScreen() {
 
   const [isCustomerPickerVisible, setCustomerPickerVisible] = useState(false);
   const [isProductPickerVisible, setProductPickerVisible] = useState(false);
-  const [isVariantPickerVisible, setVariantPickerVisible] = useState(false);
 
-  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loadingCharge, setLoadingCharge] = useState<number>(0);
   const [taxPercent, setTaxPercent] = useState<number>(0);
@@ -198,32 +196,47 @@ export default function CreateOrderScreen() {
     }
   };
 
-  const handleSendBill = async () => {
+  // Save to DB first, then generate PDF with the real bill_number and share.
+  const handleSaveAndShare = async () => {
+    if (!selectedCustomer || cart.length === 0) {
+      return Alert.alert("Error", "Select a customer and add products");
+    }
+    if (
+      !profile?.bank_name ||
+      !profile?.account_number ||
+      !profile?.ifsc_code
+    ) {
+      return Alert.alert(
+        "Bank Details Missing",
+        "Please fill in your Bank Name, Account Number, and IFSC Code in Profile → Bank Account Details before generating bills.",
+      );
+    }
     try {
-      if (!selectedCustomer || cart.length === 0) {
-        return Alert.alert("Error", "Select a customer and add products");
-      }
+      // 1. Persist order — get back the real bill_number.
+      const savedOrder = await createOrderMutation.mutateAsync({
+        customerId: selectedCustomer.id,
+        vendorId: vendorId!,
+        items: cart.map((c) => ({
+          product_id: c.productId,
+          product_name: c.name,
+          variant_id: c.variantId ?? null,
+          variant_name: c.variantName ?? null,
+          price: c.rate,
+          quantity: c.quantity,
+        })),
+        amountPaid: 0,
+        loadingCharge,
+        taxPercent,
+        billNumberPrefix: profile?.bill_number_prefix || "INV",
+      });
 
-      // Validate mandatory bank details
-      if (
-        !profile?.bank_name ||
-        !profile?.account_number ||
-        !profile?.ifsc_code
-      ) {
-        return Alert.alert(
-          "Bank Details Missing",
-          "Please fill in your Bank Name, Account Number, and IFSC Code in Profile → Bank Account Details before generating bills.",
-        );
-      }
-
+      // 2. Generate PDF with the real invoice number — never a timestamp fallback.
       const items: BillItem[] = cart.map((c) => ({
         name: c.name,
         variantName: c.variantName,
         quantity: c.quantity,
         price: c.rate,
       }));
-
-      // Use already-fetched previousBalance state (no duplicate API call)
       const localPdfPath = await generateBillPdf(
         items,
         {
@@ -239,33 +252,31 @@ export default function CreateOrderScreen() {
         todayTotal,
         selectedCustomer.name,
         {
-          invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
+          invoiceNumber: savedOrder.bill_number,
           upiId: profile?.upi_id || "",
           discountAmount: 0,
-          taxPercent: taxPercent,
+          taxPercent,
           notes: "Thank you for your business!",
-          previousBalance: previousBalance,
-          loadingCharge: loadingCharge,
+          previousBalance,
+          loadingCharge,
         },
       );
 
-      const publicUrl = await uploadPdfToSupabase(localPdfPath);
-
-      const phone = selectedCustomer.phone.replace(/[^0-9]/g, "");
-      const message = `Hello ${selectedCustomer.name}, here is your bill: ${publicUrl}`;
-      const waUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`;
-
-      try {
-        await Linking.openURL(waUrl);
-      } catch {
+      // 3. Share via native share sheet.
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare) {
+        await Sharing.shareAsync(localPdfPath, { mimeType: "application/pdf" });
+      } else {
         Alert.alert(
-          "Error",
-          "Unable to open WhatsApp. Please ensure WhatsApp is installed.",
+          "Sharing not available",
+          "Unable to open share sheet on this device.",
         );
       }
+
+      router.back();
     } catch (err: any) {
-      console.error("send bill error", err);
-      Alert.alert("Error", err?.message || "Failed to send bill");
+      console.error("Save & Share failed:", err.message);
+      Alert.alert("Error", err.message || "Failed to save and share bill");
     }
   };
 
@@ -585,36 +596,7 @@ export default function CreateOrderScreen() {
             onClose={() => setProductPickerVisible(false)}
             vendorId={vendorId!}
             addToCart={addItem}
-            setVariantSelection={(product: any) => {
-              setSelectedProduct(product);
-              setProductPickerVisible(false);
-              setTimeout(() => setVariantPickerVisible(true), 300);
-            }}
           />
-
-          {selectedProduct && (
-            <VariantPicker
-              visible={isVariantPickerVisible}
-              product={selectedProduct}
-              onSelect={(variantId, variantName, price) => {
-                addItem(
-                  selectedProduct.id,
-                  selectedProduct.name,
-                  price,
-                  variantId ?? undefined,
-                  variantName,
-                );
-                setTimeout(() => {
-                  setVariantPickerVisible(false);
-                  setSelectedProduct(null);
-                }, 50);
-              }}
-              onClose={() => {
-                setVariantPickerVisible(false);
-                setSelectedProduct(null);
-              }}
-            />
-          )}
         </KeyboardAvoidingView>
       </SafeAreaView>
     </>
