@@ -10,7 +10,6 @@ import {
     HelpCircle,
     LogOut,
     LucideIcon,
-    ShoppingBag,
     UserRound,
 } from "lucide-react-native";
 import { useCallback, useRef } from "react";
@@ -44,15 +43,6 @@ const BUSINESS_DETAILS: MenuItem[] = [
     iconBg: "#DBEAFE",
     iconColor: "#2563EB",
     route: "/(main)/products",
-  },
-  {
-    id: "suppliers-wholesale",
-    title: "Suppliers & Wholesale",
-    description: "Bulk purchase history & credit",
-    icon: ShoppingBag,
-    iconBg: "#FEF3C7",
-    iconColor: "#D97706",
-    route: "/(main)/suppliers",
   },
 ];
 

@@ -1,9 +1,9 @@
 import {
-  BillIcon,
-  CustomerIcon,
-  HomeIcon,
-  MoreIcon,
-  SupplierIcon,
+    BillIcon,
+    CustomerIcon,
+    HomeIcon,
+    MoreIcon,
+    SupplierIcon,
 } from "@/assets/icons/main";
 import { colors, typography } from "@/src/utils/theme";
 import { Tabs, useRouter } from "expo-router";
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.danger,
+    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 4,

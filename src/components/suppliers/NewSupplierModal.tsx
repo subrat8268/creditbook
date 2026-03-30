@@ -1,23 +1,23 @@
 import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
+    BottomSheetBackdrop,
+    BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { Formik } from "formik";
 import {
-  ChevronRight,
-  CreditCard,
-  Hash,
-  Landmark,
-  UserPlus,
-  X,
+    ChevronRight,
+    CreditCard,
+    Hash,
+    Landmark,
+    UserPlus,
+    X,
 } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Pressable,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Pressable,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SupplierSchema } from "../../utils/schemas";
 import { colors } from "../../utils/theme";
@@ -56,9 +56,7 @@ function FieldLabel({
       style={{ color: colors.textSecondary }}
     >
       {children.toUpperCase()}
-      {required ? (
-        <Text style={{ color: colors.danger }}> *</Text>
-      ) : null}
+      {required ? <Text style={{ color: colors.danger }}> *</Text> : null}
     </Text>
   );
 }
@@ -323,6 +321,13 @@ export default function NewSupplierModal({
                     style={{ color: colors.textPrimary }}
                   />
                 </InputBase>
+                <Text
+                  className="text-xs mt-1.5"
+                  style={{ color: colors.textSecondary }}
+                >
+                  Optional: route code or delivery area assigned by this
+                  supplier
+                </Text>
               </View>
 
               {/* ── Bank Details row ── */}
@@ -336,11 +341,7 @@ export default function NewSupplierModal({
                   className="w-9 h-9 rounded-lg items-center justify-center mr-3"
                   style={{ backgroundColor: colors.paid.bg ?? "#DCFCE7" }}
                 >
-                  <Landmark
-                    size={18}
-                    color={colors.primary}
-                    strokeWidth={2}
-                  />
+                  <Landmark size={18} color={colors.primary} strokeWidth={2} />
                 </View>
                 <Text
                   className="flex-1 text-[15px] font-semibold"
@@ -348,10 +349,7 @@ export default function NewSupplierModal({
                 >
                   Bank Details
                 </Text>
-                <Text
-                  className="text-sm mr-0.5"
-                  style={{ color: "#AEAEB2" }}
-                >
+                <Text className="text-sm mr-0.5" style={{ color: "#AEAEB2" }}>
                   Optional
                 </Text>
                 <ChevronRight
