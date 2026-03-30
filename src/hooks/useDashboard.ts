@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getDashboardData } from "../api/dashboard";
+import { getDashboardData, getNetPositionReport } from "../api/dashboard";
 
 // Hook to fetch dashboard data for a vendor
 export function useDashboard(vendorId?: string) {
@@ -25,4 +25,16 @@ export function useDashboard(vendorId?: string) {
     ...query,
     refreshDashboard,
   };
+}
+
+export function useNetPositionReport(vendorId?: string) {
+  return useQuery({
+    queryKey: ["netPositionReport", vendorId],
+    queryFn: async () => {
+      if (!vendorId) return null;
+      return getNetPositionReport(vendorId);
+    },
+    enabled: !!vendorId,
+    staleTime: 60_000,
+  });
 }

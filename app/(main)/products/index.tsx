@@ -26,6 +26,7 @@ import {
 } from "@/src/hooks/useProducts";
 import { useAuthStore } from "@/src/store/authStore";
 import { colors, spacing, typography } from "@/src/utils/theme";
+import { useRouter } from "expo-router";
 
 // ── Category chips ────────────────────────────────────────
 // "keyword" is sent as the search query when chip is selected.
@@ -42,6 +43,7 @@ const CATEGORIES = [
 export default function ProductsScreen() {
   const { profile } = useAuthStore();
   const vendorId = profile?.id;
+  const router = useRouter();
 
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("");
@@ -174,6 +176,15 @@ export default function ProductsScreen() {
         name={item.name}
         basePrice={item.base_price}
         variants={item.variants}
+        onPress={() =>
+          router.push({
+            pathname: "/(main)/products/[productId]",
+            params: {
+              productId: item.id,
+              productData: JSON.stringify(item),
+            },
+          } as any)
+        }
         onOptionsPress={() => handleOptionsPress(item)}
       />
     ),

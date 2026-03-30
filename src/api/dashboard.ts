@@ -32,6 +32,8 @@ export interface DashboardData {
   customersOweMe: number;
   iOweSuppliers: number;
   netPosition: number;
+  /** Absolute ₹ change in outstanding orders vs prior 7-day window (for seller hero card) */
+  weekDelta: number;
   /** Percentage change in net position vs same 7-day window last week (0 if no history) */
   weekDeltaPct: number;
   // Seller mode
@@ -75,6 +77,7 @@ export async function getDashboardData(
       customersOweMe: 0,
       iOweSuppliers: 0,
       netPosition: 0,
+      weekDelta: 0,
       weekDeltaPct: 0,
       activeBuyers: 0,
       activeSuppliers: 0,
@@ -302,6 +305,7 @@ export async function getDashboardData(
     lastWeekTotal > 0
       ? Math.round(((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100)
       : 0;
+  const weekDelta = thisWeekTotal - lastWeekTotal;
 
   return {
     totalRevenue,
@@ -313,10 +317,229 @@ export async function getDashboardData(
     customersOweMe,
     iOweSuppliers,
     netPosition,
+    weekDelta,
     weekDeltaPct,
     activeBuyers,
     activeSuppliers,
     overduePayments,
     recentActivity,
+  };
+}
+
+// ── Net Position Report ───────────────────────────────────────────────────────
+
+export interface NetPositionCustomer {
+  id: string;
+  name: string;
+  initials: string;
+  balance: number;
+}
+
+export interface NetPositionSupplier {
+  id: string;
+  name: string;
+  initials: string;
+  amountOwed: number;
+}
+
+export interface CashFlowMonth {
+  /** "Jan", "Feb", etc. */
+  label: string;
+  inflow: number;
+  outflow: number;
+}
+
+export interface NetPositionReport {
+  totalReceivables: number;
+  totalPayables: number;
+  netBalance: number;
+  topCustomers: NetPositionCustomer[];
+  topSuppliers: NetPositionSupplier[];
+  cashFlow: CashFlowMonth[];
+  overdueCount: number;
+  upcomingPayables: number;
+}
+
+function getInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+export async function getNetPositionReport(
+  vendorId: string,
+): Promise<NetPositionReport> {
+  const now = new Date();
+
+  // Build date range for last 6 months
+  const sixMonthsAgo = new Date(now);
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+  sixMonthsAgo.setDate(1);
+  sixMonthsAgo.setHours(0, 0, 0, 0);
+
+  const [
+    { data: orders },
+    { data: deliveries },
+    { data: paymentsReceived },
+    { data: paymentsMade },
+  ] = await Promise.all([
+    supabase
+      .from("orders")
+      .select("customer_id, balance_due, status, customers(id, name)")
+      .eq("vendor_id", vendorId)
+      .gt("balance_due", 0),
+    supabase
+      .from("supplier_deliveries")
+      .select("supplier_id, total_amount, suppliers(id, name)")
+      .eq("vendor_id", vendorId),
+    supabase
+      .from("payments")
+      .select("amount, created_at")
+      .eq("vendor_id", vendorId)
+      .gte("created_at", sixMonthsAgo.toISOString()),
+    supabase
+      .from("payments_made")
+      .select("amount, created_at")
+      .eq("vendor_id", vendorId)
+      .gte("created_at", sixMonthsAgo.toISOString()),
+  ]);
+
+  // Total receivables (customers owe me)
+  const totalReceivables = (orders ?? []).reduce(
+    (s, o) => s + Number(o.balance_due),
+    0,
+  );
+
+  // Total payables (I owe suppliers)
+  const totalDeliveries = (deliveries ?? []).reduce(
+    (s, d) => s + Number(d.total_amount),
+    0,
+  );
+  const totalPaid = (paymentsMade ?? []).reduce(
+    (s, p) => s + Number(p.amount),
+    0,
+  );
+  const totalPayables = Math.max(0, totalDeliveries - totalPaid);
+  const netBalance = totalReceivables - totalPayables;
+
+  // Top 5 customers by balance owed
+  const customerMap = new Map<string, { name: string; balance: number }>();
+  for (const order of orders ?? []) {
+    const cid: string = (order as any).customer_id;
+    const name: string = (order as any).customers?.name ?? "Unknown";
+    const existing = customerMap.get(cid);
+    if (existing) {
+      existing.balance += Number(order.balance_due);
+    } else {
+      customerMap.set(cid, { name, balance: Number(order.balance_due) });
+    }
+  }
+  const topCustomers: NetPositionCustomer[] = Array.from(customerMap.entries())
+    .sort((a, b) => b[1].balance - a[1].balance)
+    .slice(0, 5)
+    .map(([id, { name, balance }]) => ({
+      id,
+      name,
+      initials: getInitials(name),
+      balance,
+    }));
+
+  // Top 5 suppliers by amount I owe
+  const supplierDeliveryMap = new Map<
+    string,
+    { name: string; total: number }
+  >();
+  const supplierPaidMap = new Map<string, number>();
+
+  for (const d of deliveries ?? []) {
+    const sid: string = (d as any).supplier_id;
+    const name: string = (d as any).suppliers?.name ?? "Supplier";
+    const existing = supplierDeliveryMap.get(sid);
+    if (existing) {
+      existing.total += Number(d.total_amount);
+    } else {
+      supplierDeliveryMap.set(sid, { name, total: Number(d.total_amount) });
+    }
+  }
+
+  const topSuppliers: NetPositionSupplier[] = Array.from(
+    supplierDeliveryMap.entries(),
+  )
+    .map(([id, { name, total }]) => ({
+      id,
+      name,
+      initials: getInitials(name),
+      amountOwed: Math.max(0, total - (supplierPaidMap.get(id) ?? 0)),
+    }))
+    .filter((s) => s.amountOwed > 0)
+    .sort((a, b) => b.amountOwed - a.amountOwed)
+    .slice(0, 5);
+
+  // Cash flow trend — last 6 months
+  const monthLabels = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const cashFlow: CashFlowMonth[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now);
+    d.setMonth(d.getMonth() - i);
+    const month = d.getMonth();
+    const year = d.getFullYear();
+    const inflow = (paymentsReceived ?? [])
+      .filter((p) => {
+        const pd = new Date(p.created_at);
+        return pd.getMonth() === month && pd.getFullYear() === year;
+      })
+      .reduce((s, p) => s + Number(p.amount), 0);
+    const outflow = (paymentsMade ?? [])
+      .filter((p) => {
+        const pd = new Date((p as any).created_at);
+        return pd.getMonth() === month && pd.getFullYear() === year;
+      })
+      .reduce((s, p) => s + Number(p.amount), 0);
+    cashFlow.push({ label: monthLabels[month], inflow, outflow });
+  }
+
+  // Quick insights
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const overdueCount = new Set(
+    (orders ?? [])
+      .filter((o: any) => {
+        const st = (o.status ?? "").toLowerCase();
+        return st !== "paid" && Number(o.balance_due) > 0;
+      })
+      .map((o: any) => o.customer_id),
+  ).size;
+
+  const sevenDaysFromNow = new Date();
+  sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+  const upcomingPayables = (deliveries ?? [])
+    .filter((d: any) => new Date(d.created_at ?? now) < sevenDaysFromNow)
+    .reduce((s: number, d: any) => s + Number(d.total_amount), 0);
+
+  return {
+    totalReceivables,
+    totalPayables,
+    netBalance,
+    topCustomers,
+    topSuppliers,
+    cashFlow,
+    overdueCount,
+    upcomingPayables,
   };
 }

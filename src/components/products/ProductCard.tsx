@@ -7,6 +7,7 @@ interface ProductCardProps {
   name: string;
   basePrice: number | null;
   variants?: ProductVariant[];
+  onPress?: () => void;
   onOptionsPress: () => void;
 }
 
@@ -31,6 +32,7 @@ export default function ProductCard({
   name,
   basePrice,
   variants,
+  onPress,
   onOptionsPress,
 }: ProductCardProps) {
   const variantCount = variants?.length ?? 0;
@@ -45,7 +47,8 @@ export default function ProductCard({
 
   return (
     <TouchableOpacity
-      onPress={onOptionsPress}
+      onPress={onPress ?? onOptionsPress}
+      onLongPress={onPress ? onOptionsPress : undefined}
       activeOpacity={0.7}
       style={{
         flexDirection: "row",

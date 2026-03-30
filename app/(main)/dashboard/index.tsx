@@ -110,6 +110,7 @@ export default function DashboardScreen() {
             variant={isDistributor ? "distributor" : "seller"}
             label={heroLabel}
             amount={heroAmount}
+            weekDelta={isSellerMode ? data.weekDelta : undefined}
             subInfo={
               isDistributor
                 ? `${data.activeSuppliers} active supplier${data.activeSuppliers !== 1 ? "s" : ""}`
@@ -121,8 +122,8 @@ export default function DashboardScreen() {
             }}
           />
         )}
-        {/* ActionBar — shown for seller and both modes */}
-        {!isDistributor && (
+        {/* ActionBar — only in "both" mode (seller/distributor use embedded hero card buttons) */}
+        {isBothMode && (
           <DashboardActionBar
             onNewBill={() => router.push("/(main)/orders/create" as any)}
             onCollect={() => router.push("/(main)/customers" as any)}

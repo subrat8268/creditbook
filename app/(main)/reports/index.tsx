@@ -1,19 +1,29 @@
-import { useDashboard } from "@/src/hooks/useDashboard";
+import {
+    CashFlowMonth,
+    NetPositionCustomer,
+    NetPositionSupplier,
+} from "@/src/api/dashboard";
+import Loader from "@/src/components/feedback/Loader";
+import { useNetPositionReport } from "@/src/hooks/useDashboard";
 import { useAuthStore } from "@/src/store/authStore";
 import { formatINR } from "@/src/utils/dashboardUi";
 import { colors, gradients, spacing } from "@/src/utils/theme";
+import { LinearGradient } from "expo-linear-gradient";
+import * as Print from "expo-print";
 import { useRouter } from "expo-router";
+import * as Sharing from "expo-sharing";
 import {
-    Activity,
+    AlertTriangle,
+    ArrowLeft,
     CalendarDays,
-    ChevronRight,
-    Download,
-    Info,
-    Truck,
-    Users,
+    Clock,
+    Share2,
+    Sparkles,
+    TrendingUp,
 } from "lucide-react-native";
+import { useState } from "react";
 import {
-    ActivityIndicator,
+    Alert,
     ScrollView,
     StatusBar,
     StyleSheet,
@@ -22,6 +32,571 @@ import {
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+// ── avatar color helper ──────────────────────────────────
+const AVATAR_COLORS = [
+  { bg: "#FDE68A", text: "#92400E" },
+  { bg: "#BFDBFE", text: "#1E40AF" },
+  { bg: "#DDD6FE", text: "#5B21B6" },
+  { bg: "#A7F3D0", text: "#065F46" },
+  { bg: "#FECACA", text: "#991B1B" },
+  { bg: "#FED7AA", text: "#92400E" },
+];
+function avatarColor(name: string) {
+  const idx =
+    name.split("").reduce((a, c) => a + c.charCodeAt(0), 0) %
+    AVATAR_COLORS.length;
+  return AVATAR_COLORS[idx];
+}
+
+// ── Mini bar chart (View-based, no library) ──────────────
+function CashFlowChart({ months }: { months: CashFlowMonth[] }) {
+  const max = Math.max(...months.flatMap((m) => [m.inflow, m.outflow]), 1);
+  const BAR_H = 120;
+
+  return (
+    <View>
+      <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 6 }}>
+        {months.map((m) => {
+          const inH = Math.round((m.inflow / max) * BAR_H);
+          const outH = Math.round((m.outflow / max) * BAR_H);
+          return (
+            <View
+              key={m.label}
+              style={{ flex: 1, alignItems: "center", gap: 2 }}
+            >
+              {/* Stacked bars */}
+              <View
+                style={{
+                  width: "100%",
+                  height: BAR_H,
+                  justifyContent: "flex-end",
+                  gap: 2,
+                }}
+              >
+                <View
+                  style={{
+                    height: inH || 4,
+                    backgroundColor: "#22C55E",
+                    borderRadius: 3,
+                    opacity: 0.9,
+                  }}
+                />
+                <View
+                  style={{
+                    height: outH || 4,
+                    backgroundColor: "#EF4444",
+                    borderRadius: 3,
+                    opacity: 0.8,
+                  }}
+                />
+              </View>
+              <Text style={s.chartLabel}>{m.label}</Text>
+            </View>
+          );
+        })}
+      </View>
+      {/* Legend */}
+      <View style={{ flexDirection: "row", gap: 16, marginTop: 10 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <View
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 5,
+              backgroundColor: "#22C55E",
+            }}
+          />
+          <Text style={s.legendText}>Inflow</Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <View
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 5,
+              backgroundColor: "#EF4444",
+            }}
+          />
+          <Text style={s.legendText}>Outflow</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// ── Customer/Supplier row ────────────────────────────────
+function PersonRow({
+  initials,
+  name,
+  amount,
+  amountColor,
+}: {
+  initials: string;
+  name: string;
+  amount: number;
+  amountColor: string;
+}) {
+  const { bg, text } = avatarColor(name);
+  return (
+    <View style={s.personRow}>
+      <View style={[s.personAvatar, { backgroundColor: bg }]}>
+        <Text style={[s.personInitials, { color: text }]}>{initials}</Text>
+      </View>
+      <Text style={s.personName} numberOfLines={1}>
+        {name}
+      </Text>
+      <Text style={[s.personAmount, { color: amountColor }]}>
+        {formatINR(amount)}
+      </Text>
+    </View>
+  );
+}
+
+// ── Main Screen ──────────────────────────────────────────
+export default function NetPositionScreen() {
+  const { profile } = useAuthStore();
+  const router = useRouter();
+  const { data, isLoading, isError } = useNetPositionReport(profile?.id);
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    if (!data) return;
+    setDownloading(true);
+    try {
+      const html = buildReportHtml(
+        data,
+        profile?.business_name ?? "My Business",
+      );
+      const { uri } = await Print.printToFileAsync({ html });
+      await Sharing.shareAsync(uri, { mimeType: "application/pdf" });
+    } catch (e) {
+      Alert.alert("Error", "Could not generate report. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  if (isLoading) return <Loader />;
+
+  const report = data ?? {
+    totalReceivables: 0,
+    totalPayables: 0,
+    netBalance: 0,
+    topCustomers: [],
+    topSuppliers: [],
+    cashFlow: [],
+    overdueCount: 0,
+    upcomingPayables: 0,
+  };
+
+  const isPositive = report.netBalance >= 0;
+
+  return (
+    <SafeAreaView style={s.root} edges={["top", "left", "right"]}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+
+      {/* ── Header ── */}
+      <View style={s.header}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <ArrowLeft size={22} color={colors.textPrimary} strokeWidth={1.75} />
+        </TouchableOpacity>
+        <Text style={s.headerTitle}>Net Position</Text>
+        <TouchableOpacity hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <CalendarDays
+            size={22}
+            color={colors.textSecondary}
+            strokeWidth={1.8}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={s.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── Hero card ── */}
+        <LinearGradient
+          colors={[gradients.netPosition, gradients.netPosition]}
+          style={s.heroCard}
+        >
+          <Text style={s.heroLabel}>YOUR NET POSITION</Text>
+          <Text style={s.heroAmount}>
+            {report.netBalance < 0 ? "−" : ""}
+            {formatINR(Math.abs(report.netBalance))}
+          </Text>
+          <View style={s.heroSubRow}>
+            <TrendingUp
+              size={14}
+              color={isPositive ? "#86EFAC" : "#FCA5A5"}
+              strokeWidth={2}
+            />
+            <Text
+              style={[s.heroSub, { color: isPositive ? "#86EFAC" : "#FCA5A5" }]}
+            >
+              {isPositive ? "Cash surplus available" : "Net liability position"}
+            </Text>
+          </View>
+        </LinearGradient>
+
+        {/* ── Breakdown ── */}
+        <View style={s.card}>
+          <Text style={s.sectionLabel}>BREAKDOWN</Text>
+          <View style={s.breakdownRow}>
+            <Text style={s.breakdownKey}>Total Receivables</Text>
+            <Text style={[s.breakdownVal, { color: colors.primary }]}>
+              +{formatINR(report.totalReceivables)}
+            </Text>
+          </View>
+          <View style={[s.breakdownRow, s.breakdownDivider]}>
+            <Text style={s.breakdownKey}>Total Payables</Text>
+            <Text style={[s.breakdownVal, { color: colors.danger }]}>
+              −{formatINR(report.totalPayables)}
+            </Text>
+          </View>
+          <View style={[s.breakdownRow, { paddingTop: 12 }]}>
+            <Text style={[s.breakdownKey, { fontWeight: "700" }]}>
+              Net Balance
+            </Text>
+            <Text
+              style={[
+                s.breakdownVal,
+                {
+                  fontWeight: "800",
+                  color: isPositive ? colors.textPrimary : colors.danger,
+                },
+              ]}
+            >
+              {formatINR(report.netBalance)}
+            </Text>
+          </View>
+        </View>
+
+        {/* ── Cash Flow Trend ── */}
+        {report.cashFlow.length > 0 && (
+          <View style={s.card}>
+            <Text style={s.sectionLabel}>CASH FLOW TREND (LAST 6 MONTHS)</Text>
+            <CashFlowChart months={report.cashFlow} />
+          </View>
+        )}
+
+        {/* ── Top Customers Owed ── */}
+        {report.topCustomers.length > 0 && (
+          <View style={s.card}>
+            <Text style={s.sectionLabel}>TOP CUSTOMERS OWED</Text>
+            {report.topCustomers.map((c) => (
+              <PersonRow
+                key={c.id}
+                initials={c.initials}
+                name={c.name}
+                amount={c.balance}
+                amountColor={colors.primary}
+              />
+            ))}
+          </View>
+        )}
+
+        {/* ── Top Suppliers Owed ── */}
+        {report.topSuppliers.length > 0 && (
+          <View style={s.card}>
+            <Text style={s.sectionLabel}>TOP SUPPLIERS OWED</Text>
+            {report.topSuppliers.map((sup) => (
+              <PersonRow
+                key={sup.id}
+                initials={sup.initials}
+                name={sup.name}
+                amount={sup.amountOwed}
+                amountColor={colors.danger}
+              />
+            ))}
+          </View>
+        )}
+
+        {/* ── Quick Insights ── */}
+        <View style={s.card}>
+          <Text style={s.sectionLabel}>QUICK INSIGHTS</Text>
+          <View style={s.insightRow}>
+            {report.overdueCount > 0 && (
+              <View style={[s.insightPill, { backgroundColor: "#FEF2F2" }]}>
+                <AlertTriangle
+                  size={12}
+                  color={colors.danger}
+                  strokeWidth={2}
+                />
+                <Text style={[s.insightText, { color: colors.danger }]}>
+                  High collection risk: {report.overdueCount} customer
+                  {report.overdueCount !== 1 ? "s" : ""}
+                </Text>
+              </View>
+            )}
+            {report.upcomingPayables > 0 && (
+              <View style={[s.insightPill, { backgroundColor: "#FFFBEB" }]}>
+                <Clock size={12} color={colors.warning} strokeWidth={2} />
+                <Text style={[s.insightText, { color: colors.warning }]}>
+                  Upcoming payables: {formatINR(report.upcomingPayables)} this
+                  week
+                </Text>
+              </View>
+            )}
+            <View style={[s.insightPill, { backgroundColor: "#F0FDF4" }]}>
+              <Sparkles size={12} color={colors.primary} strokeWidth={2} />
+              <Text style={[s.insightText, { color: colors.primary }]}>
+                {isPositive ? "Cash flow optimized" : "Review payables"}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* ── Download PDF ── */}
+        <TouchableOpacity
+          style={s.downloadBtn}
+          onPress={handleDownloadPdf}
+          activeOpacity={0.85}
+          disabled={downloading}
+        >
+          <Share2 size={18} color={colors.surface} strokeWidth={2} />
+          <Text style={s.downloadBtnText}>
+            {downloading ? "Generating…" : "Download PDF Report"}
+          </Text>
+        </TouchableOpacity>
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+// ── Styles ───────────────────────────────────────────────
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.background },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 14,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: colors.textPrimary,
+  },
+  scroll: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    gap: spacing.sm,
+  },
+  heroCard: {
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 4,
+  },
+  heroLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1.1,
+    color: "rgba(255,255,255,0.6)",
+    marginBottom: 8,
+  },
+  heroAmount: {
+    fontSize: 40,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    letterSpacing: -0.5,
+    marginBottom: 10,
+  },
+  heroSubRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  heroSub: {
+    fontSize: 13,
+    fontWeight: "500",
+  },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: 18,
+    padding: 18,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.textSecondary,
+    letterSpacing: 0.9,
+    marginBottom: 14,
+  },
+  breakdownRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  breakdownDivider: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    paddingBottom: 12,
+    marginBottom: 0,
+  },
+  breakdownKey: {
+    fontSize: 14,
+    color: colors.textPrimary,
+    fontWeight: "500",
+  },
+  breakdownVal: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  chartLabel: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    textAlign: "center",
+    marginTop: 4,
+  },
+  legendText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  personRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F5F9",
+  },
+  personAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  personInitials: {
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  personName: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.textPrimary,
+  },
+  personAmount: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  insightRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  insightPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
+  },
+  insightText: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  downloadBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    backgroundColor: colors.textPrimary,
+    borderRadius: 16,
+    paddingVertical: 18,
+    marginTop: 8,
+  },
+  downloadBtnText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: colors.surface,
+  },
+});
+
+// ── PDF HTML builder ─────────────────────────────────────
+function buildReportHtml(
+  report: {
+    totalReceivables: number;
+    totalPayables: number;
+    netBalance: number;
+    topCustomers: NetPositionCustomer[];
+    topSuppliers: NetPositionSupplier[];
+  },
+  businessName: string,
+) {
+  const rows = (items: { name: string; amount: number }[], label: string) =>
+    items
+      .map(
+        (i) =>
+          `<tr><td>${i.name}</td><td style="text-align:right;font-weight:700">₹${i.amount.toLocaleString("en-IN")}</td></tr>`,
+      )
+      .join("");
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+  <style>body{font-family:sans-serif;padding:24px;color:#1C1C1E}h1{font-size:22px}
+  table{width:100%;border-collapse:collapse;margin-bottom:24px}
+  td,th{padding:10px;border-bottom:1px solid #E2E8F0;font-size:14px}
+  th{background:#F6F7F9;font-weight:700;text-align:left}</style></head>
+  <body>
+  <h1>${businessName} — Net Position Report</h1>
+  <p style="color:#6B7280;font-size:13px">Generated on ${new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</p>
+  <table><tr><th>Metric</th><th style="text-align:right">Amount</th></tr>
+  <tr><td>Total Receivables</td><td style="text-align:right;color:#16A34A">+₹${report.totalReceivables.toLocaleString("en-IN")}</td></tr>
+  <tr><td>Total Payables</td><td style="text-align:right;color:#DC2626">−₹${report.totalPayables.toLocaleString("en-IN")}</td></tr>
+  <tr><td style="font-weight:700">Net Balance</td><td style="text-align:right;font-weight:800">₹${report.netBalance.toLocaleString("en-IN")}</td></tr>
+  </table>
+  ${
+    report.topCustomers.length > 0
+      ? `<h2>Top Customers Owed</h2><table><tr><th>Customer</th><th style="text-align:right">Balance Due</th></tr>${rows(
+          report.topCustomers.map((c) => ({ name: c.name, amount: c.balance })),
+          "customers",
+        )}</table>`
+      : ""
+  }
+  ${
+    report.topSuppliers.length > 0
+      ? `<h2>Top Suppliers Owed</h2><table><tr><th>Supplier</th><th style="text-align:right">Amount Owed</th></tr>${rows(
+          report.topSuppliers.map((s) => ({
+            name: s.name,
+            amount: s.amountOwed,
+          })),
+          "suppliers",
+        )}</table>`
+      : ""
+  }
+  </body></html>`;
+}
+
+import {
+    Activity,
+    ChevronRight,
+    Download,
+    Info,
+    Truck,
+    Users
+} from "lucide-react-native";
+import {
+    ActivityIndicator
+} from "react-native";
 
 // ── Helper ────────────────────────────────────────────────
 function todayLabel() {

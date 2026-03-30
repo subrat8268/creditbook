@@ -1,19 +1,23 @@
 ﻿import { Stack, useRouter } from "expo-router";
 import {
     ArrowLeft,
+    BarChart2,
     Building2,
     ChevronRight,
     CreditCard,
     Download,
     Hash,
+    HelpCircle,
     Info,
     Languages,
     LayoutGrid,
     LogOut,
     Package,
     Receipt,
+    Settings,
     Smartphone,
     Store,
+    Truck,
 } from "lucide-react-native";
 import { ComponentType, ReactNode } from "react";
 import {
@@ -243,6 +247,117 @@ export default function ProfileScreen() {
           />
         </SectionCard>
 
+        {/* ── Inventory & Suppliers ── */}
+        <SectionCard title="INVENTORY & SUPPLIERS">
+          <TouchableOpacity
+            onPress={() => router.push("/(main)/products" as never)}
+            activeOpacity={0.75}
+            style={styles.detailRow}
+          >
+            <View style={styles.detailIconBox}>
+              <Package
+                size={18}
+                color={colors.primaryDark}
+                strokeWidth={1.75}
+              />
+            </View>
+            <View style={styles.detailText}>
+              <Text style={styles.detailValue}>Products</Text>
+            </View>
+            <ChevronRight
+              size={16}
+              color={colors.textSecondary}
+              strokeWidth={1.75}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push("/(main)/suppliers" as never)}
+            activeOpacity={0.75}
+            style={[styles.detailRow, styles.detailRowLast]}
+          >
+            <View style={styles.detailIconBox}>
+              <Truck size={18} color={colors.primaryDark} strokeWidth={1.75} />
+            </View>
+            <View style={styles.detailText}>
+              <Text style={styles.detailValue}>Suppliers</Text>
+            </View>
+            <ChevronRight
+              size={16}
+              color={colors.textSecondary}
+              strokeWidth={1.75}
+            />
+          </TouchableOpacity>
+        </SectionCard>
+
+        {/* ── Business Tools ── */}
+        <SectionCard title="BUSINESS TOOLS">
+          <TouchableOpacity
+            onPress={() => router.push("/(main)/export" as never)}
+            activeOpacity={0.75}
+            style={styles.detailRow}
+          >
+            <View style={styles.detailIconBox}>
+              <Download
+                size={18}
+                color={colors.primaryDark}
+                strokeWidth={1.75}
+              />
+            </View>
+            <View style={styles.detailText}>
+              <Text style={styles.detailValue}>Export Business Data</Text>
+            </View>
+            <ChevronRight
+              size={16}
+              color={colors.textSecondary}
+              strokeWidth={1.75}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push("/(main)/reports" as never)}
+            activeOpacity={0.75}
+            style={styles.detailRow}
+          >
+            <View style={styles.detailIconBox}>
+              <BarChart2
+                size={18}
+                color={colors.primaryDark}
+                strokeWidth={1.75}
+              />
+            </View>
+            <View style={styles.detailText}>
+              <Text style={styles.detailValue}>Reports</Text>
+            </View>
+            <ChevronRight
+              size={16}
+              color={colors.textSecondary}
+              strokeWidth={1.75}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() =>
+              Alert.alert("Settings", "Advanced settings coming soon.")
+            }
+            activeOpacity={0.75}
+            style={[styles.detailRow, styles.detailRowLast]}
+          >
+            <View style={styles.detailIconBox}>
+              <Settings
+                size={18}
+                color={colors.primaryDark}
+                strokeWidth={1.75}
+              />
+            </View>
+            <View style={styles.detailText}>
+              <Text style={styles.detailValue}>Settings</Text>
+            </View>
+            <ChevronRight
+              size={16}
+              color={colors.textSecondary}
+              strokeWidth={1.75}
+            />
+          </TouchableOpacity>
+        </SectionCard>
+
         {/* ── Bank Account ── */}
         <SectionCard title="BANK ACCOUNT">
           <DetailRow
@@ -275,8 +390,8 @@ export default function ProfileScreen() {
           <SegmentControl<"seller" | "distributor" | "both">
             options={[
               { value: "seller", label: "Seller" },
-              { value: "distributor", label: "Distributor" },
               { value: "both", label: "Both" },
+              { value: "distributor", label: "Distributor" },
             ]}
             value={dashboardMode}
             onChange={(v) => updateField("dashboard_mode", v)}
@@ -334,22 +449,24 @@ export default function ProfileScreen() {
           </View>
         </SectionCard>
 
-        {/* ── Data ── */}
-        <SectionCard title="DATA">
+        {/* ── Support ── */}
+        <SectionCard title="SUPPORT">
           <TouchableOpacity
-            onPress={() => router.push("/(main)/products" as never)}
+            onPress={() =>
+              Alert.alert("Help & Support", "Contact us at support@kredbook.in")
+            }
             activeOpacity={0.75}
             style={styles.detailRow}
           >
             <View style={styles.detailIconBox}>
-              <Package
+              <HelpCircle
                 size={18}
                 color={colors.primaryDark}
                 strokeWidth={1.75}
               />
             </View>
             <View style={styles.detailText}>
-              <Text style={styles.detailValue}>Manage Products</Text>
+              <Text style={styles.detailValue}>Help &amp; Support</Text>
             </View>
             <ChevronRight
               size={16}
@@ -358,19 +475,20 @@ export default function ProfileScreen() {
             />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => router.push("/(main)/export" as never)}
+            onPress={() =>
+              Alert.alert(
+                "About KredBook",
+                "KredBook v1.0.0\nBuilt for Indian kirana stores and small businesses.",
+              )
+            }
             activeOpacity={0.75}
             style={[styles.detailRow, styles.detailRowLast]}
           >
             <View style={styles.detailIconBox}>
-              <Download
-                size={18}
-                color={colors.primaryDark}
-                strokeWidth={1.75}
-              />
+              <Info size={18} color={colors.primaryDark} strokeWidth={1.75} />
             </View>
             <View style={styles.detailText}>
-              <Text style={styles.detailValue}>Export Business Data</Text>
+              <Text style={styles.detailValue}>About KredBook</Text>
             </View>
             <ChevronRight
               size={16}
