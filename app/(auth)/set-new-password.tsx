@@ -90,7 +90,7 @@ export default function SetNewPasswordPage() {
               Set New Password
             </Text>
             <Text className="text-neutral-500 text-sm text-center mb-8">
-              Choose a strong password for your CreditBook account.
+              Choose a strong password for your KredBook account.
             </Text>
 
             <Formik
@@ -131,11 +131,7 @@ export default function SetNewPasswordPage() {
                             strokeWidth={1.8}
                           />
                         ) : (
-                          <Eye
-                            size={20}
-                            color={"#AEAEB2"}
-                            strokeWidth={1.8}
-                          />
+                          <Eye size={20} color={"#AEAEB2"} strokeWidth={1.8} />
                         )}
                       </TouchableOpacity>
                     }
@@ -170,11 +166,7 @@ export default function SetNewPasswordPage() {
                             strokeWidth={1.8}
                           />
                         ) : (
-                          <Eye
-                            size={20}
-                            color={"#AEAEB2"}
-                            strokeWidth={1.8}
-                          />
+                          <Eye size={20} color={"#AEAEB2"} strokeWidth={1.8} />
                         )}
                       </TouchableOpacity>
                     }

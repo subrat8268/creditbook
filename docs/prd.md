@@ -1,7 +1,7 @@
 # KredBook – Product Requirements Document
 
-> **Version**: 1.5
-> **Last Updated**: March 16, 2026
+> **Version**: 1.6
+> **Last Updated**: March 30, 2026
 > **Status**: Active Development
 > **Owner**: KredBook Product Team
 
@@ -299,16 +299,16 @@ Role maps to `dashboard_mode` on the `profiles` table and controls which net-pos
 
 **Purpose**: Create an itemized bill for a customer.
 
-**Contents**:
+**Contents** (v3.9):
 
-- Customer selector with previous balance auto-populated
-- Product search with cart-add interface
-- Per-item rate editing
-- GST % input
-- Loading charge input
-- Live total breakdown: Items + Tax + Loading + Previous Balance
-- Bill number auto-assigned (RPC `get_next_bill_number`)
-- Submit → generates PDF and saves order
+- Customer selector with previous balance auto-populated from RPC `get_customer_previous_balance`
+- **Product picker** (stay-open sheet): search products, tap to add; variant sub-view renders inline in same sheet with Back button; "Done" button for explicit close; 1.2 s checkmark flash confirms each add
+- **Smart cart dedup**: tapping the same product/variant increments quantity instead of adding a duplicate row
+- **Editable rates**: each `OrderItemCard` row has an inline `TextInput` for rate override (commits on blur, reverts on invalid input)
+- GST % and loading charge inputs
+- Live total breakdown: Items + Tax + Loading + Previous Balance = Grand Total
+- Two action buttons: **"Save Bill"** (outline, saves to DB only) · **"Save & Share"** (solid, saves → real `bill_number` → PDF → native share sheet via `expo-sharing`)
+- Bill PDF is **never generated before a successful DB save** — invoice number is always the real sequential `bill_number`
 
 ---
 
@@ -344,15 +344,13 @@ Role maps to `dashboard_mode` on the `profiles` table and controls which net-pos
 **Route**: `/(main)/reports`  
 **Purpose**: Dedicated full-screen financial breakdown; accessible from the "View Report" button in the Dashboard action bar.
 
-**Contents** (v3.6 redesign):
+**Contents** (v3.9):
 
-- Header with back navigation + title “Financial Position” + today’s date subtitle (`todayLabel()` helper)
-- **`StatCard` — Customers Owe Me**: green background (`#F0FDF4`), `#22C55E` amount text, `TrendingUp` icon
-- **`StatCard` — I Owe Suppliers**: pinkish-red background (`#FEF2F2`), `#E0336E` amount text, `TrendingDown` icon
-- **`NetCard`**: dark background (`#1C2333`), white amount text, `TrendingUp`/`TrendingDown` icon inside colored circle; net = receivables − payables
-- **`InsightPill`**: contextual health label (“Healthy” green / “Monitor” amber / “At Risk” red) based on net sign
-- Monthly Report download card (placeholder for future export)
-- Loading spinner (`#22C55E`) and error state handled gracefully
+- Header with back navigation + title "Financial Position" + today's date subtitle
+- **`StatCard` — Customers Owe Me**: green background, `colors.primary` amount text, `TrendingUp` icon
+- **`StatCard` — I Owe Suppliers**: uses `colors.supplierPrimary` (`#DB2777`) for amount text — all colors via theme tokens
+- **`NetCard`**: uses `gradients.netPosition` (`#0F172A → #334155`) background via `LinearGradient`; white amount text
+- Loading spinner and error state handled gracefully
 
 ---
 
@@ -434,9 +432,9 @@ Role maps to `dashboard_mode` on the `profiles` table and controls which net-pos
 
 **5. Fixed Action Bar** (absolute bottom, white bg, `borderTop: #E5E7EB`):
 
-- **"Send Bill"** (outline green): `generateBillPdf()` → `expo-sharing`; WhatsApp fallback
-- **"Record Payment"** (filled green): opens `RecordCustomerPaymentModal`; hidden when `status === "Paid"`
-- On modal success: invalidates 4 TanStack Query caches + shows success Alert
+- **"Send Bill"** (outline green): `generateBillPdf()` → `expo-sharing` native share sheet
+- **"Record Payment"** (filled green): opens `RecordCustomerPaymentModal` (uses `useRecordPayment` hook — no direct API calls in modal); hidden when `status === "Paid"`
+- On modal success: hook invalidates `orderKeys.all`, `orderDetail`, `payments`, `customers`, `customerDetail`, `dashboard` caches
 
 ---
 
@@ -489,6 +487,8 @@ Full design system documentation is available in [`docs/design-system.md`](./des
 | `fab`                     | `#2563EB` | Floating Action Button                                 |
 | `success` (Green)         | `#22C55E` | Money received, paid balance, positive state           |
 | `danger` (Red)            | `#E74C3C` | Money owed, overdue, negative state                    |
+| `dangerStrong`            | `#DC2626` | Dashboard customer balance card gradient               |
+| `supplierPrimary` (Pink)  | `#DB2777` | Supplier Financial Position card                       |
 | `warning` (Amber)         | `#F59E0B` | Pending, partial, reminder state                       |
 | `background` (Light Gray) | `#F6F7F9` | App background                                         |
 | `surface` (White)         | `#FFFFFF` | Cards, modals                                          |
@@ -496,7 +496,7 @@ Full design system documentation is available in [`docs/design-system.md`](./des
 | `text-secondary`          | `#6B7280` | Labels, captions, metadata                             |
 | `divider`                 | `#E5E7EB` | Row separators, input borders                          |
 
-The color system encodes financial status visually — users can assess ledger health from a list view without reading individual balances.
+> **Enforcement**: All colors reference `src/utils/theme.ts` tokens. No raw hex values are permitted in component files.
 
 ---
 

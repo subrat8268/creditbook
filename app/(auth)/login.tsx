@@ -6,12 +6,12 @@ import { Formik } from "formik";
 import { AlertCircle, Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
 import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AuthCard from "../../src/components/ui/AuthCard";
@@ -45,7 +45,7 @@ export default function LoginPage() {
           <View className="flex-1 px-6 pb-10 justify-center">
             <AuthHeader
               title="Welcome Back"
-              subtitle="Sign in to your CreditBook"
+              subtitle="Sign in to your KredBook"
             />
 
             <AuthCard>
@@ -150,7 +150,7 @@ export default function LoginPage() {
               className="mt-8"
             >
               <Text className="text-center text-textSecondary text-sm">
-                {"New to CreditBook? "}
+                {"New to KredBook? "}
                 <Text className="text-primary font-semibold">Sign Up</Text>
               </Text>
             </TouchableOpacity>

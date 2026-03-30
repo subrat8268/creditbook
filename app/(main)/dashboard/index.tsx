@@ -54,10 +54,10 @@ export default function DashboardScreen() {
   const businessName = profile.business_name ?? profile.name ?? "My Business";
   const roleLabel =
     mode === "distributor"
-      ? "CreditBook Distributor"
+      ? "KredBook Distributor"
       : mode === "both"
-        ? "CreditBook Business"
-        : "CreditBook Seller";
+        ? "KredBook Business"
+        : "KredBook Seller";
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.background }}>

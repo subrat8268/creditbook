@@ -1,16 +1,16 @@
 import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetFlatList,
+    BottomSheetBackdrop,
+    BottomSheetFlatList,
 } from "@gorhom/bottom-sheet";
 import * as Contacts from "expo-contacts";
 import { Check, Users, UserX, X } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Linking,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Linking,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useCustomersStore } from "../../store/customersStore";
 import { normalizePhone } from "../../utils/phone";
@@ -68,7 +68,7 @@ export default function ContactsPickerModal({
 }: Props) {
   const existingCustomers = useCustomersStore((s) => s.customers);
 
-  // Build a normalised phone → true map for fast "already in CreditBook" lookup
+  // Build a normalised phone → true map for fast "already in KredBook" lookup
   const existingPhones = useMemo(() => {
     const set = new Set<string>();
     for (const c of existingCustomers) {
@@ -164,7 +164,7 @@ export default function ContactsPickerModal({
   };
 
   const selectAll = () => {
-    // Only select contacts not already in CreditBook
+    // Only select contacts not already in KredBook
     setSelected(
       new Set(
         filtered.filter((c) => !existingPhones.has(c.phone)).map((c) => c.id),
@@ -369,9 +369,7 @@ export default function ContactsPickerModal({
                       : alreadyExists
                         ? colors.border
                         : "#AEAEB2",
-                    backgroundColor: isSelected
-                      ? colors.primary
-                      : "#FFFFFF",
+                    backgroundColor: isSelected ? colors.primary : "#FFFFFF",
                   }}
                 >
                   {isSelected && (
@@ -406,9 +404,7 @@ export default function ContactsPickerModal({
                     <Text
                       className="font-semibold"
                       style={{
-                        color: alreadyExists
-                          ? "#AEAEB2"
-                          : colors.textPrimary,
+                        color: alreadyExists ? "#AEAEB2" : colors.textPrimary,
                         fontSize: 15,
                       }}
                       numberOfLines={1}
@@ -424,7 +420,7 @@ export default function ContactsPickerModal({
                           className="text-[11px] font-semibold"
                           style={{ color: colors.paid.text }}
                         >
-                          Already in CreditBook
+                          Already in KredBook
                         </Text>
                       </View>
                     )}

@@ -11,25 +11,25 @@ import * as Print from "expo-print";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import {
-  AlertTriangle,
-  ArrowDown,
-  ArrowLeft,
-  ArrowUp,
-  Banknote,
-  Download,
-  FileText,
-  MessageCircle,
-  Phone,
-  Plus,
-  Receipt,
+    AlertTriangle,
+    ArrowDown,
+    ArrowLeft,
+    ArrowUp,
+    Banknote,
+    Download,
+    FileText,
+    MessageCircle,
+    Phone,
+    Plus,
+    Receipt,
 } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import {
-  Linking,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    Linking,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -101,8 +101,7 @@ function buildStatementHtml(
   const rows = transactions
     .map((tx) => {
       const sign = tx.type === "payment" ? "+" : "";
-      const color =
-        tx.type === "payment" ? colors.primary : colors.danger;
+      const color = tx.type === "payment" ? colors.primary : colors.danger;
       const label =
         tx.type === "bill"
           ? `Invoice ${tx.billNumber ?? ""}`
@@ -145,14 +144,10 @@ const MODE_LABEL: Record<string, string> = {
 
 function TransactionRow({ tx }: { tx: Transaction }) {
   const isPayment = tx.type === "payment";
-  const borderColor = isPayment
-    ? colors.primary
-    : colors.danger;
+  const borderColor = isPayment ? colors.primary : colors.danger;
   const iconBg = isPayment ? colors.successBg : colors.dangerBg;
   const iconColor = isPayment ? colors.primary : colors.danger;
-  const amountColor = isPayment
-    ? colors.primary
-    : colors.danger;
+  const amountColor = isPayment ? colors.primary : colors.danger;
   const title = isPayment
     ? "Payment Received"
     : `Bill${tx.billNumber ? ` #${tx.billNumber}` : ""}`;
@@ -267,7 +262,7 @@ export default function CustomerDetailScreen() {
         customer.phone,
         customer.outstandingBalance,
         customer.transactions,
-        profile?.business_name || "CreditBook",
+        profile?.business_name || "KredBook",
       );
       const { uri } = await Print.printToFileAsync({ html });
       await Sharing.shareAsync(uri, {
@@ -340,11 +335,7 @@ export default function CustomerDetailScreen() {
               className="w-[38px] h-[38px] rounded-full bg-search items-center justify-center"
               onPress={downloadStatement}
             >
-              <FileText
-                size={20}
-                color={colors.primary}
-                strokeWidth={2}
-              />
+              <FileText size={20} color={colors.primary} strokeWidth={2} />
             </TouchableOpacity>
           )}
           <TouchableOpacity
@@ -496,11 +487,7 @@ export default function CustomerDetailScreen() {
               className="w-11 h-11 rounded-full items-center justify-center"
               style={{ backgroundColor: colors.successBg }}
             >
-              <Banknote
-                size={22}
-                color={colors.primary}
-                strokeWidth={2}
-              />
+              <Banknote size={22} color={colors.primary} strokeWidth={2} />
             </View>
             <Text className="text-[13px] font-semibold text-textDark">
               Received
@@ -523,11 +510,7 @@ export default function CustomerDetailScreen() {
               className="w-11 h-11 rounded-full items-center justify-center"
               style={{ backgroundColor: colors.pending.bg }}
             >
-              <MessageCircle
-                size={22}
-                color={colors.warning}
-                strokeWidth={2}
-              />
+              <MessageCircle size={22} color={colors.warning} strokeWidth={2} />
             </View>
             <Text className="text-[13px] font-semibold text-textDark">
               Send Reminder
@@ -552,18 +535,14 @@ export default function CustomerDetailScreen() {
                   className="flex-1 items-center pb-3 pt-1"
                   style={{
                     borderBottomWidth: active ? 2 : 0,
-                    borderBottomColor: active
-                      ? colors.primary
-                      : "transparent",
+                    borderBottomColor: active ? colors.primary : "transparent",
                     marginBottom: active ? -1 : 0,
                   }}
                 >
                   <Text
                     className="text-[13px] font-semibold"
                     style={{
-                      color: active
-                        ? colors.primary
-                        : colors.textSecondary,
+                      color: active ? colors.primary : colors.textSecondary,
                     }}
                   >
                     {f}
@@ -586,11 +565,7 @@ export default function CustomerDetailScreen() {
                   backgroundColor: colors.successBg,
                 }}
               >
-                <Receipt
-                  size={48}
-                  color={colors.paid.bg}
-                  strokeWidth={1.5}
-                />
+                <Receipt size={48} color={colors.paid.bg} strokeWidth={1.5} />
               </View>
               <Text className="text-[17px] font-bold text-textDark">
                 No transactions yet

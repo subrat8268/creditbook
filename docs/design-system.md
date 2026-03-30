@@ -1,7 +1,7 @@
 # KredBook Design System
 
-> **Version**: 1.5
-> **Last Updated**: March 16, 2026
+> **Version**: 1.6
+> **Last Updated**: March 30, 2026
 > **Maintained by**: KredBook Product & Design Team
 
 ---
@@ -104,19 +104,23 @@ Use **short, action-oriented labels**:
 
 ### Palette
 
-| Token            | Color Name | Hex       | Usage                                                         |
-| :--------------- | :--------- | :-------- | :------------------------------------------------------------ |
-| `primary`        | Green      | `#22C55E` | Primary actions, FAB, active nav state, confirmations         |
-| `primary-dark`   | Dark Green | `#16A34A` | Hover / pressed state for primary green                       |
-| `success`        | Green      | `#22C55E` | Money received, paid invoices, positive balances              |
-| `danger`         | Red        | `#E74C3C` | Money owed, overdue accounts, negative values, delete actions |
-| `warning`        | Amber      | `#F59E0B` | Pending payments, reminders, partial transactions             |
-| `fab`            | Blue       | `#2563EB` | Floating Action Button background                             |
-| `background`     | Light Gray | `#F6F7F9` | App background — reduces eye strain                           |
-| `surface`        | White      | `#FFFFFF` | Cards, panels, modals                                         |
-| `text-primary`   | Near Black | `#1C1C1E` | Headings, body text, financial values                         |
-| `text-secondary` | Cool Gray  | `#6B7280` | Labels, captions, metadata                                    |
-| `border`         | Light Gray | `#E5E7EB` | Row separators, input borders                                 |
+| Token             | Color Name | Hex       | Usage                                                          |
+| :---------------- | :--------- | :-------- | :------------------------------------------------------------- |
+| `primary`         | Green      | `#22C55E` | Primary actions, FAB, active nav state, confirmations          |
+| `primary-dark`    | Dark Green | `#16A34A` | Hover / pressed state for primary green                        |
+| `success`         | Green      | `#22C55E` | Money received, paid invoices, positive balances               |
+| `danger`          | Red        | `#E74C3C` | Money owed, overdue accounts, negative values, delete actions  |
+| `dangerStrong`    | Dark Red   | `#DC2626` | Dashboard customer balance card gradient start                 |
+| `warning`         | Amber      | `#F59E0B` | Pending payments, reminders, partial transactions              |
+| `supplierPrimary` | Pink       | `#DB2777` | Supplier-side gradient cards, Financial Position supplier stat |
+| `fab`             | Blue       | `#2563EB` | Floating Action Button background                              |
+| `background`      | Light Gray | `#F6F7F9` | App background — reduces eye strain                            |
+| `surface`         | White      | `#FFFFFF` | Cards, panels, modals                                          |
+| `text-primary`    | Near Black | `#1C1C1E` | Headings, body text, financial values                          |
+| `text-secondary`  | Cool Gray  | `#6B7280` | Labels, captions, metadata                                     |
+| `border`          | Light Gray | `#E5E7EB` | Row separators, input borders                                  |
+
+> **Token enforcement rule**: All colors must come from `src/utils/theme.ts`. No raw hex values are permitted in component files. `dangerStrong` replaces the earlier `damgerStrong` typo — do not use the old spelling.
 
 ### Dashboard Gradient Cards
 
@@ -157,6 +161,23 @@ Colors are the primary communication channel for financial state — not text al
 | Primary Action    | Green | `primary` | Buttons, FAB, active navigation, confirmations               |
 
 > **Rule**: Never use red or amber as decorative colors. Reserve them strictly for financial states that require user attention.
+
+### Avatar Palette
+
+A fixed array of 6 accessible colors (`colors.avatarPalette`) used for customer and product initials avatars. Hash of the display name determines which color is assigned, ensuring the same customer always gets the same avatar color across all screens.
+
+```ts
+avatarPalette: [
+  "#4F9CFF",
+  "#9B59B6",
+  "#E91E8C",
+  "#00BCD4",
+  "#FF5722",
+  "#F59E0B",
+];
+```
+
+> **Never hardcode avatar colors.** Always reference `colors.avatarPalette[hash % colors.avatarPalette.length]`.
 
 ### NativeWind / Tailwind Tokens
 
@@ -321,14 +342,16 @@ Cards are the primary content containers throughout the app.
 
 Pill-shaped labels used to communicate transaction state at a glance.
 
-| State   | Background | Text Color | Label   |
-| :------ | :--------- | :--------- | :------ |
-| Paid    | `#DCFCE7`  | `#16A34A`  | PAID    |
-| Pending | `#FEF3C7`  | `#D97706`  | PENDING |
-| Overdue | `#FEE2E2`  | `#DC2626`  | OVERDUE |
-| Partial | `#FEF3C7`  | `#D97706`  | PARTIAL |
+| State   | Background | Text Color | Label   | Theme token      |
+| :------ | :--------- | :--------- | :------ | :--------------- |
+| Paid    | `#DCFCE7`  | `#16A34A`  | PAID    | `colors.paid`    |
+| Pending | `#FEF3C7`  | `#D97706`  | PENDING | `colors.pending` |
+| Overdue | `#FEE2E2`  | `#DC2626`  | OVERDUE | `colors.overdue` |
+| Partial | `#DBEAFE`  | `#1D4ED8`  | PARTIAL | `colors.partial` |
 
 **Dimensions:** Height 24–28dp, horizontal padding 8dp, font weight 600, text size 11–12dp, `border-radius: 999dp` (full pill).
+
+> `Partial` chip is blue (not amber) to distinguish it visually from `Pending`. Both use `colors.partial.bg` / `colors.partial.text` tokens.
 
 ---
 

@@ -392,7 +392,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.footer}>CreditBook v1.0.0</Text>
+        <Text style={styles.footer}>KredBook v1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );

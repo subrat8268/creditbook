@@ -1,7 +1,7 @@
 # KredBook UX Context
 
 > **Purpose**: Complete UX reference for designers and AI tools. Documents every screen's exact layout, element positions, feature list, and interaction model.
-> **Last Updated**: March 17, 2026
+> **Last Updated**: March 30, 2026
 > **References**: `docs/prd.md`, `docs/design-system.md`
 
 ---
@@ -491,23 +491,27 @@ Every screen should support at least one of these goals:
 
 #### Layout (top-to-bottom)
 
-| Position     | Element                | Detail                                                                                                                                                     |
-| ------------ | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FIXED TOP    | Header bar             | Left: back arrow. Center: "New Bill" title. Right: bill number (e.g. "INV-004", read-only, 13px gray)                                                      |
-| SCROLL       | Customer selector card | Full-width white card. When empty: "Select Customer" placeholder + ChevronDown. When selected: customer name (bold) + "Previous Balance: ₹X" in gray below |
-| SCROLL       | Product search bar     | Tappable fake input "🔍 Search products…", opens ProductPicker on tap                                                                                      |
-| SCROLL       | Cart items list        | One `OrderItemCard` per product added                                                                                                                      |
-| —            | `OrderItemCard`        | Product name + variant name. Left: − stepper. Center: qty (bold). Right: + stepper. Far right: ₹price + × remove button. Bottom: line total                |
-| SCROLL       | "+" dashed card        | Dashed border card "+ Add Product" — same as search bar, opens picker                                                                                      |
-| SCROLL       | Bill meta inputs       | "GST %" input row + "Loading Charge ₹" input row (numeric, inline editable)                                                                                |
-| SCROLL       | `OrderBillSummary`     | Breakdown rows: Items Total / GST Amount / Loading Charge / Previous Balance (red if >0) / horizontal divider / **Grand Total** (22px bold)                |
-| FIXED BOTTOM | Footer bar             | Two buttons: "Preview" (outlined, gray) + "Create Bill" (filled green). Disabled when no customer OR no items                                              |
+| Position     | Element                | Detail                                                                                                                                                                          |
+| ------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FIXED TOP    | Header bar             | Left: back arrow. Center: "New Bill" title. Right: `INV-NEW` pill (sequential number assigned on save)                                                                          |
+| SCROLL       | Customer selector card | Full-width white card. When empty: "Select Customer" placeholder + ChevronDown. When selected: customer name (bold) + "Previous Balance: ₹X" in gray below                      |
+| SCROLL       | Product search bar     | Tappable fake input "🔍 Search products…", opens ProductPicker on tap                                                                                                           |
+| SCROLL       | Cart items list        | One `OrderItemCard` per unique product+variant. Smart dedup — re-tapping same product increments qty instead of adding new row                                                  |
+| —            | `OrderItemCard`        | Product name + variant name. Rate: inline editable TextInput (commits on blur). Left: − stepper. Center: qty. Right: + stepper + × remove. Bottom: line total                   |
+| SCROLL       | "+" dashed card        | Dashed border card "+ Add Product" — same as search bar, opens picker                                                                                                           |
+| SCROLL       | Bill meta inputs       | "GST %" input row + "Loading Charge ₹" input row (numeric, inline editable)                                                                                                     |
+| SCROLL       | `OrderBillSummary`     | Breakdown rows: Items Total / GST Amount / Loading Charge / Previous Balance (red if >0) / horizontal divider / **Grand Total** (22px bold)                                     |
+| FIXED BOTTOM | Footer bar             | **"Save Bill"** (outlined) saves to DB only · **"Save & Share"** (filled green) saves to DB → real bill_number → PDF → native share sheet. Both disabled while mutation pending |
 
 #### Bottom sheets triggered
 
 - Customer search: `CustomerPicker` (`BottomSheetPicker`, 80–95%)
-- Product search: `ProductPicker` (`BottomSheetPicker`, 80–95%) — includes "**+ Add New Product**" dashed button at top
-- Variant selection: `VariantPicker` (`BottomSheetPicker`) — opens automatically after product with variants is selected
+- Product search: **`ProductPicker`** (owns its own `BottomSheet`, 80–95%)
+  - Sheet **stays open** after every product add — user explicitly taps **"Done"** to close
+  - Products with variants: tapping opens inline variant sub-view within the same sheet; **Back** button returns to product list
+  - No separate `VariantPicker` sheet — variant selection is fully inline
+  - 1.2 s green checkmark flash confirms each add without disrupting flow
+  - "**+ Add New Product**" dashed button navigates to Products screen
 
 ---
 
@@ -786,7 +790,7 @@ Records payments received from customers against open balances. Supports 5 payme
 
 ### Bill Creation
 
-Creates itemized bills with product catalog search, adjustable pricing, GST %, and loading charge. Previous customer balance is automatically pulled in at creation time. Bill number is auto-assigned with sequential IDs and custom prefix support. Output is a branded PDF invoice with business details, bank info, and UPI QR code.
+Creates itemized bills with product catalog search (stay-open bulk-add picker), smart cart deduplication (re-adding same product increments quantity), editable per-item rates, GST %, and loading charge. Previous customer balance is automatically pulled in at creation time. Bill number is **only assigned after a successful DB save** — the PDF always carries the real sequential invoice number. Output is a branded PDF shared via the native share sheet (`expo-sharing`).
 
 ---
 

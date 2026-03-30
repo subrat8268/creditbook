@@ -196,19 +196,19 @@ export default function ExportScreen() {
         case "orders": {
           const rows = await fetchOrdersForExport(vendorId, from, to);
           csv = toCsv(rows);
-          filename = `creditbook_orders_${today}.csv`;
+          filename = `kredbook_orders_${today}.csv`;
           break;
         }
         case "payments": {
           const rows = await fetchPaymentsForExport(vendorId, from, to);
           csv = toCsv(rows);
-          filename = `creditbook_payments_${today}.csv`;
+          filename = `kredbook_payments_${today}.csv`;
           break;
         }
         case "customers": {
           const rows = await fetchCustomersForExport(vendorId);
           csv = toCsv(rows);
-          filename = `creditbook_customer_balances_${today}.csv`;
+          filename = `kredbook_customer_balances_${today}.csv`;
           break;
         }
         case "suppliers": {
@@ -218,7 +218,7 @@ export default function ExportScreen() {
             to,
           );
           csv = toCsv(rows);
-          filename = `creditbook_supplier_purchases_${today}.csv`;
+          filename = `kredbook_supplier_purchases_${today}.csv`;
           break;
         }
       }
@@ -429,7 +429,7 @@ export default function ExportScreen() {
         </View>
 
         {/* ── Footer ── */}
-        <Text style={styles.footer}>CreditBook Export</Text>
+        <Text style={styles.footer}>KredBook Export</Text>
       </ScrollView>
     </SafeAreaView>
   );

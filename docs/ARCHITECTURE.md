@@ -1,8 +1,8 @@
 # KredBook — Project Architecture
 
-> **Last Updated**: March 16, 2026
-> **App Version**: 3.8
-> **Status**: Phase 6.8 complete — UX Audit & Navigation Polish Sprint shipped; `InsightPill` + Monthly Report card removed from Financial Position; `StackHeader` extracted; onboarding phone screen replaced with redirect; FAB routes corrected; app rebranded to KredBook (`com.kredbook.app`)
+> **Last Updated**: March 30, 2026
+> **App Version**: 3.9
+> **Status**: Phase 6.9 complete — Auth store refactor; design token enforcement; bill creation data-integrity overhaul; payment cache consolidation; product picker UX overhaul
 
 ---
 
@@ -41,7 +41,7 @@ app/
 │       ├── _layout.tsx
 │       ├── index.tsx             ← Redirect → role (phone OTP deferred to Phase 7)  ← v3.8
 │       ├── business.tsx          ← Step 2: Business details
-│       ├── ready.tsx             ← Step 3: Completion (single illustration, smart business label)  ← v3.8
+│   ├── ready.tsx             ← Step 3: Completion — "Enter KredBook" button, calls fetchProfile, routing delegated to _layout.tsx  ← v3.9
 │       └── role.tsx              ← Step 1: Role selection (Retailer / Wholesaler / Small Business)
 │
 └── (main)/
@@ -56,8 +56,8 @@ app/
     ├── orders/
     │   ├── _layout.tsx           ← Stack navigator; header renders `options.title ?? config.title` (dynamic title for Order Detail)  ← v3.7
     │   ├── index.tsx
-    │   ├── create.tsx
-    │   └── [orderId].tsx         ← Order Detail screen (v3.7 full rewrite): Customer card, Items+BillSummary flush cards, Payment History, Fixed Action Bar (Send Bill + Record Payment)
+    │   ├── create.tsx            ← v3.9: save-first data integrity (handleSaveAndShare); CartItem.productId/rate; smart dedup addItem; updateRate(); expo-sharing replaces uploadPdfToSupabase+Linking; VariantPicker removed (inline in ProductPicker)
+    │   └── [orderId].tsx         ← Order Detail: handlePaymentSuccess uses orderKeys.all + customerDetail invalidation  ← v3.9
     ├── products/
     │   ├── _layout.tsx
     │   └── index.tsx
@@ -70,9 +70,7 @@ app/
     │   └── index.tsx
     ├── reports/
     │   ├── _layout.tsx           ← Created P-13 (headerShown: false, slideFromRight)
-    │   └── index.tsx             ← Financial Position screen: `StatCard` (green Customers, `#E0336E` Suppliers) +
-    │                             `NetCard` (dark `#1C2333`); `todayLabel()` helper; linked from Dashboard.
-    │                             `InsightPill` + Quick Insights section + Monthly Report card removed in v3.8 (M-05)
+        └── index.tsx             ← Financial Position screen: StatCard colors use theme tokens (supplierPrimary); NetCard uses gradients.netPosition  ← v3.9
     └── export/
         ├── _layout.tsx
         └── index.tsx             ← Hidden from tab bar; push from ProfileScreen
@@ -117,7 +115,7 @@ src/components/
 │   ├── CustomerCard.tsx
 │   ├── CustomerList.tsx
 │   ├── NewCustomerModal.tsx       ← v3.7 M-01: migrated from AppModal (react-native-modal) to @gorhom/bottom-sheet; snapPoints:["90%"], BottomSheetScrollView, BottomSheetBackdrop
-│   └── RecordCustomerPaymentModal.tsx   ← @gorhom/bottom-sheet, snapPoints ["65%"]
+│   └── RecordCustomerPaymentModal.tsx   ← v3.9: uses useRecordPayment hook; no direct API import; no local queryClient; AVATAR_COLORS → colors.avatarPalette; snapPoints ["75%"]
 │
 ├── dashboard/
 │   ├── ActivityRow.tsx
@@ -141,17 +139,17 @@ src/components/
 │   ├── CustomerSelector.tsx
 │   ├── FilterBar.tsx              ← No longer used by OrdersScreen (v3.7 moved to inline chips); may be removed in a future cleanup
 │   ├── OrderBillSummary.tsx
-│   ├── OrderItemCard.tsx
-│   ├── OrderList.tsx              ← v3.7 full redesign: 44 dp initials avatar + customer name (15 sp bold) + bill# + date row + ₹amount (17 sp) + status chip; STATUS_STYLES exact hex (Paid=#DCFCE7, Partial=#DBEAFE, Pending=#FEF3C7, Overdue=#FEE2E2); ORDER_ITEM_H=108; windowSize:10; onCreateBill prop; inline empty state with "Create Bill" CTA
+│   ├── OrderItemCard.tsx          ← v3.9: price→rate prop; onUpdateRate?: (rate: number) => void; inline TextInput for rate editing (onBlur commit)
+│   ├── OrderList.tsx              ← v3.9: all raw hex removed; AVATAR_COLORS spreads colors.avatarPalette; STATUS_STYLES maps to theme tokens
 │   ├── OrderSummary.tsx
 │   ├── PaymentHistory.tsx
-│   └── RecordPayments.tsx
+│   └── RecordPayments.tsx         ← Dead code — zero active importers
 │
 ├── picker/
-│   ├── BottomSheetPicker.tsx
+│   ├── BottomSheetPicker.tsx      ← Generic sheet used by CustomerPicker; NOT used by ProductPicker (v3.9 ProductPicker owns its sheet)
 │   ├── CustomerPicker.tsx
-│   ├── ProductPicker.tsx
-│   └── VariantPicker.tsx
+│   ├── ProductPicker.tsx          ← v3.9 FULL REWRITE: owns BottomSheet directly; inline variant sub-view (no VariantPicker sheet); stay-open bulk-add; Done button; 1.2s checkmark flash feedback
+│   └── VariantPicker.tsx          ← Orphaned — no active importers after v3.9 ProductPicker rewrite; candidate for deletion
 │
 ├── products/
 │   ├── NewProductModal.tsx        ← v3.6 rewrite: variants-only (no Base Price); RupeeInput sub-component; FieldArray; sticky CTA; no AppModal
@@ -265,80 +263,71 @@ src/screens/
 
 ## 5. Zustand Stores
 
-| Store                   | File                               | Purpose                                                                                                                     | Status     |
-| :---------------------- | :--------------------------------- | :-------------------------------------------------------------------------------------------------------------------------- | :--------- |
-| `useAuthStore`          | `src/store/authStore.ts`           | Authenticated user + profile; `isRecoveryMode` flag; `_fetchInProgress` closure gate; atomic `setUser`; `setRecoveryMode()` | ✅ Active  |
-| `useLanguageStore`      | `src/store/languageStore.ts`       | Language toggle (EN/HI), AsyncStorage persistence                                                                           | ✅ Active  |
-| `useOrderStore`         | `src/store/orderStore.ts`          | Draft order state during bill creation                                                                                      | ✅ Active  |
-| `useCustomersStore`     | `src/store/customersStore.ts`      | Customer list local cache                                                                                                   | ✅ Active  |
-| `useSuppliersStore`     | `src/store/suppliersStore.ts`      | Supplier list local cache                                                                                                   | ✅ Active  |
-| ~~`useDashboardStore`~~ | ~~`src/store/dashboardStore.tsx`~~ | ~~Unused — never imported~~ — **Deleted (P-10)**                                                                            | ❌ Deleted |
+| Store                   | File                               | Purpose                                                                                                                                                                                    | Status     |
+| :---------------------- | :--------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------- |
+| `useAuthStore`          | `src/store/authStore.ts`           | `isInitialized`, `isFetchingProfile`, `isRecoveryMode`, `user`, `profile`; `setAuth(user)` triggers `fetchProfile`; `logout` clears state; simple boolean gate replaces `_fetchInProgress` | ✅ Active  |
+| `useLanguageStore`      | `src/store/languageStore.ts`       | Language toggle (EN/HI), AsyncStorage persistence                                                                                                                                          | ✅ Active  |
+| `useOrderStore`         | `src/store/orderStore.ts`          | Draft order state during bill creation                                                                                                                                                     | ✅ Active  |
+| `useCustomersStore`     | `src/store/customersStore.ts`      | Customer list local cache                                                                                                                                                                  | ✅ Active  |
+| `useSuppliersStore`     | `src/store/suppliersStore.ts`      | Supplier list local cache                                                                                                                                                                  | ✅ Active  |
+| ~~`useDashboardStore`~~ | ~~`src/store/dashboardStore.tsx`~~ | ~~Unused — never imported~~ — **Deleted (P-10)**                                                                                                                                           | ❌ Deleted |
 
-### `useAuthStore` Architecture (v3.4)
+### `useAuthStore` Architecture (v3.9 — simplified)
 
 ```typescript
-// Factory pattern — private closure guard prevents double HTTP fetch
-create<AuthState>((set, get) => {
-  let _fetchInProgress = false; // NOT in public state — avoids self-deadlock
-  return {
-    isRecoveryMode: false, // Pins root layout to set-new-password screen
-    setRecoveryMode: (v) => set({ isRecoveryMode: v }),
-    setUser: (user) => {
-      if (user)
-        set({ user, loading: true }); // ATOMIC — no intermediate state flash
-      else set({ user: null, profile: null, loading: false });
-    },
-    fetchProfile: async () => {
-      if (_fetchInProgress) {
-        /* subscribe to loading=false then resolve */ return;
-      }
-      _fetchInProgress = true;
-      // … supabase query + upsert fallback …
-      // finally: _fetchInProgress = false; set({ loading: false });
-    },
-  };
-});
+// New flat API — no factory pattern needed
+{
+  isInitialized: boolean,      // false until first onAuthStateChange fires
+  isFetchingProfile: boolean,  // true while supabase profile query is in-flight
+  isRecoveryMode: boolean,
+  user: User | null,
+  profile: Profile | null,
+  setAuth(user),               // sets user, triggers fetchProfile(user.id)
+  fetchProfile(userId),        // idempotent: guarded by isFetchingProfile boolean
+  logout(),
+  setRecoveryMode(v),
+}
 ```
 
-**Auth State Machine (8 states)**
+**Auth routing logic in `_layout.tsx`** — guards on `isInitialized`; early-returns if `user && isFetchingProfile && !profile`.
 
-| State                     | Condition                                                            | Screen                                  |
-| :------------------------ | :------------------------------------------------------------------- | :-------------------------------------- |
-| `INITIALIZING`            | `!fontsLoaded \|\| loading \|\| (user && profileLoading)`            | `<Loader />`                            |
-| `UNAUTHENTICATED_WELCOME` | `!isRecoveryMode && !user && showWelcome`                            | `app/index.tsx`                         |
-| `UNAUTHENTICATED_LOGIN`   | `!isRecoveryMode && !user && !showWelcome`                           | `(auth)/login`                          |
-| `PROFILE_ERROR`           | `!isRecoveryMode && user && !profile && !profileLoading`             | `profile-error`                         |
-| `ONBOARDING`              | `!isRecoveryMode && user && profile && !profile.onboarding_complete` | `(auth)/onboarding`                     |
-| `AUTHENTICATED`           | `!isRecoveryMode && user && profile && onboarding_complete === true` | `(main)/dashboard`                      |
-| `PASSWORD_RECOVERY`       | `isRecoveryMode === true` (any other user/profile state)             | `(auth)/set-new-password`               |
-| `PROFILE_LOADING`         | `user && profileLoading`                                             | `<Loader />` (shared with INITIALIZING) |
+| State               | Condition                                                                       | Screen                    |
+| :------------------ | :------------------------------------------------------------------------------ | :------------------------ |
+| `INITIALIZING`      | `!fontsLoaded \|\| !isInitialized \|\| (user && isFetchingProfile && !profile)` | `<Loader />`              |
+| `UNAUTHENTICATED`   | `!user`                                                                         | `app/index.tsx` or login  |
+| `PROFILE_ERROR`     | `user && !profile && !isFetchingProfile`                                        | `profile-error`           |
+| `ONBOARDING`        | `user && profile && !onboarding_complete`                                       | `(auth)/onboarding`       |
+| `AUTHENTICATED`     | `user && profile && onboarding_complete`                                        | `(main)/dashboard`        |
+| `PASSWORD_RECOVERY` | `isRecoveryMode === true`                                                       | `(auth)/set-new-password` |
 
 ---
 
 ## 6. TanStack Query Hooks
 
-| Hook                                         | File                   | Purpose                                                                                                      |
-| :------------------------------------------- | :--------------------- | :----------------------------------------------------------------------------------------------------------- |
-| `useDashboard(vendorId)`                     | `useDashboard.ts`      | Dashboard summary data — invalidated by all financial mutations                                              |
-| `useCustomers(vendorId, page, search)`       | `useCustomers.ts`      | Paginated customer list                                                                                      |
-| `useCustomerDetail(customerId)`              | `useCustomerDetail.ts` | Full customer detail + transaction feed                                                                      |
-| `useOrders(vendorId, page, filters, search)` | `useOrders.ts`         | Paginated order list with search (customer join fixed — P-04)                                                |
-| `useOrderDetail(orderId)`                    | `useOrderDetail.ts`    | Single order + payment history                                                                               |
-| `useProducts(vendorId, page, search)`        | `useProducts.ts`       | Paginated product list; variants joined (P-03)                                                               |
-| `useSuppliers(vendorId, page, search)`       | `useSuppliers.ts`      | Paginated supplier list                                                                                      |
-| `useSupplierDetail(supplierId)`              | `useSupplierDetail.ts` | Single supplier + delivery history                                                                           |
-| `useFontsLoader()`                           | `useFontsLoader.ts`    | Loads Inter font family                                                                                      |
-| `useLogin()`                                 | `useLogin.ts`          | Wraps `loginApi`; `await fetchProfile()`; routes based on profile state                                      |
-| `useAuth()`                                  | `useAuth.ts`           | Sets up `supabase.auth.onAuthStateChange`; `PASSWORD_RECOVERY` sets `isRecoveryMode`; mounted in root layout |
+| Hook                                              | File                   | Purpose                                                                                                                                       |
+| :------------------------------------------------ | :--------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useDashboard(vendorId)`                          | `useDashboard.ts`      | Dashboard summary data — invalidated by all financial mutations                                                                               |
+| `useCustomers(vendorId, page, search)`            | `useCustomers.ts`      | Paginated customer list                                                                                                                       |
+| `useCustomerDetail(customerId)`                   | `useCustomerDetail.ts` | Full customer detail + transaction feed                                                                                                       |
+| `useOrders(vendorId, page, filters, search)`      | `useOrders.ts`         | Paginated order list with search; `useCreateOrder` returns `OrderDetail` with real `bill_number`                                              |
+| `useOrderDetail(orderId)`                         | `useOrderDetail.ts`    | Single order + payment history                                                                                                                |
+| `useProducts(vendorId, page, search)`             | `useProducts.ts`       | Paginated product list; variants joined                                                                                                       |
+| `useSuppliers(vendorId, page, search)`            | `useSuppliers.ts`      | Paginated supplier list                                                                                                                       |
+| `useSupplierDetail(supplierId)`                   | `useSupplierDetail.ts` | Single supplier + delivery history                                                                                                            |
+| `useFontsLoader()`                                | `useFontsLoader.ts`    | Loads Inter font family                                                                                                                       |
+| `useLogin()`                                      | `useAuth.ts`           | One-liner: sets `hasSeenWelcome`; routing delegated to `_layout.tsx`                                                                          |
+| `useAuth()`                                       | `useAuth.ts`           | Mounts `onAuthStateChange`; calls `setAuth(user)` → triggers `fetchProfile`; `PASSWORD_RECOVERY` sets `isRecoveryMode`                        |
+| `usePayments(orderId, vendorId, customerId)`      | `usePayments.ts`       | Payment history query + delegates to `useRecordPayment`                                                                                       |
+| `useRecordPayment(orderId, vendorId, customerId)` | `usePayments.ts`       | Mutation-only; comprehensive `onSuccess` invalidation: `orderKeys.all`, `orderDetail`, `payments`, `customers`, `customerDetail`, `dashboard` |
 
-### Cache Invalidation Matrix (P-22)
+### Cache Invalidation Matrix (v3.9)
 
-| Mutation            | Invalidates                                                        |
-| :------------------ | :----------------------------------------------------------------- |
-| `recordPayment`     | `["customer", id]`, `["customers"]`, `["dashboard"]`               |
-| `createOrder`       | `["customer", id]`, `["customers"]`, `["orders"]`, `["dashboard"]` |
-| `recordDelivery`    | `["supplier", id]`, `["suppliers"]`, `["dashboard"]`               |
-| `recordPaymentMade` | `["supplier", id]`, `["suppliers"]`, `["dashboard"]`               |
+| Mutation            | Invalidates                                                                                                                           |
+| :------------------ | :------------------------------------------------------------------------------------------------------------------------------------ |
+| `recordPayment`     | `orderKeys.all(vendorId)`, `orderDetail`, `["payments", orderId]`, `["customers"]`, `["customerDetail", customerId]`, `["dashboard"]` |
+| `createOrder`       | `orderKeys.all(vendorId)` (via `invalidateQueries`); seeds `orderDetail` cache via `setQueryData`                                     |
+| `recordDelivery`    | `["supplier", id]`, `["suppliers"]`, `["dashboard"]`                                                                                  |
+| `recordPaymentMade` | `["supplier", id]`, `["suppliers"]`, `["dashboard"]`                                                                                  |
 
 ---
 
@@ -375,6 +364,12 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
 - `products_vendor_name_idx` — composite on `products(vendor_id, name)` (product name search)
 
 > Note: `order_items_order_idx` and `payments_order_idx` are duplicate indexes present in the live DB (redundant with `idx_order_items_order` and `idx_payments_order` respectively). They are candidates for `DROP INDEX`.
+
+### `generateBillPdf.ts`
+
+- `invoiceNumber` is a **required** param in `InvoiceOptions` — no timestamp fallback. PDF is only generated after a successful DB save (real `bill_number` is passed from `createOrderMutation` return value).
+- Footer: "Made with ❤️ by KredBook"
+- PDF shared via `expo-sharing` native share sheet; no Supabase upload or WhatsApp deep-link.
 
 ---
 
@@ -457,24 +452,27 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
 
 ## 10. Known Architecture Notes
 
-### Auth System (v3.4–3.5)
+### Auth System (v3.9)
 
-| Topic                         | Detail                                                                                                                                                                                            |
-| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Session storage               | `expo-secure-store` via `src/lib/secureStorage.ts` chunked adapter replaces `AsyncStorage` for JWT tokens                                                                                         |
-| `isRecoveryMode` guard        | Root layout top-priority guard added in v3.5; overrides all other 5 Stack guards when true                                                                                                        |
-| `_fetchInProgress` gate       | Private closure variable in authStore factory; not in public state — avoids deadlock with `loading: true` pre-set by `setUser`                                                                    |
-| `PASSWORD_RECOVERY` isolation | Handler does not call `setUser()` — Supabase internal recovery session is sufficient for `updateUser()`. Calling `setUser` would populate profile and route to dashboard before the user can type |
-| Auth breadcrumbs              | Sentry `addBreadcrumb` fires at: `auth_login_success`, `google_oauth_start`, `google_oauth_success`, `signup_success`, `onboarding_complete`, `logout`                                            |
-| `hasSeenWelcome` on logout    | Intentionally deleted on every logout for re-engagement on next launch (documented in `useLogout.onSuccess`)                                                                                      |
+| Topic                         | Detail                                                                                                                                                             |
+| :---------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Session storage               | `expo-secure-store` via `src/lib/secureStorage.ts` chunked adapter (≤1800B/chunk)                                                                                  |
+| `isInitialized` flag          | Set to `true` after the first `onAuthStateChange` event fires in `useAuth()`                                                                                       |
+| `isFetchingProfile` gate      | Simple boolean — replaced `_fetchInProgress` closure. `setAuth` sets it `true`; `fetchProfile` sets it `false` on completion                                       |
+| `setAuth` → `fetchProfile`    | `setAuth(user)` sets `user` and calls `fetchProfile(user.id)` immediately — single call site, no race                                                              |
+| `PASSWORD_RECOVERY` isolation | `onAuthStateChange` SIGNED_IN events during recovery set `isRecoveryMode` without calling `setAuth` — prevents routing to dashboard before user types new password |
+| Auth breadcrumbs              | Sentry `addBreadcrumb` fires at: `auth_login_success`, `google_oauth_start`, `google_oauth_success`, `signup_success`, `onboarding_complete`, `logout`             |
+| `hasSeenWelcome` on logout    | Intentionally deleted on every logout for re-engagement on next launch                                                                                             |
 
-### Deferred Items (v3.6)
+### Deferred Items (v3.9)
 
-| Issue     | Detail                                                                                                                                                                                                        |
-| :-------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| M-01      | Modal library not fully consolidated — `NewCustomerModal` / `NewSupplierModal` still use `react-native-modal` via `AppModal`. `NewProductModal` was migrated off AppModal in v3.6. Full unification deferred. |
-| M-04      | Export screen not in tab bar — only reachable via `router.push` from ProfileScreen. UX decision pending.                                                                                                      |
-| M-05–M-08 | Architecture cleanup: rationalise `src/screens/` indirection inconsistency (4 inline vs 8 delegated).                                                                                                         |
+| Issue     | Detail                                                                                                                                      |
+| :-------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
+| M-01      | `react-native-modal` (`AppModal`) still used by `NewCustomerModal` / `NewSupplierModal`. Full migration to `@gorhom/bottom-sheet` deferred. |
+| M-04      | Export screen not in tab bar — only reachable from ProfileScreen. UX decision pending.                                                      |
+| M-05–M-08 | Rationalise `src/screens/` indirection inconsistency (4 inline vs 8 delegated).                                                             |
+| M-09      | `VariantPicker.tsx` and `RecordPayments.tsx` are orphaned (zero importers). Candidate for deletion.                                         |
+| M-10      | `order_items` table has no `variant_id` column — DB migration required before variant-level inventory reporting is possible.                |
 
 ### Icon Library
 
@@ -490,4 +488,4 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
 
 ---
 
-_This document reflects the codebase state as of v3.8 (March 16, 2026). Update whenever screens, stores, API functions, or components are added or removed. DB schema notes reflect live Supabase introspection performed March 16, 2026 (schema.sql v1.9)._
+_This document reflects the codebase state as of v3.9 (March 30, 2026). Update whenever screens, stores, API functions, or components are added or removed. DB schema notes reflect live Supabase introspection performed March 16, 2026 (schema.sql v1.9)._

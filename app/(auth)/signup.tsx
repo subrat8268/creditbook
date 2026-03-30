@@ -46,7 +46,7 @@ export default function SignUpPage() {
           <View className="flex-1 px-6 pb-10 justify-center">
             <AuthHeader
               title="Create Account"
-              subtitle="Set up your CreditBook in 2 minutes"
+              subtitle="Set up your KredBook in 2 minutes"
             />
 
             <AuthCard>

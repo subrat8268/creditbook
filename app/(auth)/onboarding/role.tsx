@@ -124,7 +124,7 @@ export default function OnboardingRole() {
           {"What's your business?"}
         </Text>
         <Text className="text-sm text-textSecondary mb-7">
-          {"We'll set up CreditBook to match your work"}
+          {"We'll set up KredBook to match your work"}
         </Text>
 
         {/* ── Role cards ── */}
