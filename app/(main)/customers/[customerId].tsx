@@ -630,42 +630,64 @@ export default function CustomerDetailScreen() {
         </View>
       </ScrollView>
 
-      {/* ── Download Statement Footer ── */}
-      <View className="px-6 py-4 bg-white border-t border-border">
+      {/* ── Footer: Download PDF + WhatsApp ── */}
+      <View
+        className="px-4 py-4 bg-white border-t border-border flex-row gap-3"
+        style={{ paddingBottom: 16 }}
+      >
+        {/* Download PDF */}
         <TouchableOpacity
-          className={`flex-row items-center justify-center gap-2 rounded-[30px] py-4 ${
-            exporting ? "opacity-60" : ""
-          }`}
+          className="flex-1 flex-row items-center justify-center gap-2 rounded-[30px] py-4"
           style={{
             backgroundColor:
               customer.transactions.length === 0
                 ? colors.border
-                : colors.textPrimary,
+                : customer.outstandingBalance > 0
+                  ? "#1C2333"
+                  : "#F1F5F9",
+            opacity: exporting ? 0.6 : 1,
           }}
           onPress={downloadStatement}
           disabled={exporting || customer.transactions.length === 0}
           activeOpacity={0.85}
         >
           <Download
-            size={18}
+            size={17}
             color={
               customer.transactions.length === 0
                 ? colors.textSecondary
-                : "#FFFFFF"
+                : customer.outstandingBalance > 0
+                  ? "#FFFFFF"
+                  : colors.textPrimary
             }
             strokeWidth={2}
           />
           <Text
-            className="text-[15px] font-bold"
+            className="text-[14px] font-bold"
             style={{
               color:
                 customer.transactions.length === 0
                   ? colors.textSecondary
-                  : "#FFFFFF",
+                  : customer.outstandingBalance > 0
+                    ? "#FFFFFF"
+                    : colors.textPrimary,
             }}
           >
-            {exporting ? "Generating…" : "Download Statement"}
+            {exporting ? "Generating…" : "Download PDF"}
           </Text>
+        </TouchableOpacity>
+
+        {/* WhatsApp */}
+        <TouchableOpacity
+          className="flex-1 flex-row items-center justify-center gap-2 rounded-[30px] py-4"
+          style={{
+            backgroundColor: colors.primary,
+          }}
+          onPress={sendWhatsAppReminder}
+          activeOpacity={0.85}
+        >
+          <MessageCircle size={17} color="#FFFFFF" strokeWidth={2} />
+          <Text className="text-[14px] font-bold text-white">WhatsApp</Text>
         </TouchableOpacity>
       </View>
 
