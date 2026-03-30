@@ -1,8 +1,8 @@
 # KredBook — Project Architecture
 
 > **Last Updated**: March 30, 2026
-> **App Version**: 3.9
-> **Status**: Phase 6.9 complete — Auth store refactor; design token enforcement; bill creation data-integrity overhaul; payment cache consolidation; product picker UX overhaul
+> **App Version**: 4.0
+> **Status**: Phase 7 complete — Customers/Suppliers/Orders list screens polished (summary bars, sort sheets, count badges); Notifications screen added; Create Bill footer grand-total strip; bell icon wired
 
 ---
 
@@ -70,7 +70,9 @@ app/
     │   └── index.tsx
     ├── reports/
     │   ├── _layout.tsx           ← Created P-13 (headerShown: false, slideFromRight)
-        └── index.tsx             ← Financial Position screen: StatCard colors use theme tokens (supplierPrimary); NetCard uses gradients.netPosition  ← v3.9
+    │   └── index.tsx             ← Financial Position screen: StatCard colors use theme tokens (supplierPrimary); NetCard uses gradients.netPosition  ← v3.9
+    ├── notifications/
+    │   └── index.tsx             ← v4.0 NEW: overdue follow-ups + recent activity; bell wired from DashboardHeader
     └── export/
         ├── _layout.tsx
         └── index.tsx             ← Hidden from tab bar; push from ProfileScreen
@@ -120,8 +122,9 @@ src/components/
 ├── dashboard/
 │   ├── ActivityRow.tsx
 │   ├── DashboardActionBar.tsx
-│   ├── DashboardHeader.tsx
+│   ├── DashboardHeader.tsx            ← bell onPressNotifications wired to /(main)/notifications  ← v4.0
 │   ├── DashboardHeroCard.tsx
+│   ├── DashboardPendingFollowups.tsx  ← v4.0: overdue follow-up cards with WhatsApp remind
 │   ├── DashboardRecentActivity.tsx
 │   ├── DashboardStatCards.tsx
 │   └── StatusBadge.tsx
@@ -222,20 +225,21 @@ src/screens/
 
 ### Main Screens (`app/(main)/`)
 
-| Screen             | Route file                   | Screen file                         | Pattern   |
-| :----------------- | :--------------------------- | :---------------------------------- | :-------- |
-| Dashboard          | `dashboard/index.tsx`        | `src/screens/DashboardScreen.tsx`   | Delegated |
-| Customers List     | `customers/index.tsx`        | `src/screens/CustomersScreen.tsx`   | Delegated |
-| Customer Detail    | `customers/[customerId].tsx` | _(inline)_                          | Inline    |
-| Orders List        | `orders/index.tsx`           | `src/screens/OrdersScreen.tsx`      | Delegated |
-| New Bill           | `orders/create.tsx`          | `src/screens/CreateOrderScreen.tsx` | Delegated |
-| Order Detail       | `orders/[orderId].tsx`       | _(inline)_                          | Inline    |
-| Products           | `products/index.tsx`         | `src/screens/ProductsScreen.tsx`    | Delegated |
-| Suppliers List     | `suppliers/index.tsx`        | `src/screens/SuppliersScreen.tsx`   | Delegated |
-| Supplier Detail    | `suppliers/[supplierId].tsx` | _(inline)_                          | Inline    |
-| Profile            | `profile/index.tsx`          | `src/screens/ProfileScreen.tsx`     | Delegated |
-| Financial Position | `reports/index.tsx`          | _(inline)_                          | Inline    |
-| Export Data        | `export/index.tsx`           | `src/screens/ExportScreen.tsx`      | Delegated |
+| Screen             | Route file                    | Screen file                       | Pattern   |
+| :----------------- | :---------------------------- | :-------------------------------- | :-------- |
+| Dashboard          | `dashboard/index.tsx`         | `src/screens/DashboardScreen.tsx` | Delegated |
+| Customers List     | `customers/index.tsx`         | _(inline — v4.0 full rewrite)_    | Inline    |
+| Customer Detail    | `customers/[customerId].tsx`  | _(inline)_                        | Inline    |
+| Orders List        | `orders/index.tsx`            | _(inline — v4.0 full rewrite)_    | Inline    |
+| New Bill           | `orders/create.tsx`           | _(inline — v4.0 polish)_          | Inline    |
+| Order Detail       | `orders/[orderId].tsx`        | _(inline)_                        | Inline    |
+| Products           | `products/index.tsx`          | `src/screens/ProductsScreen.tsx`  | Delegated |
+| Suppliers List     | `suppliers/index.tsx`         | _(inline — v4.0 full rewrite)_    | Inline    |
+| Supplier Detail    | `suppliers/[supplierId].tsx`  | _(inline)_                        | Inline    |
+| Profile            | `profile/index.tsx`           | `src/screens/ProfileScreen.tsx`   | Delegated |
+| Financial Position | `reports/index.tsx`           | _(inline)_                        | Inline    |
+| **Notifications**  | **`notifications/index.tsx`** | _(inline — v4.0 NEW)_             | Inline    |
+| Export Data        | `export/index.tsx`            | `src/screens/ExportScreen.tsx`    | Delegated |
 
 > **Architecture note**: 8 routes delegate to `src/screens/`; 4 routes implement logic inline in `app/`. No single rule governs this split. **Modal consolidation**: All full-screen entry modals now use `@gorhom/bottom-sheet` (migrated in v3.7). `react-native-modal` (`AppModal`) has zero active importers and is a candidate for removal.
 
@@ -385,7 +389,11 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
 
 ### `dashboard.ts`
 
-- `getDashboardData(vendorId)` → `{ customersOweMe, iOweSuppliers, netPosition, activeBuyers, overdueCount, recentActivity }`
+### `getDashboardData(vendorId)` → `{ customersOweMe, iOweSuppliers, netPosition, activeBuyers, overdueCount, overdueCustomersList, recentActivity, weekDelta, weekDeltaPct }`
+
+- `overdueCustomersList`: top-5 overdue customers sorted by balance (id, name, phone, balance, daysSince)
+- `weekDelta`: absolute ₹ change in outstanding orders vs prior 7-day window
+- `weekDeltaPct`: percentage change in net position vs prior 7-day window
 
 ### `export.ts`
 
@@ -438,15 +446,16 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
 
 ### `src/components/dashboard/`
 
-| File                          | Purpose                                                |
-| :---------------------------- | :----------------------------------------------------- |
-| `DashboardHeader.tsx`         | Time-based greeting, initials avatar, overdue bell dot |
-| `DashboardHeroCard.tsx`       | Hero amount card (single or split "both" mode)         |
-| `DashboardActionBar.tsx`      | "View Report" / "Send Reminder" buttons                |
-| `DashboardStatCards.tsx`      | Active Buyers + Overdue count stat cards               |
-| `DashboardRecentActivity.tsx` | Last N activity rows container                         |
-| `ActivityRow.tsx`             | Single activity feed row                               |
-| `StatusBadge.tsx`             | PAID / PENDING / OVERDUE / PARTIAL pill chip           |
+| File                            | Purpose                                                                                                         |
+| :------------------------------ | :-------------------------------------------------------------------------------------------------------------- |
+| `DashboardHeader.tsx`           | Time-based greeting, initials avatar, overdue bell dot; `onPressNotifications` → `/(main)/notifications` (v4.0) |
+| `DashboardHeroCard.tsx`         | Hero amount card (single or split "both" mode)                                                                  |
+| `DashboardActionBar.tsx`        | "View Report" / "Send Reminder" buttons                                                                         |
+| `DashboardStatCards.tsx`        | Active Buyers + Overdue count stat cards                                                                        |
+| `DashboardPendingFollowups.tsx` | Overdue follow-up cards with customer name, days overdue, balance, WhatsApp remind button (v4.0)                |
+| `DashboardRecentActivity.tsx`   | Last N activity rows container                                                                                  |
+| `ActivityRow.tsx`               | Single activity feed row                                                                                        |
+| `StatusBadge.tsx`               | PAID / PENDING / OVERDUE / PARTIAL pill chip                                                                    |
 
 ---
 
@@ -466,13 +475,14 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
 
 ### Deferred Items (v3.9)
 
-| Issue     | Detail                                                                                                                                      |
-| :-------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
-| M-01      | `react-native-modal` (`AppModal`) still used by `NewCustomerModal` / `NewSupplierModal`. Full migration to `@gorhom/bottom-sheet` deferred. |
-| M-04      | Export screen not in tab bar — only reachable from ProfileScreen. UX decision pending.                                                      |
-| M-05–M-08 | Rationalise `src/screens/` indirection inconsistency (4 inline vs 8 delegated).                                                             |
-| M-09      | `VariantPicker.tsx` and `RecordPayments.tsx` are orphaned (zero importers). Candidate for deletion.                                         |
-| M-10      | `order_items` table has no `variant_id` column — DB migration required before variant-level inventory reporting is possible.                |
+| Issue     | Detail                                                                                                                                                                                                                   |
+| :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M-01      | `react-native-modal` (`AppModal`) still used by `NewCustomerModal` / `NewSupplierModal`. Full migration to `@gorhom/bottom-sheet` deferred.                                                                              |
+| M-04      | Export screen not in tab bar — only reachable from ProfileScreen. UX decision pending.                                                                                                                                   |
+| M-05–M-08 | Rationalise `src/screens/` indirection inconsistency — now mostly inline. `CustomerScreen.tsx`, `SuppliersScreen.tsx`, `OrdersScreen.tsx`, `CreateOrderScreen.tsx` in `src/screens/` are **stale** (no longer imported). |
+| M-09      | `VariantPicker.tsx` and `RecordPayments.tsx` are orphaned (zero importers). Candidate for deletion.                                                                                                                      |
+| M-10      | `order_items` table has no `variant_id` column — DB migration required before variant-level inventory reporting is possible.                                                                                             |
+| M-11      | Notifications screen (`/(main)/notifications`) has no dedicated `_layout.tsx` — uses parent stack navigator. Add if custom back-nav is needed.                                                                           |
 
 ### Icon Library
 
@@ -488,4 +498,4 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
 
 ---
 
-_This document reflects the codebase state as of v3.9 (March 30, 2026). Update whenever screens, stores, API functions, or components are added or removed. DB schema notes reflect live Supabase introspection performed March 16, 2026 (schema.sql v1.9)._
+_This document reflects the codebase state as of v4.0 (March 30, 2026). Update whenever screens, stores, API functions, or components are added or removed. DB schema notes reflect live Supabase introspection performed March 16, 2026 (schema.sql v1.9)._

@@ -1,6 +1,6 @@
 import ContactsPickerModal from "@/src/components/customers/ContactsPickerModal";
 import CustomerList, {
-  CustomerFilter,
+    CustomerFilter,
 } from "@/src/components/customers/CustomerList";
 import CustomersHeader from "@/src/components/customers/CustomersHeader";
 import NewCustomerModal from "@/src/components/customers/NewCustomerModal";
@@ -10,23 +10,37 @@ import { useAddCustomer, useCustomers } from "@/src/hooks/useCustomer";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useAuthStore } from "@/src/store/authStore";
 import { useCustomersStore } from "@/src/store/customersStore";
-import { colors } from "@/src/utils/theme";
+import { formatINR } from "@/src/utils/dashboardUi";
+import { colors, spacing, typography } from "@/src/utils/theme";
+import BottomSheet, {
+    BottomSheetBackdrop,
+    BottomSheetView,
+} from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import { Users } from "lucide-react-native";
-import { useCallback, useState } from "react";
+import { Check, TrendingDown, Users } from "lucide-react-native";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Alert,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const FILTERS: CustomerFilter[] = ["All", "Overdue", "Paid", "Pending"];
+
+const SORT_OPTIONS = [
+  { label: "Recently Active", value: "recent" },
+  { label: "Balance: High → Low", value: "balanceDesc" },
+  { label: "Balance: Low → High", value: "balanceAsc" },
+  { label: "Name: A → Z", value: "nameAsc" },
+  { label: "Name: Z → A", value: "nameDesc" },
+] as const;
+type CustomerSort = (typeof SORT_OPTIONS)[number]["value"];
 
 export default function CustomersScreen() {
   const { profile } = useAuthStore();
@@ -35,10 +49,12 @@ export default function CustomersScreen() {
 
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<CustomerFilter>("All");
+  const [sortBy, setSortBy] = useState<CustomerSort>("recent");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isContactsModalOpen, setIsContactsModalOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const customers = useCustomersStore((s) => s.customers);
+  const sortSheetRef = useRef<BottomSheet | null>(null);
 
   const {
     refetch,
@@ -50,6 +66,41 @@ export default function CustomersScreen() {
   } = useCustomers(profile?.id, search);
 
   const addCustomerMutation = useAddCustomer(profile?.id ?? "");
+
+  // ── Summary stats ──────────────────────────────────────────────────────────
+  const totalOutstanding = useMemo(
+    () => customers.reduce((s, c) => s + (c.outstandingBalance ?? 0), 0),
+    [customers],
+  );
+  const overdueCount = useMemo(
+    () => customers.filter((c) => c.isOverdue).length,
+    [customers],
+  );
+
+  // ── Sorted customers (sorted before passing to CustomerList) ───────────────
+  const sortedCustomers = useMemo(() => {
+    const list = [...customers];
+    switch (sortBy) {
+      case "balanceDesc":
+        return list.sort(
+          (a, b) => (b.outstandingBalance ?? 0) - (a.outstandingBalance ?? 0),
+        );
+      case "balanceAsc":
+        return list.sort(
+          (a, b) => (a.outstandingBalance ?? 0) - (b.outstandingBalance ?? 0),
+        );
+      case "nameAsc":
+        return list.sort((a, b) => a.name.localeCompare(b.name));
+      case "nameDesc":
+        return list.sort((a, b) => b.name.localeCompare(a.name));
+      default:
+        return list.sort(
+          (a, b) =>
+            new Date(b.lastActiveAt ?? b.created_at).getTime() -
+            new Date(a.lastActiveAt ?? a.created_at).getTime(),
+        );
+    }
+  }, [customers, sortBy]);
 
   const handleAddCustomer = async (values: {
     name: string;
@@ -120,10 +171,76 @@ export default function CustomersScreen() {
       {/* ── Screen header ── */}
       <CustomersHeader
         count={customers.length}
-        onMenuPress={() => {
-          // TODO: show bulk-action menu (export, sort, etc.)
-        }}
+        onMenuPress={() => sortSheetRef.current?.expand()}
       />
+
+      {/* ── Summary bar ── */}
+      {customers.length > 0 && (
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: spacing.screenPadding,
+            paddingVertical: spacing.sm,
+            backgroundColor: colors.surface,
+            gap: spacing.sm,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: colors.successBg,
+              borderRadius: 10,
+              paddingVertical: 8,
+              paddingHorizontal: 12,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <TrendingDown
+              size={14}
+              color={colors.primaryDark}
+              strokeWidth={2}
+            />
+            <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+              Total Outstanding
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "700",
+                color: colors.primaryDark,
+                marginLeft: 2,
+              }}
+            >
+              {formatINR(totalOutstanding)}
+            </Text>
+          </View>
+          {overdueCount > 0 && (
+            <View
+              style={{
+                backgroundColor: colors.overdue.bg,
+                borderRadius: 10,
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontWeight: "700",
+                  color: colors.overdue.text,
+                }}
+              >
+                {overdueCount} Overdue
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
 
       {/* ── Search + filter bar ── */}
       <View className="px-5 pt-3.5 pb-1 bg-white">
@@ -169,7 +286,7 @@ export default function CustomersScreen() {
 
       {/* ── Customer list (full-width) ── */}
       <CustomerList
-        customers={customers}
+        customers={sortedCustomers}
         isLoading={isLoading}
         error={error}
         onRefresh={onRefresh}
@@ -207,6 +324,58 @@ export default function CustomersScreen() {
         onClose={() => setIsContactsModalOpen(false)}
         onImport={handleBulkImport}
       />
+
+      {/* ── Sort bottom sheet ── */}
+      <BottomSheet
+        ref={sortSheetRef}
+        index={-1}
+        snapPoints={[320]}
+        backdropComponent={(props) => (
+          <BottomSheetBackdrop {...props} pressBehavior="close" />
+        )}
+        enablePanDownToClose
+        backgroundStyle={{ backgroundColor: colors.surface, borderRadius: 24 }}
+        handleIndicatorStyle={{ backgroundColor: colors.border, width: 40 }}
+      >
+        <BottomSheetView style={{ padding: spacing.lg }}>
+          <Text style={{ ...typography.cardTitle, marginBottom: spacing.md }}>
+            Sort Customers
+          </Text>
+          {SORT_OPTIONS.map((opt) => {
+            const active = sortBy === opt.value;
+            return (
+              <TouchableOpacity
+                key={opt.value}
+                onPress={() => {
+                  setSortBy(opt.value);
+                  sortSheetRef.current?.close();
+                }}
+                style={{
+                  paddingVertical: spacing.md,
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  borderBottomWidth: 1,
+                  borderBottomColor: colors.background,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 15,
+                    color: active ? colors.primaryDark : colors.textPrimary,
+                    fontWeight: active ? "600" : "400",
+                  }}
+                >
+                  {opt.label}
+                </Text>
+                {active && (
+                  <Check size={18} color={colors.primaryDark} strokeWidth={2} />
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </BottomSheetView>
+      </BottomSheet>
     </SafeAreaView>
   );
 }

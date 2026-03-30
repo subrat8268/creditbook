@@ -6,6 +6,7 @@ import CustomerPicker from "@/src/components/picker/CustomerPicker";
 import ProductPicker from "@/src/components/picker/ProductPicker";
 import { useCreateOrder } from "@/src/hooks/useOrders";
 import { useAuthStore } from "@/src/store/authStore";
+import { formatINR } from "@/src/utils/dashboardUi";
 import { BillItem, generateBillPdf } from "@/src/utils/generateBillPdf";
 import { colors, spacing } from "@/src/utils/theme";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -349,6 +350,19 @@ export default function CreateOrderScreen() {
             }}
             showsVerticalScrollIndicator={false}
           >
+            {/* ── BILL FOR section label ── */}
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: "700",
+                color: colors.textSecondary,
+                letterSpacing: 1,
+                marginBottom: 2,
+              }}
+            >
+              BILL FOR
+            </Text>
+
             {/* ── Customer card ── */}
             <TouchableOpacity
               activeOpacity={0.75}
@@ -537,49 +551,86 @@ export default function CreateOrderScreen() {
 
           {/* ── Sticky footer ── */}
           <View
-            className="flex-row gap-3 px-4 py-3"
             style={{
               backgroundColor: colors.surface,
               borderTopWidth: 1,
               borderTopColor: colors.border,
+              paddingTop: 10,
+              paddingBottom: 10,
+              paddingHorizontal: spacing.lg,
             }}
           >
-            {/* Save Bill (outline) — saves to DB only, no PDF */}
-            <TouchableOpacity
-              onPress={handleSaveOrder}
-              disabled={createOrderMutation.isPending}
-              activeOpacity={0.8}
-              className="flex-1 flex-row items-center justify-center py-3.5 rounded-full border"
-              style={{
-                borderColor: colors.primary,
-                opacity: createOrderMutation.isPending ? 0.5 : 1,
-              }}
-            >
-              <CircleCheck size={18} color={colors.primary} strokeWidth={2} />
-              <Text
-                className="ml-2 text-[15px] font-bold"
-                style={{ color: colors.primary }}
+            {/* Grand total row */}
+            {grandTotal > 0 && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 10,
+                  paddingHorizontal: 4,
+                }}
               >
-                Save Bill
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: colors.textSecondary,
+                    fontWeight: "500",
+                  }}
+                >
+                  Grand Total
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "800",
+                    color: colors.textPrimary,
+                  }}
+                >
+                  {formatINR(grandTotal)}
+                </Text>
+              </View>
+            )}
 
-            {/* Save & Share (solid) — saves to DB then generates PDF via expo-sharing */}
-            <TouchableOpacity
-              onPress={handleSaveAndShare}
-              disabled={createOrderMutation.isPending}
-              activeOpacity={0.8}
-              className="flex-1 flex-row items-center justify-center py-3.5 rounded-full"
-              style={{
-                backgroundColor: colors.primary,
-                opacity: createOrderMutation.isPending ? 0.5 : 1,
-              }}
-            >
-              <Share2 size={18} color={colors.surface} strokeWidth={2} />
-              <Text className="ml-2 text-[15px] font-bold text-white">
-                {createOrderMutation.isPending ? "Saving..." : "Save & Share"}
-              </Text>
-            </TouchableOpacity>
+            {/* Action buttons */}
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              {/* Save Bill (outline) — saves to DB only, no PDF */}
+              <TouchableOpacity
+                onPress={handleSaveOrder}
+                disabled={createOrderMutation.isPending}
+                activeOpacity={0.8}
+                className="flex-1 flex-row items-center justify-center py-3.5 rounded-full border"
+                style={{
+                  borderColor: colors.primary,
+                  opacity: createOrderMutation.isPending ? 0.5 : 1,
+                }}
+              >
+                <CircleCheck size={18} color={colors.primary} strokeWidth={2} />
+                <Text
+                  className="ml-2 text-[15px] font-bold"
+                  style={{ color: colors.primary }}
+                >
+                  Save Bill
+                </Text>
+              </TouchableOpacity>
+
+              {/* Save & Share (solid) — saves to DB then generates PDF via expo-sharing */}
+              <TouchableOpacity
+                onPress={handleSaveAndShare}
+                disabled={createOrderMutation.isPending}
+                activeOpacity={0.8}
+                className="flex-1 flex-row items-center justify-center py-3.5 rounded-full"
+                style={{
+                  backgroundColor: colors.primary,
+                  opacity: createOrderMutation.isPending ? 0.5 : 1,
+                }}
+              >
+                <Share2 size={18} color={colors.surface} strokeWidth={2} />
+                <Text className="ml-2 text-[15px] font-bold text-white">
+                  {createOrderMutation.isPending ? "Saving..." : "Save & Share"}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* ── Pickers ── */}

@@ -2,6 +2,7 @@
 
 > **Purpose**: Complete UX reference for designers and AI tools. Documents every screen's exact layout, element positions, feature list, and interaction model.
 > **Last Updated**: March 30, 2026
+> **App Version**: 4.0
 > **References**: `docs/prd.md`, `docs/design-system.md`
 
 ---
@@ -466,18 +467,20 @@ Every screen should support at least one of these goals:
 
 #### Layout (top-to-bottom)
 
-| Position                | Element              | Detail                                                                                                                                                  |
-| ----------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FIXED TOP               | Header row           | Left: "Orders" title (22px bold) + count badge. Right: search icon toggle                                                                               |
-| FIXED TOP (conditional) | `SearchBar`          | Expands below header when toggled                                                                                                                       |
-| FIXED TOP               | Filter row           | Horizontal scroll chips: **All** / **Paid** / **Partial** / **Pending** / **Overdue** + **Sort** chip (right, with ChevronDown icon)                    |
-| SCROLL                  | `OrderList` FlatList | One order card per row (108dp height, fixed via `getItemLayout`)                                                                                        |
-| —                       | Order card           | Left: 44dp initials avatar + customer name (15px bold) + bill number (13px gray). Right: ₹amount (17px bold) + status chip. Bottom-left: formatted date |
-| SCROLL BOTTOM           | Empty state          | "No orders yet" + "Create Bill" green button                                                                                                            |
-| ABSOLUTE BOTTOM-RIGHT   | Blue FAB `+`         | Create new bill                                                                                                                                         |
+| Position                | Element              | Detail                                                                                                                                                                                                      |
+| ----------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FIXED TOP               | Header row           | Left: "Orders" title (22px bold). Right: search icon toggle                                                                                                                                                 |
+| FIXED TOP (conditional) | `SearchBar`          | Expands below header when toggled                                                                                                                                                                           |
+| FIXED TOP (conditional) | Summary bar          | Shown when `outstandingAmount > 0` or overdue customers exist. Left pill: "Outstanding" with `formatINR` amount (red bg `#FEF2F2`). Right pill: "N Overdue" (red) — sourced from cached `useDashboard` data |
+| FIXED TOP               | Filter row           | Horizontal scroll chips: **All** / **Paid** / **Partial** / **Pending** / **Overdue** + **Sort** chip (right, with SortAsc icon)                                                                            |
+| SCROLL                  | `OrderList` FlatList | One order card per row (108dp height, fixed via `getItemLayout`)                                                                                                                                            |
+| —                       | Order card           | Left: 44dp initials avatar + customer name (15px bold) + bill number (13px gray). Right: ₹amount (17px bold) + status chip. Bottom-left: formatted date                                                     |
+| SCROLL BOTTOM           | Empty state          | "No orders yet" + "Create Bill" green button                                                                                                                                                                |
+| ABSOLUTE BOTTOM-RIGHT   | Blue FAB `+`         | Create new bill                                                                                                                                                                                             |
 
 #### Conditional elements
 
+- Summary bar: only visible when outstandingAmount > 0 or overdueCustomers > 0
 - "Overdue" filter: client-side compound — Pending + `daysSinceCreated > 30`
 - Sort bottom sheet: opens when "Sort" chip tapped — options: Newest / Oldest / High Amount / Low Amount
 
@@ -491,26 +494,25 @@ Every screen should support at least one of these goals:
 
 #### Layout (top-to-bottom)
 
-| Position     | Element                | Detail                                                                                                                                                                          |
-| ------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FIXED TOP    | Header bar             | Left: back arrow. Center: "New Bill" title. Right: `INV-NEW` pill (sequential number assigned on save)                                                                          |
-| SCROLL       | Customer selector card | Full-width white card. When empty: "Select Customer" placeholder + ChevronDown. When selected: customer name (bold) + "Previous Balance: ₹X" in gray below                      |
-| SCROLL       | Product search bar     | Tappable fake input "🔍 Search products…", opens ProductPicker on tap                                                                                                           |
-| SCROLL       | Cart items list        | One `OrderItemCard` per unique product+variant. Smart dedup — re-tapping same product increments qty instead of adding new row                                                  |
-| —            | `OrderItemCard`        | Product name + variant name. Rate: inline editable TextInput (commits on blur). Left: − stepper. Center: qty. Right: + stepper + × remove. Bottom: line total                   |
-| SCROLL       | "+" dashed card        | Dashed border card "+ Add Product" — same as search bar, opens picker                                                                                                           |
-| SCROLL       | Bill meta inputs       | "GST %" input row + "Loading Charge ₹" input row (numeric, inline editable)                                                                                                     |
-| SCROLL       | `OrderBillSummary`     | Breakdown rows: Items Total / GST Amount / Loading Charge / Previous Balance (red if >0) / horizontal divider / **Grand Total** (22px bold)                                     |
-| FIXED BOTTOM | Footer bar             | **"Save Bill"** (outlined) saves to DB only · **"Save & Share"** (filled green) saves to DB → real bill_number → PDF → native share sheet. Both disabled while mutation pending |
+| Position     | Element                  | Detail                                                                                                                                                                                                         |
+| ------------ | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FIXED TOP    | Header bar               | Left: back arrow. Center: "New Bill" title. Right: `INV-NEW` pill (sequential number assigned on save)                                                                                                         |
+| SCROLL       | "BILL FOR" section label | 11px uppercase gray label above customer card                                                                                                                                                                  |
+| SCROLL       | Customer selector card   | Full-width white card. When empty: "Select Customer" placeholder + Pencil icon. When selected: customer name (bold) + "Previous Balance: ₹X" warning row (red bg, only if balance > 0)                         |
+| SCROLL       | Product search bar       | Tappable fake input "🔍 Search products…", opens ProductPicker on tap                                                                                                                                          |
+| SCROLL       | Cart items list          | One `OrderItemCard` per unique product+variant. Smart dedup — re-tapping same product increments qty instead of adding new row                                                                                 |
+| —            | `OrderItemCard`          | Product name + variant name. Rate: inline editable TextInput (commits on blur). Left: − stepper. Center: qty. Right: + stepper + × remove. Bottom: line total                                                  |
+| SCROLL       | "+" dashed card          | Dashed border card "+ Add Product" — same as search bar, opens picker                                                                                                                                          |
+| SCROLL       | `OrderBillSummary`       | GST % / Loading Charge ₹ inputs + breakdown rows: Items Total / GST Amount / Loading Charge / Previous Balance (red if >0) / **Grand Total** (22px bold)                                                       |
+| FIXED BOTTOM | Footer bar               | **Grand total strip** (shown when grandTotal > 0): gray label "Grand Total" left + large bold amount right. Below: **"Save Bill"** (outlined) + **"Save & Share"** (filled green). Both disabled while pending |
 
 #### Bottom sheets triggered
 
 - Customer search: `CustomerPicker` (`BottomSheetPicker`, 80–95%)
 - Product search: **`ProductPicker`** (owns its own `BottomSheet`, 80–95%)
   - Sheet **stays open** after every product add — user explicitly taps **"Done"** to close
-  - Products with variants: tapping opens inline variant sub-view within the same sheet; **Back** button returns to product list
-  - No separate `VariantPicker` sheet — variant selection is fully inline
-  - 1.2 s green checkmark flash confirms each add without disrupting flow
+  - Products with variants: tapping opens inline variant sub-view; **Back** returns to product list
+  - 1.2 s green checkmark flash confirms each add
   - "**+ Add New Product**" dashed button navigates to Products screen
 
 ---
@@ -595,17 +597,18 @@ Every screen should support at least one of these goals:
 
 #### Layout (top-to-bottom)
 
-| Position                | Element                 | Detail                                                                                                  |
-| ----------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
-| FIXED TOP               | Header                  | Left: "Suppliers" title + count badge. Right: search icon                                               |
-| FIXED TOP (conditional) | `SearchBar`             | Same toggle pattern as other screens                                                                    |
-| SCROLL                  | `SupplierCard` FlatList | Left: 52dp initials avatar. Center: supplier name (bold) + phone. Right: balance owed (red, large bold) |
-| SCROLL BOTTOM           | Empty state             | "No suppliers yet"                                                                                      |
-| ABSOLUTE BOTTOM-RIGHT   | Green FAB `+`           | Opens `NewSupplierModal` bottom sheet (90%)                                                             |
+| Position                | Element                 | Detail                                                                                                                                                                              |
+| ----------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FIXED TOP               | Header                  | Left: "Suppliers" title (22px bold) + amber count badge (number of suppliers). Right: "I Owe ₹X" pink pill (shown only when totalOwed > 0) + three-dot menu icon (opens Sort sheet) |
+| FIXED TOP (conditional) | Summary bar             | Shown when totalOwed > 0. Single pill: "Total Payable" with `formatINR` amount (pink bg `#FDF2F8`, pink text)                                                                       |
+| FIXED TOP               | `SearchBar`             | Always visible below summary / header                                                                                                                                               |
+| SCROLL                  | `SupplierCard` FlatList | Left: 52dp initials avatar. Center: supplier name (bold) + phone. Right: balance owed (pink/red, large bold)                                                                        |
+| SCROLL BOTTOM           | Empty state             | "No suppliers yet"                                                                                                                                                                  |
+| ABSOLUTE BOTTOM-RIGHT   | Green FAB `+`           | Opens `NewSupplierModal` bottom sheet (90%)                                                                                                                                         |
 
-#### Sort behavior
+#### Sort bottom sheet (triggered by three-dot menu)
 
-- Default sort: highest balance owed first
+5 sort options: **Recently Active** / **Amount Owed: High → Low** / **Amount Owed: Low → High** / **Name: A → Z** / **Name: Z → A**. Active option has pink checkmark.
 
 ---
 
@@ -771,6 +774,35 @@ Every screen should support at least one of these goals:
 - "Edit Profile" pill: currently non-functional (placeholder for future feature)
 - Dashboard Mode segment: saves to DB immediately on tap (no save button)
 - Language: saves to AsyncStorage immediately on tap
+
+---
+
+### 4.28 Notifications
+
+**Route**: `/(main)/notifications`
+**SafeArea**: Top
+**Scroll**: ScrollView
+
+#### Entry point
+
+Bell icon in `DashboardHeader` — tapping it navigates here. The bell has a red dot overlay when `overdueCustomers > 0`.
+
+#### Layout (top-to-bottom)
+
+| Position  | Element                        | Detail                                                                                                                     |
+| --------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| FIXED TOP | Header bar                     | Left: back arrow `←`. Center: "Notifications" title (18px bold). Right: total count badge (red pill, shown only when > 0)  |
+| SCROLL    | Empty state                    | Bell icon in green circle + "All caught up!" title + "No pending follow-ups or alerts" subtitle — shown only when no data  |
+| SCROLL    | **Overdue Follow-ups** section | Section header: AlertCircle icon (red) + "Overdue Follow-ups" title + count badge. Card list below                         |
+| —         | Overdue customer row           | Avatar (red initials circle) + customer name + "N days overdue" (red). Right: overdue balance + green "Remind" pill button |
+| SCROLL    | **Recent Activity** section    | Section header: CheckCircle icon (green) + "Recent Activity" title. Card list uses `ActivityRow` component                 |
+| —         | `ActivityRow`                  | Same component as Dashboard activity feed — type icon + label + amount + status                                            |
+
+#### Interactions
+
+- Tap "Remind" on any overdue customer → opens WhatsApp with pre-filled reminder message (name + balance)
+- Tap back arrow → returns to Dashboard
+- Data sourced from `useDashboard` cache — no additional API calls
 
 ---
 

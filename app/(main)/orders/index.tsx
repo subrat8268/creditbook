@@ -1,9 +1,11 @@
 import OrderList from "@/src/components/orders/OrderList";
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import SearchBar from "@/src/components/ui/SearchBar";
+import { useDashboard } from "@/src/hooks/useDashboard";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useOrders } from "@/src/hooks/useOrders";
 import { useAuthStore } from "@/src/store/authStore";
+import { formatINR } from "@/src/utils/dashboardUi";
 import { daysSince } from "@/src/utils/helper";
 import { colors, spacing, typography } from "@/src/utils/theme";
 import BottomSheet, {
@@ -11,7 +13,13 @@ import BottomSheet, {
     BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import { Check, Search, SortAsc } from "lucide-react-native";
+import {
+    AlertCircle,
+    Check,
+    FileText,
+    Search,
+    SortAsc,
+} from "lucide-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
     ScrollView,
@@ -53,6 +61,9 @@ export default function OrdersScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const sortSheetRef = useRef<BottomSheet | null>(null);
+
+  // Dashboard totals for summary bar
+  const { data: dashData } = useDashboard(profile?.id);
 
   const apiFilter = chipToApiFilter(selectedChip);
 
@@ -153,6 +164,80 @@ export default function OrdersScreen() {
           />
         </View>
       )}
+
+      {/* ── Summary bar ── */}
+      {dashData &&
+        (dashData.outstandingAmount > 0 ||
+          dashData.unpaidOrders > 0 ||
+          dashData.partialOrders > 0) && (
+          <View
+            style={{
+              flexDirection: "row",
+              paddingHorizontal: spacing.screenPadding,
+              paddingVertical: spacing.sm,
+              backgroundColor: colors.surface,
+              gap: spacing.sm,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.border,
+            }}
+          >
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: colors.dangerBg,
+                borderRadius: 10,
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <FileText size={14} color={colors.danger} strokeWidth={2} />
+              <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                Outstanding
+              </Text>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "700",
+                  color: colors.danger,
+                  marginLeft: 2,
+                }}
+              >
+                {formatINR(dashData.outstandingAmount)}
+              </Text>
+            </View>
+            {dashData.overdueCustomers > 0 && (
+              <View
+                style={{
+                  backgroundColor: colors.overdue.bg,
+                  borderRadius: 10,
+                  paddingVertical: 8,
+                  paddingHorizontal: 12,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+              >
+                <AlertCircle
+                  size={13}
+                  color={colors.overdue.text}
+                  strokeWidth={2}
+                />
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: "700",
+                    color: colors.overdue.text,
+                  }}
+                >
+                  {dashData.overdueCustomers} Overdue
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
 
       {/* ── Filter chips ──────────────────────────────────────────────── */}
       <View

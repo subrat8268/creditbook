@@ -19,7 +19,8 @@
 10. [Reports (Financial Position)](#10-reports-financial-position)
 11. [Export Data](#11-export-data)
 12. [Profile & Settings](#12-profile--settings)
-13. [Edge Cases & Error States](#13-edge-cases--error-states)
+13. [Notifications](#13-notifications)
+14. [Edge Cases & Error States](#14-edge-cases--error-states)
 
 ---
 
@@ -161,15 +162,17 @@ Before testing, verify:
 
 ### 4-A. Seller Mode
 
-| #   | Step                        | Expected Result                                            |
-| --- | --------------------------- | ---------------------------------------------------------- |
-| 1   | Navigate to Dashboard       | Time-based greeting + business initials avatar in header   |
-| 2   | Check Hero Card             | Single gradient card: "Customers Owe Me" with total amount |
-| 3   | Check Stat Cards            | "Active Buyers" count + "Overdue" count                    |
-| 4   | Check Recent Activity       | Last 5 transactions (customer name, amount, status)        |
-| 5   | Tap a transaction row       | Navigates to Customer Detail                               |
-| 6   | Tap "View Report"           | Navigates to Financial Position (Reports screen)           |
-| 7   | Tap blue FAB (bottom-right) | Navigates to Create Bill screen                            |
+| #   | Step                          | Expected Result                                            |
+| --- | ----------------------------- | ---------------------------------------------------------- |
+| 1   | Navigate to Dashboard         | Time-based greeting + business initials avatar in header   |
+| 2   | Check Hero Card               | Single gradient card: "Customers Owe Me" with total amount |
+| 3   | Check Stat Cards              | "Active Buyers" count + "Overdue" count                    |
+| 4   | Check Recent Activity         | Last 5 transactions (customer name, amount, status)        |
+| 5   | Tap a transaction row         | Navigates to Customer Detail                               |
+| 6   | Tap "View Report"             | Navigates to Financial Position (Reports screen)           |
+| 7   | Tap blue FAB (bottom-right)   | Navigates to Create Bill screen                            |
+| 8   | Bell icon — overdue count > 0 | Red dot visible on bell icon                               |
+| 9   | Tap bell icon                 | Navigates to Notifications screen                          |
 
 ---
 
@@ -213,15 +216,20 @@ Before testing, verify:
 
 ---
 
-### 5-C. Customer Search & Filter
+### 5-C. Customer Search, Filter & Sort
 
-| #   | Step                     | Expected Result                                    |
-| --- | ------------------------ | -------------------------------------------------- |
-| 1   | Type in search bar       | List filters in real-time (debounced 300ms)        |
-| 2   | Tap "Overdue" filter tab | Shows only customers with overdue balance          |
-| 3   | Tap "Pending" filter tab | Shows customers with pending (non-overdue) balance |
-| 4   | Tap "Paid" filter tab    | Shows customers with zero or credit balance        |
-| 5   | Tap "All"                | All customers shown                                |
+| #   | Step                                      | Expected Result                                                    |
+| --- | ----------------------------------------- | ------------------------------------------------------------------ |
+| 1   | Type in search bar                        | List filters in real-time (debounced 300ms)                        |
+| 2   | Tap "Overdue" filter tab                  | Shows only customers with overdue balance                          |
+| 3   | Tap "Pending" filter tab                  | Shows customers with pending (non-overdue) balance                 |
+| 4   | Tap "Paid" filter tab                     | Shows customers with zero or credit balance                        |
+| 5   | Tap "All"                                 | All customers shown                                                |
+| 6   | Tap three-dot menu icon in header         | Sort bottom sheet opens with 5 options                             |
+| 7   | Select "Balance: High → Low"              | Customers reorder — highest balance first                          |
+| 8   | Select "Name: A → Z"                      | Customers reorder alphabetically                                   |
+| 9   | Select "Recently Active"                  | Customers ordered by last activity date                            |
+| 10  | With overdue customers: check summary bar | "Total Outstanding ₹X" (green pill) + "N Overdue" (red pill) shown |
 
 ---
 
@@ -270,23 +278,25 @@ Before testing, verify:
 | #   | Step                                                        | Expected Result                                                     |
 | --- | ----------------------------------------------------------- | ------------------------------------------------------------------- |
 | 1   | Tap FAB on Dashboard or Customers list                      | Create Bill screen opens                                            |
-| 2   | Check customer selector                                     | "Select Customer" placeholder card                                  |
-| 3   | Tap customer selector                                       | Customer picker bottom sheet opens with search                      |
-| 4   | Search and select a customer                                | Customer name shown; previous balance fetched and displayed         |
-| 5   | Tap "Search products…" bar or "+ Add Product" dashed button | Product picker bottom sheet opens                                   |
-| 6   | Search for a product (e.g. "Rice")                          | Filtered product list                                               |
-| 7   | Tap a product WITH variants                                 | Product picker closes → Variant picker opens (e.g. 1kg, 5kg)        |
-| 8   | Select a variant                                            | Variant picker closes; item added to cart with variant name + price |
-| 9   | Tap a product WITHOUT variants (has a base price)           | Added directly to cart                                              |
-| 10  | Cart shows the item                                         | Product name, quantity stepper, price, line total                   |
-| 11  | Tap + on stepper                                            | Quantity increases; line total updates                              |
-| 12  | Tap − on stepper until 0                                    | Item removed from cart                                              |
-| 13  | Add multiple products                                       | Multiple rows shown                                                 |
-| 14  | Edit tax % field (e.g. 5%)                                  | GST amount calculated and shown in summary                          |
-| 15  | Edit loading charge (e.g. ₹50)                              | Added to summary total                                              |
-| 16  | Check "Bill Summary" section                                | Items total + GST + Loading Charge + Previous Balance = Grand Total |
-| 17  | Tap "Create Bill"                                           | Bill created; navigates back; toast or success indicator            |
-| 18  | Verify in customer detail                                   | New bill transaction appears in feed                                |
+| 2   | Check customer selector section                             | "BILL FOR" label above customer card                                |
+| 3   | Customer card shows "Select Customer" placeholder           | Pencil icon on right                                                |
+| 4   | Tap customer selector                                       | Customer picker bottom sheet opens with search                      |
+| 5   | Search and select a customer                                | Customer name shown; previous balance fetched and displayed         |
+| 6   | Tap "Search products…" bar or "+ Add Product" dashed button | Product picker bottom sheet opens                                   |
+| 7   | Search for a product (e.g. "Rice")                          | Filtered product list                                               |
+| 8   | Tap a product WITH variants                                 | Inline variant sub-view opens in the same sheet                     |
+| 9   | Select a variant                                            | Item added to cart with variant name + price; sheet stays open      |
+| 10  | Tap a product WITHOUT variants (has a base price)           | Added directly to cart; sheet stays open                            |
+| 11  | Cart shows the item                                         | Product name, quantity stepper, price, line total                   |
+| 12  | Tap + on stepper                                            | Quantity increases; line total updates                              |
+| 13  | Tap − on stepper until 0                                    | Item removed from cart                                              |
+| 14  | Add multiple products, tap "Done" on picker                 | Picker closes; all items in cart                                    |
+| 15  | Edit tax % field (e.g. 5%)                                  | GST amount calculated and shown in summary                          |
+| 16  | Edit loading charge (e.g. ₹50)                              | Added to summary total                                              |
+| 17  | Check "Bill Summary" section                                | Items total + GST + Loading Charge + Previous Balance = Grand Total |
+| 18  | Check footer bar                                            | "Grand Total ₹X" strip visible above action buttons                 |
+| 19  | Tap "Save Bill"                                             | Bill created; navigates back; toast or success indicator            |
+| 20  | Verify in customer detail                                   | New bill transaction appears in feed                                |
 
 ---
 
@@ -314,13 +324,14 @@ Before testing, verify:
 
 ### 7-A. Orders List
 
-| #   | Step                      | Expected Result                                               |
-| --- | ------------------------- | ------------------------------------------------------------- |
-| 1   | Navigate to Orders tab    | List of all orders newest first                               |
-| 2   | Tap filter chip "Paid"    | Only paid orders shown                                        |
-| 3   | Tap filter chip "Overdue" | Orders older than 30 days with pending balance                |
-| 4   | Tap "Sort" chip           | Bottom sheet with: Newest / Oldest / High Amount / Low Amount |
-| 5   | Search by customer name   | List filters                                                  |
+| #   | Step                                   | Expected Result                                                    |
+| --- | -------------------------------------- | ------------------------------------------------------------------ |
+| 1   | Navigate to Orders tab                 | List of all orders newest first                                    |
+| 2   | With outstanding orders: check summary | "Outstanding ₹X" (red pill) and overdue count shown in summary bar |
+| 3   | Tap filter chip "Paid"                 | Only paid orders shown                                             |
+| 4   | Tap filter chip "Overdue"              | Orders older than 30 days with pending balance                     |
+| 5   | Tap "Sort" chip                        | Bottom sheet with: Newest / Oldest / High Amount / Low Amount      |
+| 6   | Search by customer name                | List filters                                                       |
 
 ---
 
@@ -387,13 +398,16 @@ Before testing, verify:
 
 ### 9-A. Add Supplier
 
-| #   | Step                                                | Expected Result                                   |
-| --- | --------------------------------------------------- | ------------------------------------------------- |
-| 1   | Go to Suppliers tab                                 | Supplier list or empty state                      |
-| 2   | Tap + FAB                                           | "Add Supplier" bottom sheet opens                 |
-| 3   | Submit with empty name                              | Validation error                                  |
-| 4   | Fill Name, Phone, Address, Bank Name, Account, IFSC | All fields accept input                           |
-| 5   | Tap "Save"                                          | Supplier created; appears in list with ₹0 balance |
+| #   | Step                                                | Expected Result                                        |
+| --- | --------------------------------------------------- | ------------------------------------------------------ |
+| 1   | Go to Suppliers tab                                 | Supplier list or empty state; header shows count badge |
+| 2   | Tap + FAB                                           | "Add Supplier" bottom sheet opens                      |
+| 3   | Submit with empty name                              | Validation error                                       |
+| 4   | Fill Name, Phone, Address, Bank Name, Account, IFSC | All fields accept input                                |
+| 5   | Tap "Save"                                          | Supplier created; appears in list with ₹0 balance      |
+| 6   | With existing suppliers: check summary bar          | "Total Payable ₹X" pink pill shown if totalOwed > 0    |
+| 7   | Tap three-dot menu icon                             | Sort bottom sheet opens with 5 options                 |
+| 8   | Select "Amount Owed: High → Low"                    | Suppliers reorder — highest owed first                 |
 
 ---
 
@@ -483,7 +497,22 @@ Before testing, verify:
 
 ---
 
-## 13. Edge Cases & Error States
+## 13. Notifications
+
+| #   | Step                                            | Expected Result                                                                       |
+| --- | ----------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 1   | Dashboard with overdue customers                | Red dot visible on bell icon in header                                                |
+| 2   | Tap bell icon                                   | Navigates to Notifications screen                                                     |
+| 3   | Notifications screen: overdue customers exist   | "Overdue Follow-ups" section shown; each row has customer name, days overdue, balance |
+| 4   | Notifications screen: recent activity exists    | "Recent Activity" section shown; rows match dashboard activity feed                   |
+| 5   | Tap "Remind" on overdue customer                | WhatsApp opens with pre-filled message: name + balance                                |
+| 6   | Dashboard with no overdue customers or activity | Bell icon has no dot; Notifications screen shows "All caught up!" empty state         |
+| 7   | Tap back arrow on Notifications                 | Returns to Dashboard                                                                  |
+| 8   | Count badge in Notifications header             | Shows total of overdue customers + recent activity items (hidden when 0)              |
+
+---
+
+## 14. Edge Cases & Error States
 
 | Scenario                                              | Expected Result                                                                                                     |
 | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |

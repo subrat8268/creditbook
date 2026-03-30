@@ -67,6 +67,7 @@ export default function DashboardScreen() {
       <DashboardHeader
         variant={isBothMode ? "both" : "default"}
         overdueCount={data.overdueCustomers}
+        onPressNotifications={() => router.push("/(main)/notifications" as any)}
         onPressSettings={() => router.push("/(main)/profile")}
       />
 
