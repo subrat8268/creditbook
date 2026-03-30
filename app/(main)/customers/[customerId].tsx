@@ -231,6 +231,9 @@ export default function CustomerDetailScreen() {
   const [txFilter, setTxFilter] = useState<TxFilter>("All");
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [historyExpanded, setHistoryExpanded] = useState(false);
+
+  const INITIAL_TX_COUNT = 10;
 
   const sendWhatsAppReminder = () => {
     if (!customer) return;
@@ -453,9 +456,22 @@ export default function CustomerDetailScreen() {
           >
             <View
               className="w-11 h-11 rounded-full items-center justify-center"
-              style={{ backgroundColor: colors.dangerBg }}
+              style={{
+                backgroundColor:
+                  customer.outstandingBalance === 0
+                    ? colors.successBg
+                    : colors.dangerBg,
+              }}
             >
-              <Plus size={22} color={colors.danger} strokeWidth={2.5} />
+              <Plus
+                size={22}
+                color={
+                  customer.outstandingBalance === 0
+                    ? colors.primary
+                    : colors.danger
+                }
+                strokeWidth={2.5}
+              />
             </View>
             <Text className="text-[13px] font-semibold text-textDark">
               New Bill
@@ -607,7 +623,10 @@ export default function CustomerDetailScreen() {
             </View>
           ) : (
             <View className="px-4 pt-4">
-              {listItems.map((item) =>
+              {(historyExpanded
+                ? listItems
+                : listItems.slice(0, INITIAL_TX_COUNT)
+              ).map((item) =>
                 item.kind === "header" ? (
                   <View
                     key={item.key}
@@ -624,6 +643,21 @@ export default function CustomerDetailScreen() {
                 ) : (
                   <TransactionRow key={item.key} tx={item.data} />
                 ),
+              )}
+              {/* View Older History */}
+              {!historyExpanded && listItems.length > INITIAL_TX_COUNT && (
+                <TouchableOpacity
+                  onPress={() => setHistoryExpanded(true)}
+                  activeOpacity={0.7}
+                  className="items-center py-4"
+                >
+                  <Text
+                    className="text-[13px] font-semibold"
+                    style={{ color: colors.primary }}
+                  >
+                    View Older History
+                  </Text>
+                </TouchableOpacity>
               )}
             </View>
           )}
