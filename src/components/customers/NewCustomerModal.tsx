@@ -1,6 +1,6 @@
 import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
+    BottomSheetBackdrop,
+    BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { Formik } from "formik";
 import { X } from "lucide-react-native";
@@ -307,6 +307,19 @@ export default function NewCustomerModal({
                   >
                     Opening Balance (optional)
                   </Text>
+                  {/* Hint pill — shown before the input so the user reads it first */}
+                  <View
+                    className="flex-row items-center rounded-lg px-3 py-2 mb-2"
+                    style={{ backgroundColor: "#F0FDF4" }}
+                  >
+                    <Text className="text-xs mr-1.5">💡</Text>
+                    <Text
+                      className="text-xs flex-1"
+                      style={{ color: "#15803D" }}
+                    >
+                      Most users set this to ₹0 for new customers
+                    </Text>
+                  </View>
                   <View
                     className="flex-row items-center border rounded-xl px-4"
                     style={{ borderColor: colors.border }}
@@ -341,12 +354,6 @@ export default function NewCustomerModal({
                       style={{ color: colors.textPrimary }}
                     />
                   </View>
-                  <Text
-                    className="text-xs mt-1.5"
-                    style={{ color: colors.textSecondary }}
-                  >
-                    If this customer already owes you money
-                  </Text>
                   {touched.openingBalance && errors.openingBalance && (
                     <Text
                       className="text-xs mt-1"
@@ -358,10 +365,7 @@ export default function NewCustomerModal({
                 </View>
 
                 {errorMessage && (
-                  <Text
-                    className="text-xs"
-                    style={{ color: colors.danger }}
-                  >
+                  <Text className="text-xs" style={{ color: colors.danger }}>
                     {errorMessage}
                   </Text>
                 )}
