@@ -75,6 +75,7 @@ const FormSchema = Yup.object().shape({
         .test("positive", "Must be greater than 0", (v) => Number(v) > 0),
     }),
   ),
+  category: Yup.string().required("Please select a category"),
 });
 
 // ── Default categories (mirrors ProductsScreen filter chips) ──
@@ -291,7 +292,7 @@ export default function NewProductModal({
               >
                 PRODUCT INFORMATION
               </Text>
-              {/* ── Product Name ── */}}
+              {/* ── Product Name ── */}
               <Text
                 style={{
                   fontWeight: "600",
@@ -334,7 +335,7 @@ export default function NewProductModal({
                 <View style={{ height: 16 }} />
               )}
 
-              {/* ── Category (optional) ── */}
+              {/* ── Category ── */}
               <Text
                 style={{
                   fontWeight: "600",
@@ -343,7 +344,7 @@ export default function NewProductModal({
                   marginBottom: 8,
                 }}
               >
-                Category
+                Category *
               </Text>
               {/* Selector button */}
               <TouchableOpacity

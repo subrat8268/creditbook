@@ -20,10 +20,20 @@ export interface DashboardData {
   unpaidOrders: number;
   partialOrders: number;
   overdueCustomers: number;
+  /** Top 5 overdue customers sorted by total outstanding balance */
+  overdueCustomersList: {
+    id: string;
+    name: string;
+    phone: string;
+    balance: number;
+    daysSince: number;
+  }[];
   // Net Position
   customersOweMe: number;
   iOweSuppliers: number;
   netPosition: number;
+  /** Percentage change in net position vs same 7-day window last week (0 if no history) */
+  weekDeltaPct: number;
   // Seller mode
   activeBuyers: number;
   // Distributor mode
@@ -61,9 +71,11 @@ export async function getDashboardData(
       unpaidOrders: 0,
       partialOrders: 0,
       overdueCustomers: 0,
+      overdueCustomersList: [],
       customersOweMe: 0,
       iOweSuppliers: 0,
       netPosition: 0,
+      weekDeltaPct: 0,
       activeBuyers: 0,
       activeSuppliers: 0,
       overduePayments: 0,
@@ -91,16 +103,59 @@ export async function getDashboardData(
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const { data: overdueOrders } = await supabase
+  const { data: overdueOrdersWithCustomers } = await supabase
     .from("orders")
-    .select("customer_id")
+    .select("customer_id, balance_due, created_at, customers(id, name, phone)")
     .eq("vendor_id", vendorId)
     .gt("balance_due", 0)
     .lt("created_at", thirtyDaysAgo.toISOString());
 
   const overdueCustomers = new Set(
-    (overdueOrders ?? []).map((o: any) => o.customer_id),
+    (overdueOrdersWithCustomers ?? []).map((o: any) => o.customer_id),
   ).size;
+
+  // Build overdueCustomersList — group by customer, sum balance, find oldest order date
+  const customerOverdueMap = new Map<
+    string,
+    {
+      id: string;
+      name: string;
+      phone: string;
+      balance: number;
+      oldestDate: Date;
+    }
+  >();
+  for (const order of overdueOrdersWithCustomers ?? []) {
+    const cid: string = (order as any).customer_id;
+    const customer = (order as any).customers;
+    const orderDate = new Date((order as any).created_at);
+    const existing = customerOverdueMap.get(cid);
+    if (existing) {
+      existing.balance += Number((order as any).balance_due);
+      if (orderDate < existing.oldestDate) existing.oldestDate = orderDate;
+    } else {
+      customerOverdueMap.set(cid, {
+        id: cid,
+        name: customer?.name ?? "Unknown",
+        phone: customer?.phone ?? "",
+        balance: Number((order as any).balance_due),
+        oldestDate: orderDate,
+      });
+    }
+  }
+  const now = new Date();
+  const overdueCustomersList = Array.from(customerOverdueMap.values())
+    .sort((a, b) => b.balance - a.balance)
+    .slice(0, 5)
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      phone: c.phone,
+      balance: c.balance,
+      daysSince: Math.floor(
+        (now.getTime() - c.oldestDate.getTime()) / (1000 * 60 * 60 * 24),
+      ),
+    }));
 
   // Net Position — customers owe me
   const customersOweMe = orders
@@ -212,15 +267,53 @@ export async function getDashboardData(
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 8);
 
+  // Week-over-week net position delta (percentage)
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const fourteenDaysAgo = new Date();
+  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+
+  const [{ data: thisWeekOrders }, { data: lastWeekOrders }] =
+    await Promise.all([
+      supabase
+        .from("orders")
+        .select("balance_due")
+        .eq("vendor_id", vendorId)
+        .gt("balance_due", 0)
+        .gte("created_at", sevenDaysAgo.toISOString()),
+      supabase
+        .from("orders")
+        .select("balance_due")
+        .eq("vendor_id", vendorId)
+        .gt("balance_due", 0)
+        .gte("created_at", fourteenDaysAgo.toISOString())
+        .lt("created_at", sevenDaysAgo.toISOString()),
+    ]);
+
+  const thisWeekTotal = (thisWeekOrders ?? []).reduce(
+    (s, o) => s + Number(o.balance_due),
+    0,
+  );
+  const lastWeekTotal = (lastWeekOrders ?? []).reduce(
+    (s, o) => s + Number(o.balance_due),
+    0,
+  );
+  const weekDeltaPct =
+    lastWeekTotal > 0
+      ? Math.round(((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100)
+      : 0;
+
   return {
     totalRevenue,
     outstandingAmount,
     unpaidOrders,
     partialOrders,
     overdueCustomers,
+    overdueCustomersList,
     customersOweMe,
     iOweSuppliers,
     netPosition,
+    weekDeltaPct,
     activeBuyers,
     activeSuppliers,
     overduePayments,

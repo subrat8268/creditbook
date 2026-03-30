@@ -18,6 +18,8 @@ type Props = {
   subInfo?: string;
   /** weekDelta > 0 = ↑, < 0 = ↓, undefined = hide row */
   weekDelta?: number;
+  /** Percentage change from last week — shown as pill badge on the net card */
+  weekDeltaPct?: number;
   onPrimaryAction?: () => void;
   onSecondaryAction?: () => void;
 };
@@ -35,6 +37,7 @@ export default function DashboardHeroCard({
   amount,
   subInfo,
   weekDelta,
+  weekDeltaPct,
   onPrimaryAction,
   onSecondaryAction,
 }: Props) {
@@ -81,6 +84,28 @@ export default function DashboardHeroCard({
           {amount < 0 ? "−" : ""}
           {formatINR(Math.abs(amount))}
         </Text>
+        {weekDeltaPct !== undefined && weekDeltaPct !== 0 && (
+          <View
+            className="flex-row items-center self-start mt-3 px-2.5 py-1 rounded-full"
+            style={{
+              backgroundColor:
+                weekDeltaPct > 0
+                  ? "rgba(34,197,94,0.2)"
+                  : "rgba(239,68,68,0.2)",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: "600",
+                color: weekDeltaPct > 0 ? "#86EFAC" : "#FCA5A5",
+              }}
+            >
+              {weekDeltaPct > 0 ? "↑" : "↓"} {Math.abs(weekDeltaPct)}% from last
+              week
+            </Text>
+          </View>
+        )}
       </LinearGradient>
     );
   }

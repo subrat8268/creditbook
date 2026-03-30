@@ -2,6 +2,7 @@ import NewCustomerModal from "@/src/components/customers/NewCustomerModal";
 import DashboardActionBar from "@/src/components/dashboard/DashboardActionBar";
 import DashboardHeader from "@/src/components/dashboard/DashboardHeader";
 import DashboardHeroCard from "@/src/components/dashboard/DashboardHeroCard";
+import DashboardPendingFollowups from "@/src/components/dashboard/DashboardPendingFollowups";
 import DashboardRecentActivity from "@/src/components/dashboard/DashboardRecentActivity";
 import DashboardStatCards from "@/src/components/dashboard/DashboardStatCards";
 import EmptyState from "@/src/components/feedback/EmptyState";
@@ -101,6 +102,7 @@ export default function DashboardScreen() {
               variant="net"
               label="NET POSITION"
               amount={data.netPosition}
+              weekDeltaPct={data.weekDeltaPct}
             />
           </>
         ) : (
@@ -119,14 +121,16 @@ export default function DashboardScreen() {
             }}
           />
         )}
-
-        {/* ActionBar only shown in "both" mode — seller/distributor use embedded buttons */}
-        {isBothMode && (
+        {/* ActionBar — shown for seller and both modes */}
+        {!isDistributor && (
           <DashboardActionBar
-            onViewReport={() => router.push("/(main)/reports" as any)}
+            onNewBill={() => router.push("/(main)/orders/create" as any)}
+            onCollect={() => router.push("/(main)/customers" as any)}
+            onRemind={() => {
+              // TODO(v3.6): WhatsApp bulk reminder
+            }}
           />
         )}
-
         <DashboardStatCards
           mode={isBothMode ? "both" : isDistributor ? "distributor" : "seller"}
           primaryCount={
@@ -138,7 +142,12 @@ export default function DashboardScreen() {
           activeSuppliers={data.activeSuppliers}
           overdueSuppliers={data.overduePayments}
         />
-
+        {!isDistributor && data.overdueCustomersList.length > 0 && (
+          <DashboardPendingFollowups
+            customers={data.overdueCustomersList}
+            onSeeAll={() => router.push("/(main)/customers" as any)}
+          />
+        )}
         <DashboardRecentActivity
           items={data.recentActivity}
           onViewAll={() =>
@@ -148,7 +157,7 @@ export default function DashboardScreen() {
                 : ("/(main)/orders" as any),
             )
           }
-        />
+        />{" "}
       </ScrollView>
 
       <Pressable

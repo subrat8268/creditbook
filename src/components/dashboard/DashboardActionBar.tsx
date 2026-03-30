@@ -1,14 +1,17 @@
-import { FileText, Send } from "lucide-react-native";
+import { colors } from "@/src/utils/theme";
+import { BellRing, FilePlus2, Wallet } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
-  onViewReport?: () => void;
-  onSendReminder?: () => void;
+  onNewBill?: () => void;
+  onCollect?: () => void;
+  onRemind?: () => void;
 };
 
 export default function DashboardActionBar({
-  onViewReport,
-  onSendReminder,
+  onNewBill,
+  onCollect,
+  onRemind,
 }: Props) {
   return (
     <View
@@ -22,19 +25,50 @@ export default function DashboardActionBar({
       }}
     >
       <TouchableOpacity
-        className="flex-1 py-[18px] flex-row items-center justify-center gap-2 border-r border-divider"
-        onPress={onViewReport}
+        className="flex-1 py-[18px] items-center justify-center gap-1.5 border-r border-divider"
+        onPress={onNewBill}
       >
-        <FileText size={18} color="#22C55E" strokeWidth={2} />
-        <Text className="text-sm font-semibold text-primary">View Report</Text>
+        <View
+          className="w-9 h-9 rounded-full items-center justify-center"
+          style={{ backgroundColor: "#EFF6FF" }}
+        >
+          <FilePlus2 size={18} color="#3B82F6" strokeWidth={2} />
+        </View>
+        <Text className="text-xs font-semibold" style={{ color: "#3B82F6" }}>
+          New Bill
+        </Text>
       </TouchableOpacity>
+
       <TouchableOpacity
-        className="flex-1 py-[18px] flex-row items-center justify-center gap-2"
-        onPress={onSendReminder}
+        className="flex-1 py-[18px] items-center justify-center gap-1.5 border-r border-divider"
+        onPress={onCollect}
       >
-        <Send size={18} color="#22C55E" strokeWidth={2} />
-        <Text className="text-sm font-semibold text-primary">
-          Send Reminder
+        <View
+          className="w-9 h-9 rounded-full items-center justify-center"
+          style={{ backgroundColor: "#F0FDF4" }}
+        >
+          <Wallet size={18} color={colors.primary} strokeWidth={2} />
+        </View>
+        <Text
+          className="text-xs font-semibold"
+          style={{ color: colors.primary }}
+        >
+          Collect
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        className="flex-1 py-[18px] items-center justify-center gap-1.5"
+        onPress={onRemind}
+      >
+        <View
+          className="w-9 h-9 rounded-full items-center justify-center"
+          style={{ backgroundColor: "#FFFBEB" }}
+        >
+          <BellRing size={18} color="#F59E0B" strokeWidth={2} />
+        </View>
+        <Text className="text-xs font-semibold" style={{ color: "#F59E0B" }}>
+          Remind
         </Text>
       </TouchableOpacity>
     </View>
