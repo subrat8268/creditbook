@@ -51,6 +51,8 @@ export interface NewProductModalProps {
   };
   loading?: boolean;
   errorMessage?: string;
+  /** Called when user confirms deletion — only passed in Edit mode */
+  onDelete?: () => void;
 }
 
 // ── Validation ─────────────────────────────────────────────
@@ -148,6 +150,7 @@ export default function NewProductModal({
   initialValues,
   loading = false,
   errorMessage,
+  onDelete,
 }: NewProductModalProps) {
   const defaultValues: FormValues = {
     name: initialValues?.name ?? "",
@@ -276,18 +279,19 @@ export default function NewProductModal({
               }}
               keyboardShouldPersistTaps="handled"
             >
-              {/* Subtitle */}
+              {/* ── PRODUCT INFORMATION section header ── */}
               <Text
                 style={{
+                  fontSize: 11,
+                  fontWeight: "700",
+                  letterSpacing: 1.2,
                   color: colors.textSecondary,
-                  fontSize: 13,
                   marginBottom: 16,
-                  lineHeight: 18,
                 }}
               >
-                Products appear in search when creating a bill
+                PRODUCT INFORMATION
               </Text>
-              {/* ── Product Name ── */}
+              {/* ── Product Name ── */}}
               <Text
                 style={{
                   fontWeight: "600",
@@ -676,10 +680,36 @@ export default function NewProductModal({
               }}
             >
               <Button
-                title={`${title} Product`}
+                title={title === "Edit" ? "Save Changes" : `${title} Product`}
                 onPress={() => handleSubmit()}
                 loading={loading}
               />
+              {/* Delete Product — only in Edit mode */}
+              {onDelete && (
+                <TouchableOpacity
+                  onPress={onDelete}
+                  activeOpacity={0.7}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    marginTop: 14,
+                    paddingVertical: 4,
+                  }}
+                >
+                  <Trash2 size={15} color={colors.danger} strokeWidth={2} />
+                  <Text
+                    style={{
+                      color: colors.danger,
+                      fontSize: 14,
+                      fontWeight: "600",
+                    }}
+                  >
+                    Delete Product
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </>
         )}

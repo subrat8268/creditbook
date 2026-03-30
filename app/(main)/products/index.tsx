@@ -396,6 +396,7 @@ export default function ProductsScreen() {
           setEditingProduct(null);
         }}
         onSubmit={editingProduct ? handleEditProduct : handleAddProduct}
+        onDelete={editingProduct ? handleRequestDelete : undefined}
         initialValues={
           editingProduct
             ? {
