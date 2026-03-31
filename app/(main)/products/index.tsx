@@ -1,17 +1,17 @@
 import { Package, Search, X } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
-    FlatList,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  FlatList,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import NewProductModal, {
-    type ProductSubmitValues,
+  type ProductSubmitValues,
 } from "@/src/components/products/NewProductModal";
 import ProductActionsModal from "@/src/components/products/ProductActionsModal";
 import ProductCard from "@/src/components/products/ProductCard";
@@ -19,26 +19,15 @@ import ConfirmModal from "@/src/components/ui/ConfirmModal";
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import {
-    useAddProduct,
-    useDeleteProduct,
-    useProducts,
-    useUpdateProduct,
+  useAddProduct,
+  useDeleteProduct,
+  useProductCategories,
+  useProducts,
+  useUpdateProduct,
 } from "@/src/hooks/useProducts";
 import { useAuthStore } from "@/src/store/authStore";
 import { colors, spacing, typography } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
-
-// ── Category chips ────────────────────────────────────────
-// "keyword" is sent as the search query when chip is selected.
-// Add more categories here as the catalog grows.
-const CATEGORIES = [
-  { label: "All", keyword: "" },
-  { label: "Rice & Grains", keyword: "rice" },
-  { label: "Oils", keyword: "oil" },
-  { label: "Dairy", keyword: "butter" },
-  { label: "Dal", keyword: "dal" },
-  { label: "Drinks", keyword: "cola" },
-];
 
 export default function ProductsScreen() {
   const { profile } = useAuthStore();
@@ -47,16 +36,12 @@ export default function ProductsScreen() {
 
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("");
-  const [searchVisible, setSearchVisible] = useState(false);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  // Combine the free-text search and category keyword
-  const effectiveSearch = search || activeCategory;
 
   const {
     data: products,
@@ -66,13 +51,23 @@ export default function ProductsScreen() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useProducts(vendorId, effectiveSearch);
+  } = useProducts(vendorId, search);
+
+  const { data: categoryList = [] } = useProductCategories(vendorId);
+
+  // Filter by active category client-side (categories are exact DB values)
+  const filteredProducts = useMemo(() => {
+    if (!activeCategory) return products ?? [];
+    return (products ?? []).filter(
+      (p) => (p.category ?? "").toLowerCase() === activeCategory.toLowerCase(),
+    );
+  }, [products, activeCategory]);
+
+  const totalCount = useMemo(() => filteredProducts.length, [filteredProducts]);
 
   const addProductMutation = useAddProduct(vendorId!);
   const updateProductMutation = useUpdateProduct(vendorId!);
   const deleteProductMutation = useDeleteProduct(vendorId!);
-
-  const totalCount = useMemo(() => (products ?? []).length, [products]);
 
   // ── Handlers ────────────────────────────────────────────
   const handleAddProduct = async (values: ProductSubmitValues) => {
@@ -155,17 +150,8 @@ export default function ProductsScreen() {
     setIsBottomSheetOpen(true);
   };
 
-  const handleSelectCategory = (keyword: string) => {
-    setActiveCategory(keyword);
-    setSearch(""); // clear free-text when picking a chip
-    setSearchVisible(false); // hide search bar
-  };
-
-  const handleToggleSearch = () => {
-    setSearchVisible((v) => {
-      if (v) setSearch(""); // clear on hide
-      return !v;
-    });
+  const handleSelectCategory = (value: string) => {
+    setActiveCategory(value);
   };
 
   const PRODUCT_ITEM_H = 70;
@@ -188,7 +174,7 @@ export default function ProductsScreen() {
         onOptionsPress={() => handleOptionsPress(item)}
       />
     ),
-    [],
+    [router],
   );
 
   return (
@@ -238,7 +224,7 @@ export default function ProductsScreen() {
           )}
         </View>
         <TouchableOpacity
-          onPress={handleToggleSearch}
+          onPress={() => setSearch("")}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Search size={22} color={colors.textSecondary} strokeWidth={2} />
@@ -294,16 +280,19 @@ export default function ProductsScreen() {
           gap: spacing.sm,
         }}
       >
-        {CATEGORIES.map((cat) => {
-          const isActive = activeCategory === cat.keyword;
+        {[
+          { label: "All", value: "" },
+          ...categoryList.map((c) => ({ label: c, value: c })),
+        ].map((cat) => {
+          const isActive = activeCategory === cat.value;
           return (
             <TouchableOpacity
-              key={cat.label}
-              onPress={() => handleSelectCategory(cat.keyword)}
+              key={cat.value || "__all__"}
+              onPress={() => handleSelectCategory(cat.value)}
               activeOpacity={0.75}
               style={{
-                paddingHorizontal: 16,
-                paddingVertical: 8,
+                paddingHorizontal: 13,
+                paddingVertical: 5,
                 borderRadius: 50,
                 backgroundColor: isActive ? colors.primary : colors.surface,
                 borderWidth: 1,
@@ -312,7 +301,7 @@ export default function ProductsScreen() {
             >
               <Text
                 style={{
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: isActive ? "700" : "500",
                   color: isActive ? colors.surface : colors.textSecondary,
                 }}
@@ -326,7 +315,7 @@ export default function ProductsScreen() {
 
       {/* ── List ── */}
       <FlatList
-        data={products ?? []}
+        data={filteredProducts}
         keyExtractor={(item) => item.id}
         refreshing={refreshing}
         onRefresh={onRefresh}

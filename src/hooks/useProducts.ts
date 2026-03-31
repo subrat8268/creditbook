@@ -1,11 +1,13 @@
 import {
     useInfiniteQuery,
     useMutation,
+    useQuery,
     useQueryClient,
 } from "@tanstack/react-query";
 import {
     addProduct,
     deleteProduct,
+    fetchProductCategories,
     fetchProducts,
     PAGE_SIZE,
     Product,
@@ -18,6 +20,8 @@ export const productKeys = {
   all: (vendorId: string) => ["products", vendorId] as const,
   list: (vendorId: string, search: string) =>
     [...productKeys.all(vendorId), { search }] as const,
+  categories: (vendorId: string) =>
+    [...productKeys.all(vendorId), "categories"] as const,
 };
 
 export const useProducts = (vendorId?: string, search?: string) => {
@@ -41,6 +45,17 @@ export const useProducts = (vendorId?: string, search?: string) => {
     data: query.data?.pages.flat() ?? [],
     pages: query.data?.pages ?? [],
   };
+};
+
+export const useProductCategories = (vendorId?: string) => {
+  return useQuery<string[], ApiError>({
+    queryKey: vendorId
+      ? productKeys.categories(vendorId)
+      : ["categories-disabled"],
+    queryFn: () => fetchProductCategories(vendorId!),
+    enabled: !!vendorId,
+    staleTime: 60_000,
+  });
 };
 
 export const useAddProduct = (vendorId: string) => {

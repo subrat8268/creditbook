@@ -27,12 +27,15 @@ export default function DashboardScreen() {
 
   const handleAddCustomer = async (values: {
     name: string;
-    phone: string;
+    phone?: string;
     address?: string;
     openingBalance?: number;
   }) => {
     try {
-      await addCustomerMutation.mutateAsync(values);
+      await addCustomerMutation.mutateAsync({
+        ...values,
+        phone: values.phone ?? "",
+      });
       setIsCustomerModalOpen(false);
     } catch (err: any) {
       console.error("Failed to add customer:", err);
@@ -51,14 +54,6 @@ export default function DashboardScreen() {
   const heroAmount = isSellerMode ? data.customersOweMe : data.iOweSuppliers;
   // Label is written as the customer reads it, not in abstract financial terms
   const heroLabel = isSellerMode ? "CUSTOMERS OWE YOU" : "YOU OWE SUPPLIERS";
-
-  const businessName = profile.business_name ?? profile.name ?? "My Business";
-  const roleLabel =
-    mode === "distributor"
-      ? "KredBook Distributor"
-      : mode === "both"
-        ? "KredBook Business"
-        : "KredBook Seller";
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.background }}>
@@ -159,7 +154,7 @@ export default function DashboardScreen() {
                 : ("/(main)/orders" as any),
             )
           }
-        />{" "}
+        />
       </ScrollView>
 
       <Pressable

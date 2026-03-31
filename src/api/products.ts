@@ -31,7 +31,7 @@ export async function fetchProducts(
   let query = supabase
     .from("products")
     .select(
-      `id, vendor_id, name, base_price, image_url, created_at,
+      `id, vendor_id, name, base_price, category, image_url, created_at,
       product_variants ( id, variant_name, price, created_at )`,
     )
     .eq("vendor_id", vendorId)
@@ -95,4 +95,19 @@ export async function deleteProduct(productId: string) {
     .eq("id", productId);
   if (error) throw toApiError(error);
   return productId;
+}
+
+export async function fetchProductCategories(
+  vendorId: string,
+): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("category")
+    .eq("vendor_id", vendorId)
+    .not("category", "is", null);
+  if (error) throw toApiError(error);
+  const unique = Array.from(
+    new Set((data ?? []).map((r: any) => r.category as string).filter(Boolean)),
+  ).sort();
+  return unique;
 }

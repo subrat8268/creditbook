@@ -1,9 +1,9 @@
 import {
-    BillIcon,
-    CustomerIcon,
-    HomeIcon,
-    MoreIcon,
-    SupplierIcon,
+  BillIcon,
+  CustomerIcon,
+  HomeIcon,
+  MoreIcon,
+  SupplierIcon,
 } from "@/assets/icons/main";
 import { colors, typography } from "@/src/utils/theme";
 import { Tabs, useRouter } from "expo-router";
@@ -121,10 +121,12 @@ export default function TabLayout() {
       />
 
       {/* Hidden routes */}
+
       <Tabs.Screen name="profile" options={{ href: null }} />
       <Tabs.Screen name="products" options={{ href: null }} />
       <Tabs.Screen name="export" options={{ href: null }} />
       <Tabs.Screen name="reports" options={{ href: null }} />
+      <Tabs.Screen name="notifications/index" options={{ href: null }} />
     </Tabs>
   );
 }

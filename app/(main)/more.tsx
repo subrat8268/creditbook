@@ -4,6 +4,7 @@ import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Href, useFocusEffect, useRouter } from "expo-router";
 import {
     BarChart3,
+    Bell,
     BookOpen,
     ChevronRight,
     Download,
@@ -46,6 +47,15 @@ const BUSINESS_DETAILS: MenuItem[] = [
 ];
 
 const ANALYSIS_TOOLS: MenuItem[] = [
+  {
+    id: "notifications",
+    title: "Notifications",
+    description: "Overdue follow-ups & recent activity",
+    icon: Bell,
+    iconBg: "#FEF3C7",
+    iconColor: "#D97706",
+    route: "/(main)/notifications",
+  },
   {
     id: "reports",
     title: "Advanced Reports",
