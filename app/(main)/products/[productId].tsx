@@ -19,6 +19,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { colors } from "@/src/utils/theme";
 
 const { width: SCREEN_W } = Dimensions.get("window");
 const IMAGE_H = SCREEN_W * 0.85;
@@ -69,7 +70,7 @@ export default function ProductDetailsScreen() {
   };
 
   return (
-    <View className="flex-1 bg-surface">
+    <View className="flex-1 bg-background">
       {/* ── Floating Header ── */}
       <View 
         className="flex-row items-center justify-between px-4 pb-3 bg-surface z-10" 
@@ -80,7 +81,7 @@ export default function ProductDetailsScreen() {
           hitSlop={10}
           className="w-10 h-10 items-start justify-center"
         >
-          <ArrowLeft size={24} className="text-textPrimary" strokeWidth={2} />
+          <ArrowLeft size={24} color={colors.textPrimary} strokeWidth={2} />
         </TouchableOpacity>
         <Text className="text-[18px] font-extrabold text-textPrimary">
           Product Details
@@ -90,7 +91,7 @@ export default function ProductDetailsScreen() {
           onPress={() => Alert.alert("Edit", "Product editing coming soon.")}
           className="w-10 h-10 items-end justify-center"
         >
-          <Pencil size={20} className="text-textSecondary" strokeWidth={2} />
+          <Pencil size={20} color={colors.textSecondary} strokeWidth={2} />
         </TouchableOpacity>
       </View>
 
@@ -112,7 +113,7 @@ export default function ProductDetailsScreen() {
               style={{ width: "100%", height: IMAGE_H }}
               className="bg-background rounded-[20px] items-center justify-center border border-border"
             >
-              <Package size={80} className="text-textSecondary opacity-40" strokeWidth={1} />
+              <Package size={80} color={colors.textSecondary} strokeWidth={1} style={{ opacity: 0.4 }} />
             </View>
           )}
         </View>
@@ -191,7 +192,7 @@ export default function ProductDetailsScreen() {
                 activeOpacity={0.7}
                 className="w-12 h-12 rounded-full bg-surface items-center justify-center shadow-sm"
               >
-                <Minus size={20} className="text-textPrimary" strokeWidth={2.5} />
+                <Minus size={20} color={colors.textPrimary} strokeWidth={2.5} />
               </TouchableOpacity>
               
               <View className="items-center justify-center min-w-[50px]">
@@ -208,7 +209,7 @@ export default function ProductDetailsScreen() {
                 activeOpacity={0.7}
                 className="w-12 h-12 rounded-full bg-surface items-center justify-center shadow-sm"
               >
-                <Plus size={20} className="text-textPrimary" strokeWidth={2.5} />
+                <Plus size={20} color={colors.textPrimary} strokeWidth={2.5} />
               </TouchableOpacity>
             </View>
           </View>
@@ -228,7 +229,7 @@ export default function ProductDetailsScreen() {
           activeOpacity={0.85}
           className="flex-row items-center justify-center bg-success rounded-[20px] py-4 gap-2 mb-2"
         >
-          <ShoppingCart size={22} className="text-surface" strokeWidth={2} />
+          <ShoppingCart size={22} color={colors.surface} strokeWidth={2} />
           <Text className="text-[18px] font-black text-surface tracking-tight">
             Add to Bill
           </Text>

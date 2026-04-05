@@ -94,3 +94,54 @@ _Status: ✅ Done_
   - `products/index.tsx`: Added `colors` import; `placeholderTextColor` → `colors.textSecondary`; FAB shadow → `colors.primaryDark`.
   - `ProductCard.tsx`: Added `colors` import; warning theme → `bg-warningBg`+`colors.warning`; blue theme → `bg-successBg`+`colors.primaryDark`; danger → `bg-dangerBg`; all icon colors switched from `className` to explicit `color={themeClass.iconColor}` prop; `shadowColor` → `colors.textPrimary`.
   - `ProductActionsModal.tsx`: `bg-white`→`bg-surface`; `border-neutral-300`→`border-border` ×2; `color="white"`→`colors.surface` ×2; `text-white`→`text-surface` ×2; `rounded-lg`→`rounded-2xl`; `text-neutral-900`→`text-textPrimary`.
+
+### 8. Product Detail (`app/(main)/products/[productId].tsx`)
+_Status: ✅ Done_
+- Discrepancies Found:
+  - Root container used `bg-surface` instead of `bg-background` — structural inconsistency with all other screens.
+  - 7 lucide icons (ArrowLeft, Pencil, Package, Minus, Plus, ShoppingCart) using NativeWind `className` for color — lucide-react-native **ignores** NativeWind className; these icons were rendering in default black regardless of theme.
+  - No raw hex codes found — file was otherwise well written.
+  - `NewProductModal.tsx`: ✅ Already clean (no hex codes, no color prop issues).
+- Fixes Applied:
+  - Root `<View className="flex-1 bg-surface">` → `bg-background`.
+  - Added `colors` import from `@/src/utils/theme`.
+  - All 7 icon `className` color attributes replaced with explicit `color={colors.*}` props:
+    - ArrowLeft → `colors.textPrimary`
+    - Pencil (edit) → `colors.textSecondary`
+    - Package (placeholder) → `colors.textSecondary` + `style={{ opacity: 0.4 }}`
+    - Minus, Plus (stepper) → `colors.textPrimary`
+    - Minus, Plus (stepper) → `colors.textPrimary`
+    - ShoppingCart (CTA) → `colors.surface`
+
+### 9. Suppliers List (`app/(main)/suppliers/index.tsx`)
+_Status: ✅ Done_
+- Discrepancies Found:
+  - `suppliers/index.tsx`: `SafeAreaView` using inline `style={}` instead of `className`; `"#FCE7F3"` (pink-100) on "I Owe" badge bg; `"#FDF2F8"` (pink-50) on summary panel inner bg — both orphaned, no tokens existed.
+  - `SupplierCard.tsx`: `AVATAR_BG` array (8 raw hex values) + `AVATAR_TEXT` array (6 raw hex + 2 `colors.*`) — all orphaned; `bg-[#FDF2F8]` JIT hex class on payable status badge.
+  - `SupplierList.tsx`: ✅ Already clean — uses `colors.*` throughout.
+  - `NewSupplierModal.tsx`: ✅ Already clean — no hex codes found.
+- Fixes Applied:
+  - **Theme extended**: Added `colors.supplierAvatarBg[]`, `colors.supplierAvatarText[]`, `colors.supplierBg`, `colors.supplierBadgeBg` to `src/utils/theme.ts` — these are now the canonical source of truth for all supplier-specific palette values.
+  - `suppliers/index.tsx`: `SafeAreaView` → `className="flex-1 bg-background"`; `#FCE7F3` → `colors.supplierBadgeBg`; `#FDF2F8` → `colors.supplierBg`.
+  - `SupplierCard.tsx`: `AVATAR_BG` → `colors.supplierAvatarBg`; `AVATAR_TEXT` → `colors.supplierAvatarText` (removed 14 raw hex literals in one shot); `bg-[#FDF2F8]` → `style={{ backgroundColor: colors.supplierBg }}` with conditional application.
+
+### 10. Supplier Detail (`app/(main)/suppliers/[supplierId].tsx`)
+_Status: ✅ Done_
+- Discrepancies Found:
+  - `HERO_GRADIENT` constant: `["#BE2D5C", "#E8427D"]` — unique rose gradient not in theme; closest token is `gradients.supplierHero` but shades differ.
+  - `TimelineRow`: `bg-white` on card root; `shadowColor: "#000000"`.
+  - `renderHeader`: `bg-white` on bank card; `backgroundColor: "#EFF6FF"` on bank icon bg (≈ `supplierAvatarBg[0]`); `color={"#4F9CFF"}` on Building2 icon (= `avatarPalette[0]`); `bg-white` ×2 on action strip buttons.
+  - `SafeAreaView`: `style={{ backgroundColor: colors.background }}` (should be className).
+  - Custom header bar: `bg-white` → `bg-surface`.
+  - Gradient card rgba values (`rgba(255,255,255,0.75/0.8)`) and `#FFFFFF` kept — overlay transparency on colored bg has no theme token equivalent.
+  - `RecordDeliveryModal.tsx`: ✅ Already clean.
+  - `RecordPaymentMadeModal.tsx`: ✅ Already clean.
+- Fixes Applied:
+  - **Theme extended**: Added `gradients.supplierDetailHero` to `src/utils/theme.ts` for the unique rose gradient.
+  - `HERO_GRADIENT` → `[gradients.supplierDetailHero.start, gradients.supplierDetailHero.end]`.
+  - `TimelineRow` root: `bg-white` → `bg-surface`; `shadowColor: "#000000"` → `colors.textPrimary`.
+  - Bank details card: `bg-white` → `bg-surface`.
+  - Bank icon: `backgroundColor: "#EFF6FF"` → `colors.supplierAvatarBg[0]`; `color={"#4F9CFF"}` → `colors.avatarPalette[0]`.
+  - Action strip buttons ×2: `bg-white` → `bg-surface`.
+  - `SafeAreaView`: merged `style={}` into `className="flex-1 bg-background"`.
+  - Custom header: `bg-white` → `bg-surface`.

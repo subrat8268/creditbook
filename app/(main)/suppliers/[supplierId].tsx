@@ -10,7 +10,7 @@ import {
 import { useAuthStore } from "@/src/store/authStore";
 import { SupplierTimelineEntry } from "@/src/types/supplier";
 import { formatRelativeActivity } from "@/src/utils/helper";
-import { colors } from "@/src/utils/theme";
+import { colors, gradients } from "@/src/utils/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -83,7 +83,10 @@ function maskAccount(n?: string): string {
 }
 
 // ─── Gradient hero colours ────────────────────────────────────────────────────
-const HERO_GRADIENT: [string, string] = ["#BE2D5C", "#E8427D"];
+const HERO_GRADIENT: [string, string] = [
+  gradients.supplierDetailHero.start,
+  gradients.supplierDetailHero.end,
+];
 
 // ─── Timeline row ─────────────────────────────────────────────────────────────
 function TimelineRow({ entry }: { entry: SupplierTimelineEntry }) {
@@ -121,10 +124,10 @@ function TimelineRow({ entry }: { entry: SupplierTimelineEntry }) {
 
   return (
     <View
-      className="bg-white rounded-[14px] px-3.5 py-3.5 mb-[10px] border-l-4"
+      className="bg-surface rounded-[14px] px-3.5 py-3.5 mb-[10px] border-l-4"
       style={{
         borderLeftColor: borderColor,
-        shadowColor: "#000000",
+        shadowColor: colors.textPrimary,
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
         shadowRadius: 4,
@@ -250,7 +253,7 @@ export default function SupplierDetailScreen() {
       {/* Bank details card */}
       {supplier.bank_name ? (
         <View
-          className="bg-white rounded-2xl px-4 py-4 mb-4 border"
+          className="bg-surface rounded-2xl px-4 py-4 mb-4 border"
           style={{ borderColor: colors.border }}
         >
           <View className="flex-row items-center justify-between mb-3">
@@ -286,11 +289,11 @@ export default function SupplierDetailScreen() {
           <View className="flex-row items-center gap-3 mb-2">
             <View
               className="w-9 h-9 rounded-full items-center justify-center"
-              style={{ backgroundColor: "#EFF6FF" }}
+              style={{ backgroundColor: colors.supplierAvatarBg[0] }}
             >
               <Building2
                 size={18}
-                color={"#4F9CFF"}
+                color={colors.avatarPalette[0]}
                 strokeWidth={1.8}
               />
             </View>
@@ -330,7 +333,7 @@ export default function SupplierDetailScreen() {
         <TouchableOpacity
           onPress={() => setDeliveryModalOpen(true)}
           activeOpacity={0.8}
-          className="flex-1 bg-white rounded-2xl py-4 items-center gap-2 border"
+          className="flex-1 bg-surface rounded-2xl py-4 items-center gap-2 border"
           style={{ borderColor: colors.border }}
         >
           <View
@@ -350,7 +353,7 @@ export default function SupplierDetailScreen() {
         <TouchableOpacity
           onPress={() => setPaymentModalOpen(true)}
           activeOpacity={0.8}
-          className="flex-1 bg-white rounded-2xl py-4 items-center gap-2 border"
+          className="flex-1 bg-surface rounded-2xl py-4 items-center gap-2 border"
           style={{ borderColor: colors.border }}
         >
           <View
@@ -389,12 +392,11 @@ export default function SupplierDetailScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <SafeAreaView
         edges={["top", "left", "right"]}
-        className="flex-1"
-        style={{ backgroundColor: colors.background }}
+        className="flex-1 bg-background"
       >
         {/* ── Custom header ── */}
         <View
-          className="flex-row items-center px-4 py-3 bg-white border-b"
+          className="flex-row items-center px-4 py-3 bg-surface border-b"
           style={{ borderBottomColor: colors.border }}
         >
           <TouchableOpacity

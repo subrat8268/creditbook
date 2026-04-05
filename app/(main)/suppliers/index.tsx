@@ -111,7 +111,7 @@ export default function SuppliersScreen() {
   return (
     <SafeAreaView
       edges={["top", "left", "right"]}
-      style={{ flex: 1, backgroundColor: colors.background }}
+      className="flex-1 bg-background"
     >
       <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
 
@@ -165,7 +165,7 @@ export default function SuppliersScreen() {
           {totalOwed > 0 && (
             <View
               style={{
-                backgroundColor: "#FCE7F3",
+                backgroundColor: colors.supplierBadgeBg,
                 borderRadius: 999,
                 paddingHorizontal: 12,
                 paddingVertical: 5,
@@ -213,7 +213,7 @@ export default function SuppliersScreen() {
           <View
             style={{
               flex: 1,
-              backgroundColor: "#FDF2F8",
+              backgroundColor: colors.supplierBg,
               borderRadius: 10,
               paddingVertical: 8,
               paddingHorizontal: 12,

@@ -5,27 +5,8 @@ import { Supplier } from "../../types/supplier";
 import { colors } from "../../utils/theme";
 
 // ── Avatar helpers — soft pastel bg + dark text (supplier visual identity) ───
-const AVATAR_BG = [
-  "#EEF2FF", // indigo-50
-  "#FDF4FF", // fuchsia-50
-  "#EAF0FB", // blue-100
-  "#FDF2F8", // pink-50
-  "#EDE9FE", // purple-100
-  "#FFF1F2", // rose-50
-  "#CCFBF1", // teal-100
-  "#F1F5F9", // slate-100
-] as const;
-
-const AVATAR_TEXT = [
-  "#4338CA", // indigo-700
-  "#9333EA", // fuchsia-700
-  colors.fab, // #2563EB
-  colors.supplierPrimary, // Pink - #DB2777
-  "#6D28D9", // purple-700
-  "#BE123C", // rose-700
-  "#0F766E", // teal-700
-  "#475569", // slate-600
-] as const;
+const AVATAR_BG = colors.supplierAvatarBg;
+const AVATAR_TEXT = colors.supplierAvatarText;
 
 function getAvatarIdx(name: string): number {
   let hash = 0;
@@ -96,7 +77,8 @@ export default function SupplierCard({ supplier, onPress }: Props) {
           ₹{balance > 0 ? balance.toLocaleString("en-IN") : "0"}
         </Text>
         <View
-          className={`border rounded-[6px] px-2 py-[3px] ${isPayable ? 'bg-[#FDF2F8] border-supplierPrimary/30' : 'bg-successBg border-primary'}`}
+          className={`border rounded-[6px] px-2 py-[3px] ${isPayable ? 'border-supplierPrimary/30' : 'bg-successBg border-primary'}`}
+          style={isPayable ? { backgroundColor: colors.supplierBg } : undefined}
         >
           <Text
             className={`text-[11px] font-bold tracking-[0.4px] ${isPayable ? 'text-supplierPrimary' : 'text-primary'}`}

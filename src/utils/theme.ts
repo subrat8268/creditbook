@@ -67,6 +67,32 @@ export const colors = {
     "#F59E0B",
   ] as string[],
 
+  // ─ Supplier avatar palette (pastel bg + dark fg, 8 slots)
+  supplierAvatarBg: [
+    "#EEF2FF", // indigo-50
+    "#FDF4FF", // fuchsia-50
+    "#EAF0FB", // blue-100
+    "#FDF2F8", // pink-50
+    "#EDE9FE", // purple-100
+    "#FFF1F2", // rose-50
+    "#CCFBF1", // teal-100
+    "#F1F5F9", // slate-100
+  ] as string[],
+  supplierAvatarText: [
+    "#4338CA", // indigo-700
+    "#9333EA", // fuchsia-700
+    "#2563EB", // blue-700 (= fab)
+    "#DB2777", // pink-600 (= supplierPrimary)
+    "#6D28D9", // purple-700
+    "#BE123C", // rose-700
+    "#0F766E", // teal-700
+    "#475569", // slate-600
+  ] as string[],
+
+  // ─ Supplier tint surfaces (pink-50 / pink-100)
+  supplierBg: "#FDF2F8",  // pink-50  — summary panel inner, status badge bg
+  supplierBadgeBg: "#FCE7F3", // pink-100 — header "I Owe" badge bg
+
   // ─ Icon backgrounds
   iconBg: "#22C55E22", // Translucent brand green
 } as const;
@@ -85,8 +111,14 @@ export const gradients = {
   // Supplier payable card — pink gradient
   supplierHero: {
     start: "#DB2777", // Pink-600
-    end: "#BE185D", // Pink-800
+    end: "#BE185D",   // Pink-800
   },
+
+  // Supplier detail hero — deeper rose gradient (hero card on supplier detail screen)
+  supplierDetailHero: {
+    start: "#BE2D5C", // Rose-700
+    end: "#E8427D",   // Rose-500
+  } as { start: string; end: string },
 
   // Net position card — solid dark navy
   netPosition: "#1C2333", // Dark slate
