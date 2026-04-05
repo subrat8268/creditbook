@@ -13,13 +13,13 @@ const CustomerEmptyIcon = (
   <View className="w-16 h-16">
     <BookOpen size={64} color={colors.primary} strokeWidth={1.5} />
     <View className="absolute -top-1 -right-1.5 w-[22px] h-[22px] rounded-full bg-primary items-center justify-center border-2 border-surface">
-      <Plus size={11} color="#FFFFFF" strokeWidth={3} />
+      <Plus size={11} color={colors.surface} strokeWidth={3} />
     </View>
   </View>
 );
 
 const CustomerEmptyCtaIcon = (
-  <UserPlus size={18} color="#FFFFFF" strokeWidth={2} />
+  <UserPlus size={18} color={colors.surface} strokeWidth={2} />
 );
 
 export type CustomerFilter = "All" | "Overdue" | "Paid" | "Pending";

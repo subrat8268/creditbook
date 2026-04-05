@@ -10,28 +10,13 @@ import { CustomerSchema } from "../../utils/schemas";
 import { colors } from "../../utils/theme";
 import Button from "../ui/Button";
 
-// ─── Avatar utilities (mirrors CustomerCard) ─────────────────────────────────
-const AVATAR_COLORS = [
-  colors.danger,
-  "#3498DB",
-  "#9B59B6",
-  "#1ABC9C",
-  "#F39C12",
-  "#2ECC71",
-  "#E67E22",
-  "#16A085",
-  "#8E44AD",
-  "#2980B9",
-  "#D35400",
-  "#27AE60",
-] as const;
-
 function getAvatarColor(name: string): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  const palette = colors.avatarPalette;
+  return palette[Math.abs(hash) % palette.length];
 }
 
 function getInitials(name: string): string {
@@ -116,7 +101,7 @@ export default function NewCustomerModal({
       backgroundStyle={{
         borderTopLeftRadius: 28,
         borderTopRightRadius: 28,
-        backgroundColor: "white",
+        backgroundColor: colors.surface,
       }}
     >
       <BottomSheetScrollView
@@ -178,7 +163,7 @@ export default function NewCustomerModal({
                     <Text
                       className="font-bold"
                       style={{
-                        color: "#FFFFFF",
+                        color: colors.surface,
                         fontSize: values.name.trim() ? 22 : 26,
                       }}
                     >
@@ -203,7 +188,7 @@ export default function NewCustomerModal({
                   </Text>
                   <TextInput
                     placeholder="e.g. Mohit Sharma"
-                    placeholderTextColor={"#AEAEB2"}
+                    placeholderTextColor={colors.textSecondary}
                     value={values.name}
                     onChangeText={handleChange("name")}
                     onBlur={handleBlur("name")}
@@ -257,7 +242,7 @@ export default function NewCustomerModal({
                     </View>
                     <TextInput
                       placeholder="98765 43210"
-                      placeholderTextColor={"#AEAEB2"}
+                      placeholderTextColor={colors.textSecondary}
                       value={values.phone}
                       onChangeText={handleChange("phone")}
                       onBlur={handleBlur("phone")}
@@ -287,7 +272,7 @@ export default function NewCustomerModal({
                   </Text>
                   <TextInput
                     placeholder="Area / locality"
-                    placeholderTextColor={"#AEAEB2"}
+                    placeholderTextColor={colors.textSecondary}
                     value={values.address}
                     onChangeText={handleChange("address")}
                     onBlur={handleBlur("address")}
@@ -310,12 +295,12 @@ export default function NewCustomerModal({
                   {/* Hint pill — shown before the input so the user reads it first */}
                   <View
                     className="flex-row items-center rounded-lg px-3 py-2 mb-2"
-                    style={{ backgroundColor: "#F0FDF4" }}
+                    style={{ backgroundColor: colors.successBg }}
                   >
                     <Text className="text-xs mr-1.5">💡</Text>
                     <Text
                       className="text-xs flex-1"
-                      style={{ color: "#15803D" }}
+                      style={{ color: colors.primaryDark }}
                     >
                       Most users set this to ₹0 for new customers
                     </Text>
@@ -333,7 +318,7 @@ export default function NewCustomerModal({
                     </Text>
                     <TextInput
                       placeholder="0.00"
-                      placeholderTextColor={"#AEAEB2"}
+                      placeholderTextColor={colors.textSecondary}
                       value={
                         values.openingBalance === ("" as unknown as number)
                           ? ""

@@ -134,14 +134,14 @@ function ContactRow({
             ? colors.primary
             : alreadyExists
               ? colors.border
-              : "#AEAEB2",
+              : colors.textSecondary,
           backgroundColor: isSelected ? colors.primary : colors.surface,
           alignItems: "center",
           justifyContent: "center",
           marginRight: 14,
         }}
       >
-        {isSelected && <Check size={13} color="#FFFFFF" strokeWidth={3.5} />}
+        {isSelected && <Check size={13} color={colors.surface} strokeWidth={3.5} />}
       </View>
 
       {/* ── Avatar ── */}
@@ -150,7 +150,7 @@ function ContactRow({
           width: 44,
           height: 44,
           borderRadius: 22,
-          backgroundColor: alreadyExists ? "#F3F4F6" : combo.bg,
+          backgroundColor: alreadyExists ? colors.background : combo.bg,
           alignItems: "center",
           justifyContent: "center",
           marginRight: 12,
@@ -160,7 +160,7 @@ function ContactRow({
           style={{
             fontSize: 14,
             fontWeight: "700",
-            color: alreadyExists ? "#9CA3AF" : combo.text,
+            color: alreadyExists ? colors.textSecondary : combo.text,
           }}
         >
           {getInitials(item.name)}
@@ -177,7 +177,7 @@ function ContactRow({
             style={{
               fontSize: 15,
               fontWeight: "600",
-              color: alreadyExists ? "#AEAEB2" : colors.textPrimary,
+              color: alreadyExists ? colors.textSecondary : colors.textPrimary,
             }}
           >
             {item.name}
@@ -472,7 +472,7 @@ export default function ContactsPickerModal({
               style={{
                 fontSize: 17,
                 fontWeight: "800",
-                color: "#FFFFFF",
+                color: colors.surface,
                 letterSpacing: -0.2,
               }}
             >
@@ -546,10 +546,10 @@ export default function ContactsPickerModal({
                 gap: 8,
               }}
             >
-              <Text style={{ fontSize: 16, color: "#AEAEB2" }}>🔍</Text>
+              <Text style={{ fontSize: 16, color: colors.textSecondary }}>🔍</Text>
               <BottomSheetTextInput
                 placeholder="Search contacts..."
-                placeholderTextColor="#AEAEB2"
+                placeholderTextColor={colors.textSecondary}
                 value={search}
                 onChangeText={setSearch}
                 style={{
@@ -632,7 +632,7 @@ export default function ContactsPickerModal({
                 paddingVertical: 64,
               }}
             >
-              <Users size={48} color="#AEAEB2" strokeWidth={1.5} />
+              <Users size={48} color={colors.textSecondary} strokeWidth={1.5} />
               <Text
                 style={{
                   fontSize: 14,
@@ -688,20 +688,20 @@ export default function ContactsPickerModal({
                 style={{
                   height: 56,
                   borderRadius: 20,
-                  backgroundColor: ctaDisabled ? "#D1D5DB" : colors.primary,
+                  backgroundColor: ctaDisabled ? colors.border : colors.primary,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
                 {importing ? (
-                  <ActivityIndicator color="#FFFFFF" />
+                  <ActivityIndicator color={colors.surface} />
                 ) : (
                   <Text
                     style={{
                       fontSize: 17,
                       fontWeight: "800",
                       letterSpacing: -0.2,
-                      color: ctaDisabled ? colors.textSecondary : "#FFFFFF",
+                      color: ctaDisabled ? colors.textSecondary : colors.surface,
                     }}
                   >
                     {importLabel}

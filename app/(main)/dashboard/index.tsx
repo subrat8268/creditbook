@@ -1,4 +1,3 @@
-import React from "react";
 import {
   ScrollView,
   View,
@@ -7,6 +6,7 @@ import {
   StatusBar,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Plus,
   Bell,
@@ -16,6 +16,7 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
 } from "lucide-react-native";
+import { colors, gradients } from "@/src/utils/theme";
 import { useDashboard } from "@/src/hooks/useDashboard";
 import { useAuthStore } from "@/src/store/authStore";
 import { useRouter } from "expo-router";
@@ -40,7 +41,7 @@ export default function DashboardScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent={false} />
 
       {/* HEADER */}
@@ -75,7 +76,7 @@ export default function DashboardScreen() {
       >
         {/* HERO SECTION: NET CARD */}
         <View className="px-5 mt-2 mb-8">
-          <View className="bg-primary p-6 rounded-[24px] shadow-sm">
+          <View className="p-6 rounded-[24px] shadow-sm" style={{ backgroundColor: gradients.netPosition }}>
             <Text className="text-[14px] font-bold text-surface opacity-90 uppercase tracking-widest mb-1">
               Customers Owe You
             </Text>
@@ -217,9 +218,9 @@ export default function DashboardScreen() {
       <TouchableOpacity
         onPress={() => router.push("/(main)/orders/create" as any)}
         activeOpacity={0.8}
-        className="absolute bottom-6 right-6 w-16 h-16 rounded-full bg-primary items-center justify-center shadow-lg elevation-xl"
+        className="absolute bottom-6 right-5 w-14 h-14 rounded-full bg-primary items-center justify-center shadow-lg elevation-xl"
         style={{
-          shadowColor: "#2563EB", // Only exception since iOS BoxShadow doesn't read tailwind variables perfectly in NativeWind v2. 
+          shadowColor: colors.fab, // Explicitly mapped to tokens
           shadowOffset: { width: 0, height: 8 },
           shadowOpacity: 0.3,
           shadowRadius: 10,
@@ -228,6 +229,6 @@ export default function DashboardScreen() {
       >
         <Plus size={30} className="text-surface" strokeWidth={2.5} />
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }

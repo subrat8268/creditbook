@@ -5,7 +5,7 @@ import { useToast } from "@/src/components/feedback/Toast";
 import { useCustomerDetail } from "@/src/hooks/useCustomer";
 import { useAuthStore } from "@/src/store/authStore";
 import { Transaction } from "@/src/types/customer";
-import { colors } from "@/src/utils/theme";
+import { colors, gradients } from "@/src/utils/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Print from "expo-print";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -23,7 +23,7 @@ import {
     Plus,
     Receipt,
 } from "lucide-react-native";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
     Linking,
     ScrollView,
@@ -163,10 +163,10 @@ function TransactionRow({ tx }: { tx: Transaction }) {
 
   return (
     <View
-      className={`bg-white rounded-[14px] px-3.5 py-3.5 mb-[10px] border-l-4`}
+      className={`bg-surface rounded-[14px] px-3.5 py-3.5 mb-[10px] border-l-4`}
       style={{
         borderLeftColor: borderColor,
-        shadowColor: "#000000",
+        shadowColor: colors.textPrimary,
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.04,
         shadowRadius: 4,
@@ -229,9 +229,9 @@ export default function CustomerDetailScreen() {
   const { show: showToast } = useToast();
 
   const [txFilter, setTxFilter] = useState<TxFilter>("All");
-  const [paymentModalVisible, setPaymentModalVisible] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [historyExpanded, setHistoryExpanded] = useState(false);
+  const paymentModalRef = useRef<any>(null);
 
   const INITIAL_TX_COUNT = 10;
 
@@ -315,7 +315,7 @@ export default function CustomerDetailScreen() {
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* ── Header ── */}
-      <View className="flex-row items-center px-4 py-3 bg-white border-b border-border">
+      <View className="flex-row items-center px-4 py-3 bg-surface border-b border-border">
         <TouchableOpacity onPress={() => router.back()} className="p-1 mr-2">
           <ArrowLeft size={24} color={colors.textPrimary} strokeWidth={2} />
         </TouchableOpacity>
@@ -360,7 +360,7 @@ export default function CustomerDetailScreen() {
           colors={
             customer.outstandingBalance === 0
               ? [colors.primary, colors.primaryDark]
-              : [colors.danger, "#B33226"]
+              : [colors.dangerStrong, colors.danger]
           }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -438,9 +438,9 @@ export default function CustomerDetailScreen() {
         {/* ── Action Buttons ── */}
         <View className="flex-row mx-4 mt-4 gap-3">
           <TouchableOpacity
-            className="flex-1 bg-white rounded-2xl py-[18px] items-center gap-2"
+            className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
             style={{
-              shadowColor: "#000000",
+              shadowColor: colors.textPrimary,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.05,
               shadowRadius: 6,
@@ -479,9 +479,9 @@ export default function CustomerDetailScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="flex-1 bg-white rounded-2xl py-[18px] items-center gap-2"
+            className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
             style={{
-              shadowColor: "#000000",
+              shadowColor: colors.textPrimary,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.05,
               shadowRadius: 6,
@@ -496,7 +496,7 @@ export default function CustomerDetailScreen() {
                 });
                 return;
               }
-              setPaymentModalVisible(true);
+              paymentModalRef.current?.present();
             }}
           >
             <View
@@ -511,9 +511,9 @@ export default function CustomerDetailScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="flex-1 bg-white rounded-2xl py-[18px] items-center gap-2"
+            className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
             style={{
-              shadowColor: "#000000",
+              shadowColor: colors.textPrimary,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.05,
               shadowRadius: 6,
@@ -613,9 +613,9 @@ export default function CustomerDetailScreen() {
                   className="flex-1 items-center justify-center py-3 rounded-full"
                   style={{ backgroundColor: colors.primary }}
                   activeOpacity={0.8}
-                  onPress={() => setPaymentModalVisible(true)}
+                  onPress={() => paymentModalRef.current?.present()}
                 >
-                  <Text className="text-[14px] font-bold text-white">
+                  <Text className="text-[14px] font-bold" style={{ color: colors.surface }}>
                     Record Payment
                   </Text>
                 </TouchableOpacity>
@@ -666,7 +666,7 @@ export default function CustomerDetailScreen() {
 
       {/* ── Footer: Download PDF + WhatsApp ── */}
       <View
-        className="px-4 py-4 bg-white border-t border-border flex-row gap-3"
+        className="px-4 py-4 bg-surface border-t border-border flex-row gap-3"
         style={{ paddingBottom: 16 }}
       >
         {/* Download PDF */}
@@ -677,8 +677,8 @@ export default function CustomerDetailScreen() {
               customer.transactions.length === 0
                 ? colors.border
                 : customer.outstandingBalance > 0
-                  ? "#1C2333"
-                  : "#F1F5F9",
+                  ? gradients.netPosition
+                  : colors.background,
             opacity: exporting ? 0.6 : 1,
           }}
           onPress={downloadStatement}
@@ -691,7 +691,7 @@ export default function CustomerDetailScreen() {
               customer.transactions.length === 0
                 ? colors.textSecondary
                 : customer.outstandingBalance > 0
-                  ? "#FFFFFF"
+                  ? colors.surface
                   : colors.textPrimary
             }
             strokeWidth={2}
@@ -703,7 +703,7 @@ export default function CustomerDetailScreen() {
                 customer.transactions.length === 0
                   ? colors.textSecondary
                   : customer.outstandingBalance > 0
-                    ? "#FFFFFF"
+                    ? colors.surface
                     : colors.textPrimary,
             }}
           >
@@ -720,17 +720,16 @@ export default function CustomerDetailScreen() {
           onPress={sendWhatsAppReminder}
           activeOpacity={0.85}
         >
-          <MessageCircle size={17} color="#FFFFFF" strokeWidth={2} />
+          <MessageCircle size={17} color={colors.surface} strokeWidth={2} />
           <Text className="text-[14px] font-bold text-white">WhatsApp</Text>
         </TouchableOpacity>
       </View>
 
       {hasPendingPayment && (
         <RecordCustomerPaymentModal
-          visible={paymentModalVisible}
-          onClose={() => setPaymentModalVisible(false)}
+          ref={paymentModalRef}
           onSuccess={() => {
-            setPaymentModalVisible(false);
+            paymentModalRef.current?.dismiss();
             refetch();
           }}
           orderId={customer.pendingOrderId!}

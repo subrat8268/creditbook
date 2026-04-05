@@ -255,7 +255,7 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
               <Text className="text-surface text-[15px] font-bold">
                 {isRecording ? "Recording..." : "Mark Full Paid"}
               </Text>
-              {!isRecording && <Check size={16} color="#FFFFFF" strokeWidth={3} />}
+              {!isRecording && <Check size={16} color={colors.surface} strokeWidth={3} />}
             </TouchableOpacity>
           ) : (
             <TouchableOpacity

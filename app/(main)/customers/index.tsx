@@ -104,12 +104,15 @@ export default function CustomersScreen() {
 
   const handleAddCustomer = async (values: {
     name: string;
-    phone: string;
+    phone?: string;
     address?: string;
     openingBalance?: number;
   }) => {
     try {
-      await addCustomerMutation.mutateAsync(values);
+      await addCustomerMutation.mutateAsync({
+        ...values,
+        phone: values.phone || "",
+      } as any);
       setIsModalOpen(false);
     } catch (err: any) {
       console.error("Failed to add customer:", err);
@@ -163,14 +166,14 @@ export default function CustomersScreen() {
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: "#F6F7F9" }}
+      className="flex-1 bg-background"
       edges={["top"]}
     >
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent={false} />
 
       {/* ── Screen header ── */}
       <View className="px-5 py-4 flex-row justify-between items-center">
-        <Text style={{ fontSize: 24, fontWeight: "800", color: "#111827" }}>
+        <Text style={{ fontSize: 24, fontWeight: "800", color: colors.textPrimary }}>
           Customers
         </Text>
         <TouchableOpacity
@@ -190,41 +193,6 @@ export default function CustomersScreen() {
           onChangeText={setSearch}
           placeholder={t("customers.search", "Search customers...")}
         />
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="mt-4 mb-2"
-          contentContainerStyle={{ gap: 10, paddingBottom: 2 }}
-        >
-          {FILTERS.map((f) => {
-            const active = filter === f;
-            return (
-              <TouchableOpacity
-                key={f}
-                onPress={() => setFilter(f)}
-                activeOpacity={0.75}
-                style={{
-                  paddingHorizontal: 22,
-                  paddingVertical: 9,
-                  borderRadius: 24,
-                  backgroundColor: active ? colors.primary : "#FFFFFF",
-                  borderWidth: 1,
-                  borderColor: active ? colors.primary : "#E2E8F0",
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: active ? "700" : "600",
-                    color: active ? "#FFFFFF" : "#64748B",
-                  }}
-                >
-                  {f}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
       </View>
 
       {/* ── Divider removed ── */}
@@ -239,7 +207,6 @@ export default function CustomersScreen() {
         onEndReached={handleEndReached}
         isFetchingNextPage={isFetchingNextPage}
         onPressCustomer={handlePressCustomer}
-        filter={filter}
         onAddCustomer={() => setIsModalOpen(true)}
       />
 
@@ -335,13 +302,13 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.surface,
     borderWidth: 1.5,
     borderColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
     elevation: 4,
-    shadowColor: "#000",
+    shadowColor: colors.textPrimary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 4,
