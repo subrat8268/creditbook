@@ -1,6 +1,6 @@
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { formatRelativeActivity } from "../../utils/helper";
-import { colors, spacing, typography } from "../../utils/theme";
+import { colors } from "../../utils/theme";
 
 type CustomerStatus = "Overdue" | "Pending" | "Paid" | "Advance";
 
@@ -10,30 +10,17 @@ type Props = {
   avatar?: string;
   isOverdue?: boolean;
   outstandingBalance?: number;
-  /** ISO timestamp of last activity — shown as relative time */
   lastActiveAt?: string;
   onPress?: () => void;
 };
-
-// --- Helpers ---
-
-const AVATAR_COLORS = [
-  colors.danger, // Red
-  colors.warning, // Amber
-  colors.primary, // Green
-  colors.fab, // Blue
-  "#9B59B6", // purple — decorative avatar only
-  "#E91E8C", // pink   — decorative avatar only
-  "#00BCD4", // teal   — decorative avatar only
-  "#FF5722", // deep orange — decorative avatar only
-] as const;
 
 function getAvatarColor(name: string): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  const palette = colors.avatarPalette;
+  return palette[Math.abs(hash) % palette.length];
 }
 
 function getInitials(name: string): string {
@@ -55,40 +42,32 @@ function formatAmount(status: CustomerStatus, balance: number): string {
   return `\u20B9${Math.abs(balance).toLocaleString("en-IN")}`;
 }
 
-const STATUS_STYLES: Record<
-  CustomerStatus,
-  { text: string; border: string; bg: string }
-> = {
+const STATUS_UIMAP: Record<CustomerStatus, { badgeBg: string; badgeText: string; amountText: string; textLabel: string }> = {
   Overdue: {
-    text: colors.danger,
-    border: "#FEF2F2",
-    bg: "#FEF2F2",
+    badgeBg: "bg-danger-light",
+    badgeText: "text-danger-text",
+    amountText: "text-danger",
+    textLabel: "OVERDUE",
   },
   Pending: {
-    text: colors.warning,
-    border: "#FFFBEB",
-    bg: "#FFFBEB",
+    badgeBg: "bg-warning-light",
+    badgeText: "text-warning-dark",
+    amountText: "text-warning",
+    textLabel: "PENDING",
   },
   Paid: {
-    text: colors.primary,
-    border: "#F0FDF4",
-    bg: "#F0FDF4",
+    badgeBg: "bg-success-light",
+    badgeText: "text-success-text",
+    amountText: "text-success",
+    textLabel: "PAID",
   },
   Advance: {
-    text: colors.fab,
-    border: "#EFF6FF",
-    bg: "#EFF6FF",
+    badgeBg: "bg-info-light",
+    badgeText: "text-info-dark",
+    amountText: "text-success",
+    textLabel: "ADVANCE",
   },
 };
-
-const AMOUNT_COLOR: Record<CustomerStatus, string> = {
-  Overdue: colors.danger,
-  Pending: colors.warning,
-  Paid: colors.textPrimary,
-  Advance: colors.textPrimary,
-};
-
-// --- Component ---
 
 export default function CustomerCard({
   name,
@@ -100,23 +79,20 @@ export default function CustomerCard({
   onPress,
 }: Props) {
   const status = getStatus(isOverdue, outstandingBalance);
-  const amountText = formatAmount(status, outstandingBalance);
-  const { text: badgeText, border, bg } = STATUS_STYLES[status];
-  const avatarColor = getAvatarColor(name);
+  const amountStr = formatAmount(status, outstandingBalance);
+  const ui = STATUS_UIMAP[status];
+  
+  // For avatar background, we must use style prop because standard tailwind config 
+  // might not have these specific deterministic hex values from theme.avatarPalette generated as JIT classes.
+  // All other styles use NativeWind classes exclusively.
+  const avatarBgColor = getAvatarColor(name);
 
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
+      className="flex-row items-center bg-surface p-4 rounded-2xl mb-3 border border-border"
       style={{
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#FFFFFF",
-        padding: 16,
-        borderRadius: 20,
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: "#F1F5F9",
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.04,
@@ -124,90 +100,44 @@ export default function CustomerCard({
         elevation: 2,
       }}
     >
-      {/* Avatar */}
+      {/* Avatar (52x52) */}
       {avatar ? (
         <Image
           source={{ uri: avatar }}
-          style={{
-            width: spacing.avatarMd,
-            height: spacing.avatarMd,
-            borderRadius: spacing.avatarMd / 2,
-            marginRight: 14,
-          }}
+          className="w-[52px] h-[52px] rounded-full mr-3.5"
         />
       ) : (
         <View
-          style={{
-            width: 48,
-            height: 48,
-            borderRadius: 24,
-            marginRight: 14,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: avatarColor,
-          }}
+          className="w-[52px] h-[52px] rounded-full mr-3.5 items-center justify-center"
+          style={{ backgroundColor: avatarBgColor }}
         >
-          <Text
-            style={{
-              fontSize: 17,
-              fontWeight: "700",
-              letterSpacing: 0.3,
-              color: colors.surface,
-            }}
-          >
+          <Text className="text-[17px] font-bold tracking-wide text-surface">
             {getInitials(name)}
           </Text>
         </View>
       )}
 
       {/* Name + Phone */}
-      <View style={{ flex: 1, marginRight: 10 }}>
+      <View className="flex-1 mr-2.5">
         <Text
-          style={{
-            ...typography.cardTitle,
-            marginBottom: 3,
-            color: colors.textPrimary,
-          }}
+          className="text-base font-semibold text-textPrimary mb-0.5"
           numberOfLines={1}
         >
           {name}
         </Text>
-        <Text
-          style={{
-            ...typography.caption,
-            color: colors.textSecondary,
-          }}
-        >
+        <Text className="text-xs font-medium text-textSecondary">
           Last activity: {formatRelativeActivity(lastActiveAt)}
         </Text>
       </View>
 
-      {/* Amount + Badge */}
-      <View style={{ alignItems: "flex-end", gap: 5 }}>
-        <Text
-          style={{
-            fontSize: 16,
-            fontWeight: "700",
-            color: AMOUNT_COLOR[status],
-          }}
-        >
-          {amountText}
+      {/* Amount + Pill Badge */}
+      <View className="items-end space-y-1.5">
+        <Text className={`text-base font-bold ${ui.amountText}`}>
+          {amountStr}
         </Text>
-        <View
-          style={{
-            borderRadius: 16,
-            paddingHorizontal: 8,
-            paddingVertical: 4,
-            backgroundColor: bg,
-          }}
-        >
-          <Text
-            style={{
-              ...typography.label,
-              color: badgeText,
-            }}
-          >
-            {status.toUpperCase()}
+        <View className={`rounded-full px-2 py-1 ${ui.badgeBg}`}>
+          <Text className={`text-[11px] font-bold uppercase tracking-wider ${ui.badgeText}`}>
+            {ui.textLabel}
           </Text>
         </View>
       </View>

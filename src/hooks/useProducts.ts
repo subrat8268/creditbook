@@ -37,7 +37,7 @@ export const useProducts = (vendorId?: string, search?: string) => {
       lastPage.length === PAGE_SIZE ? allPages.length : undefined,
     initialPageParam: 0,
     enabled: !!vendorId,
-    staleTime: 30_000,
+    staleTime: 300_000,
   });
 
   return {
@@ -63,7 +63,54 @@ export const useAddProduct = (vendorId: string) => {
   return useMutation({
     mutationFn: (values: Omit<Product, "id" | "vendor_id" | "created_at">) =>
       addProduct(vendorId, values),
-    onSuccess: () => {
+
+    onMutate: async (newProductInput) => {
+      // 1. Cancel outgoing queries to prevent overwriting our optimistic data
+      await queryClient.cancelQueries({ queryKey: productKeys.all(vendorId) });
+
+      // 2. Snapshot the current state of all product list variations (search filters, etc.)
+      const previousQueries = queryClient.getQueriesData<any>({
+        queryKey: productKeys.all(vendorId),
+      });
+
+      // 3. Construct a temporary optimistic mock of the Product
+      const optimisticProduct: Product = {
+        ...newProductInput,
+        id: `optimistic-${Math.random().toString(36).substr(2, 9)}`,
+        vendor_id: vendorId,
+        created_at: new Date().toISOString(),
+        variants: newProductInput.variants || [],
+      };
+
+      // 4. Inject the mock into the TanStack InfiniteQuery cache pages
+      queryClient.setQueriesData<any>(
+        { queryKey: productKeys.all(vendorId) },
+        (oldData: any) => {
+          if (!oldData || !oldData.pages) return oldData;
+          return {
+            ...oldData,
+            pages: [
+              [optimisticProduct, ...oldData.pages[0]],
+              ...oldData.pages.slice(1),
+            ],
+          };
+        }
+      );
+
+      // Return context for potential rollback
+      return { previousQueries };
+    },
+
+    // If API fails, rollback to exactly what we snapshotted
+    onError: (err, newProduct, context) => {
+      console.error("Optimistic Update Failed, rolling back...", err);
+      context?.previousQueries.forEach(([queryKey, oldData]: [unknown, any]) => {
+        queryClient.setQueryData(queryKey as any, oldData);
+      });
+    },
+
+    // Always refetch to guarantee the client's cache is identical to the database State
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: productKeys.all(vendorId) });
     },
   });

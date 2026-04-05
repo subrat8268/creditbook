@@ -1,249 +1,270 @@
-// src/utils/generatePremiumBillPdf.ts
-import * as FileSystem from "expo-file-system/legacy";
-import * as Print from "expo-print";
+import * as Print from 'expo-print';
 
-export type BillItem = {
+export interface BillItem {
   name: string;
   quantity: number;
-  price: number;
-  variantName?: string | null;
-};
+  rate: number;
+  amount: number;
+}
 
-export type StoreInfo = {
+export interface BusinessDetails {
   name: string;
   address?: string;
   phone?: string;
   gstin?: string;
-  logoUrl?: string | null;
-  bankName?: string;
-  accountNumber?: string;
-  ifscCode?: string;
-};
+}
 
-export type InvoiceOptions = {
-  invoiceNumber: string; // Required — must be the real sequential bill number
-  date?: string;
-  notes?: string;
-  upiId?: string;
-  discountAmount?: number;
-  taxPercent?: number;
-  showLogo?: boolean;
-  previousBalance?: number;
-  loadingCharge?: number;
-};
+export interface BankDetails {
+  bankName: string;
+  accountNo: string;
+  ifsc: string;
+}
+
+export interface BillMeta {
+  invoiceNumber: string;
+  date: string;
+  subtotal: number;
+  taxAmount: number;
+  loadingCharge: number;
+  bankDetails?: BankDetails;
+}
 
 export async function generateBillPdf(
   items: BillItem[],
-  store: StoreInfo,
-  totalAmount: number,
+  businessDetails: BusinessDetails,
+  grandTotal: number,
   customerName: string,
-  options: InvoiceOptions = {},
+  meta: BillMeta
 ): Promise<string> {
-  try {
-    const {
-      invoiceNumber,
-      date = new Date().toLocaleDateString(),
-      notes = "",
-      upiId = options.upiId || "",
-      discountAmount = options.discountAmount || 0,
-      taxPercent = options.taxPercent || 0,
-      showLogo = options.showLogo ?? true,
-      previousBalance = options.previousBalance || 0,
-      loadingCharge = options.loadingCharge || 0,
-    } = options;
+  const tableRows = items
+    .map(
+      (item, index) => `
+    <tr>
+      <td class="text-center">${index + 1}</td>
+      <td>${item.name}</td>
+      <td class="text-center">${item.quantity}</td>
+      <td class="text-right">₹${item.rate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+      <td class="text-right">₹${item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+    </tr>
+  `
+    )
+    .join('');
 
-    // build rows
-    const itemRows = items
-      .map((it, idx) => {
-        const lineTotal = it.price * it.quantity;
-        return `
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Invoice - ${meta.invoiceNumber}</title>
+      <style>
+        @page {
+          margin: 20px;
+        }
+        body {
+          font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+          color: #333;
+          font-size: 14px;
+          line-height: 1.5;
+          margin: 0;
+          padding: 20px;
+          background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+          margin: 0;
+          padding: 0;
+          color: #111;
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 30px;
+          padding-bottom: 20px;
+          border-bottom: 2px solid #222;
+        }
+        .header h1 {
+          font-size: 28px;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          margin-bottom: 8px;
+        }
+        .header p {
+          margin: 2px 0;
+          font-size: 13px;
+          color: #555;
+        }
+        .invoice-details {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 30px;
+        }
+        .billing-to, .invoice-info {
+          width: 48%;
+        }
+        .section-title {
+          font-size: 12px;
+          text-transform: uppercase;
+          color: #777;
+          border-bottom: 1px solid #eee;
+          padding-bottom: 5px;
+          margin-bottom: 10px;
+        }
+        .billing-to strong, .invoice-info strong {
+          font-size: 16px;
+          display: block;
+          margin-bottom: 4px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 30px;
+        }
+        th, td {
+          padding: 12px;
+          border-bottom: 1px solid #ddd;
+        }
+        th {
+          background-color: #f9f9f9;
+          font-weight: bold;
+          text-transform: uppercase;
+          font-size: 12px;
+          color: #444;
+          text-align: left;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .totals-section {
+          width: 50%;
+          float: right;
+        }
+        .total-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 6px 0;
+          border-bottom: 1px solid #f0f0f0;
+        }
+        .total-row.grand-total {
+          font-weight: bold;
+          font-size: 18px;
+          border-bottom: none;
+          border-top: 2px solid #222;
+          padding-top: 10px;
+          margin-top: 5px;
+          color: #000;
+        }
+        .clear {
+          clear: both;
+        }
+        .footer-details {
+          margin-top: 50px;
+          padding-top: 20px;
+          border-top: 1px solid #eee;
+        }
+        .bank-details {
+          width: 50%;
+          font-size: 12px;
+          color: #555;
+        }
+        .bank-details p {
+          margin: 3px 0;
+        }
+        .signature {
+          margin-top: 40px;
+          text-align: left;
+          font-size: 12px;
+          color: #777;
+        }
+      </style>
+    </head>
+    <body>
+
+      <div class="header">
+        <h1>${businessDetails.name}</h1>
+        ${businessDetails.address ? `<p>${businessDetails.address}</p>` : ''}
+        ${businessDetails.phone ? `<p>Phone: ${businessDetails.phone}</p>` : ''}
+        ${businessDetails.gstin ? `<p><strong>GSTIN:</strong> ${businessDetails.gstin}</p>` : ''}
+      </div>
+
+      <div class="invoice-details">
+        <div class="billing-to">
+          <div class="section-title">Billed To</div>
+          <strong>${customerName}</strong>
+        </div>
+        <div class="invoice-info text-right">
+          <div class="section-title" style="text-align: right;">Invoice Details</div>
+          <p style="margin: 0;"><strong>Invoice No:</strong> ${meta.invoiceNumber}</p>
+          <p style="margin: 4px 0 0 0;"><strong>Date:</strong> ${meta.date}</p>
+        </div>
+      </div>
+
+      <table>
+        <thead>
           <tr>
-            <td style="padding:6px 8px">${idx + 1}. ${escapeHtml(it.name)}${it.variantName ? ` (${escapeHtml(it.variantName)})` : ""}</td>
-            <td style="padding:6px 8px; text-align:center">${it.quantity}</td>
-            <td style="padding:6px 8px; text-align:right">₹${formatNumber(it.price)}</td>
-            <td style="padding:6px 8px; text-align:right">₹${formatNumber(lineTotal)}</td>
+            <th class="text-center" style="width: 5%;">#</th>
+            <th style="width: 45%;">Item Description</th>
+            <th class="text-center" style="width: 10%;">Qty</th>
+            <th class="text-right" style="width: 20%;">Rate</th>
+            <th class="text-right" style="width: 20%;">Amount</th>
           </tr>
-        `;
-      })
-      .join("");
+        </thead>
+        <tbody>
+          ${tableRows}
+        </tbody>
+      </table>
 
-    // compute discount and tax
-    const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
-    const discount = Number(discountAmount || 0);
-    const taxedBase = Math.max(0, subtotal - discount);
-    const taxAmount = taxPercent ? (taxedBase * taxPercent) / 100 : 0;
-    const loadingChargeValue = Number(loadingCharge || 0);
-    const orderTotal =
-      Math.round((taxedBase + taxAmount + loadingChargeValue) * 100) / 100;
-    const prevBalance = Number(previousBalance || 0);
-    const grandTotal = orderTotal + prevBalance;
+      <div class="totals-section">
+        <div class="total-row">
+          <span>Subtotal:</span>
+          <span>₹${meta.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+        </div>
+        ${
+          meta.taxAmount > 0
+            ? `
+        <div class="total-row">
+          <span>Tax Amount:</span>
+          <span>₹${meta.taxAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+        </div>`
+            : ''
+        }
+        ${
+          meta.loadingCharge > 0
+            ? `
+        <div class="total-row">
+          <span>Loading/Handling:</span>
+          <span>₹${meta.loadingCharge.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+        </div>`
+            : ''
+        }
+        <div class="total-row grand-total">
+          <span>Grand Total:</span>
+          <span>₹${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+        </div>
+      </div>
 
-    // UPI QR image URL via Google Chart API (public)
-    const upiQrUrl = upiId
-      ? `https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=${encodeURIComponent(upiPayload(upiId, String(grandTotal)))}`
-      : null;
+      <div class="clear"></div>
 
-    const html = `
-      <html>
-        <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color: #222; padding: 18px; }
-            .header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-            .brand { display:flex; align-items:center; gap:12px }
-            .logo { width:80px; height:80px; object-fit:contain; border-radius:8px; }
-            h1 { margin:0; font-size:20px; }
-            .meta { text-align:right; font-size:12px; color:#444 }
-            .section { margin-top:14px; }
-            table { width:100%; border-collapse:collapse; font-size:13px; }
-            th { text-align:left; padding:8px; border-bottom:2px solid #eee; background:#fafafa; }
-            td { border-bottom:1px solid #f1f1f1; }
-            .right { text-align:right; }
-            .small { font-size:11px; color:#666 }
-            .totals { margin-top:10px; width:100%; }
-            .totals td { padding:6px 8px; }
-            .footer { margin-top:18px; font-size:12px; color:#444; display:flex; justify-content:space-between; align-items:center; }
-            .qr { width:120px; height:120px; }
-            .invoice-meta { font-size:12px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div class="brand">
-              ${showLogo && store.logoUrl ? `<img src="${store.logoUrl}" class="logo" />` : ""}
-              <div>
-                <h1>${escapeHtml(store.name)}</h1>
-                <div class="small">${escapeHtml(store.address || "")}</div>
-                <div class="small">Phone: ${escapeHtml(store.phone || "")}</div>
-                ${store.gstin ? `<div class="small">GSTIN: ${escapeHtml(store.gstin)}</div>` : ""}
-              </div>
-            </div>
+      <div class="footer-details">
+        ${
+          meta.bankDetails
+            ? `
+        <div class="bank-details">
+          <div class="section-title">Bank Details</div>
+          <p><strong>Bank:</strong> ${meta.bankDetails.bankName}</p>
+          <p><strong>A/C No:</strong> ${meta.bankDetails.accountNo}</p>
+          <p><strong>IFSC:</strong> ${meta.bankDetails.ifsc}</p>
+        </div>`
+            : '<div class="bank-details"><p>Thank you for your business!</p></div>'
+        }
+      </div>
 
-            <div class="meta">
-              <div class="invoice-meta"><strong>Invoice:</strong> ${escapeHtml(invoiceNumber)}</div>
-              <div class="invoice-meta"><strong>Date:</strong> ${escapeHtml(date)}</div>
-            </div>
-          </div>
+      <div class="signature">
+        <p>Authorized Signatory</p>
+        <p>___________________</p>
+      </div>
 
-          <div class="section">
-            <div class="small"><strong>Bill To:</strong> ${escapeHtml(customerName)}</div>
-            ${prevBalance > 0 ? `<div class="small" style="color:#d97706; font-weight:600; margin-top:4px">Previous Balance: ₹${formatNumber(prevBalance)}</div>` : ""}
-          </div>
+    </body>
+    </html>
+  `;
 
-          <div class="section">
-            <table>
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th style="text-align:center">Qty</th>
-                  <th style="text-align:right">Rate</th>
-                  <th style="text-align:right">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${itemRows}
-              </tbody>
-            </table>
-          </div>
-
-          <table class="totals">
-            <tr>
-              <td style="text-align:left">Subtotal</td>
-              <td style="text-align:right">₹${formatNumber(subtotal)}</td>
-            </tr>
-            ${
-              discount > 0
-                ? `<tr>
-              <td style="text-align:left">Discount</td>
-              <td style="text-align:right">-₹${formatNumber(discount)}</td>
-            </tr>`
-                : ""
-            }
-            ${
-              taxPercent > 0
-                ? `<tr>
-              <td style="text-align:left">Tax (${formatNumber(taxPercent)}%)</td>
-              <td style="text-align:right">₹${formatNumber(taxAmount)}</td>
-            </tr>`
-                : ""
-            }
-            ${
-              loadingChargeValue > 0
-                ? `<tr>
-              <td style="text-align:left">Loading Charge</td>
-              <td style="text-align:right">₹${formatNumber(loadingChargeValue)}</td>
-            </tr>`
-                : ""
-            }
-            <tr>
-              <td style="text-align:left"><strong>Order Total</strong></td>
-              <td style="text-align:right"><strong>₹${formatNumber(orderTotal)}</strong></td>
-            </tr>
-            ${
-              prevBalance > 0
-                ? `<tr>
-              <td style="text-align:left; color:#d97706">Previous Balance</td>
-              <td style="text-align:right; color:#d97706">₹${formatNumber(prevBalance)}</td>
-            </tr>
-            <tr style="border-top: 2px solid #333">
-              <td style="text-align:left; font-size:16px"><strong>Grand Total</strong></td>
-              <td style="text-align:right; font-size:16px"><strong>₹${formatNumber(grandTotal)}</strong></td>
-            </tr>`
-                : ""
-            }
-          </table>
-
-          <div class="footer">
-            <div>
-              ${notes ? `<div class="small">Notes: ${escapeHtml(notes)}</div>` : ""}
-              ${
-                store.bankName
-                  ? `<div class="small" style="margin-top:8px"><strong>Bank Details:</strong></div>
-              <div class="small">Bank: ${escapeHtml(store.bankName)}</div>
-              <div class="small">A/c: ${escapeHtml(store.accountNumber || "")}</div>
-              <div class="small">IFSC: ${escapeHtml(store.ifscCode || "")}</div>`
-                  : ""
-              }
-              <div class="small" style="margin-top:12px; color:#888">Made with ❤️ by KredBook</div>
-            </div>
-
-            <div style="text-align:center">
-              ${upiQrUrl ? `<img src="${upiQrUrl}" class="qr" />` : ""}
-              ${upiId ? `<div class="small">Scan to pay (${escapeHtml(upiId)})</div>` : ""}
-              <div class="small" style="margin-top:8px">Thank you for your business!</div>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-
-    // convert to PDF in temp URI
-    const { uri } = await Print.printToFileAsync({ html });
-    const dest = `${FileSystem.documentDirectory}bill_${Date.now()}.pdf`;
-
-    // copy to persistent location
-    await FileSystem.copyAsync({ from: uri, to: dest });
-
-    return dest;
-  } catch (err: any) {
-    console.error("generatePremiumBillPdf error", err);
-    throw new Error(err?.message || "Failed to generate PDF");
-  }
-}
-
-function escapeHtml(s: string) {
-  return String(s || "").replace(
-    /[&<>"']/g,
-    (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        c
-      ] as string,
-  );
-}
-function formatNumber(n: number) {
-  return Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 });
-}
-
-function upiPayload(upiId: string, amount: string) {
-  return `upi://pay?pa=${upiId}&pn=&am=${amount}&cu=INR`;
+  const { uri } = await Print.printToFileAsync({ html });
+  return uri;
 }

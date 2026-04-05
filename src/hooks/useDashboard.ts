@@ -1,7 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDashboardData, getNetPositionReport } from "../api/dashboard";
 
-// Hook to fetch dashboard data for a vendor
 export function useDashboard(vendorId?: string) {
   const queryClient = useQueryClient();
 
@@ -9,8 +8,7 @@ export function useDashboard(vendorId?: string) {
     queryKey: ["dashboard", vendorId],
     queryFn: async () => {
       if (!vendorId) return null;
-      const data = await getDashboardData(vendorId);
-      return data;
+      return await getDashboardData(vendorId);
     },
     enabled: !!vendorId,
     staleTime: 30_000,
@@ -23,6 +21,9 @@ export function useDashboard(vendorId?: string) {
 
   return {
     ...query,
+    totalReceivables: query.data?.outstandingAmount ?? 0,
+    overdueCustomers: query.data?.overdueCustomersList.slice(0, 3) ?? [],
+    recentActivity: query.data?.recentActivity ?? [],
     refreshDashboard,
   };
 }

@@ -1,32 +1,23 @@
 import { useRecordPayment } from "@/src/hooks/usePayments";
 import { useAuthStore } from "@/src/store/authStore";
 import { colors } from "@/src/utils/theme";
-import BottomSheet, {
-    BottomSheetBackdrop,
-    BottomSheetScrollView,
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetScrollView,
+  BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import { Check, History } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-    Alert,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from "react-native";
-import Button from "../ui/Button";
+import { forwardRef, useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 type PaymentMode = "Cash" | "UPI" | "NEFT" | "Draft" | "Cheque";
 
 type Props = {
-  visible: boolean;
-  onClose: () => void;
   onSuccess: () => void;
   orderId: string;
   balanceDue: number;
   customerId: string;
-  /** Customer's display name — used to render the avatar card */
   customerName: string;
 };
 
@@ -53,295 +44,237 @@ function formatINR(n: number) {
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function RecordCustomerPaymentModal({
-  visible,
-  onClose,
-  onSuccess,
-  orderId,
-  balanceDue,
-  customerId,
-  customerName,
-}: Props) {
-  const [amount, setAmount] = useState("");
-  const [mode, setMode] = useState<PaymentMode>("Cash");
-  const [notes, setNotes] = useState("");
-  const profile = useAuthStore((s) => s.profile);
-  const { recordPayment, isRecording } = useRecordPayment(
-    orderId,
-    profile?.id,
-    customerId,
-  );
+const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
+  ({ onSuccess, orderId, balanceDue, customerId, customerName }, ref) => {
+    const [amount, setAmount] = useState(String(balanceDue));
+    const [mode, setMode] = useState<PaymentMode>("Cash");
+    const [notes, setNotes] = useState("");
+    const profile = useAuthStore((s) => s.profile);
+    const { recordPayment, isRecording } = useRecordPayment(
+      orderId,
+      profile?.id,
+      customerId,
+    );
 
-  const sheetRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ["75%"], []);
+    const snapPoints = useMemo(() => ["75%", "90%"], []);
 
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop
-        {...props}
-        appearsOnIndex={0}
-        disappearsOnIndex={-1}
-        pressBehavior="close"
-      />
-    ),
-    [],
-  );
+    const renderBackdrop = useCallback(
+      (props: any) => (
+        <BottomSheetBackdrop
+          {...props}
+          appearsOnIndex={0}
+          disappearsOnIndex={-1}
+          pressBehavior="close"
+        />
+      ),
+      [],
+    );
 
-  useEffect(() => {
-    if (visible) {
-      // Pre-fill amount with full balance
+    // Sync default amount when balanceDue changes (e.g. parent rerenders or loads)
+    useEffect(() => {
       setAmount(String(balanceDue));
       setMode("Cash");
       setNotes("");
-      sheetRef.current?.expand();
-    } else {
-      sheetRef.current?.close();
-    }
-  }, [visible, balanceDue]);
+    }, [balanceDue]);
 
-  const handleSubmit = async (markFull: boolean) => {
-    const payAmount = markFull ? balanceDue : parseFloat(amount);
-    if (!markFull && (!payAmount || payAmount <= 0)) {
-      Alert.alert("Error", "Enter a valid amount.");
-      return;
-    }
-    if (!markFull && payAmount > balanceDue) {
-      Alert.alert("Error", "Amount exceeds balance due.");
-      return;
-    }
-    try {
-      await recordPayment({
-        amount: payAmount,
-        mode,
-        notes: notes.trim() || undefined,
-      });
-      setAmount("");
-      setMode("Cash");
-      setNotes("");
-      onSuccess();
-    } catch (e: any) {
-      Alert.alert("Error", e.message || "Failed to record payment.");
-    }
-  };
+    const parsedAmount = parseFloat(amount) || 0;
+    const isFullPaid = parsedAmount >= balanceDue;
 
-  const avatarColor = getAvatarColor(customerName);
-  const initials = getInitials(customerName);
-  const parsedAmount = parseFloat(amount) || 0;
+    const handleSubmit = async () => {
+      const payAmount = isFullPaid ? balanceDue : parsedAmount;
+      if (!isFullPaid && (!payAmount || payAmount <= 0)) {
+        Alert.alert("Error", "Enter a valid amount.");
+        return;
+      }
+      try {
+        await recordPayment({
+          amount: payAmount,
+          mode,
+          notes: notes.trim() || undefined,
+        });
+        setAmount(String(balanceDue));
+        setMode("Cash");
+        setNotes("");
+        onSuccess();
+        // Since we are using a ref from parent, the parent should call sheetRef.current?.dismiss() 
+        // We trigger onSuccess so parent can manage state.
+        if (ref && typeof ref !== "function" && ref.current) {
+          ref.current.dismiss();
+        }
+      } catch (e: any) {
+        Alert.alert("Error", e.message || "Failed to record payment.");
+      }
+    };
 
-  return (
-    <BottomSheet
-      ref={sheetRef}
-      index={-1}
-      snapPoints={snapPoints}
-      enablePanDownToClose
-      backdropComponent={renderBackdrop}
-      onClose={onClose}
-      keyboardBehavior="interactive"
-      keyboardBlurBehavior="restore"
-      handleIndicatorStyle={{
-        backgroundColor: colors.border,
-        width: 40,
-      }}
-      backgroundStyle={{ borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
-    >
-      <BottomSheetScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingBottom: 40,
-          paddingTop: 4,
+    const avatarColor = getAvatarColor(customerName);
+    const initials = getInitials(customerName);
+
+    return (
+      <BottomSheetModal
+        ref={ref}
+        index={0}
+        snapPoints={snapPoints}
+        backdropComponent={renderBackdrop}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        handleIndicatorStyle={{
+          backgroundColor: colors.border,
+          width: 40,
         }}
-        keyboardShouldPersistTaps="handled"
+        backgroundStyle={{
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          backgroundColor: colors.surface,
+        }}
       >
-        {/* ── Title ── */}
-        <Text
-          className="text-[20px] font-bold mb-4"
-          style={{ color: colors.textPrimary }}
-        >
-          Record Payment
-        </Text>
-
-        {/* ── Customer card ── */}
-        <View
-          className="flex-row items-center px-4 py-3 rounded-2xl mb-5"
-          style={{ backgroundColor: colors.background }}
-        >
-          {/* Avatar */}
-          <View
-            className="rounded-full mr-3 items-center justify-center"
-            style={{ width: 44, height: 44, backgroundColor: avatarColor }}
-          >
-            <Text className="font-bold text-white" style={{ fontSize: 15 }}>
-              {initials}
-            </Text>
-          </View>
-
-          {/* Name + balance */}
-          <View className="flex-1">
-            <Text
-              className="font-bold text-[15px]"
-              style={{ color: colors.textPrimary }}
-            >
-              {customerName}
-            </Text>
-            <Text
-              className="text-[13px] font-semibold"
-              style={{ color: colors.danger }}
-            >
-              Balance: ₹{formatINR(balanceDue)}
-            </Text>
-          </View>
-
-          {/* History icon */}
-          <TouchableOpacity hitSlop={8} activeOpacity={0.7}>
-            <History size={20} color={colors.primary} strokeWidth={2} />
-          </TouchableOpacity>
-        </View>
-
-        {/* ── Amount Received ── */}
-        <Text
-          className="text-[13px] font-semibold mb-3"
-          style={{ color: colors.textPrimary }}
-        >
-          Amount Received
-        </Text>
-
-        {/* Large split amount row */}
-        <View
-          className="flex-row items-center pb-3 mb-1"
-          style={{
-            borderBottomWidth: 2,
-            borderBottomColor: colors.primary,
+        <BottomSheetScrollView
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingBottom: 40,
+            paddingTop: 4,
           }}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text
-            className="text-[28px] font-bold mr-2"
-            style={{ color: colors.textPrimary }}
-          >
-            ₹
+          {/* ── Title ── */}
+          <Text className="text-xl font-bold mb-4 text-textPrimary">
+            Record Payment
           </Text>
-          <TextInput
-            value={amount}
-            onChangeText={setAmount}
-            keyboardType="decimal-pad"
-            placeholder="0"
-            placeholderTextColor={"#AEAEB2"}
-            style={{
-              flex: 1,
-              fontSize: 36,
-              fontWeight: "800",
-              color: colors.textPrimary,
-              padding: 0,
-            }}
-          />
-        </View>
 
-        {/* Tap-to-fill full balance hint */}
-        <TouchableOpacity
-          onPress={() => setAmount(String(balanceDue))}
-          activeOpacity={0.7}
-          className="mb-5"
-        >
-          <Text
-            className="text-[13px] font-semibold"
-            style={{ color: colors.primary }}
-          >
-            Full balance: ₹{formatINR(balanceDue)}
-          </Text>
-        </TouchableOpacity>
-
-        {/* ── Payment Mode ── */}
-        <Text
-          className="text-[13px] font-semibold mb-3"
-          style={{ color: colors.textPrimary }}
-        >
-          Payment Mode
-        </Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8, paddingBottom: 4 }}
-          className="mb-5"
-        >
-          {MODES.map((m) => (
-            <TouchableOpacity
-              key={m}
-              onPress={() => setMode(m)}
-              activeOpacity={0.75}
-              className="px-5 py-2 rounded-full border"
-              style={{
-                backgroundColor: mode === m ? colors.primary : "#FFFFFF",
-                borderColor: mode === m ? colors.primary : colors.border,
-              }}
+          {/* ── Customer card ── */}
+          <View className="flex-row items-center px-4 py-3 rounded-2xl mb-5 bg-background">
+            {/* Avatar */}
+            <View
+              className="rounded-full mr-3 items-center justify-center w-11 h-11"
+              style={{ backgroundColor: avatarColor }}
             >
-              <Text
-                className="text-[14px] font-semibold"
-                style={{
-                  color: mode === m ? "#FFFFFF" : colors.textSecondary,
-                }}
+              <Text className="font-bold text-surface text-[15px]">
+                {initials}
+              </Text>
+            </View>
+
+            {/* Name + balance */}
+            <View className="flex-1">
+              <Text className="font-bold text-[15px] text-textPrimary">
+                {customerName}
+              </Text>
+              <Text className="text-[13px] font-semibold text-danger">
+                Balance: ₹{formatINR(balanceDue)}
+              </Text>
+            </View>
+
+            {/* History icon */}
+            <TouchableOpacity hitSlop={8} activeOpacity={0.7}>
+              <History size={20} color={colors.primary} strokeWidth={2} />
+            </TouchableOpacity>
+          </View>
+
+          {/* ── Amount Received ── */}
+          <Text className="text-[13px] font-semibold mb-3 text-textPrimary">
+            Amount Received
+          </Text>
+
+          {/* Large split amount row */}
+          <View className="flex-row items-center pb-3 mb-1 border-b-2 border-primary">
+            <Text className="text-3xl font-bold mr-2 text-textPrimary">₹</Text>
+            <BottomSheetTextInput
+              value={amount}
+              onChangeText={setAmount}
+              keyboardType="decimal-pad"
+              placeholder="0"
+              placeholderTextColor={colors.textSecondary}
+              className="flex-1 text-4xl font-extrabold text-textPrimary p-0"
+            />
+          </View>
+
+          {/* Tap-to-fill full balance hint */}
+          <TouchableOpacity
+            onPress={() => setAmount(String(balanceDue))}
+            activeOpacity={0.7}
+            className="mb-5"
+          >
+            <Text className="text-[13px] font-semibold text-primary">
+              Full balance: ₹{formatINR(balanceDue)}
+            </Text>
+          </TouchableOpacity>
+
+          {/* ── Payment Mode ── */}
+          <Text className="text-[13px] font-semibold mb-3 text-textPrimary">
+            Payment Mode
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 8, paddingBottom: 4 }}
+            className="mb-5"
+          >
+            {MODES.map((m) => (
+              <TouchableOpacity
+                key={m}
+                onPress={() => setMode(m)}
+                activeOpacity={0.75}
+                className={`px-5 py-2 rounded-full border ${
+                  mode === m ? "bg-primary border-primary" : "bg-surface border-border"
+                }`}
               >
-                {m}
+                <Text
+                  className={`text-sm font-semibold ${
+                    mode === m ? "text-surface" : "text-textSecondary"
+                  }`}
+                >
+                  {m}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* ── Notes (optional) ── */}
+          <Text className="text-[13px] font-semibold mb-2 text-textPrimary">
+            Notes (optional)
+          </Text>
+          <BottomSheetTextInput
+            value={notes}
+            onChangeText={setNotes}
+            placeholder="Write a note about this payment..."
+            placeholderTextColor={colors.textSecondary}
+            multiline
+            numberOfLines={3}
+            textAlignVertical="top"
+            className="rounded-xl px-4 py-3 text-sm mb-6 border border-border bg-background text-textPrimary min-h-[80px]"
+          />
+
+          {/* ── Dynamic Action Button ── */}
+          {isFullPaid ? (
+            <TouchableOpacity
+              onPress={handleSubmit}
+              disabled={isRecording}
+              activeOpacity={0.8}
+              className={`flex-row items-center justify-center rounded-xl h-14 space-x-2 ${
+                isRecording ? "bg-border shadow-none" : "bg-primary shadow-lg"
+              }`}
+            >
+              <Text className="text-surface text-[15px] font-bold">
+                {isRecording ? "Recording..." : "Mark Full Paid"}
+              </Text>
+              {!isRecording && <Check size={16} color="#FFFFFF" strokeWidth={3} />}
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={handleSubmit}
+              disabled={parsedAmount <= 0 || isRecording}
+              activeOpacity={0.8}
+              className={`flex-row items-center justify-center rounded-xl h-14 ${
+                parsedAmount <= 0 || isRecording ? "bg-border" : "bg-warning"
+              }`}
+            >
+              <Text className={`text-[15px] font-bold ${parsedAmount <= 0 || isRecording ? "text-textSecondary" : "text-surface"}`}>
+                {isRecording ? "Recording..." : "Record Partial Payment"}
               </Text>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
+          )}
+        </BottomSheetScrollView>
+      </BottomSheetModal>
+    );
+  }
+);
 
-        {/* ── Notes (optional) ── */}
-        <Text
-          className="text-[13px] font-semibold mb-2"
-          style={{ color: colors.textPrimary }}
-        >
-          Notes (optional)
-        </Text>
-        <TextInput
-          value={notes}
-          onChangeText={setNotes}
-          placeholder="Write a note about this payment..."
-          placeholderTextColor={"#AEAEB2"}
-          multiline
-          numberOfLines={3}
-          textAlignVertical="top"
-          className="rounded-xl px-4 py-3 text-[14px] mb-6"
-          style={{
-            borderWidth: 1,
-            borderColor: colors.border,
-            backgroundColor: colors.background,
-            color: colors.textPrimary,
-            minHeight: 80,
-          }}
-        />
-
-        {/* ── Footer buttons ── */}
-        <View className="flex-row gap-3">
-          <Button
-            variant="outline"
-            title="Record Partial"
-            onPress={() => handleSubmit(false)}
-            loading={isRecording}
-            disabled={parsedAmount <= 0 || isRecording}
-            className="flex-1"
-          />
-          <TouchableOpacity
-            onPress={() => handleSubmit(true)}
-            disabled={isRecording}
-            activeOpacity={0.8}
-            className="flex-1 flex-row items-center justify-center rounded-xl h-14"
-            style={{
-              backgroundColor: loading ? colors.border : colors.primary,
-              gap: 6,
-              shadowColor: colors.primary,
-              shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.25,
-              shadowRadius: 10,
-              elevation: 6,
-            }}
-          >
-            <Text className="text-white text-[15px] font-bold">
-              Mark Full Paid
-            </Text>
-            <Check size={16} color="#FFFFFF" strokeWidth={3} />
-          </TouchableOpacity>
-        </View>
-      </BottomSheetScrollView>
-    </BottomSheet>
-  );
-}
+export default RecordCustomerPaymentModal;

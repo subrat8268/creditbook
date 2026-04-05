@@ -55,7 +55,6 @@ export const useCustomers = (vendorId?: string, search?: string) => {
 
 export const useAddCustomer = (vendorId: string) => {
   const queryClient = useQueryClient();
-  const addCustomertoStore = useCustomersStore((s) => s.addCustomer);
 
   return useMutation<
     Customer,
@@ -68,19 +67,66 @@ export const useAddCustomer = (vendorId: string) => {
       | "isOverdue"
       | "outstandingBalance"
       | "lastActiveAt"
-    >
+    >,
+    { previousQueries: [import("@tanstack/react-query").QueryKey, unknown][] }
   >({
     mutationFn: (values) => addCustomer(vendorId, values),
-    onSuccess: (newCustomer) => {
-      addCustomertoStore(newCustomer);
+    onMutate: async (newCustomer) => {
+      // 1. Cancel any outgoing refetches to prevent them from overwriting our optimistic update
+      const queryKey = customerKeys.all(vendorId);
+      await queryClient.cancelQueries({ queryKey });
+
+      // 2. Snapshot the current state of all customer list cache permutations (e.g. ones with active search strings)
+      const previousQueries = queryClient.getQueriesData({ queryKey });
+
+      // 3. Construct a temporary Optimistic Customer object
+      const optimisticCustomer: Customer = {
+        id: `temp-${Date.now()}`, // Temporary ID
+        vendor_id: vendorId,
+        name: newCustomer.name,
+        phone: newCustomer.phone,
+        address: newCustomer.address,
+        created_at: new Date().toISOString(),
+        isOverdue: false,
+        outstandingBalance: (newCustomer as any).openingBalance ?? 0,
+        lastActiveAt: new Date().toISOString(),
+      };
+
+      // 4. Optimistically inject into all cached search permutations
+      queryClient.setQueriesData<any>({ queryKey }, (oldData: any) => {
+        if (!oldData || !oldData.pages) return oldData;
+        const newPages = [...oldData.pages];
+        // Prepend optimistic customer to the first page
+        newPages[0] = [optimisticCustomer, ...newPages[0]];
+        return {
+          ...oldData,
+          pages: newPages,
+        };
+      });
+
+      // 5. Return context containing the snapshot so we can rollback if needed
+      return { previousQueries };
+    },
+    onError: (err: ApiError, _, context) => {
+      console.error("Failed to add customer:", err.message);
+      // Rollback cache to the snapshot on error
+      if (context?.previousQueries) {
+        context.previousQueries.forEach(([cacheKey, oldData]) => {
+          queryClient.setQueryData(cacheKey, oldData);
+        });
+      }
+      Alert.alert("Error", err.message || "Failed to add customer.");
+    },
+    onSettled: () => {
+      // Invalidate query to refetch actual data from Supabase (to swap the temp ID)
       queryClient.invalidateQueries({
-        queryKey: ["customers", vendorId],
+        queryKey: customerKeys.all(vendorId),
         exact: false,
       });
+    },
+    onSuccess: (realCustomer) => {
       Alert.alert("Success", "Customer added successfully");
     },
-    onError: (err: ApiError) =>
-      console.error("Failed to add customer:", err.code, err.message),
   });
 };
 

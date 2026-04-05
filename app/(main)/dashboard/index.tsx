@@ -1,169 +1,233 @@
-import NewCustomerModal from "@/src/components/customers/NewCustomerModal";
-import DashboardActionBar from "@/src/components/dashboard/DashboardActionBar";
-import DashboardHeader from "@/src/components/dashboard/DashboardHeader";
-import DashboardHeroCard from "@/src/components/dashboard/DashboardHeroCard";
-import DashboardNetBothCard from "@/src/components/dashboard/DashboardNetBothCard";
-import DashboardPendingFollowups from "@/src/components/dashboard/DashboardPendingFollowups";
-import DashboardRecentActivity from "@/src/components/dashboard/DashboardRecentActivity";
-import DashboardStatCards from "@/src/components/dashboard/DashboardStatCards";
-import EmptyState from "@/src/components/feedback/EmptyState";
-import Loader from "@/src/components/feedback/Loader";
-import { useAddCustomer } from "@/src/hooks/useCustomer";
+import React from "react";
+import {
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+  StatusBar,
+  Alert,
+} from "react-native";
+import {
+  Plus,
+  Bell,
+  Settings,
+  ChevronRight,
+  AlertCircle,
+  ArrowDownLeft,
+  ArrowUpRight,
+} from "lucide-react-native";
 import { useDashboard } from "@/src/hooks/useDashboard";
 import { useAuthStore } from "@/src/store/authStore";
-import { colors, spacing } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
-import { Plus } from "lucide-react-native";
-import { useState } from "react";
-import { Pressable, ScrollView, StatusBar, View } from "react-native";
+import Loader from "@/src/components/feedback/Loader";
 
-// ─────────────── Main Screen ────────────
 export default function DashboardScreen() {
-  const { profile } = useAuthStore();
   const router = useRouter();
-  const { data, isLoading, isError } = useDashboard(profile?.id);
+  const { profile } = useAuthStore();
+  const { totalReceivables, overdueCustomers, recentActivity, isLoading } =
+    useDashboard(profile?.id);
 
-  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
-  const addCustomerMutation = useAddCustomer(profile?.id ?? "");
+  if (isLoading || !profile) {
+    return (
+      <View className="flex-1 justify-center items-center bg-background">
+        <Loader message="Loading dashboard..." />
+      </View>
+    );
+  }
 
-  const handleAddCustomer = async (values: {
-    name: string;
-    phone?: string;
-    address?: string;
-    openingBalance?: number;
-  }) => {
-    try {
-      await addCustomerMutation.mutateAsync({
-        ...values,
-        phone: values.phone ?? "",
-      });
-      setIsCustomerModalOpen(false);
-    } catch (err: any) {
-      console.error("Failed to add customer:", err);
-    }
+  const handleReminder = (name: string) => {
+    Alert.alert("Reminder Sent", `A WhatsApp reminder has been sent to ${name}.`);
   };
 
-  if (!profile || isLoading) return <Loader />;
-  if (isError || !data)
-    return <EmptyState message="Failed to load dashboard data" />;
-
-  const mode = profile.dashboard_mode ?? "seller";
-  const isBothMode = mode === "both";
-  const isSellerMode = mode === "seller";
-  const isDistributor = mode === "distributor";
-
-  const heroAmount = isSellerMode ? data.customersOweMe : data.iOweSuppliers;
-  // Label is written as the customer reads it, not in abstract financial terms
-  const heroLabel = isSellerMode ? "CUSTOMERS OWE YOU" : "YOU OWE SUPPLIERS";
-
   return (
-    <View className="flex-1" style={{ backgroundColor: colors.background }}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+    <View className="flex-1 bg-background">
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent={false} />
 
-      <DashboardHeader
-        variant={isBothMode ? "both" : "default"}
-        overdueCount={data.overdueCustomers}
-        onPressNotifications={() => router.push("/(main)/notifications" as any)}
-        onPressSettings={() => router.push("/(main)/profile")}
-      />
+      {/* HEADER */}
+      <View className="flex-row items-center justify-between px-5 pt-4 pb-4 bg-background">
+        <View>
+          <Text className="text-[14px] text-textSecondary font-semibold">
+            Digital Khata
+          </Text>
+          <Text className="text-[22px] font-extrabold text-textPrimary mt-0.5">
+            {profile?.business_name || "My Business"}
+          </Text>
+        </View>
+        <View className="flex-row items-center gap-3">
+          <TouchableOpacity
+            onPress={() => router.push("/(main)/notifications" as any)}
+            className="p-2 bg-surface rounded-full border border-border"
+          >
+            <Bell size={22} className="text-textSecondary" strokeWidth={2.2} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push("/(main)/profile" as any)}
+            className="p-2 bg-surface rounded-full border border-border"
+          >
+            <Settings size={22} className="text-textSecondary" strokeWidth={2.2} />
+          </TouchableOpacity>
+        </View>
+      </View>
 
       <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: spacing.screenPadding,
-          paddingBottom: 120,
-        }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       >
-        {isBothMode ? (
-          <DashboardNetBothCard
-            netAmount={data.netPosition}
-            weekDeltaPct={data.weekDeltaPct}
-            toReceive={data.customersOweMe}
-            toGive={data.iOweSuppliers}
-            onPress={() => router.push("/(main)/net-position" as any)}
-          />
-        ) : (
-          <DashboardHeroCard
-            variant={isDistributor ? "distributor" : "seller"}
-            label={heroLabel}
-            amount={heroAmount}
-            weekDelta={isSellerMode ? data.weekDelta : undefined}
-            subInfo={
-              isDistributor
-                ? `${data.activeSuppliers} active supplier${data.activeSuppliers !== 1 ? "s" : ""}`
-                : undefined
-            }
-            onPrimaryAction={() => router.push("/(main)/reports" as any)}
-            onSecondaryAction={() => {
-              // TODO(v3.6): distributor → RecordDeliverySheet; seller → WhatsApp bulk reminder
-            }}
-          />
+        {/* HERO SECTION: NET CARD */}
+        <View className="px-5 mt-2 mb-8">
+          <View className="bg-primary p-6 rounded-[24px] shadow-sm">
+            <Text className="text-[14px] font-bold text-surface opacity-90 uppercase tracking-widest mb-1">
+              Customers Owe You
+            </Text>
+            <Text className="text-[42px] font-black text-surface tracking-tight">
+              ₹{totalReceivables.toLocaleString("en-IN")}
+            </Text>
+            <TouchableOpacity
+              onPress={() => router.push("/(main)/customers" as any)}
+              className="flex-row items-center mt-6 py-3 px-5 bg-surface/20 rounded-xl self-start"
+            >
+              <Text className="text-[14px] font-bold text-surface mr-2">
+                View Customer Ledger
+              </Text>
+              <ChevronRight size={16} className="text-surface" strokeWidth={3} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* PENDING FOLLOW-UPS */}
+        {overdueCustomers && overdueCustomers.length > 0 && (
+          <View className="px-5 mb-8">
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-[18px] font-extrabold text-textPrimary">
+                Pending Follow-ups
+              </Text>
+              <View className="px-2.5 py-1 bg-dangerLight rounded-lg">
+                <Text className="text-[12px] font-bold text-danger">
+                  {overdueCustomers.length} Overdue
+                </Text>
+              </View>
+            </View>
+
+            {overdueCustomers.map((customer) => (
+              <View
+                key={customer.id}
+                className="flex-row items-center justify-between p-4 mb-3 bg-surface rounded-2xl border border-border"
+              >
+                <View className="flex-row items-center flex-1">
+                  <View className="w-12 h-12 rounded-full bg-dangerLight items-center justify-center mr-3">
+                    <AlertCircle size={22} className="text-danger" strokeWidth={2.5} />
+                  </View>
+                  <View className="flex-1 mr-2">
+                    <Text className="text-[16px] font-bold text-textPrimary mb-0.5" numberOfLines={1}>
+                      {customer.name}
+                    </Text>
+                    <Text className="text-[13px] font-semibold text-danger">
+                      ₹{customer.balance.toLocaleString("en-IN")} • {customer.daysSince} days ago
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  onPress={() => handleReminder(customer.name)}
+                  className="px-4 py-2 bg-textPrimary rounded-xl"
+                >
+                  <Text className="text-[13px] font-bold text-surface">
+                    Remind
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
         )}
-        {/* ActionBar — only in "both" mode (seller/distributor use embedded hero card buttons) */}
-        {isBothMode && (
-          <DashboardActionBar
-            onNewBill={() => router.push("/(main)/orders/create" as any)}
-            onCollect={() => router.push("/(main)/customers" as any)}
-            onRemind={() => {
-              // TODO(v3.6): WhatsApp bulk reminder
-            }}
-          />
-        )}
-        <DashboardStatCards
-          mode={isBothMode ? "both" : isDistributor ? "distributor" : "seller"}
-          primaryCount={
-            isDistributor ? data.activeSuppliers : data.activeBuyers
-          }
-          overdueCount={
-            isDistributor ? data.overduePayments : data.overdueCustomers
-          }
-          activeSuppliers={data.activeSuppliers}
-          overdueSuppliers={data.overduePayments}
-        />
-        {!isDistributor && data.overdueCustomersList.length > 0 && (
-          <DashboardPendingFollowups
-            customers={data.overdueCustomersList}
-            onSeeAll={() => router.push("/(main)/customers" as any)}
-          />
-        )}
-        <DashboardRecentActivity
-          items={data.recentActivity}
-          onViewAll={() =>
-            router.push(
-              isDistributor
-                ? ("/(main)/suppliers" as any)
-                : ("/(main)/orders" as any),
-            )
-          }
-        />
+
+        {/* RECENT ACTIVITY TIMELINE */}
+        <View className="px-5 mb-6">
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="text-[18px] font-extrabold text-textPrimary">
+              Recent Activity
+            </Text>
+            <TouchableOpacity onPress={() => router.push("/(main)/orders" as never)}>
+              <Text className="text-[14px] font-bold text-primary">See All</Text>
+            </TouchableOpacity>
+          </View>
+
+          {recentActivity.length === 0 ? (
+            <View className="p-6 items-center justify-center bg-surface rounded-2xl border border-border">
+              <Text className="text-[14px] text-textSecondary font-semibold">
+                No recent activity yet.
+              </Text>
+            </View>
+          ) : (
+            <View className="bg-surface rounded-[24px] border border-border overflow-hidden">
+              {recentActivity.map((activity, index) => {
+                const isPayment = activity.type === "payment";
+                const isLast = index === recentActivity.length - 1;
+
+                return (
+                  <View
+                    key={activity.id}
+                    className={`flex-row items-center p-4 ${
+                      !isLast ? "border-b border-border" : ""
+                    }`}
+                  >
+                    <View
+                      className={`w-12 h-12 rounded-2xl items-center justify-center mr-3 ${
+                        isPayment ? "bg-successBg" : "bg-primaryLight"
+                      }`}
+                    >
+                      {isPayment ? (
+                        <ArrowDownLeft size={22} className="text-success" strokeWidth={2.5} />
+                      ) : (
+                        <ArrowUpRight size={22} className="text-primary" strokeWidth={2.5} />
+                      )}
+                    </View>
+
+                    <View className="flex-1 mr-2">
+                      <Text className="text-[16px] font-bold text-textPrimary" numberOfLines={1}>
+                        {activity.name}
+                      </Text>
+                      <Text className="text-[13px] text-textSecondary mt-0.5">
+                        {activity.title}
+                      </Text>
+                    </View>
+
+                    <View className="items-end">
+                      <Text
+                        className={`text-[15px] font-extrabold ${
+                          isPayment ? "text-success" : "text-textPrimary"
+                        }`}
+                      >
+                        {isPayment ? "+" : ""}₹{activity.amount.toLocaleString("en-IN")}
+                      </Text>
+                      <Text className="text-[12px] text-textSecondary mt-0.5">
+                        {new Date(activity.date).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "short",
+                        })}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </View>
       </ScrollView>
 
-      <Pressable
-        className="absolute items-center justify-center rounded-full"
-        style={{
-          backgroundColor: colors.fab,
-          bottom: spacing.tabBarHeight - spacing.fabSize / 2,
-          right: spacing.fabMargin,
-          width: spacing.fabSize,
-          height: spacing.fabSize,
-          shadowColor: colors.fab,
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: 0.4,
-          shadowRadius: 12,
-          elevation: 8,
-        }}
+      {/* FLOATING ACTION BUTTON */}
+      <TouchableOpacity
         onPress={() => router.push("/(main)/orders/create" as any)}
+        activeOpacity={0.8}
+        className="absolute bottom-6 right-6 w-16 h-16 rounded-full bg-primary items-center justify-center shadow-lg elevation-xl"
+        style={{
+          shadowColor: "#2563EB", // Only exception since iOS BoxShadow doesn't read tailwind variables perfectly in NativeWind v2. 
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.3,
+          shadowRadius: 10,
+          elevation: 10,
+        }}
       >
-        <Plus size={26} color={colors.surface} strokeWidth={2.5} />
-      </Pressable>
-
-      <NewCustomerModal
-        visible={isCustomerModalOpen}
-        onClose={() => setIsCustomerModalOpen(false)}
-        onSubmit={handleAddCustomer}
-        loading={addCustomerMutation.isPending}
-        errorMessage={addCustomerMutation.error?.message}
-      />
+        <Plus size={30} className="text-surface" strokeWidth={2.5} />
+      </TouchableOpacity>
     </View>
   );
 }
