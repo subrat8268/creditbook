@@ -29,7 +29,7 @@ export default function LoginPage() {
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: "#F6F7F9" }}
+      className="flex-1 bg-background"
       edges={["top"]}
     >
       <KeyboardAvoidingView
@@ -56,7 +56,7 @@ export default function LoginPage() {
               >
                 {({ handleChange, handleSubmit, values, errors, touched }) => (
                   <>
-                    <Text className="text-[13px] font-semibold text-textDark mb-2">
+                    <Text className="text-[13px] font-semibold text-textPrimary mb-2">
                       Email Address
                     </Text>
                     <Input
@@ -68,7 +68,7 @@ export default function LoginPage() {
                       variant="white"
                     />
 
-                    <Text className="text-[13px] font-semibold text-textDark mb-2 mt-4">
+                    <Text className="text-[13px] font-semibold text-textPrimary mb-2 mt-4">
                       Password
                     </Text>
                     <Input
@@ -86,13 +86,13 @@ export default function LoginPage() {
                           {showPassword ? (
                             <EyeOff
                               size={20}
-                              color={"#AEAEB2"}
+                              color={colors.textSecondary}
                               strokeWidth={1.8}
                             />
                           ) : (
                             <Eye
                               size={20}
-                              color={"#AEAEB2"}
+                              color={colors.textSecondary}
                               strokeWidth={1.8}
                             />
                           )}
@@ -131,13 +131,13 @@ export default function LoginPage() {
             </AuthCard>
 
             {(loginMutation.isError || googleSignIn.isError) && (
-              <View className="flex-row items-center self-center gap-2 rounded-full px-4 py-3 mt-4 bg-danger-bg border border-red-200">
+              <View className="flex-row items-center self-center gap-2 rounded-full px-4 py-3 mt-4 bg-dangerBg border border-red-200">
                 <AlertCircle
                   size={16}
-                  color={colors.damgerStrong}
+                  color={colors.dangerStrong}
                   strokeWidth={2}
                 />
-                <Text className="text-danger-strong text-sm">
+                <Text className="text-dangerStrong text-sm">
                   {(loginMutation.error as any)?.message ??
                     (googleSignIn.error as any)?.message ??
                     "Invalid email or password"}

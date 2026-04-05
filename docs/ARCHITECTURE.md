@@ -1,8 +1,8 @@
 # KredBook — Project Architecture
 
-> **Last Updated**: March 30, 2026
+> **Last Updated**: April 5, 2026
 > **App Version**: 4.0
-> **Status**: Phase 7 complete — Customers/Suppliers/Orders list screens polished (summary bars, sort sheets, count badges); Notifications screen added; Create Bill footer grand-total strip; bell icon wired
+> **Status**: Phase 7 complete — Customers/Suppliers/Orders list screens polished (summary bars, sort sheets, count badges); Notifications screen added; Create Bill footer grand-total strip; bell icon wired; all core ledger features implemented
 
 ---
 

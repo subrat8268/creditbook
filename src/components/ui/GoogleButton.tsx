@@ -14,11 +14,11 @@ export default function GoogleButton({ onPress, isPending, disabled }: Props) {
       activeOpacity={0.75}
       onPress={onPress}
       disabled={disabled || isPending}
-      className="flex-row items-center justify-center rounded-2xl h-14 gap-3 bg-white border border-border"
+      className="flex-row items-center justify-center rounded-2xl h-14 gap-3 bg-surface border border-border"
       style={{ opacity: isPending ? 0.6 : 1 }}
     >
       <GoogleLogo size={22} />
-      <Text className="text-textDark font-semibold text-[15px]">
+      <Text className="text-textPrimary font-semibold text-[15px]">
         {isPending ? "Signing in…" : "Continue with Google"}
       </Text>
     </TouchableOpacity>

@@ -31,7 +31,7 @@ export default function Button({
     "bg-primary": variant === "primary" && !disabled,
     "bg-secondary": variant === "secondary" && !disabled,
     "bg-danger": variant === "danger" && !disabled,
-    "bg-white border border-primary": variant === "outline" && !disabled,
+    "bg-surface border border-primary": variant === "outline" && !disabled,
     "bg-neutral-300": disabled,
   });
 
@@ -50,7 +50,7 @@ export default function Button({
       style={
         variant === "primary" && !disabled
           ? {
-              shadowColor: "#22C55E",
+              shadowColor: colors.primary,
               shadowOffset: { width: 0, height: 10 },
               shadowOpacity: 0.2,
               shadowRadius: 15,
@@ -61,7 +61,7 @@ export default function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === "outline" ? colors.primary : "#FFFFFF"}
+          color={variant === "outline" ? colors.primary : colors.surface}
         />
       ) : (
         <View className="flex-row items-center justify-center">

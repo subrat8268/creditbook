@@ -38,13 +38,13 @@ export default function WelcomePage() {
 
   return (
     <View
-      className="flex-1 bg-white items-center px-6"
+      className="flex-1 bg-background items-center px-6"
       style={{ paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 }}
     >
       {/* Logo */}
       <Image
         source={require("../assets/images/logo.png")}
-        className="w-36 h-36"
+        className="w-[120px] h-[40px]"
         resizeMode="contain"
       />
 
@@ -58,7 +58,7 @@ export default function WelcomePage() {
       </View>
 
       {/* Tagline */}
-      <Text className="text-xl font-bold text-gray-900 text-center leading-[30px] mb-5 -tracking-[0.3px]">
+      <Text className="text-xl font-bold text-textPrimary text-center leading-[30px] mb-5 -tracking-[0.3px]">
         Track Credit. Get Paid Faster.
       </Text>
 
@@ -111,8 +111,8 @@ export default function WelcomePage() {
 
       {/* Security badge */}
       <View className="flex-row items-center gap-1">
-        <ShieldCheck size={13} color={"#AEAEB2"} strokeWidth={2} />
-        <Text className="text-[11px] text-gray-400 font-semibold tracking-widest">
+        <ShieldCheck size={13} color={colors.textSecondary} strokeWidth={2} />
+        <Text className="text-[11px] text-textSecondary font-semibold tracking-widest">
           SECURE &amp; ENCRYPTED
         </Text>
       </View>

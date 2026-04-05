@@ -122,6 +122,7 @@ export default function TabLayout() {
 
       {/* Hidden routes */}
 
+      <Tabs.Screen name="net-position" options={{ href: null }} />
       <Tabs.Screen name="profile" options={{ href: null }} />
       <Tabs.Screen name="products" options={{ href: null }} />
       <Tabs.Screen name="export" options={{ href: null }} />

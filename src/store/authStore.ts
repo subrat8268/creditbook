@@ -9,6 +9,7 @@ type AuthState = {
   isFetchingProfile: boolean; // Replaces ambiguous 'loading'
   isRecoveryMode: boolean;
   setAuth: (user: User | null) => void;
+  setProfile: (profile: Profile | null) => void;
   setRecoveryMode: (v: boolean) => void;
   fetchProfile: (userId: string) => Promise<void>;
   logout: () => void;
@@ -22,6 +23,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isRecoveryMode: false,
 
   setRecoveryMode: (v) => set({ isRecoveryMode: v }),
+
+  setProfile: (profile) => set({ profile }),
 
   setAuth: (user) => {
     const currentUser = get().user;

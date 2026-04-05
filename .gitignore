@@ -50,3 +50,15 @@ CreditBook_Stitch_UX_Prompts.md
 
 #designs
 designs/*
+
+#audit
+Audit.md
+design-audit-results.txt
+GEMINI.md
+
+#agents
+_agents/*
+_agentss
+
+#scripts
+scripts/*

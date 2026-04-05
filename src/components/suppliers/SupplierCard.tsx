@@ -48,7 +48,7 @@ type Props = {
   onPress?: () => void;
 };
 
-export function SupplierCard({ supplier, onPress }: Props) {
+export default function SupplierCard({ supplier, onPress }: Props) {
   const balance = supplier.balanceOwed ?? 0;
   const idx = getAvatarIdx(supplier.name);
   const initials = getInitials(supplier.name);

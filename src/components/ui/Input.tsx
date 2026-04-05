@@ -27,12 +27,12 @@ export default function Input({
   icon,
   iconPosition = "left",
   variant = "neutral",
-  height = 50,
+  height = 48,
   keyboardType = "default",
 }: Props) {
   const containerStyle = clsx(
     "flex-row items-center border rounded-xl px-4",
-    variant === "neutral" ? "bg-neutral-200" : "bg-white",
+    variant === "neutral" ? "bg-background" : "bg-surface",
     error ? "border-danger" : "border-neutral-300",
   );
 
@@ -56,7 +56,7 @@ export default function Input({
             onChangeText={onChangeText}
             secureTextEntry={secureTextEntry}
             keyboardType={keyboardType}
-            placeholderTextColor={"#AEAEB2"}
+            placeholderTextColor={colors.textSecondary}
             style={{
               flex: 1,
               color: colors.textPrimary,

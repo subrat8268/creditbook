@@ -11,10 +11,15 @@ import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
 import { StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import "../global.css";
 import "../src/i18n";
 import { useAuthStore } from "../src/store/authStore";
 import { useLanguageStore } from "../src/store/languageStore";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { initSentry, wrap } from "@/src/services/sentry";
+
+initSentry();
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -105,20 +110,24 @@ function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <ToastProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="(main)" />
-              <Stack.Screen name="profile-error" />
-            </Stack>
-            <StatusBar barStyle="dark-content" />
-          </ToastProvider>
-        </GestureHandlerRootView>
+        <SafeAreaProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <BottomSheetModalProvider>
+              <ToastProvider>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="index" />
+                  <Stack.Screen name="(auth)" />
+                  <Stack.Screen name="(main)" />
+                  <Stack.Screen name="profile-error" />
+                </Stack>
+                <StatusBar barStyle="dark-content" />
+              </ToastProvider>
+            </BottomSheetModalProvider>
+          </GestureHandlerRootView>
+        </SafeAreaProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
 }
 
-export default RootLayout;
+export default wrap(RootLayout);

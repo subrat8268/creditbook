@@ -9,7 +9,7 @@ import { useCallback } from "react";
 import { Truck } from "lucide-react-native";
 
 import EmptyState from "../feedback/EmptyState";
-import { SupplierCard } from "./SupplierCard";
+import SupplierCard from "./SupplierCard";
 import { Supplier } from "../../types/supplier";
 import { colors } from "../../utils/theme";
 
@@ -30,7 +30,7 @@ type Props = {
   onAddSupplier: () => void;
 };
 
-export function SupplierList({
+export default function SupplierList({
   suppliers,
   isLoading,
   error,

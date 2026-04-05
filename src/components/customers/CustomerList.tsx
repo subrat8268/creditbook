@@ -55,20 +55,7 @@ export default function CustomerList({
   onAddCustomer?: () => void;
 }) {
   const [activeFilter, setActiveFilter] = useState<CustomerFilter>("All");
-
-  if (isLoading && customers.length === 0) {
-    return <Loader message="Fetching customers" />;
-  }
   
-  if (error && customers.length === 0) {
-    return <ErrorState message="Failed to fetch customers" />;
-  }
-
-  const filtered =
-    activeFilter === "All"
-      ? customers
-      : customers.filter((c) => getStatus(c) === activeFilter);
-
   const renderItem = useCallback(
     ({ item }: { item: Customer }) => (
       <CustomerCard
@@ -82,6 +69,19 @@ export default function CustomerList({
     ),
     [onPressCustomer]
   );
+
+  if (isLoading && customers.length === 0) {
+    return <Loader message="Fetching customers" />;
+  }
+  
+  if (error && customers.length === 0) {
+    return <ErrorState message="Failed to fetch customers" />;
+  }
+
+  const filtered =
+    activeFilter === "All"
+      ? customers
+      : customers.filter((c) => getStatus(c) === activeFilter);
 
   return (
     <View className="flex-1">
