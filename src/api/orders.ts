@@ -187,7 +187,7 @@ export async function recordPayment(
   markFull: boolean,
   notes?: string,
 ): Promise<void> {
-  // 1. Get current order
+  // 1. Get current order to calculate balance
   const { data: order, error: orderErr } = await supabase
     .from("orders")
     .select("total_amount, amount_paid")
@@ -206,6 +206,8 @@ export async function recordPayment(
   if (paymentAmount <= 0) throw new Error("Invalid payment amount");
 
   // 3. Insert into payments
+  // NOTE: The `on_payment_upsert` DB trigger will automatically update
+  // the parent order's amount_paid and status. Do not update it here.
   const paymentRow: Record<string, unknown> = {
     order_id: orderId,
     vendor_id: vendorId,
@@ -218,25 +220,6 @@ export async function recordPayment(
     .from("payments")
     .insert([paymentRow]);
   if (insertErr) throw toApiError(insertErr);
-
-  // 4. Update order
-  const newPaid = currentPaid + paymentAmount;
-  const status =
-    newPaid >= totalAmount
-      ? "Paid"
-      : newPaid > 0
-        ? "Partially Paid"
-        : "Pending";
-
-  const { error: updateErr } = await supabase
-    .from("orders")
-    .update({
-      amount_paid: newPaid,
-      status,
-    })
-    .eq("id", orderId);
-
-  if (updateErr) throw toApiError(updateErr);
 }
 
 /**
@@ -313,81 +296,23 @@ export async function createOrder(
   taxPercent: number = 0,
   billNumberPrefix: string = "INV",
 ): Promise<OrderDetail> {
-  // 1. Get bill number and previous balance
-  const billNumber = await getNextBillNumber(vendorId, billNumberPrefix);
-  const previousBalance = await getCustomerPreviousBalance(
-    customerId,
-    vendorId,
-  );
+  // Use Postgres RPC to ensure order, items, and payments are inserted atomically
+  const { data, error } = await supabase.rpc("create_order_transaction", {
+    p_vendor_id: vendorId,
+    p_customer_id: customerId,
+    p_items: items,
+    p_amount_paid: amountPaid,
+    p_payment_mode: paymentMode || null,
+    p_loading_charge: loadingCharge,
+    p_tax_percent: taxPercent,
+    p_bill_prefix: billNumberPrefix,
+  });
 
-  // 2. Calculate totals (tax applied to items only, not loading charge)
-  const itemsTotal = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0,
-  );
-  const taxAmount = Math.round(((itemsTotal * taxPercent) / 100) * 100) / 100;
-  const totalAmount = itemsTotal + taxAmount + loadingCharge;
+  if (error) throw toApiError(error);
+  if (!data?.order_id) throw new Error("Failed to create order");
 
-  const status =
-    amountPaid >= totalAmount
-      ? "Paid"
-      : amountPaid > 0
-        ? "Partially Paid"
-        : "Pending";
-
-  // 3. Insert order
-  const { data: orderData, error: orderErr } = await supabase
-    .from("orders")
-    .insert([
-      {
-        vendor_id: vendorId,
-        customer_id: customerId,
-        bill_number: billNumber,
-        total_amount: totalAmount,
-        amount_paid: amountPaid,
-        previous_balance: previousBalance,
-        loading_charge: loadingCharge,
-        tax_percent: taxPercent,
-        status,
-      },
-    ])
-    .select("*")
-    .single();
-
-  if (orderErr) throw toApiError(orderErr);
-  if (!orderData) throw new Error("Failed to create order");
-
-  // 4. Insert order_items
-  const orderItems = items.map((item) => ({
-    order_id: orderData.id,
-    vendor_id: vendorId,
-    product_id: item.product_id,
-    product_name: item.product_name,
-    variant_name: item.variant_name ?? null,
-    price: item.price,
-    quantity: item.quantity,
-  }));
-
-  const { error: itemsErr } = await supabase
-    .from("order_items")
-    .insert(orderItems);
-
-  if (itemsErr) throw toApiError(itemsErr);
-
-  // 5. Record payment if amountPaid > 0
-  if (amountPaid > 0 && paymentMode) {
-    const { error: paymentErr } = await supabase.from("payments").insert([
-      {
-        order_id: orderData.id,
-        vendor_id: vendorId,
-        amount: amountPaid,
-        payment_mode: paymentMode,
-      },
-    ]);
-    if (paymentErr) throw toApiError(paymentErr);
-  }
-
-  const orderDetail = await fetchOrderDetail(orderData.id);
+  // Fetch and return the fully detailed order
+  const orderDetail = await fetchOrderDetail(data.order_id);
   if (!orderDetail) throw new Error("Failed to fetch created order details");
   return orderDetail;
 }

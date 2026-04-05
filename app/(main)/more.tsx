@@ -4,12 +4,13 @@ import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Href, useFocusEffect, useRouter } from "expo-router";
 import {
     BarChart3,
-    Bell,
     BookOpen,
     ChevronRight,
     Download,
+    HelpCircle,
     LogOut,
     LucideIcon,
+    Store,
     UserRound,
 } from "lucide-react-native";
 import { useCallback, useRef } from "react";
@@ -44,18 +45,18 @@ const BUSINESS_DETAILS: MenuItem[] = [
     iconColor: "#2563EB",
     route: "/(main)/products",
   },
+  {
+    id: "suppliers",
+    title: "Suppliers & Wholesale",
+    description: "Bulk purchase history & credit",
+    icon: Store,
+    iconBg: "#FEF3C7",
+    iconColor: "#D97706",
+    route: "/(main)/suppliers",
+  },
 ];
 
 const ANALYSIS_TOOLS: MenuItem[] = [
-  {
-    id: "notifications",
-    title: "Notifications",
-    description: "Overdue follow-ups & recent activity",
-    icon: Bell,
-    iconBg: "#FEF3C7",
-    iconColor: "#D97706",
-    route: "/(main)/notifications",
-  },
   {
     id: "reports",
     title: "Advanced Reports",
@@ -197,11 +198,24 @@ export default function MoreScreen() {
           {/* Bottom Actions */}
           <View style={styles.bottomRow}>
             <TouchableOpacity
+              style={styles.bottomBtn}
+              onPress={() => handleNavAndClose("/(main)/help" as Href)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.bottomIconBox, { backgroundColor: "#EFF6FF" }]}>
+                <HelpCircle size={22} color="#2563EB" strokeWidth={2} />
+              </View>
+              <Text style={styles.bottomBtnText}>Help Center</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
               style={[styles.bottomBtn, styles.signOutBtn]}
               onPress={handleSignOut}
               activeOpacity={0.7}
             >
-              <LogOut size={24} color={colors.danger} strokeWidth={1.5} />
+              <View style={[styles.bottomIconBox, { backgroundColor: "#FEF2F2" }]}>
+                <LogOut size={22} color={colors.danger} strokeWidth={2} />
+              </View>
               <Text style={[styles.bottomBtnText, { color: colors.danger }]}>
                 Sign Out
               </Text>
@@ -304,5 +318,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     color: colors.textPrimary,
+  },
+  bottomIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
   },
 });

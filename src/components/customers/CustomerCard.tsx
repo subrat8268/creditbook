@@ -60,23 +60,23 @@ const STATUS_STYLES: Record<
   { text: string; border: string; bg: string }
 > = {
   Overdue: {
-    text: colors.overdue.text,
-    border: colors.danger,
-    bg: colors.overdue.bg,
+    text: colors.danger,
+    border: "#FEF2F2",
+    bg: "#FEF2F2",
   },
   Pending: {
-    text: colors.pending.text,
-    border: colors.warning,
-    bg: colors.pending.bg,
+    text: colors.warning,
+    border: "#FFFBEB",
+    bg: "#FFFBEB",
   },
   Paid: {
-    text: colors.paid.text,
-    border: colors.primary,
-    bg: colors.paid.bg,
+    text: colors.primary,
+    border: "#F0FDF4",
+    bg: "#F0FDF4",
   },
   Advance: {
-    text: colors.textPrimary,
-    border: colors.fab,
+    text: colors.fab,
+    border: "#EFF6FF",
     bg: "#EFF6FF",
   },
 };
@@ -111,11 +111,17 @@ export default function CustomerCard({
       style={{
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: colors.surface,
-        paddingHorizontal: spacing.screenPadding,
-        paddingVertical: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
+        backgroundColor: "#FFFFFF",
+        padding: 16,
+        borderRadius: 20,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: "#F1F5F9",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+        elevation: 2,
       }}
     >
       {/* Avatar */}
@@ -132,9 +138,9 @@ export default function CustomerCard({
       ) : (
         <View
           style={{
-            width: spacing.avatarMd,
-            height: spacing.avatarMd,
-            borderRadius: spacing.avatarMd / 2,
+            width: 48,
+            height: 48,
+            borderRadius: 24,
             marginRight: 14,
             alignItems: "center",
             justifyContent: "center",
@@ -189,11 +195,9 @@ export default function CustomerCard({
         </Text>
         <View
           style={{
-            borderWidth: 1,
-            borderRadius: 6,
-            paddingHorizontal: spacing.sm,
-            paddingVertical: 3,
-            borderColor: border,
+            borderRadius: 16,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
             backgroundColor: bg,
           }}
         >

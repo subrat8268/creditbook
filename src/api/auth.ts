@@ -24,15 +24,6 @@ export async function signUpApi(values: {
   if (error) throw new Error(error.message);
   if (!data.user) throw new Error("Sign-up failed — no user returned.");
 
-  // Fallback: if the trigger didn't run (migration not applied yet),
-  // upsert with the provided name to satisfy any NOT NULL constraint.
-  await supabase
-    .from("profiles")
-    .upsert(
-      { user_id: data.user.id, name: values.fullName },
-      { onConflict: "user_id", ignoreDuplicates: true },
-    );
-
   return data.user;
 }
 

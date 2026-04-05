@@ -1,6 +1,8 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["DOM", "ES2017", "ESNext"],
     "strict": true,
     "jsx": "react-jsx",
     "types": ["react", "react-native"], 

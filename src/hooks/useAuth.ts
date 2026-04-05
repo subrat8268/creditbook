@@ -73,25 +73,14 @@ export function useLogin() {
 
 // 🔹 GOOGLE SIGN-IN MUTATION
 export function useGoogleSignIn() {
-  const { setAuth, fetchProfile } = useAuthStore();
+  const { setAuth } = useAuthStore();
 
   return useMutation({
     mutationFn: async () => signInWithGoogleApi(),
     onSuccess: async (user) => {
       if (user) setAuth(user);
       await AsyncStorage.setItem("hasSeenWelcome", "true");
-
-      // Retry fetchProfile — Google OAuth creates the profile row via DB trigger
-      // and it may not be committed immediately.
-      // fetchProfile handles the upsert fallback internally if the row is missing.
-      let retries = 3;
-      while (retries > 0) {
-        if (user) await fetchProfile(user.id);
-        const { profile } = useAuthStore.getState();
-        if (profile) break;
-        await new Promise((r) => setTimeout(r, 600));
-        retries--;
-      }
+      // fetchProfile handles the upsert fallback natively via onAuthStateChange.
       // _layout.tsx reads the updated store state and routes — no router.replace needed.
     },
     onError: (error: any) => {
@@ -123,7 +112,7 @@ function friendlySignUpError(message: string): string {
 }
 
 export function useSignUp() {
-  const { setAuth, fetchProfile } = useAuthStore();
+  const { setAuth } = useAuthStore();
 
   return useMutation({
     mutationFn: (values: {
@@ -135,17 +124,8 @@ export function useSignUp() {
       if (user) setAuth(user);
       await AsyncStorage.setItem("hasSeenWelcome", "true");
       // The DB trigger creates the profile row right after auth.users INSERT.
-      // Retry fetchProfile a few times in case the trigger hasn't committed yet.
-      // fetchProfile handles the upsert fallback internally if the row is missing.
-      let retries = 3;
-      while (retries > 0) {
-        if (user) await fetchProfile(user.id);
-        const { profile } = useAuthStore.getState();
-        if (profile) break;
-        await new Promise((r) => setTimeout(r, 600));
-        retries--;
-      }
-      // _layout.tsx reads the updated store state and routes — no router.replace needed.
+      // fetchProfile handles the upsert fallback internally via onAuthStateChange.
+      // _layout.tsx reads the updated store state and routes.
     },
     onError: (error: any) => {
       // Re-throw with a friendly message so the UI can display it

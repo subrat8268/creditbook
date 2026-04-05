@@ -782,3 +782,166 @@ BEGIN
     ';
   END IF;
 END $$;
+
+-- -----------------------------------------------------------------------------
+-- Added April 5: Phase 1 Hardening RPCs
+-- -----------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION create_order_transaction(
+  p_vendor_id UUID,
+  p_customer_id UUID,
+  p_items JSONB,
+  p_amount_paid NUMERIC,
+  p_payment_mode TEXT,
+  p_loading_charge NUMERIC,
+  p_tax_percent NUMERIC,
+  p_bill_prefix TEXT
+) RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY INVOKER
+AS $$
+DECLARE
+  v_bill_number TEXT;
+  v_previous_balance NUMERIC;
+  v_items_total NUMERIC := 0;
+  v_tax_amount NUMERIC := 0;
+  v_total_amount NUMERIC := 0;
+  v_order_id UUID;
+  v_item JSONB;
+BEGIN
+  IF p_amount_paid < 0 THEN
+      RAISE EXCEPTION 'amount_paid cannot be negative';
+  END IF;
+
+  v_bill_number := get_next_bill_number(p_vendor_id, p_bill_prefix);
+  v_previous_balance := get_customer_previous_balance(p_customer_id, p_vendor_id);
+
+  FOR v_item IN SELECT * FROM jsonb_array_elements(p_items)
+  LOOP
+    v_items_total := v_items_total + (COALESCE((v_item->>'price')::NUMERIC, 0) * COALESCE((v_item->>'quantity')::NUMERIC, 0));
+  END LOOP;
+
+  v_tax_amount := ROUND((v_items_total * p_tax_percent) / 100.0, 2);
+  v_total_amount := v_items_total + v_tax_amount + COALESCE(p_loading_charge, 0);
+
+  INSERT INTO orders (
+    vendor_id,
+    customer_id,
+    bill_number,
+    total_amount,
+    amount_paid,
+    previous_balance,
+    loading_charge,
+    tax_percent,
+    status
+  ) VALUES (
+    p_vendor_id,
+    p_customer_id,
+    v_bill_number,
+    v_total_amount,
+    0,
+    v_previous_balance,
+    p_loading_charge,
+    p_tax_percent,
+    'Pending'
+  ) RETURNING id INTO v_order_id;
+
+  FOR v_item IN SELECT * FROM jsonb_array_elements(p_items)
+  LOOP
+    INSERT INTO order_items (
+      order_id,
+      vendor_id,
+      product_id,
+      product_name,
+      variant_name,
+      price,
+      quantity
+    ) VALUES (
+      v_order_id,
+      p_vendor_id,
+      (NULLIF(v_item->>'product_id', ''))::UUID,
+      v_item->>'product_name',
+      NULLIF(v_item->>'variant_name', ''),
+      (v_item->>'price')::NUMERIC,
+      (v_item->>'quantity')::INTEGER
+    );
+  END LOOP;
+
+  IF p_amount_paid > 0 THEN
+    INSERT INTO payments (
+      order_id,
+      vendor_id,
+      amount,
+      payment_mode
+    ) VALUES (
+      v_order_id,
+      p_vendor_id,
+      p_amount_paid,
+      COALESCE(p_payment_mode, 'Cash')
+    );
+  END IF;
+
+  RETURN jsonb_build_object('order_id', v_order_id);
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION get_customer_statement(p_customer_id UUID)
+RETURNS TABLE (
+  id UUID,
+  type TEXT,
+  created_at TIMESTAMPTZ,
+  amount NUMERIC,
+  running_balance NUMERIC,
+  bill_number TEXT,
+  status TEXT,
+  item_count BIGINT,
+  payment_mode TEXT,
+  order_bill_number TEXT
+)
+LANGUAGE sql
+SECURITY INVOKER
+AS $$
+WITH combined_events AS (
+  SELECT 
+    o.id,
+    'bill' AS type,
+    o.created_at,
+    o.total_amount AS amount,
+    o.bill_number,
+    o.status,
+    (SELECT count(*) FROM order_items oi WHERE oi.order_id = o.id) AS item_count,
+    NULL::TEXT AS payment_mode,
+    NULL::TEXT AS order_bill_number
+  FROM orders o
+  WHERE o.customer_id = p_customer_id
+  
+  UNION ALL
+  
+  SELECT 
+    p.id,
+    'payment' AS type,
+    p.payment_date AS created_at,
+    p.amount,
+    NULL::TEXT AS bill_number,
+    NULL::TEXT AS status,
+    0::BIGINT AS item_count,
+    p.payment_mode,
+    o.bill_number AS order_bill_number
+  FROM payments p
+  JOIN orders o ON p.order_id = o.id
+  WHERE o.customer_id = p_customer_id
+)
+SELECT 
+  id,
+  type,
+  created_at,
+  amount,
+  GREATEST(SUM(CASE WHEN type = 'bill' THEN amount ELSE -amount END) OVER (ORDER BY created_at ASC, type ASC), 0) AS running_balance,
+  bill_number,
+  status,
+  item_count,
+  payment_mode,
+  order_bill_number
+FROM combined_events 
+ORDER BY created_at DESC;
+$$;

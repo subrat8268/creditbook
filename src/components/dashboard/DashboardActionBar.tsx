@@ -14,60 +14,69 @@ export default function DashboardActionBar({
   onRemind,
 }: Props) {
   return (
-    <View
-      className="bg-white rounded-[20px] flex-row mb-4 overflow-hidden"
-      style={{
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 2,
-      }}
-    >
+    <View className="flex-row justify-between w-full mb-4 gap-3">
+      {/* New Bill */}
       <TouchableOpacity
-        className="flex-1 py-[18px] items-center justify-center gap-1.5 border-r border-divider"
+        className="flex-1 rounded-[16px] items-center justify-center py-5 border"
+        style={{
+          backgroundColor: "#F8FAFC",
+          borderColor: "#E2E8F0",
+        }}
         onPress={onNewBill}
       >
         <View
-          className="w-9 h-9 rounded-full items-center justify-center"
+          className="w-10 h-10 rounded-full items-center justify-center mb-2"
           style={{ backgroundColor: "#EFF6FF" }}
         >
-          <FilePlus2 size={18} color="#3B82F6" strokeWidth={2} />
+          <FilePlus2 size={20} color="#3B82F6" strokeWidth={2} />
         </View>
-        <Text className="text-xs font-semibold" style={{ color: "#3B82F6" }}>
+        <Text
+          style={{ fontSize: 13, fontWeight: "600", color: "#1E293B" }}
+        >
           New Bill
         </Text>
       </TouchableOpacity>
 
+      {/* Collect */}
       <TouchableOpacity
-        className="flex-1 py-[18px] items-center justify-center gap-1.5 border-r border-divider"
+        className="flex-1 rounded-[16px] items-center justify-center py-5 border"
+        style={{
+          backgroundColor: "#F6FDF9",
+          borderColor: "#DCFCE7",
+        }}
         onPress={onCollect}
       >
         <View
-          className="w-9 h-9 rounded-full items-center justify-center"
-          style={{ backgroundColor: "#F0FDF4" }}
+          className="w-10 h-10 rounded-full items-center justify-center mb-2"
+          style={{ backgroundColor: "#dcfce7" }}
         >
-          <Wallet size={18} color={colors.primary} strokeWidth={2} />
+          <Wallet size={20} color={colors.primary} strokeWidth={2} />
         </View>
         <Text
-          className="text-xs font-semibold"
-          style={{ color: colors.primary }}
+          style={{ fontSize: 13, fontWeight: "600", color: "#1E293B" }}
         >
           Collect
         </Text>
       </TouchableOpacity>
 
+      {/* Remind */}
       <TouchableOpacity
-        className="flex-1 py-[18px] items-center justify-center gap-1.5"
+        className="flex-1 rounded-[16px] items-center justify-center py-5 border"
+        style={{
+          backgroundColor: "#FFFAEB",
+          borderColor: "#FEF3C7",
+        }}
         onPress={onRemind}
       >
         <View
-          className="w-9 h-9 rounded-full items-center justify-center"
-          style={{ backgroundColor: "#FFFBEB" }}
+          className="w-10 h-10 rounded-full items-center justify-center mb-2"
+          style={{ backgroundColor: "#FEF3C7" }}
         >
-          <BellRing size={18} color="#F59E0B" strokeWidth={2} />
+          <BellRing size={20} color="#F59E0B" strokeWidth={2} />
         </View>
-        <Text className="text-xs font-semibold" style={{ color: "#F59E0B" }}>
+        <Text
+          style={{ fontSize: 13, fontWeight: "600", color: "#1E293B" }}
+        >
           Remind
         </Text>
       </TouchableOpacity>

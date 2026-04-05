@@ -110,21 +110,27 @@ export async function fetchCustomerDetail(
   }
   if (!customer) return null;
 
-  // Fetch orders for customer (ascending to compute balance forward)
-  const { data: orders, error: orderErr } = await supabase
-    .from("orders")
-    .select(
-      "id, created_at, total_amount, amount_paid, balance_due, status, bill_number",
-    )
-    .eq("customer_id", customerId)
-    .order("created_at", { ascending: true });
+  // Fetch orders and statements in parallel
+  const [ordersResult, statementsResult] = await Promise.all([
+    supabase
+      .from("orders")
+      .select("id, created_at, total_amount, amount_paid, balance_due, status, bill_number")
+      .eq("customer_id", customerId)
+      .order("created_at", { ascending: true }),
+    supabase
+      .rpc("get_customer_statement", { p_customer_id: customerId })
+  ]);
 
-  if (orderErr) {
-    console.error("Error fetching orders:", orderErr.message);
+  if (ordersResult.error) {
+    console.error("Error fetching orders:", ordersResult.error.message);
+    return null;
+  }
+  if (statementsResult.error) {
+    console.error("Error fetching statements:", statementsResult.error.message);
     return null;
   }
 
-  const orderList = orders ?? [];
+  const orderList = ordersResult.data ?? [];
   const outstandingBalance = orderList.reduce(
     (sum, o) => sum + Number(o.balance_due),
     0,
@@ -141,74 +147,19 @@ export async function fetchCustomerDetail(
     : 0;
   const isOverdue = outstandingBalance > 0 && daysSinceLastOrder > 30;
 
-  // Fetch all payments + item counts in parallel
-  const orderIds = orderList.map((o) => o.id);
-  const [paymentsResult, itemCountResult] = await Promise.all([
-    orderIds.length
-      ? supabase
-          .from("payments")
-          .select(
-            "id, order_id, amount, payment_date, payment_mode, orders(bill_number)",
-          )
-          .in("order_id", orderIds)
-          .order("payment_date", { ascending: true })
-      : Promise.resolve({ data: [] as any[], error: null }),
-    orderIds.length
-      ? supabase.from("order_items").select("order_id").in("order_id", orderIds)
-      : Promise.resolve({ data: [] as any[], error: null }),
-  ]);
-  const payments = paymentsResult.data ?? [];
-
-  // item counts per order
-  const countByOrder: Record<string, number> = {};
-  for (const row of itemCountResult.data ?? []) {
-    countByOrder[row.order_id] = (countByOrder[row.order_id] ?? 0) + 1;
-  }
-
-  // bill_number map from order_id (for payments)
-  const billNumberByOrderId: Record<string, string> = {};
-  for (const o of orderList) {
-    if (o.bill_number) billNumberByOrderId[o.id] = o.bill_number;
-  }
-
-  // Build unified transaction list with running balance (forward pass)
-  const billEvents = orderList.map((o) => ({
-    id: o.id,
-    type: "bill" as const,
-    created_at: o.created_at,
-    amount: Number(o.total_amount),
-    runningBalance: 0,
-    billNumber: o.bill_number as string | undefined,
-    status: o.status as "Paid" | "Pending" | "Partially Paid",
-    itemCount: countByOrder[o.id] ?? 0,
+  // Map RPC statements to unified transaction list
+  const allEvents = (statementsResult.data ?? []).map((s: any) => ({
+    id: s.id,
+    type: s.type as "bill" | "payment",
+    created_at: s.created_at,
+    amount: Number(s.amount),
+    runningBalance: Number(s.running_balance),
+    billNumber: s.bill_number,
+    status: s.status as "Paid" | "Pending" | "Partially Paid" | undefined,
+    itemCount: Number(s.item_count),
+    paymentMode: s.payment_mode,
+    orderBillNumber: s.order_bill_number,
   }));
-
-  const paymentEvents = payments.map((p: any) => ({
-    id: p.id,
-    type: "payment" as const,
-    created_at: p.payment_date,
-    amount: Number(p.amount),
-    runningBalance: 0,
-    paymentMode: p.payment_mode as string,
-    orderBillNumber: billNumberByOrderId[p.order_id],
-  }));
-
-  // Sort ascending by time for forward pass
-  const allEvents = [...billEvents, ...paymentEvents].sort(
-    (a, b) =>
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-  );
-
-  // Compute running balance (balance owed after each event)
-  let running = 0;
-  for (const ev of allEvents) {
-    if (ev.type === "bill") running += ev.amount;
-    else running -= ev.amount;
-    ev.runningBalance = Math.max(running, 0);
-  }
-
-  // Reverse for newest-first display
-  allEvents.reverse();
 
   // Find oldest pending/partially-paid order for payment recording
   const pendingOrder = orderList.find(

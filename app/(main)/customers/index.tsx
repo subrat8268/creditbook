@@ -169,91 +169,32 @@ export default function CustomersScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* ── Screen header ── */}
-      <CustomersHeader
-        count={customers.length}
-        onMenuPress={() => sortSheetRef.current?.expand()}
-      />
-
-      {/* ── Summary bar ── */}
-      {customers.length > 0 && (
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            paddingHorizontal: spacing.screenPadding,
-            paddingVertical: spacing.sm,
-            backgroundColor: colors.surface,
-            gap: spacing.sm,
-            borderBottomWidth: 1,
-            borderBottomColor: colors.border,
-          }}
+      <View className="px-5 py-4 flex-row justify-between items-center">
+        <Text style={{ fontSize: 24, fontWeight: "800", color: "#111827" }}>
+          Customers
+        </Text>
+        <TouchableOpacity
+          onPress={() => sortSheetRef.current?.expand()}
+          className="p-2"
         >
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: colors.successBg,
-              borderRadius: 10,
-              paddingVertical: 8,
-              paddingHorizontal: 12,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            <TrendingDown
-              size={14}
-              color={colors.primaryDark}
-              strokeWidth={2}
-            />
-            <Text style={{ fontSize: 12, color: colors.textSecondary }}>
-              Total Outstanding
-            </Text>
-            <Text
-              style={{
-                fontSize: 14,
-                fontWeight: "700",
-                color: colors.primaryDark,
-                marginLeft: 2,
-              }}
-            >
-              {formatINR(totalOutstanding)}
-            </Text>
-          </View>
-          {overdueCount > 0 && (
-            <View
-              style={{
-                backgroundColor: colors.overdue.bg,
-                borderRadius: 10,
-                paddingVertical: 8,
-                paddingHorizontal: 12,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 13,
-                  fontWeight: "700",
-                  color: colors.overdue.text,
-                }}
-              >
-                {overdueCount} Overdue
-              </Text>
-            </View>
-          )}
-        </View>
-      )}
+          {/* We use a search/sort icon from the design */}
+        </TouchableOpacity>
+      </View>
+
+      {/* Summary Removed per design */}
 
       {/* ── Search + filter bar ── */}
-      <View className="px-5 pt-3.5 pb-1 bg-white">
+      <View className="px-5 pt-1 pb-2">
         <SearchBar
           value={search}
           onChangeText={setSearch}
-          placeholder={t("customers.search")}
+          placeholder={t("customers.search", "Search customers...")}
         />
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          className="mt-3.5 mb-0.5"
-          contentContainerStyle={{ gap: 8, paddingBottom: 2 }}
+          className="mt-4 mb-2"
+          contentContainerStyle={{ gap: 10, paddingBottom: 2 }}
         >
           {FILTERS.map((f) => {
             const active = filter === f;
@@ -262,16 +203,21 @@ export default function CustomersScreen() {
                 key={f}
                 onPress={() => setFilter(f)}
                 activeOpacity={0.75}
-                className={`px-5 py-[9px] rounded-[24px] border ${
-                  active
-                    ? "bg-primary border-primary"
-                    : "bg-search border-border"
-                }`}
+                style={{
+                  paddingHorizontal: 22,
+                  paddingVertical: 9,
+                  borderRadius: 24,
+                  backgroundColor: active ? colors.primary : "#FFFFFF",
+                  borderWidth: 1,
+                  borderColor: active ? colors.primary : "#E2E8F0",
+                }}
               >
                 <Text
-                  className={`text-sm font-medium ${
-                    active ? "text-white font-bold" : "text-textPrimary"
-                  }`}
+                  style={{
+                    fontSize: 14,
+                    fontWeight: active ? "700" : "600",
+                    color: active ? "#FFFFFF" : "#64748B",
+                  }}
                 >
                   {f}
                 </Text>
@@ -281,8 +227,7 @@ export default function CustomersScreen() {
         </ScrollView>
       </View>
 
-      {/* ── Divider ── */}
-      <View className="h-px bg-background mt-1" />
+      {/* ── Divider removed ── */}
 
       {/* ── Customer list (full-width) ── */}
       <CustomerList

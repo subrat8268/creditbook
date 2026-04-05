@@ -129,7 +129,7 @@ export default function CustomerList({
         offset: CUSTOMER_ITEM_H * i,
         index: i,
       })}
-      contentContainerStyle={{ paddingBottom: 100 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 120 }}
     />
   );
 }

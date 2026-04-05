@@ -2,6 +2,7 @@ import NewCustomerModal from "@/src/components/customers/NewCustomerModal";
 import DashboardActionBar from "@/src/components/dashboard/DashboardActionBar";
 import DashboardHeader from "@/src/components/dashboard/DashboardHeader";
 import DashboardHeroCard from "@/src/components/dashboard/DashboardHeroCard";
+import DashboardNetBothCard from "@/src/components/dashboard/DashboardNetBothCard";
 import DashboardPendingFollowups from "@/src/components/dashboard/DashboardPendingFollowups";
 import DashboardRecentActivity from "@/src/components/dashboard/DashboardRecentActivity";
 import DashboardStatCards from "@/src/components/dashboard/DashboardStatCards";
@@ -74,33 +75,13 @@ export default function DashboardScreen() {
         showsVerticalScrollIndicator={false}
       >
         {isBothMode ? (
-          <>
-            <DashboardHeroCard
-              variant="seller"
-              label="CUSTOMERS OWE ME"
-              amount={data.customersOweMe}
-              onPrimaryAction={() => router.push("/(main)/reports" as any)}
-              onSecondaryAction={() => {
-                // TODO(v3.6): WhatsApp bulk reminder
-              }}
-            />
-            <DashboardHeroCard
-              variant="distributor"
-              label="I OWE SUPPLIERS"
-              amount={data.iOweSuppliers}
-              subInfo={`${data.activeSuppliers} active supplier${data.activeSuppliers !== 1 ? "s" : ""}`}
-              onPrimaryAction={() => router.push("/(main)/reports" as any)}
-              onSecondaryAction={() => {
-                // TODO(Phase 7): Record Delivery sheet
-              }}
-            />
-            <DashboardHeroCard
-              variant="net"
-              label="NET POSITION"
-              amount={data.netPosition}
-              weekDeltaPct={data.weekDeltaPct}
-            />
-          </>
+          <DashboardNetBothCard
+            netAmount={data.netPosition}
+            weekDeltaPct={data.weekDeltaPct}
+            toReceive={data.customersOweMe}
+            toGive={data.iOweSuppliers}
+            onPress={() => router.push("/(main)/net-position" as any)}
+          />
         ) : (
           <DashboardHeroCard
             variant={isDistributor ? "distributor" : "seller"}
