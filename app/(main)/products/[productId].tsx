@@ -1,49 +1,31 @@
 import { Product, ProductVariant } from "@/src/api/products";
-import { colors, spacing } from "@/src/utils/theme";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
-    ArrowLeft,
-    Minus,
-    Package,
-    Pencil,
-    Plus,
-    ShoppingCart,
+  ArrowLeft,
+  Minus,
+  Package,
+  Pencil,
+  Plus,
+  ShoppingCart,
 } from "lucide-react-native";
 import { useState } from "react";
 import {
-    Alert,
-    Dimensions,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Dimensions,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width: SCREEN_W } = Dimensions.get("window");
-const IMAGE_H = SCREEN_W * 0.65;
+const IMAGE_H = SCREEN_W * 0.85;
 
-// ── Helpers ──────────────────────────────────────────────
-const ICON_COLORS = [
-  { bg: "#DCFCE7", icon: "#16A34A" },
-  { bg: "#DBEAFE", icon: "#2563EB" },
-  { bg: "#FEF3C7", icon: "#D97706" },
-  { bg: "#FCE7F3", icon: "#DB2777" },
-  { bg: "#EDE9FE", icon: "#7C3AED" },
-  { bg: "#FFEDD5", icon: "#EA580C" },
-];
-function iconColor(name: string) {
-  const idx =
-    name.split("").reduce((a, c) => a + c.charCodeAt(0), 0) %
-    ICON_COLORS.length;
-  return ICON_COLORS[idx];
-}
-
-// ── Screen ────────────────────────────────────────────────
 export default function ProductDetailsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ productData: string }>();
 
   let product: Product | null = null;
@@ -60,17 +42,17 @@ export default function ProductDetailsScreen() {
 
   if (!product) {
     return (
-      <SafeAreaView
-        style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-      >
-        <Text style={{ color: colors.textSecondary }}>Product not found.</Text>
+      <SafeAreaView className="flex-1 bg-background items-center justify-center">
+        <Text className="text-[16px] font-semibold text-textSecondary">Product not found.</Text>
       </SafeAreaView>
     );
   }
 
   const displayPrice = selectedVariant?.price ?? product.base_price ?? 0;
-  const { bg, icon } = iconColor(product.name);
-  const hasImage = !!product.image_url;
+  // Compute dummy MRP and per/kg strictly for mockup replication since it's missing in pure Product schema
+  const displayMrp = displayPrice + (displayPrice * 0.1); 
+  const isPerKg = product.name.toLowerCase().includes("kg") || selectedVariant?.variant_name.toLowerCase().includes("kg");
+  const fallbackUnit = isPerKg ? "kg" : "unit";
 
   const handleAddToBill = () => {
     Alert.alert(
@@ -87,96 +69,110 @@ export default function ProductDetailsScreen() {
   };
 
   return (
-    <SafeAreaView style={s.root} edges={["top", "left", "right"]}>
+    <View className="flex-1 bg-surface">
       {/* ── Floating Header ── */}
-      <View style={s.header}>
+      <View 
+        className="flex-row items-center justify-between px-4 pb-3 bg-surface z-10" 
+        style={{ paddingTop: insets.top + 10 }}
+      >
         <TouchableOpacity
           onPress={() => router.back()}
-          style={s.headerBtn}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          hitSlop={10}
+          className="w-10 h-10 items-start justify-center"
         >
-          <ArrowLeft size={22} color={colors.textPrimary} strokeWidth={1.75} />
+          <ArrowLeft size={24} className="text-textPrimary" strokeWidth={2} />
         </TouchableOpacity>
-        <Text style={s.headerTitle}>Product Details</Text>
+        <Text className="text-[18px] font-extrabold text-textPrimary">
+          Product Details
+        </Text>
         <TouchableOpacity
-          style={s.headerBtn}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          onPress={() => router.back()}
+          hitSlop={10}
+          onPress={() => Alert.alert("Edit", "Product editing coming soon.")}
+          className="w-10 h-10 items-end justify-center"
         >
-          <Pencil size={20} color={colors.textSecondary} strokeWidth={1.75} />
+          <Pencil size={20} className="text-textSecondary" strokeWidth={2} />
         </TouchableOpacity>
       </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{ paddingBottom: 160 }}
+        className="flex-1 bg-surface"
       >
-        {/* ── Hero Image / Placeholder ── */}
-        {hasImage ? (
-          <Image
-            source={{ uri: product.image_url! }}
-            style={{ width: SCREEN_W, height: IMAGE_H }}
-            contentFit="cover"
-          />
-        ) : (
-          <View
-            style={[
-              s.imagePlaceholder,
-              { height: IMAGE_H, backgroundColor: bg },
-            ]}
-          >
-            <Package size={80} color={icon} strokeWidth={1.25} />
-          </View>
-        )}
-
-        {/* ── Details ── */}
-        <View style={s.details}>
-          {/* Name */}
-          <Text style={s.productName}>{product.name}</Text>
-
-          {/* Price */}
-          <View style={s.priceRow}>
-            <Text style={s.price}>₹{displayPrice.toLocaleString("en-IN")}</Text>
-            <Text style={s.priceUnit}> / unit</Text>
-          </View>
-
-          {/* Category badge */}
-          {!!product.category && product.category !== "General" && (
-            <View style={s.categoryBadge}>
-              <Text style={s.categoryText}>{product.category}</Text>
+        {/* ── Hero Image ── */}
+        <View className="px-4 mb-4">
+          {product.image_url ? (
+            <Image
+              source={{ uri: product.image_url }}
+              style={{ width: "100%", height: IMAGE_H, borderRadius: 20 }}
+              contentFit="cover"
+            />
+          ) : (
+            <View 
+              style={{ width: "100%", height: IMAGE_H }}
+              className="bg-background rounded-[20px] items-center justify-center border border-border"
+            >
+              <Package size={80} className="text-textSecondary opacity-40" strokeWidth={1} />
             </View>
           )}
+        </View>
+
+        {/* ── Details ── */}
+        <View className="px-5 pt-2">
+          <Text className="text-[26px] font-black text-textPrimary mb-1 tracking-tight">
+            {product.name}
+          </Text>
+
+          <View className="flex-row items-baseline mb-1 mt-2">
+            <Text className="text-[34px] font-black text-textPrimary tracking-tighter mr-1">
+              ₹{displayPrice.toLocaleString("en-IN")}
+            </Text>
+            <Text className="text-[16px] font-semibold text-textSecondary">
+              / unit
+            </Text>
+          </View>
+
+          <Text className="text-[14px] font-semibold text-textSecondary mb-4">
+            MRP: ₹{displayMrp.toLocaleString("en-IN")} • ₹{displayPrice} / {fallbackUnit}
+          </Text>
+
+          <View className="self-start px-3 py-1.5 bg-background border border-border rounded-full mb-6">
+            <Text className="text-[13px] font-extrabold text-textPrimary opacity-80">
+              42 units available
+            </Text>
+          </View>
 
           {/* Variants — SELECT SIZE */}
           {product.variants.length > 0 && (
-            <View style={s.variantSection}>
-              <Text style={s.sectionLabel}>SELECT SIZE</Text>
-              <View style={s.variantGrid}>
+            <View className="mb-8">
+              <Text className="text-[12px] font-extrabold text-textSecondary uppercase tracking-widest mb-3">
+                SELECT SIZE
+              </Text>
+              <View className="flex-row flex-wrap gap-3">
                 {product.variants.map((v) => {
                   const isSelected = selectedVariant?.id === v.id;
                   return (
                     <TouchableOpacity
                       key={v.id}
                       onPress={() => setSelectedVariant(v)}
-                      activeOpacity={0.75}
-                      style={[
-                        s.variantChip,
-                        isSelected && s.variantChipSelected,
-                      ]}
+                      activeOpacity={0.8}
+                      className={`rounded-[16px] p-4 min-w-[46%] flex-1 border-2 ${
+                        isSelected 
+                          ? "border-primary bg-successLight" 
+                          : "border-border bg-surface"
+                      }`}
                     >
                       <Text
-                        style={[
-                          s.variantChipName,
-                          isSelected && s.variantChipNameSelected,
-                        ]}
+                        className={`text-[15px] font-bold mb-1 ${
+                          isSelected ? "text-textPrimary" : "text-textPrimary"
+                        }`}
                       >
                         {v.variant_name}
                       </Text>
                       <Text
-                        style={[
-                          s.variantChipPrice,
-                          isSelected && s.variantChipPriceSelected,
-                        ]}
+                        className={`text-[14px] font-extrabold ${
+                          isSelected ? "text-primary" : "text-textSecondary"
+                        }`}
                       >
                         ₹{v.price.toLocaleString("en-IN")}
                       </Text>
@@ -188,218 +184,56 @@ export default function ProductDetailsScreen() {
           )}
 
           {/* Quantity stepper */}
-          <View style={s.quantitySection}>
-            <Text style={s.sectionLabel}>QUANTITY</Text>
-            <View style={s.stepper}>
+          <View className="mb-4 items-center mt-2">
+            <View className="flex-row items-center bg-background rounded-[24px] p-2 border border-border gap-6">
               <TouchableOpacity
-                style={s.stepperBtn}
                 onPress={() => setQuantity((q) => Math.max(1, q - 1))}
                 activeOpacity={0.7}
+                className="w-12 h-12 rounded-full bg-surface items-center justify-center shadow-sm"
               >
-                <Minus size={18} color={colors.textPrimary} strokeWidth={2} />
+                <Minus size={20} className="text-textPrimary" strokeWidth={2.5} />
               </TouchableOpacity>
-              <Text style={s.stepperValue}>{quantity}</Text>
+              
+              <View className="items-center justify-center min-w-[50px]">
+                <Text className="text-[10px] font-extrabold text-textSecondary uppercase tracking-widest mb-0.5">
+                  Quantity
+                </Text>
+                <Text className="text-[22px] font-black text-textPrimary">
+                  {quantity}
+                </Text>
+              </View>
+              
               <TouchableOpacity
-                style={s.stepperBtn}
                 onPress={() => setQuantity((q) => q + 1)}
                 activeOpacity={0.7}
+                className="w-12 h-12 rounded-full bg-surface items-center justify-center shadow-sm"
               >
-                <Plus size={18} color={colors.textPrimary} strokeWidth={2} />
+                <Plus size={20} className="text-textPrimary" strokeWidth={2.5} />
               </TouchableOpacity>
             </View>
           </View>
-
-          {/* Sub-label */}
-          <Text style={s.addToBillLabel}>
-            ADD TO BILL FOR SELECTED CUSTOMER
-          </Text>
         </View>
       </ScrollView>
 
       {/* ── Fixed Add to Bill CTA ── */}
-      <View style={s.ctaContainer}>
+      <View 
+        className="absolute bottom-0 left-0 right-0 bg-surface px-5 pt-3 border-t border-border"
+        style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+      >
+        <Text className="text-[11px] font-extrabold text-textSecondary tracking-widest text-center mb-3">
+          ADD TO BILL FOR SELECTED CUSTOMER
+        </Text>
         <TouchableOpacity
-          style={s.ctaBtn}
           onPress={handleAddToBill}
           activeOpacity={0.85}
+          className="flex-row items-center justify-center bg-success rounded-[20px] py-4 gap-2 mb-2"
         >
-          <ShoppingCart size={20} color={colors.surface} strokeWidth={2} />
-          <Text style={s.ctaBtnText}>Add to Bill</Text>
+          <ShoppingCart size={22} className="text-surface" strokeWidth={2} />
+          <Text className="text-[18px] font-black text-surface tracking-tight">
+            Add to Bill
+          </Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
-
-// ── Styles ────────────────────────────────────────────────
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.surface },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: 14,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerBtn: {
-    width: 36,
-    height: 36,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: colors.textPrimary,
-  },
-  imagePlaceholder: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  details: {
-    paddingHorizontal: spacing.screenPadding,
-    paddingTop: 20,
-  },
-  productName: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: colors.textPrimary,
-    marginBottom: 6,
-  },
-  priceRow: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    marginBottom: 14,
-  },
-  price: {
-    fontSize: 32,
-    fontWeight: "800",
-    color: colors.textPrimary,
-  },
-  priceUnit: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: colors.textSecondary,
-  },
-  categoryBadge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#F0FDF4",
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    marginBottom: 20,
-  },
-  categoryText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: colors.primary,
-  },
-  variantSection: {
-    marginBottom: 20,
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: colors.textSecondary,
-    letterSpacing: 1,
-    marginBottom: 12,
-  },
-  variantGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  variantChip: {
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    minWidth: "45%",
-    flex: 1,
-  },
-  variantChipSelected: {
-    borderColor: colors.primary,
-    backgroundColor: "#F0FDF4",
-  },
-  variantChipName: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.textPrimary,
-    marginBottom: 2,
-  },
-  variantChipNameSelected: {
-    color: colors.primaryDark,
-  },
-  variantChipPrice: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: colors.textSecondary,
-  },
-  variantChipPriceSelected: {
-    color: colors.primary,
-  },
-  quantitySection: {
-    marginBottom: 24,
-  },
-  stepper: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 0,
-    alignSelf: "flex-start",
-  },
-  stepperBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.surface,
-  },
-  stepperValue: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: colors.textPrimary,
-    minWidth: 60,
-    textAlign: "center",
-  },
-  addToBillLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: colors.textSecondary,
-    letterSpacing: 0.8,
-    textAlign: "center",
-    marginBottom: 12,
-  },
-  ctaContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: spacing.screenPadding,
-    paddingBottom: spacing.lg,
-    paddingTop: 12,
-    backgroundColor: colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  ctaBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    backgroundColor: colors.primary,
-    borderRadius: 16,
-    paddingVertical: 17,
-  },
-  ctaBtnText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: colors.surface,
-  },
-});

@@ -1,40 +1,38 @@
-﻿import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import {
-    ArrowLeft,
-    BarChart2,
-    Building2,
-    ChevronRight,
-    CreditCard,
-    Download,
-    Hash,
-    HelpCircle,
-    Info,
-    Languages,
-    LayoutGrid,
-    LogOut,
-    Package,
-    Receipt,
-    Settings,
-    Smartphone,
-    Store,
-    Truck,
+  ArrowLeft,
+  BarChart2,
+  Building2,
+  ChevronRight,
+  CreditCard,
+  Download,
+  Hash,
+  HelpCircle,
+  Info,
+  Languages,
+  LayoutGrid,
+  LogOut,
+  Package,
+  Receipt,
+  Settings,
+  Smartphone,
+  Store,
+  Truck,
 } from "lucide-react-native";
 import { ComponentType, ReactNode } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { useLanguageStore } from "@/src/store/languageStore";
-import { colors, spacing } from "@/src/utils/theme";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -60,8 +58,10 @@ interface SectionCardProps {
 
 function SectionCard({ title, children }: SectionCardProps) {
   return (
-    <View style={styles.sectionCard}>
-      <Text style={styles.sectionLabel}>{title}</Text>
+    <View className="bg-surface rounded-2xl px-5 pt-4 pb-2 mb-4 shadow-sm border border-border">
+      <Text className="text-[11px] font-bold text-textSecondary uppercase tracking-widest mb-3">
+        {title}
+      </Text>
       {children}
     </View>
   );
@@ -70,7 +70,7 @@ function SectionCard({ title, children }: SectionCardProps) {
 // ─── DetailRow ────────────────────────────────────────────────────────────────
 
 interface DetailRowProps {
-  Icon: ComponentType<{ size: number; color: string; strokeWidth?: number }>;
+  Icon: ComponentType<{ size: number; className?: string; strokeWidth?: number }>;
   label: string;
   value?: string | null;
   last?: boolean;
@@ -82,18 +82,22 @@ function DetailRow({ Icon, label, value, last, onPress }: DetailRowProps) {
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={onPress ? 0.7 : 1}
-      style={[styles.detailRow, last && styles.detailRowLast]}
+      className={`flex-row items-center py-3 ${
+        !last ? "border-b border-border" : "mb-2"
+      }`}
     >
-      <View style={styles.detailIconBox}>
-        <Icon size={18} color={colors.primaryDark} strokeWidth={1.75} />
+      <View className="w-10 h-10 rounded-xl bg-primaryLight items-center justify-center">
+        <Icon size={20} className="text-primary" strokeWidth={2} />
       </View>
-      <View style={styles.detailText}>
-        <Text style={styles.detailLabel}>{label}</Text>
-        <Text style={styles.detailValue} numberOfLines={1}>
+      <View className="flex-1 ml-3">
+        <Text className="text-[10px] font-bold text-textSecondary uppercase tracking-wide mb-0.5">
+          {label}
+        </Text>
+        <Text className="text-[14px] font-bold text-textPrimary" numberOfLines={1}>
           {value || "—"}
         </Text>
       </View>
-      <ChevronRight size={16} color={colors.textSecondary} strokeWidth={1.75} />
+      <ChevronRight size={18} className="text-textSecondary" strokeWidth={2} />
     </TouchableOpacity>
   );
 }
@@ -117,18 +121,22 @@ function SegmentControl<T extends string>({
   onChange,
 }: SegmentControlProps<T>) {
   return (
-    <View style={styles.segmentWrapper}>
+    <View className="flex-row border border-border rounded-xl overflow-hidden mb-3 mt-1">
       {options.map((opt) => {
         const isActive = value === opt.value;
         return (
           <TouchableOpacity
             key={opt.value}
             onPress={() => onChange(opt.value)}
-            activeOpacity={0.75}
-            style={[styles.segmentItem, isActive && styles.segmentItemActive]}
+            activeOpacity={0.8}
+            className={`flex-1 py-2.5 items-center bg-surface border-r border-border last:border-r-0 ${
+              isActive ? "bg-primaryLight border-b-2 border-b-primary" : ""
+            }`}
           >
             <Text
-              style={[styles.segmentText, isActive && styles.segmentTextActive]}
+              className={`text-[13px] font-bold ${
+                isActive ? "text-primary" : "text-textSecondary"
+              }`}
             >
               {opt.label}
             </Text>
@@ -146,8 +154,8 @@ export default function ProfileScreen() {
 
   if (!profile) {
     return (
-      <SafeAreaView style={styles.loaderScreen}>
-        <ActivityIndicator color={colors.primary} />
+      <SafeAreaView className="flex-1 bg-background items-center justify-center">
+        <ActivityIndicator size="large" />
       </SafeAreaView>
     );
   }
@@ -187,46 +195,47 @@ export default function ProfileScreen() {
   const email = user?.email ?? user?.phone ?? "";
 
   return (
-    <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* ── Header ── */}
-      <View style={styles.header}>
+      <View className="flex-row items-center px-4 py-3 bg-surface border-b border-border">
         <TouchableOpacity
           onPress={() => router.back()}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          style={styles.headerBtn}
+          hitSlop={8}
+          className="w-10 items-start justify-center"
         >
-          <ArrowLeft size={22} color={colors.textPrimary} strokeWidth={1.75} />
+          <ArrowLeft size={24} className="text-textPrimary" strokeWidth={2} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profile &amp; Settings</Text>
-        <View style={styles.headerBtn} />
+        <Text className="flex-1 text-center text-[18px] font-extrabold text-textPrimary">
+          Profile & Settings
+        </Text>
+        <View className="w-10" />
       </View>
 
       <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        className="flex-1"
+        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
         {/* ── Avatar ── */}
-        <View style={styles.avatarSection}>
-          <View style={styles.avatarRing}>
-            <Text style={styles.avatarText}>
+        <View className="items-center py-4 mb-4">
+          <View className="w-20 h-20 rounded-full bg-success items-center justify-center mb-3 border-4 border-successLight shadow-sm">
+            <Text className="text-[28px] font-black text-surface tracking-tight">
               {getInitials(profile.business_name)}
             </Text>
           </View>
-          <Text style={styles.businessName}>
+          <Text className="text-[20px] font-black text-textPrimary">
             {profile.business_name || "Your Business"}
           </Text>
-          {!!email && <Text style={styles.emailText}>{email}</Text>}
+          {!!email && <Text className="text-[14px] font-semibold text-textSecondary mt-1">{email}</Text>}
+          
           <TouchableOpacity
-            onPress={() =>
-              Alert.alert("Edit Profile", "Profile editing coming soon.")
-            }
-            activeOpacity={0.75}
-            style={styles.editBtn}
+            onPress={() => Alert.alert("Edit Profile", "Profile editing coming soon.")}
+            activeOpacity={0.8}
+            className="mt-4 py-2 px-8 rounded-full border-2 border-primary"
           >
-            <Text style={styles.editBtnText}>Edit Profile</Text>
+            <Text className="text-[14px] font-bold text-primary">Edit Profile</Text>
           </TouchableOpacity>
         </View>
 
@@ -234,159 +243,68 @@ export default function ProfileScreen() {
         <SectionCard title="BUSINESS DETAILS">
           <DetailRow Icon={Store} label="NAME" value={profile.business_name} />
           <DetailRow Icon={Receipt} label="GSTIN" value={profile.gstin} />
-          <DetailRow
-            Icon={Hash}
-            label="PREFIX"
-            value={profile.bill_number_prefix ?? "INV"}
-          />
-          <DetailRow
-            Icon={Smartphone}
-            label="UPI ID"
-            value={profile.upi_id}
-            last
-          />
+          <DetailRow Icon={Hash} label="PREFIX" value={profile.bill_number_prefix ?? "INV"} />
+          <DetailRow Icon={Smartphone} label="UPI ID" value={profile.upi_id} last />
         </SectionCard>
 
         {/* ── Inventory & Suppliers ── */}
         <SectionCard title="INVENTORY & SUPPLIERS">
-          <TouchableOpacity
-            onPress={() => router.push("/(main)/products" as never)}
-            activeOpacity={0.75}
-            style={styles.detailRow}
-          >
-            <View style={styles.detailIconBox}>
-              <Package
-                size={18}
-                color={colors.primaryDark}
-                strokeWidth={1.75}
-              />
-            </View>
-            <View style={styles.detailText}>
-              <Text style={styles.detailValue}>Products</Text>
-            </View>
-            <ChevronRight
-              size={16}
-              color={colors.textSecondary}
-              strokeWidth={1.75}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => router.push("/(main)/suppliers" as never)}
-            activeOpacity={0.75}
-            style={[styles.detailRow, styles.detailRowLast]}
-          >
-            <View style={styles.detailIconBox}>
-              <Truck size={18} color={colors.primaryDark} strokeWidth={1.75} />
-            </View>
-            <View style={styles.detailText}>
-              <Text style={styles.detailValue}>Suppliers</Text>
-            </View>
-            <ChevronRight
-              size={16}
-              color={colors.textSecondary}
-              strokeWidth={1.75}
-            />
-          </TouchableOpacity>
+          <DetailRow 
+            Icon={Package} 
+            label="CATALOG" 
+            value="Products & Items" 
+            onPress={() => router.push("/(main)/products" as never)} 
+          />
+          <DetailRow 
+            Icon={Truck} 
+            label="PARTNERS" 
+            value="Suppliers & Vendors" 
+            last 
+            onPress={() => router.push("/(main)/suppliers" as never)} 
+          />
         </SectionCard>
 
         {/* ── Business Tools ── */}
         <SectionCard title="BUSINESS TOOLS">
-          <TouchableOpacity
-            onPress={() => router.push("/(main)/export" as never)}
-            activeOpacity={0.75}
-            style={styles.detailRow}
-          >
-            <View style={styles.detailIconBox}>
-              <Download
-                size={18}
-                color={colors.primaryDark}
-                strokeWidth={1.75}
-              />
-            </View>
-            <View style={styles.detailText}>
-              <Text style={styles.detailValue}>Export Business Data</Text>
-            </View>
-            <ChevronRight
-              size={16}
-              color={colors.textSecondary}
-              strokeWidth={1.75}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => router.push("/(main)/reports" as never)}
-            activeOpacity={0.75}
-            style={styles.detailRow}
-          >
-            <View style={styles.detailIconBox}>
-              <BarChart2
-                size={18}
-                color={colors.primaryDark}
-                strokeWidth={1.75}
-              />
-            </View>
-            <View style={styles.detailText}>
-              <Text style={styles.detailValue}>Reports</Text>
-            </View>
-            <ChevronRight
-              size={16}
-              color={colors.textSecondary}
-              strokeWidth={1.75}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() =>
-              Alert.alert("Settings", "Advanced settings coming soon.")
-            }
-            activeOpacity={0.75}
-            style={[styles.detailRow, styles.detailRowLast]}
-          >
-            <View style={styles.detailIconBox}>
-              <Settings
-                size={18}
-                color={colors.primaryDark}
-                strokeWidth={1.75}
-              />
-            </View>
-            <View style={styles.detailText}>
-              <Text style={styles.detailValue}>Settings</Text>
-            </View>
-            <ChevronRight
-              size={16}
-              color={colors.textSecondary}
-              strokeWidth={1.75}
-            />
-          </TouchableOpacity>
+          <DetailRow 
+            Icon={Download} 
+            label="DATA" 
+            value="Export Business Data" 
+            onPress={() => router.push("/(main)/export" as never)} 
+          />
+          <DetailRow 
+            Icon={BarChart2} 
+            label="ANALYTICS" 
+            value="Reports & Trends" 
+            onPress={() => router.push("/(main)/reports" as never)} 
+          />
+          <DetailRow 
+            Icon={Settings} 
+            label="ACCOUNT" 
+            value="General Settings" 
+            last 
+            onPress={() => Alert.alert("Settings", "Advanced settings coming soon.")} 
+          />
         </SectionCard>
 
         {/* ── Bank Account ── */}
         <SectionCard title="BANK ACCOUNT">
-          <DetailRow
-            Icon={Building2}
-            label="BANK NAME"
-            value={profile.bank_name}
-          />
-          <DetailRow
-            Icon={CreditCard}
-            label="ACC NO"
-            value={maskAccount(profile.account_number)}
-          />
+          <DetailRow Icon={Building2} label="BANK NAME" value={profile.bank_name} />
+          <DetailRow Icon={CreditCard} label="ACC NO" value={maskAccount(profile.account_number)} />
           <DetailRow Icon={Info} label="IFSC" value={profile.ifsc_code} last />
         </SectionCard>
 
         {/* ── App Preferences ── */}
         <SectionCard title="APP PREFERENCES">
-          <View style={styles.prefRow}>
-            <View style={styles.prefRowLeft}>
-              <View style={styles.detailIconBox}>
-                <LayoutGrid
-                  size={18}
-                  color={colors.primaryDark}
-                  strokeWidth={1.75}
-                />
+          <View className="flex-row items-center justify-between py-2 mt-1 mb-2">
+            <View className="flex-row items-center gap-3">
+              <View className="w-10 h-10 rounded-xl bg-primaryLight items-center justify-center">
+                <LayoutGrid size={20} className="text-primary" strokeWidth={2} />
               </View>
-              <Text style={styles.prefRowLabel}>Dashboard Mode</Text>
+              <Text className="text-[15px] font-bold text-textPrimary">Dashboard Mode</Text>
             </View>
           </View>
+          
           <SegmentControl<"seller" | "distributor" | "both">
             options={[
               { value: "seller", label: "Seller" },
@@ -397,52 +315,36 @@ export default function ProfileScreen() {
             onChange={(v) => updateField("dashboard_mode", v)}
           />
 
-          <View style={styles.prefDivider} />
+          <View className="h-[1px] bg-border my-2" />
 
-          <View style={styles.prefRow}>
-            <View style={styles.prefRowLeft}>
-              <View style={styles.detailIconBox}>
-                <Languages
-                  size={18}
-                  color={colors.primaryDark}
-                  strokeWidth={1.75}
-                />
+          <View className="flex-row items-center justify-between py-2 mb-2">
+            <View className="flex-row items-center gap-3">
+              <View className="w-10 h-10 rounded-xl bg-primaryLight items-center justify-center">
+                <Languages size={20} className="text-primary" strokeWidth={2} />
               </View>
-              <Text style={styles.prefRowLabel}>Language</Text>
+              <Text className="text-[15px] font-bold text-textPrimary">Language</Text>
             </View>
-            <View style={styles.langToggle}>
+            <View className="flex-row gap-2">
               <TouchableOpacity
                 onPress={() => setLanguage("en")}
-                activeOpacity={0.75}
-                style={[
-                  styles.langPill,
-                  language === "en" && styles.langPillActive,
-                ]}
+                activeOpacity={0.8}
+                className={`py-2 px-4 rounded-xl border ${
+                  language === "en" ? "bg-primary border-primary" : "bg-background border-border"
+                }`}
               >
-                <Text
-                  style={[
-                    styles.langPillText,
-                    language === "en" && styles.langPillTextActive,
-                  ]}
-                >
+                <Text className={`text-[13px] font-extrabold ${language === "en" ? "text-surface" : "text-textSecondary"}`}>
                   EN
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setLanguage("hi")}
-                activeOpacity={0.75}
-                style={[
-                  styles.langPill,
-                  language === "hi" && styles.langPillActive,
-                ]}
+                activeOpacity={0.8}
+                className={`py-2 px-3 rounded-xl border ${
+                  language === "hi" ? "bg-primary border-primary" : "bg-background border-border"
+                }`}
               >
-                <Text
-                  style={[
-                    styles.langPillText,
-                    language === "hi" && styles.langPillTextActive,
-                  ]}
-                >
-                  {"🇮🇳"}
+                <Text className={`text-[13px] font-extrabold ${language === "hi" ? "text-surface" : "text-textSecondary"}`}>
+                  🇮🇳
                 </Text>
               </TouchableOpacity>
             </View>
@@ -451,292 +353,37 @@ export default function ProfileScreen() {
 
         {/* ── Support ── */}
         <SectionCard title="SUPPORT">
-          <TouchableOpacity
-            onPress={() =>
-              Alert.alert("Help & Support", "Contact us at support@kredbook.in")
-            }
-            activeOpacity={0.75}
-            style={styles.detailRow}
-          >
-            <View style={styles.detailIconBox}>
-              <HelpCircle
-                size={18}
-                color={colors.primaryDark}
-                strokeWidth={1.75}
-              />
-            </View>
-            <View style={styles.detailText}>
-              <Text style={styles.detailValue}>Help &amp; Support</Text>
-            </View>
-            <ChevronRight
-              size={16}
-              color={colors.textSecondary}
-              strokeWidth={1.75}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() =>
-              Alert.alert(
-                "About KredBook",
-                "KredBook v1.0.0\nBuilt for Indian kirana stores and small businesses.",
-              )
-            }
-            activeOpacity={0.75}
-            style={[styles.detailRow, styles.detailRowLast]}
-          >
-            <View style={styles.detailIconBox}>
-              <Info size={18} color={colors.primaryDark} strokeWidth={1.75} />
-            </View>
-            <View style={styles.detailText}>
-              <Text style={styles.detailValue}>About KredBook</Text>
-            </View>
-            <ChevronRight
-              size={16}
-              color={colors.textSecondary}
-              strokeWidth={1.75}
-            />
-          </TouchableOpacity>
+          <DetailRow 
+            Icon={HelpCircle} 
+            label="HELP" 
+            value="Contact Support" 
+            onPress={() => Alert.alert("Help & Support", "Contact us at support@kredbook.in")} 
+          />
+          <DetailRow 
+            Icon={Info} 
+            label="ABOUT" 
+            value="KredBook v1.0.0" 
+            last 
+            onPress={() => Alert.alert("About KredBook", "KredBook v1.0.0\nBuilt for Indian kirana stores and small businesses.")} 
+          />
         </SectionCard>
 
         {/* ── Sign Out ── */}
-        <View style={styles.sectionCard}>
+        <View className="bg-surface rounded-2xl shadow-sm border border-border mt-2 mb-4">
           <TouchableOpacity
             onPress={handleSignOut}
-            activeOpacity={0.75}
-            style={styles.signOutRow}
+            activeOpacity={0.8}
+            className="flex-row items-center justify-center py-4 gap-2"
           >
-            <LogOut size={18} color={colors.danger} strokeWidth={1.75} />
-            <Text style={styles.signOutText}>Sign Out</Text>
+            <LogOut size={20} className="text-danger" strokeWidth={2.5} />
+            <Text className="text-[16px] font-extrabold text-danger">Sign Out</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.footer}>KredBook v1.0.0</Text>
+        <Text className="text-center text-[12px] font-semibold text-textSecondary mt-2 mb-4 opacity-50">
+          KredBook Systems • v1.0.0
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  loaderScreen: {
-    flex: 1,
-    backgroundColor: colors.background,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerBtn: {
-    width: 36,
-    alignItems: "center",
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 17,
-    fontWeight: "700",
-    color: colors.textPrimary,
-  },
-  scroll: { flex: 1 },
-  scrollContent: {
-    padding: spacing.lg,
-    paddingBottom: 36,
-    gap: spacing.sm,
-  },
-  avatarSection: {
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  avatarRing: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 10,
-  },
-  avatarText: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: colors.surface,
-  },
-  businessName: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: colors.textPrimary,
-  },
-  emailText: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginTop: 3,
-  },
-  editBtn: {
-    marginTop: 14,
-    paddingVertical: 8,
-    paddingHorizontal: 28,
-    borderRadius: 24,
-    borderWidth: 1.5,
-    borderColor: colors.primary,
-  },
-  editBtnText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.primary,
-  },
-  sectionCard: {
-    backgroundColor: colors.surface,
-    borderRadius: spacing.cardRadius,
-    paddingHorizontal: spacing.lg,
-    paddingTop: 14,
-    paddingBottom: 4,
-    shadowColor: "#000",
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: colors.textSecondary,
-    letterSpacing: 0.8,
-    marginBottom: 10,
-  },
-  detailRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    gap: spacing.sm,
-  },
-  detailRowLast: {
-    borderBottomWidth: 0,
-    marginBottom: 8,
-  },
-  detailIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: colors.paid.bg,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  detailText: { flex: 1 },
-  detailLabel: {
-    fontSize: 10,
-    fontWeight: "600",
-    color: colors.textSecondary,
-    letterSpacing: 0.5,
-    marginBottom: 2,
-  },
-  detailValue: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.textPrimary,
-  },
-  segmentWrapper: {
-    flexDirection: "row",
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 10,
-    overflow: "hidden",
-    marginBottom: 12,
-    marginTop: 4,
-  },
-  segmentItem: {
-    flex: 1,
-    paddingVertical: 9,
-    alignItems: "center",
-    backgroundColor: colors.surface,
-  },
-  segmentItemActive: {
-    backgroundColor: colors.paid.bg,
-  },
-  segmentText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: colors.textSecondary,
-  },
-  segmentTextActive: {
-    color: colors.primaryDark,
-  },
-  prefRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 10,
-    gap: spacing.sm,
-  },
-  prefRowLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    flex: 1,
-  },
-  prefRowLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.textPrimary,
-  },
-  prefDivider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: 4,
-  },
-  langToggle: {
-    flexDirection: "row",
-    gap: 6,
-  },
-  langPill: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.background,
-  },
-  langPillActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  langPillText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: colors.textSecondary,
-  },
-  langPillTextActive: {
-    color: colors.surface,
-  },
-  signOutRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    paddingVertical: 12,
-    marginBottom: 8,
-  },
-  signOutText: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: colors.danger,
-  },
-  footer: {
-    textAlign: "center",
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 8,
-  },
-});
