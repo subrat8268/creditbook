@@ -119,7 +119,7 @@ export default function OrderList({
             marginBottom: 12,
             padding: 14,
             elevation: 2,
-            shadowColor: "#000000",
+            shadowColor: colors.textPrimary,
             shadowOffset: { width: 0, height: 1 },
             shadowOpacity: 0.06,
             shadowRadius: 4,
@@ -251,7 +251,7 @@ export default function OrderList({
             style={{
               textAlign: "center",
               padding: 16,
-              color: "#6B7280",
+              color: colors.textSecondary,
               fontSize: 13,
             }}
           >

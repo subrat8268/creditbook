@@ -139,10 +139,10 @@ export default function OrderBillSummary({
       <View
         className="rounded-2xl p-4 mb-3"
         style={{
-          backgroundColor: "#FFFFFF",
+          backgroundColor: colors.surface,
           borderWidth: 1,
           borderColor: colors.background,
-          shadowColor: "#000000",
+          shadowColor: colors.textPrimary,
           shadowOffset: { width: 0, height: 1 },
           shadowOpacity: 0.04,
           shadowRadius: 4,
@@ -181,10 +181,10 @@ export default function OrderBillSummary({
       <View
         className="rounded-2xl p-4 mb-3"
         style={{
-          backgroundColor: "#FFFFFF",
+          backgroundColor: colors.surface,
           borderWidth: 1,
           borderColor: colors.background,
-          shadowColor: "#000000",
+          shadowColor: colors.textPrimary,
           shadowOffset: { width: 0, height: 1 },
           shadowOpacity: 0.04,
           shadowRadius: 4,

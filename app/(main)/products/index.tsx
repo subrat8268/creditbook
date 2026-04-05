@@ -25,6 +25,7 @@ import {
   useUpdateProduct,
 } from "@/src/hooks/useProducts";
 import { useAuthStore } from "@/src/store/authStore";
+import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 
 export default function ProductsScreen() {
@@ -197,7 +198,7 @@ export default function ProductsScreen() {
             value={search}
             onChangeText={setSearch}
             placeholder="Search products to add in bill..."
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={colors.textSecondary}
             className="flex-1 text-[15px] font-semibold text-textPrimary"
             style={{ padding: 0 }}
           />
@@ -282,7 +283,7 @@ export default function ProductsScreen() {
         activeOpacity={0.8}
         className="absolute bottom-6 right-6 w-16 h-16 rounded-full bg-success items-center justify-center shadow-lg elevation-xl"
         style={{
-          shadowColor: "#16A34A", 
+          shadowColor: colors.primaryDark,
           shadowOffset: { width: 0, height: 8 },
           shadowOpacity: 0.3,
           shadowRadius: 10,

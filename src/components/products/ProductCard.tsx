@@ -1,4 +1,5 @@
 import { ProductVariant } from "@/src/api/products";
+import { colors } from "@/src/utils/theme";
 import { 
   Package, 
   Droplet, 
@@ -49,22 +50,22 @@ export default function ProductCard({
 
   const { theme, Icon } = getThemeConfig(name);
   
-  // Maps strictly to NativeWind classes
+  // Maps strictly to theme tokens — no raw hex
   const getThemeClasses = (themeMode: string) => {
     switch (themeMode) {
       case 'success':
-        return { bg: "bg-successLight", text: "text-success" };
+        return { bg: "bg-successLight", text: "text-success", iconColor: colors.primary };
       case 'warning':
-        return { bg: "bg-[#FFEDD5]", text: "text-[#EA580C]" }; // NativeWind v2 requires inline for unregistered custom tokens if they aren't in theme
+        return { bg: "bg-warningBg", text: "text-warning", iconColor: colors.warning };
       case 'danger':
-        return { bg: "bg-dangerLight", text: "text-danger" };
+        return { bg: "bg-dangerBg", text: "text-danger", iconColor: colors.danger };
       case 'blue':
-        return { bg: "bg-[#E0F2FE]", text: "text-[#0284C7]" };
+        return { bg: "bg-successBg", text: "text-primaryDark", iconColor: colors.primaryDark };
       case 'textPrimary':
-        return { bg: "bg-surface", text: "text-textPrimary", border: "border border-border" };
+        return { bg: "bg-surface", text: "text-textPrimary", iconColor: colors.textPrimary, border: "border border-border" };
       case 'primary':
       default:
-        return { bg: "bg-primaryLight", text: "text-primary" };
+        return { bg: "bg-primaryLight", text: "text-primary", iconColor: colors.primary };
     }
   };
 
@@ -77,7 +78,7 @@ export default function ProductCard({
       activeOpacity={0.8}
       className={`flex-row items-center bg-surface rounded-[20px] p-4 mb-4 shadow-sm ${themeClass.border || ''}`}
       style={{
-        shadowColor: "#000",
+        shadowColor: colors.textPrimary,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 8,
@@ -87,7 +88,7 @@ export default function ProductCard({
       <View
         className={`w-14 h-14 rounded-2xl items-center justify-center mr-4 shrink-0 ${themeClass.bg}`}
       >
-        <Icon size={26} className={themeClass.text} strokeWidth={2.5} />
+        <Icon size={26} color={themeClass.iconColor} strokeWidth={2.5} />
       </View>
 
       <View className="flex-1 mr-2">

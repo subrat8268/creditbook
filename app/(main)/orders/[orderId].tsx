@@ -12,7 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { MessageCircle, Wallet } from "lucide-react-native";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
     Alert,
     Linking,
@@ -23,23 +23,23 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// ── Design tokens (literal values for portability) ───────────────────────
+// ── Design tokens — map status keys to the central theme chip tokens ──────
 const STATUS_STYLES: Record<
   string,
   { bg: string; text: string; label: string }
 > = {
-  Paid: { bg: "#DCFCE7", text: "#16A34A", label: "PAID" },
-  "Partially Paid": { bg: "#DBEAFE", text: "#1D4ED8", label: "PARTIAL" },
-  Pending: { bg: "#FEF3C7", text: "#D97706", label: "PENDING" },
-  Overdue: { bg: "#FEE2E2", text: "#DC2626", label: "OVERDUE" },
+  Paid:           { bg: colors.paid.bg,    text: colors.paid.text,    label: "PAID" },
+  "Partially Paid": { bg: colors.partial.bg, text: colors.partial.text, label: "PARTIAL" },
+  Pending:        { bg: colors.pending.bg,  text: colors.pending.text,  label: "PENDING" },
+  Overdue:        { bg: colors.overdue.bg,  text: colors.overdue.text,  label: "OVERDUE" },
 };
 
 const PAYMENT_MODE_COLORS: Record<string, { bg: string; text: string }> = {
-  Cash: { bg: "#DCFCE7", text: "#16A34A" },
-  UPI: { bg: "#DBEAFE", text: "#1D4ED8" },
-  NEFT: { bg: "#F3E8FF", text: "#7C3AED" },
-  Draft: { bg: "#FEF3C7", text: "#D97706" },
-  Cheque: { bg: "#E0F2FE", text: "#0369A1" },
+  Cash:   { bg: colors.paid.bg,    text: colors.paid.text },
+  UPI:    { bg: colors.partial.bg, text: colors.partial.text },
+  NEFT:   { bg: colors.overdue.bg, text: colors.warning },
+  Draft:  { bg: colors.pending.bg, text: colors.pending.text },
+  Cheque: { bg: colors.successBg,  text: colors.primaryDark },
 };
 
 // ── Avatar helpers ──────────────────────────────────────────────────────
@@ -47,11 +47,7 @@ const AVATAR_COLORS = [
   colors.danger,
   colors.warning,
   colors.primary,
-  "#4F9CFF",
-  "#9B59B6",
-  "#E91E8C",
-  "#00BCD4",
-  "#FF5722",
+  ...colors.avatarPalette,
 ] as const;
 
 function getAvatarColor(name: string): string {
@@ -74,7 +70,7 @@ function fmt(n: number) {
 
 // ── Card shadow style ─────────────────────────────────────────────────
 const SHADOW = {
-  shadowColor: "#000",
+  shadowColor: colors.textPrimary,
   shadowOffset: { width: 0, height: 1 },
   shadowOpacity: 0.06,
   shadowRadius: 4,
@@ -92,7 +88,7 @@ export default function OrderDetailScreen() {
     profile?.id,
   );
 
-  const [paymentModalVisible, setPaymentModalVisible] = useState(false);
+  const paymentModalRef = useRef<any>(null);
   const [sendingBill, setSendingBill] = useState(false);
 
   // ── Derived values ───────────────────────────────────────────────
@@ -143,7 +139,9 @@ export default function OrderDetailScreen() {
         order.items.map((i) => ({
           name: i.product_name,
           quantity: i.quantity,
+          rate: i.price,
           price: i.price,
+          amount: i.subtotal,
           variantName: i.variant_name,
         })),
         {
@@ -199,7 +197,7 @@ export default function OrderDetailScreen() {
 
   // ── Payment success ─────────────────────────────────────────────
   const handlePaymentSuccess = useCallback(() => {
-    setPaymentModalVisible(false);
+    paymentModalRef.current?.dismiss();
     if (profile?.id) {
       queryClient.invalidateQueries({ queryKey: orderKeys.all(profile.id) });
       queryClient.invalidateQueries({
@@ -234,7 +232,7 @@ export default function OrderDetailScreen() {
   return (
     <SafeAreaView
       edges={["bottom"]}
-      style={{ flex: 1, backgroundColor: colors.background }}
+      className="flex-1 bg-background"
     >
       {/* Override stack header title with dynamic bill number */}
       <Stack.Screen options={{ title: `Order #${order.bill_number}` }} />
@@ -726,7 +724,7 @@ export default function OrderDetailScreen() {
         {/* Record Payment button — hidden when order is Paid */}
         {!isPaid && (
           <TouchableOpacity
-            onPress={() => setPaymentModalVisible(true)}
+          onPress={() => paymentModalRef.current?.present()}
             activeOpacity={0.85}
             style={{
               flex: 1,
@@ -751,8 +749,7 @@ export default function OrderDetailScreen() {
 
       {/* ── Record Payment Modal ──────────────────────────────── */}
       <RecordCustomerPaymentModal
-        visible={paymentModalVisible}
-        onClose={() => setPaymentModalVisible(false)}
+        ref={paymentModalRef}
         onSuccess={handlePaymentSuccess}
         orderId={orderId ?? ""}
         balanceDue={order.balance_due}

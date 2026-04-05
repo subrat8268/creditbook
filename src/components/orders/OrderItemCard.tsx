@@ -61,7 +61,7 @@ export default function OrderItemCard({
           onPress={onRemove}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <X size={16} color={"#AEAEB2"} strokeWidth={2.5} />
+          <X size={16} color={colors.textSecondary} strokeWidth={2.5} />
         </TouchableOpacity>
       </View>
 

@@ -116,7 +116,7 @@ export default function OrdersScreen() {
   return (
     <SafeAreaView
       edges={["top"]}
-      style={{ flex: 1, backgroundColor: colors.background }}
+      className="flex-1 bg-background"
     >
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
