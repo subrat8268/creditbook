@@ -42,91 +42,7 @@ interface Props {
   loading?: boolean;
 }
 
-// ─── Field helpers ────────────────────────────────────────────────────────────
-function FieldLabel({
-  children,
-  required,
-}: {
-  children: string;
-  required?: boolean;
-}) {
-  return (
-    <Text
-      className="text-sm font-semibold mb-1.5"
-      style={{ color: colors.textSecondary }}
-    >
-      {children}
-      {required ? <Text style={{ color: colors.danger }}> *</Text> : null}
-    </Text>
-  );
-}
 
-function InputBase({
-  children,
-  hasError,
-}: {
-  children: React.ReactNode;
-  hasError?: boolean;
-}) {
-  return (
-    <View
-      className="flex-row items-center border rounded-xl overflow-hidden"
-      style={{
-        borderColor: hasError ? colors.danger : colors.border,
-        backgroundColor: colors.background,
-      }}
-    >
-      {children}
-    </View>
-  );
-}
-
-// ─── Bank input row (icon + text field, orange-tinted) ────────────────────────
-function BankField({
-  icon,
-  placeholder,
-  value,
-  onChangeText,
-  onBlur,
-  keyboardType,
-  autoCapitalize,
-}: {
-  icon: React.ReactNode;
-  placeholder: string;
-  value: string;
-  onChangeText: (v: string) => void;
-  onBlur?: (e?: any) => void;
-  keyboardType?: "default" | "numeric";
-  autoCapitalize?: "none" | "characters";
-}) {
-  return (
-    <View
-      className="flex-row items-center rounded-xl overflow-hidden border"
-      style={{
-        borderColor: colors.pending.bg,
-        backgroundColor: "#F0FDF4",
-      }}
-    >
-      <View
-        className="w-11 h-11 items-center justify-center"
-        style={{ backgroundColor: colors.paid.bg ?? "#DCFCE7" }}
-      >
-        {icon}
-      </View>
-      <TextInput
-        placeholder={placeholder}
-        placeholderTextColor={"#AEAEB2"}
-        value={value}
-        onChangeText={onChangeText}
-        onBlur={onBlur}
-        keyboardType={keyboardType ?? "default"}
-        autoCapitalize={autoCapitalize ?? "none"}
-        className="flex-1 px-3 py-3 text-sm"
-        style={{ color: colors.textPrimary }}
-      />
-    </View>
-  );
-}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function NewSupplierModal({
@@ -198,13 +114,13 @@ export default function NewSupplierModal({
         contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}
       >
         {/* Header */}
-        <View className="flex-row items-center justify-between py-3 mb-2">
-          <Text className="text-xl font-semibold text-textDark">
+        <View className="flex-row items-center justify-between py-3 mb-4">
+          <Text className="text-[20px] font-black text-textPrimary tracking-tight">
             Add Supplier
           </Text>
-          <Pressable onPress={onClose} disabled={loading}>
-            <X size={22} color={colors.textPrimary} strokeWidth={2} />
-          </Pressable>
+          <TouchableOpacity onPress={onClose} disabled={loading} hitSlop={10} className="w-8 h-8 items-end justify-center">
+            <X size={22} className="text-textSecondary" strokeWidth={2.5} />
+          </TouchableOpacity>
         </View>
         <Formik
           initialValues={initialValues}
@@ -236,26 +152,24 @@ export default function NewSupplierModal({
             errors,
             touched,
           }) => (
-            <View style={{ gap: 14 }}>
+            <View className="gap-5">
               {/* ── Supplier Name ── */}
               <View>
-                <FieldLabel required>Supplier Name</FieldLabel>
-                <InputBase hasError={!!(touched.name && errors.name)}>
+                <Text className="text-[11px] font-bold text-textSecondary uppercase tracking-widest mb-2">
+                  Supplier Name *
+                </Text>
+                <View className={`flex-row items-center border rounded-[16px] overflow-hidden bg-surface ${touched.name && errors.name ? 'border-danger' : 'border-border'}`}>
                   <TextInput
                     placeholder="Metro Distributors"
-                    placeholderTextColor={"#AEAEB2"}
+                    placeholderTextColor="#AEAEB2"
                     value={values.name}
                     onChangeText={handleChange("name")}
                     onBlur={handleBlur("name")}
-                    className="flex-1 px-4 py-3 text-base"
-                    style={{ color: colors.textPrimary }}
+                    className="flex-1 px-4 py-4 text-[15px] text-textPrimary"
                   />
-                </InputBase>
+                </View>
                 {touched.name && errors.name && (
-                  <Text
-                    className="text-xs mt-1"
-                    style={{ color: colors.danger }}
-                  >
+                  <Text className="text-xs mt-1 text-danger">
                     {errors.name}
                   </Text>
                 )}
@@ -263,45 +177,26 @@ export default function NewSupplierModal({
 
               {/* ── Phone ── */}
               <View>
-                <FieldLabel>Phone</FieldLabel>
-                <View
-                  className="flex-row items-center border rounded-xl overflow-hidden"
-                  style={{
-                    borderColor:
-                      touched.phone && errors.phone
-                        ? colors.danger
-                        : colors.border,
-                    backgroundColor: "#FFFFFF",
-                  }}
-                >
-                  <View
-                    className="px-3 py-3 border-r justify-center"
-                    style={{ borderRightColor: colors.border }}
-                  >
-                    <Text
-                      className="text-[15px] font-semibold"
-                      style={{ color: colors.textPrimary }}
-                    >
-                      +91
-                    </Text>
-                  </View>
+                <Text className="text-[11px] font-bold text-textSecondary uppercase tracking-widest mb-2">
+                  Phone
+                </Text>
+                <View className={`flex-row items-center border rounded-[16px] overflow-hidden bg-surface ${touched.phone && errors.phone ? 'border-danger' : 'border-border'}`}>
+                  <Text className="pl-4 pr-2 text-[15px] text-textSecondary font-medium">
+                    +91
+                  </Text>
                   <TextInput
                     placeholder="98765 43210"
-                    placeholderTextColor={"#AEAEB2"}
+                    placeholderTextColor="#AEAEB2"
                     value={values.phone}
                     onChangeText={handleChange("phone")}
                     onBlur={handleBlur("phone")}
                     keyboardType="phone-pad"
                     maxLength={10}
-                    className="flex-1 px-3 py-3 text-base"
-                    style={{ color: colors.textPrimary }}
+                    className="flex-1 pr-4 py-4 text-[15px] text-textPrimary"
                   />
                 </View>
                 {touched.phone && errors.phone && (
-                  <Text
-                    className="text-xs mt-1"
-                    style={{ color: colors.danger }}
-                  >
+                  <Text className="text-xs mt-1 text-danger">
                     {errors.phone}
                   </Text>
                 )}
@@ -309,147 +204,121 @@ export default function NewSupplierModal({
 
               {/* ── Basket Mark ── */}
               <View>
-                <FieldLabel>Basket Mark</FieldLabel>
-                <InputBase>
+                <Text className="text-[11px] font-bold text-textSecondary uppercase tracking-widest mb-2">
+                  Basket Mark
+                </Text>
+                <View className="flex-row items-center border rounded-[16px] overflow-hidden bg-surface border-border">
                   <TextInput
                     placeholder="e.g. M-42"
-                    placeholderTextColor={"#AEAEB2"}
+                    placeholderTextColor="#AEAEB2"
                     value={values.basket_mark}
                     onChangeText={handleChange("basket_mark")}
                     onBlur={handleBlur("basket_mark")}
-                    className="flex-1 px-4 py-3 text-base"
-                    style={{ color: colors.textPrimary }}
+                    className="flex-1 px-4 py-4 text-[15px] text-textPrimary"
                   />
-                </InputBase>
-                <Text
-                  className="text-xs mt-1.5"
-                  style={{ color: colors.textSecondary }}
-                >
-                  Optional: route code or delivery area assigned by this
-                  supplier
-                </Text>
+                </View>
               </View>
 
               {/* ── Bank Details row ── */}
               <TouchableOpacity
                 onPress={() => setBankExpanded((v) => !v)}
                 activeOpacity={0.7}
-                className="flex-row items-center py-3"
+                className="flex-row items-center p-4 rounded-[20px] bg-[#FFFBEB] border border-[#FEF3C7]"
               >
-                {/* green-tinted square icon */}
-                <View
-                  className="w-9 h-9 rounded-lg items-center justify-center mr-3"
-                  style={{ backgroundColor: colors.paid.bg ?? "#DCFCE7" }}
-                >
-                  <Landmark size={18} color={colors.primary} strokeWidth={2} />
+                {/* orange-tinted circular icon */}
+                <View className="w-10 h-10 rounded-full items-center justify-center mr-3 bg-[#FFEDD5]">
+                  <Landmark size={18} color="#EA580C" strokeWidth={2} />
                 </View>
-                <Text
-                  className="flex-1 text-[15px] font-semibold"
-                  style={{ color: colors.textSecondary }}
-                >
-                  Bank Details
-                </Text>
-                <Text className="text-sm mr-0.5" style={{ color: "#AEAEB2" }}>
-                  Optional
-                </Text>
-                <ChevronRight
-                  size={16}
-                  color={"#AEAEB2"}
-                  strokeWidth={2.5}
-                  style={{
-                    transform: [{ rotate: bankExpanded ? "90deg" : "0deg" }],
-                  }}
-                />
+                
+                <View className="flex-1">
+                  <Text className="text-[15px] font-bold text-[#92400E]">
+                    Add Bank Details
+                  </Text>
+                  <Text className="text-[13px] font-medium text-[#D97706] opacity-80 mt-0.5">
+                    Receive payments directly
+                  </Text>
+                </View>
+
+                {bankExpanded ? (
+                  <ChevronRight
+                    size={20}
+                    color="#D97706"
+                    strokeWidth={2.5}
+                    style={{ transform: [{ rotate: "-90deg" }] }}
+                  />
+                ) : (
+                  <View className="flex-row items-center">
+                    <Text className="text-[13px] font-semibold text-[#94A3B8] mr-1">
+                      Optional
+                    </Text>
+                    <ChevronRight size={18} color="#F59E0B" strokeWidth={2.5} />
+                  </View>
+                )}
               </TouchableOpacity>
 
               {/* ── Bank fields (expandable) ── */}
               {bankExpanded && (
-                <View
-                  className="gap-3 pt-1 pb-2 px-3 rounded-xl"
-                  style={{ backgroundColor: colors.background }}
-                >
+                <View className="gap-4">
                   {/* Bank Name */}
                   <View>
-                    <FieldLabel>Bank Name</FieldLabel>
-                    <BankField
-                      icon={
-                        <Landmark
-                          size={16}
-                          color={colors.primary}
-                          strokeWidth={2}
-                        />
-                      }
-                      placeholder="e.g. HDFC Bank, SBI"
-                      value={values.bank_name ?? ""}
-                      onChangeText={handleChange("bank_name")}
-                      onBlur={handleBlur("bank_name")}
-                    />
+                    <Text className="text-[12px] font-bold text-textPrimary mb-2">Bank Name</Text>
+                    <View className="flex-row items-center border rounded-[16px] overflow-hidden bg-surface border-border">
+                      <TextInput
+                        placeholder="e.g. HDFC Bank"
+                        placeholderTextColor="#AEAEB2"
+                        value={values.bank_name ?? ""}
+                        onChangeText={handleChange("bank_name")}
+                        onBlur={handleBlur("bank_name")}
+                        className="flex-1 px-4 py-4 text-[15px] text-textPrimary"
+                      />
+                    </View>
                   </View>
                   {/* Account Number */}
                   <View>
-                    <FieldLabel>Account Number</FieldLabel>
-                    <BankField
-                      icon={
-                        <CreditCard
-                          size={16}
-                          color={colors.primary}
-                          strokeWidth={2}
-                        />
-                      }
-                      placeholder="Enter account number"
-                      value={values.account_number ?? ""}
-                      onChangeText={handleChange("account_number")}
-                      onBlur={handleBlur("account_number")}
-                      keyboardType="numeric"
-                    />
+                    <Text className="text-[12px] font-bold text-textPrimary mb-2">Account Number</Text>
+                    <View className="flex-row items-center border rounded-[16px] overflow-hidden bg-surface border-border">
+                      <TextInput
+                        placeholder="0000 0000 0000"
+                        placeholderTextColor="#AEAEB2"
+                        value={values.account_number ?? ""}
+                        onChangeText={handleChange("account_number")}
+                        onBlur={handleBlur("account_number")}
+                        keyboardType="numeric"
+                        className="flex-1 px-4 py-4 text-[15px] text-textPrimary"
+                      />
+                    </View>
                   </View>
                   {/* IFSC */}
                   <View>
-                    <FieldLabel>IFSC Code</FieldLabel>
-                    <BankField
-                      icon={
-                        <Hash
-                          size={16}
-                          color={colors.primary}
-                          strokeWidth={2}
-                        />
-                      }
-                      placeholder="e.g. HDFC0001234"
-                      value={values.ifsc_code ?? ""}
-                      onChangeText={handleChange("ifsc_code")}
-                      onBlur={handleBlur("ifsc_code")}
-                      autoCapitalize="characters"
-                    />
-                  </View>
-                  {/* UPI */}
-                  <View>
-                    <FieldLabel>UPI ID</FieldLabel>
-                    <BankField
-                      icon={
-                        <Hash
-                          size={16}
-                          color={colors.primary}
-                          strokeWidth={2}
-                        />
-                      }
-                      placeholder="e.g. supplier@upi"
-                      value={values.upi ?? ""}
-                      onChangeText={handleChange("upi")}
-                      onBlur={handleBlur("upi")}
-                    />
+                    <Text className="text-[12px] font-bold text-textPrimary mb-2">IFSC Code</Text>
+                    <View className="flex-row items-center border rounded-[16px] overflow-hidden bg-surface border-border">
+                      <TextInput
+                        placeholder="HDFC0001234"
+                        placeholderTextColor="#AEAEB2"
+                        value={values.ifsc_code ?? ""}
+                        onChangeText={handleChange("ifsc_code")}
+                        onBlur={handleBlur("ifsc_code")}
+                        autoCapitalize="characters"
+                        className="flex-1 px-4 py-4 text-[15px] text-textPrimary"
+                      />
+                    </View>
                   </View>
                 </View>
               )}
 
               {/* ── CTA ── */}
-              <View className="pt-4">
-                <Button
-                  title="Add Supplier"
-                  onPress={handleSubmit}
-                  loading={loading}
-                  icon={<UserPlus size={18} color="#FFFFFF" strokeWidth={2} />}
-                  iconPosition="left"
-                />
+              <View className="mt-2">
+                <TouchableOpacity
+                  onPress={() => handleSubmit()}
+                  disabled={loading}
+                  activeOpacity={0.85}
+                  className="flex-row items-center justify-center bg-success rounded-[20px] py-4 gap-2"
+                >
+                  <UserPlus size={20} className="text-surface" strokeWidth={2.5} />
+                  <Text className="text-[18px] font-black text-surface tracking-tight">
+                    Add Supplier
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
           )}

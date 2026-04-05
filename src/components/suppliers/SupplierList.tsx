@@ -1,88 +1,105 @@
-import { Truck } from "lucide-react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  Text,
+  View,
+} from "react-native";
 import { useCallback } from "react";
-import { FlatList, RefreshControl } from "react-native";
+import { Truck } from "lucide-react-native";
+
+import EmptyState from "../feedback/EmptyState";
+import { SupplierCard } from "./SupplierCard";
 import { Supplier } from "../../types/supplier";
 import { colors } from "../../utils/theme";
-import EmptyState from "../feedback/EmptyState";
-import ErrorState from "../feedback/ErrorState";
-import Loader from "../feedback/Loader";
-import SupplierCard from "./SupplierCard";
 
-// ── Supplier-specific empty state icon: truck (amber, no badge) ───────────────
+// ── Supplier-specific empty state icon ───────────────
 const SupplierEmptyIcon = (
   <Truck size={56} color={colors.warning} strokeWidth={1.5} />
 );
 
-export default function SupplierList({
+type Props = {
+  suppliers: Supplier[];
+  isLoading: boolean;
+  error: Error | null;
+  onRefresh: () => void;
+  refreshing: boolean;
+  onEndReached?: () => void;
+  isFetchingNextPage?: boolean;
+  onPressSupplier: (id: string) => void;
+  onAddSupplier: () => void;
+};
+
+export function SupplierList({
   suppliers,
-  onPressSupplier,
   isLoading,
   error,
   onRefresh,
   refreshing,
   onEndReached,
   isFetchingNextPage,
+  onPressSupplier,
   onAddSupplier,
-}: {
-  suppliers: Supplier[];
-  onPressSupplier: (supplierId: string) => void;
-  isLoading: boolean;
-  error?: Error | null;
-  onRefresh: () => void;
-  refreshing: boolean;
-  onEndReached: () => void;
-  isFetchingNextPage: boolean;
-  onAddSupplier?: () => void;
-}) {
-  const SUPPLIER_ITEM_H = 84;
+}: Props) {
+  if (isLoading && suppliers.length === 0) {
+    return (
+      <View className="flex-1 items-center justify-center p-5">
+        <ActivityIndicator size="large" color={colors.supplierPrimary} />
+      </View>
+    );
+  }
 
-  const renderItem = useCallback(
-    ({ item }: { item: Supplier }) => (
-      <SupplierCard supplier={item} onPress={() => onPressSupplier(item.id)} />
-    ),
-    [onPressSupplier],
-  );
-
-  if (isLoading) return <Loader message="Fetching suppliers" />;
-  if (error) return <ErrorState message="Failed to fetch suppliers" />;
+  if (error) {
+    return (
+      <View className="flex-1 items-center justify-center p-5">
+        <Text className="text-[15px] text-danger text-center">
+          Failed to load suppliers.
+        </Text>
+      </View>
+    );
+  }
 
   return (
-    <FlatList
+    <FlatList<Supplier>
       data={suppliers}
-      keyExtractor={(item) => item.id}
-      style={{ flex: 1 }}
-      renderItem={renderItem}
+      keyExtractor={(s) => s.id}
+      contentContainerStyle={{
+        flexGrow: 1,
+        paddingBottom: 100, // accommodate FAB
+      }}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-      ListEmptyComponent={
-        <EmptyState
-          title="No suppliers added"
-          description="Track what you owe your distributors and suppliers"
-          icon={SupplierEmptyIcon}
-          iconBgColor={colors.warningBg}
-          iconSize={112}
-          cta={onAddSupplier ? "Add Supplier" : undefined}
-          onCta={onAddSupplier}
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.supplierPrimary}
+          colors={[colors.supplierPrimary]}
         />
-      }
-      ListFooterComponent={
-        isFetchingNextPage ? (
-          <Loader message="Loading more suppliers..." />
-        ) : null
       }
       onEndReached={onEndReached}
       onEndReachedThreshold={0.3}
-      removeClippedSubviews={true}
-      initialNumToRender={10}
-      maxToRenderPerBatch={10}
-      windowSize={5}
-      getItemLayout={(_, i) => ({
-        length: SUPPLIER_ITEM_H,
-        offset: SUPPLIER_ITEM_H * i,
-        index: i,
-      })}
-      contentContainerStyle={{ paddingBottom: 100 }}
+      ListFooterComponent={
+        isFetchingNextPage ? (
+          <View className="py-5 items-center">
+            <ActivityIndicator size="small" color={colors.supplierPrimary} />
+          </View>
+        ) : null
+      }
+      ListEmptyComponent={
+        <EmptyState
+          title="No suppliers found"
+          description="You have no payable balances."
+          icon={SupplierEmptyIcon}
+          iconBgColor={colors.warningBg}
+          cta="Add Supplier"
+          onCta={onAddSupplier}
+        />
+      }
+      renderItem={({ item }) => (
+        <SupplierCard
+          supplier={item}
+          onPress={() => onPressSupplier(item.id)}
+        />
+      )}
     />
   );
 }
