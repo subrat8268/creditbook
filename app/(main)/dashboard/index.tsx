@@ -8,6 +8,8 @@ import {
   Alert,
   Linking,
   ActivityIndicator,
+  Animated,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -19,6 +21,7 @@ import {
   TrendingDown,
   Minus,
   Wallet,
+  Truck,
 } from "lucide-react-native";
 import {
   BottomSheetModal,
@@ -31,12 +34,19 @@ import { useAuthStore } from "@/src/store/authStore";
 import { useRouter } from "expo-router";
 import Loader from "@/src/components/feedback/Loader";
 import DashboardHeader from "@/src/components/dashboard/DashboardHeader";
+import DashboardHeroCard from "@/src/components/dashboard/DashboardHeroCard";
+import DashboardStatCards from "@/src/components/dashboard/DashboardStatCards";
+import DashboardSupplierFollowups from "@/src/components/dashboard/DashboardSupplierFollowups";
 import {
   NET_POSITION_RANGE_OPTIONS,
   usePreferencesStore,
 } from "@/src/store/preferencesStore";
+import { Supplier, SupplierDetail } from "@/src/types/supplier";
+import { useSuppliers } from "@/src/hooks/useSuppliers";
 import RecordCustomerPaymentModal from "@/src/components/customers/RecordCustomerPaymentModal";
+import RecordPaymentMadeModal from "@/src/components/suppliers/RecordPaymentMadeModal";
 import { fetchCustomerDetail } from "@/src/api/customers";
+import { fetchSupplierDetail, recordPaymentMade } from "@/src/api/suppliers";
 
 const currencyFormatter = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 0,
@@ -95,11 +105,92 @@ const getStatusStyle = (status: string) =>
     label: status?.toUpperCase?.() ?? "STATUS",
   };
 
+const usePulseShimmer = () => {
+  const animated = useRef(new Animated.Value(0.3)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(animated, {
+          toValue: 0.85,
+          duration: 650,
+          useNativeDriver: true,
+        }),
+        Animated.timing(animated, {
+          toValue: 0.3,
+          duration: 650,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [animated]);
+  return animated;
+};
+
+const HeroShimmerOverlay = ({ visible }: { visible: boolean }) => {
+  const opacity = usePulseShimmer();
+  if (!visible) return null;
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        borderRadius: 28,
+        overflow: "hidden",
+        backgroundColor: "rgba(15,23,42,0.4)",
+      }}
+    >
+      <Animated.View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          opacity,
+          backgroundColor: "rgba(255,255,255,0.12)",
+        }}
+      />
+      <View style={{ padding: 24, gap: 12 }}>
+        <View style={{ height: 12, borderRadius: 6, backgroundColor: "rgba(255,255,255,0.25)" }} />
+        <View style={{ height: 34, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.2)", width: "70%" }} />
+        <View style={{ height: 14, borderRadius: 7, backgroundColor: "rgba(255,255,255,0.18)", width: 120 }} />
+        <View style={{ flexDirection: "row", gap: 12, marginTop: 14 }}>
+          {[0, 1].map((item) => (
+            <View
+              key={`shimmer-card-${item}`}
+              style={{
+                flex: 1,
+                height: 72,
+                borderRadius: 18,
+                backgroundColor: "rgba(255,255,255,0.15)",
+              }}
+            />
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+};
+
 type OverdueCustomer = {
   id: string;
   name: string;
   phone?: string;
   balance: number;
+  daysSince: number;
+};
+
+type OverdueSupplier = {
+  id: string;
+  name: string;
+  phone?: string;
+  amount: number;
   daysSince: number;
 };
 
@@ -111,6 +202,8 @@ type PaymentContext = {
   customerId: string;
   customerName: string;
 };
+
+type DashboardMode = "seller" | "distributor" | "both";
 
 const normalizePhoneForWhatsApp = (phone?: string) => {
   if (!phone) return null;
@@ -140,6 +233,9 @@ const sendWhatsAppReminder = (customer: OverdueCustomer) => {
   });
 };
 
+const formatCountLabel = (count: number, noun: string) =>
+  `${count} ${noun}${count === 1 ? "" : "s"}`;
+
 export default function DashboardScreen() {
   const router = useRouter();
   const { profile } = useAuthStore();
@@ -147,8 +243,12 @@ export default function DashboardScreen() {
     netPosition,
     toReceive,
     toGive,
+    weekDelta,
     weekDeltaPct,
+    activeBuyers,
+    activeSuppliers,
     overdueCustomers,
+    overdueSuppliers,
     overdueCustomersAll,
     overdueTotalCount,
     recentActivity,
@@ -167,6 +267,9 @@ export default function DashboardScreen() {
         ?.label || "Last 30 days"
     );
   }, [netPositionRange]);
+  const dashboardMode = (profile?.dashboard_mode ?? "both") as DashboardMode;
+  const isSeller = dashboardMode === "seller";
+  const isDistributor = dashboardMode === "distributor";
 
   const heroNet = netReport?.netBalance ?? netPosition;
   const heroToReceive = netReport?.totalReceivables ?? toReceive;
@@ -174,11 +277,36 @@ export default function DashboardScreen() {
 
   const [quickActionMode, setQuickActionMode] = useState<QuickActionMode | null>(null);
   const actionSheetRef = useRef<BottomSheetModal>(null);
+  const supplierPickerRef = useRef<BottomSheetModal>(null);
   const paymentModalRef = useRef<BottomSheetModal>(null);
   const [paymentContext, setPaymentContext] = useState<PaymentContext | null>(null);
   const [isFetchingCustomer, setIsFetchingCustomer] = useState(false);
+  const [supplierPaymentContext, setSupplierPaymentContext] = useState<
+    { id: string; name: string; balance: number } | null
+  >(null);
+  const [isPayingSupplier, setIsPayingSupplier] = useState(false);
+  const [supplierSearch, setSupplierSearch] = useState("");
+  const { suppliers: supplierList, isFetching: isSuppliersFetching } = useSuppliers(
+    profile?.id,
+    supplierSearch,
+  );
+  const supplierSummaryRef = useRef<BottomSheetModal>(null);
+  const [supplierSummary, setSupplierSummary] = useState<
+    { supplier: Supplier; detail?: SupplierDetail | null; loading: boolean } | null
+  >(null);
+  const outstandingBalance = supplierSummary
+    ? supplierSummary.detail?.totalOwed ?? supplierSummary.supplier.balanceOwed ?? 0
+    : 0;
+  const lastDelivery = supplierSummary?.detail?.deliveries?.[0];
+  const lastPayment = supplierSummary?.detail?.timeline?.find((t) => t.type === "payment");
 
   const quickActionSnapPoints = useMemo(() => ["45%", "65%"], []);
+  const sheetTitle =
+    quickActionMode === "collect" ? "Collect payment" : "Send reminder";
+  const sheetSubtitle =
+    quickActionMode === "collect"
+      ? "Select a customer with outstanding balance to record a payment."
+      : "Pick a customer to nudge on WhatsApp.";
   const renderBackdrop = useCallback(
     (props: any) => (
       <BottomSheetBackdrop
@@ -239,19 +367,321 @@ export default function DashboardScreen() {
     }
   };
 
-  const handleSelectActionCustomer = (customer: OverdueCustomer) => {
+  const handleSelectActionItem = (item: OverdueCustomer | OverdueSupplier) => {
     if (!quickActionMode) return;
     if (quickActionMode === "remind") {
-      sendWhatsAppReminder(customer);
+      sendWhatsAppReminder(item as OverdueCustomer);
       actionSheetRef.current?.dismiss();
       return;
     }
-    handleCollectFlow(customer);
+    if (quickActionMode === "collect") {
+      handleCollectFlow(item as OverdueCustomer);
+      return;
+    }
+    // pay supplier
+    setSupplierPaymentContext({
+      id: (item as OverdueSupplier).id,
+      name: item.name,
+      balance: (item as OverdueSupplier).amount,
+    });
+    actionSheetRef.current?.dismiss();
+  };
+
+  const handleSubmitSupplierPayment = async ({
+    amount,
+    payment_mode,
+    notes,
+  }: {
+    amount: number;
+    payment_mode: string;
+    notes?: string;
+  }) => {
+    if (!supplierPaymentContext || !profile?.id) return;
+    try {
+      setIsPayingSupplier(true);
+      await recordPaymentMade(
+        profile.id,
+        supplierPaymentContext.id,
+        amount,
+        payment_mode,
+        notes,
+      );
+      refreshDashboard();
+      setSupplierPaymentContext(null);
+    } catch (error: any) {
+      Alert.alert(
+        "Payment failed",
+        error?.message || "Unable to record supplier payment.",
+      );
+    } finally {
+      setIsPayingSupplier(false);
+    }
   };
 
   const handleReminder = (customer: OverdueCustomer) => {
     sendWhatsAppReminder(customer);
   };
+
+const renderHeroSection = () => {
+    const buyersInfo = formatCountLabel(activeBuyers, "active buyer");
+    const suppliersInfo = formatCountLabel(activeSuppliers, "active supplier");
+    const overdueSupplierCount = overdueSuppliers.length;
+
+    if (isSeller) {
+      return (
+        <>
+          <DashboardHeroCard
+            variant="seller"
+            label="CUSTOMERS OWE YOU"
+            amount={heroToReceive}
+            subInfo={buyersInfo}
+            weekDelta={weekDelta}
+            onPrimaryAction={() => router.push("/(main)/reports" as never)}
+            onSecondaryAction={() => openQuickActionSheet("remind")}
+          />
+          <DashboardStatCards
+            mode="seller"
+            primaryCount={activeBuyers}
+            overdueCount={overdueTotalCount}
+          />
+        </>
+      );
+    }
+
+    if (isDistributor) {
+      return (
+        <>
+          <DashboardHeroCard
+            variant="distributor"
+            label="SUPPLIER PAYABLES"
+            amount={heroToGive}
+            subInfo={suppliersInfo}
+            weekDelta={weekDelta}
+            onPrimaryAction={() => router.push("/(main)/suppliers" as never)}
+            onSecondaryAction={() => router.push("/(main)/suppliers" as never)}
+          />
+          <DashboardStatCards
+            mode="distributor"
+            primaryCount={activeSuppliers}
+            overdueCount={overdueSupplierCount}
+          />
+        </>
+      );
+    }
+
+    return (
+      <>
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => router.push("/(main)/net-position" as never)}
+          className="p-6 rounded-[28px] mb-6"
+          style={{ backgroundColor: gradients.netPosition, position: "relative", overflow: "hidden" }}
+        >
+          <HeroShimmerOverlay visible={isNetReportFetching} />
+          <View style={{ position: "absolute", top: 20, right: 20 }}>
+            <View
+              className="w-12 h-12 rounded-2xl items-center justify-center"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.18)",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.3)",
+              }}
+            >
+              <Wallet size={22} color={colors.surface} strokeWidth={2.2} />
+            </View>
+          </View>
+          <View className="flex-row items-start justify-between">
+            <View>
+              <Text className="text-[12px] font-semibold text-surface/70 tracking-[2px] uppercase">
+                Net Position
+              </Text>
+              <Text className="text-[40px] font-black text-surface mt-1">
+                {formatCurrency(heroNet)}
+              </Text>
+            </View>
+            <View
+              className="flex-row items-center px-3 py-1.5 rounded-full"
+              style={{
+                backgroundColor:
+                  weekDeltaPct > 0
+                    ? "rgba(34,197,94,0.18)"
+                    : weekDeltaPct < 0
+                      ? "rgba(239,68,68,0.22)"
+                      : "rgba(255,255,255,0.15)",
+              }}
+            >
+              {weekDeltaPct === 0 ? (
+                <Minus size={16} color={colors.surface} strokeWidth={2.5} />
+              ) : weekDeltaPct > 0 ? (
+                <TrendingUp size={16} color={colors.surface} strokeWidth={2.5} />
+              ) : (
+                <TrendingDown size={16} color={colors.surface} strokeWidth={2.5} />
+              )}
+              <Text className="text-[12px] font-semibold text-surface ml-1.5">
+                {weekDeltaPct === 0
+                  ? "No change vs last week"
+                  : `${Math.abs(weekDeltaPct)}% ${weekDeltaPct > 0 ? "up" : "down"} from last week`}
+              </Text>
+            </View>
+          </View>
+
+          <View className="flex-row gap-2 mt-3 items-center flex-wrap">
+            {NET_POSITION_RANGE_OPTIONS.map((option) => {
+              const isActive = option.value === netPositionRange;
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => setNetPositionRange(option.value)}
+                  activeOpacity={0.85}
+                  className="px-3 py-1.5 rounded-full"
+                  style={{
+                    backgroundColor: isActive
+                      ? "rgba(255,255,255,0.18)"
+                      : "rgba(255,255,255,0.08)",
+                    borderWidth: 1,
+                    borderColor: isActive
+                      ? colors.surface
+                      : "rgba(255,255,255,0.2)",
+                  }}
+                >
+                  <Text
+                    className="text-[12px] font-semibold"
+                    style={{ color: colors.surface, opacity: isActive ? 1 : 0.7 }}
+                  >
+                    {option.label.replace("Last ", "")}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+            {isNetReportFetching && (
+              <ActivityIndicator size="small" color={colors.surface} />
+            )}
+          </View>
+
+          <Text className="text-[12px] text-surface/70 mt-3">
+            {netRangeLabel}
+          </Text>
+
+          <Text className="text-[12px] text-surface/70 mt-1">
+            Includes receivables and supplier payables for {netRangeLabel.toLowerCase()}.
+          </Text>
+
+          <View className="flex-row mt-6">
+            {[
+              {
+                label: "To Receive",
+                value: heroToReceive,
+                bg: colors.successBg,
+                text: colors.primary,
+                subtitle: "Customers owe you",
+              },
+              {
+                label: "To Give",
+                value: heroToGive,
+                bg: colors.dangerBg,
+                text: colors.danger,
+                subtitle: "You owe suppliers",
+              },
+            ].map((stat, index) => (
+              <View
+                key={stat.label}
+                className="flex-1 p-4 rounded-2xl"
+                style={{
+                  backgroundColor: stat.bg,
+                  marginRight: index === 0 ? 12 : 0,
+                }}
+              >
+                <Text className="text-[12px] font-semibold text-textSecondary uppercase tracking-tight">
+                  {stat.label}
+                </Text>
+                <Text className="text-[22px] font-extrabold mt-1" style={{ color: stat.text }}>
+                  {formatCurrency(stat.value)}
+                </Text>
+                <Text className="text-[12px] text-textSecondary mt-1">
+                  {stat.subtitle}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </TouchableOpacity>
+        <DashboardStatCards
+          mode="both"
+          primaryCount={activeBuyers}
+          overdueCount={overdueTotalCount}
+          activeSuppliers={activeSuppliers}
+          overdueSuppliers={overdueSupplierCount}
+        />
+      </>
+    );
+  };
+  const openSupplierPicker = () => {
+    if (!overdueSuppliers.length && !supplierList.length) {
+      Alert.alert("All settled", "No supplier payments pending right now.");
+      return;
+    }
+    supplierPickerRef.current?.present();
+  };
+
+  const handleSupplierSelected = async (supplier: Supplier) => {
+    supplierPickerRef.current?.dismiss();
+    setSupplierSummary({ supplier, detail: null, loading: true });
+    supplierSummaryRef.current?.present();
+    try {
+      const detail = await fetchSupplierDetail(supplier.id);
+      setSupplierSummary({ supplier, detail, loading: false });
+    } catch (error: any) {
+      Alert.alert("Unable to load supplier", error?.message || "Please try again.");
+      setSupplierSummary({ supplier, detail: null, loading: false });
+    }
+  };
+
+  const quickActions = dashboardMode === "distributor"
+    ? [
+        {
+          label: "Record Delivery",
+          icon: Truck,
+          iconBg: colors.primaryBlueBg,
+          iconColor: colors.primaryBlue,
+          onPress: () => router.push("/(main)/suppliers" as never),
+        },
+        {
+          label: "Pay Supplier",
+          icon: IndianRupee,
+          iconBg: colors.successBg,
+          iconColor: colors.primary,
+          onPress: openSupplierPicker,
+        },
+        {
+          label: "Reminder",
+          icon: BellRing,
+          iconBg: colors.warningBg,
+          iconColor: colors.warning,
+          onPress: () => openQuickActionSheet("remind"),
+        },
+      ]
+    : [
+        {
+          label: "New Bill",
+          icon: NotebookPen,
+          iconBg: colors.primaryBlueBg,
+          iconColor: colors.primaryBlue,
+          onPress: () => router.push("/(main)/orders/create" as never),
+        },
+        {
+          label: "Collect",
+          icon: IndianRupee,
+          iconBg: colors.successBg,
+          iconColor: colors.primary,
+          onPress: () => openQuickActionSheet("collect"),
+        },
+        {
+          label: "Remind",
+          icon: BellRing,
+          iconBg: colors.warningBg,
+          iconColor: colors.warning,
+          onPress: () => openQuickActionSheet("remind"),
+        },
+      ];
 
   if (isLoading || !profile) {
     return (
@@ -276,163 +706,10 @@ export default function DashboardScreen() {
         />
 
         <View className="px-5">
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={() => router.push("/(main)/net-position" as never)}
-            className="p-6 rounded-[28px] mb-6"
-            style={{ backgroundColor: gradients.netPosition }}
-          >
-            <View style={{ position: "absolute", top: 20, right: 20 }}>
-              <View
-                className="w-12 h-12 rounded-2xl items-center justify-center"
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.18)",
-                  borderWidth: 1,
-                  borderColor: "rgba(255,255,255,0.3)",
-                }}
-              >
-                <Wallet size={22} color={colors.surface} strokeWidth={2.2} />
-              </View>
-            </View>
-            <View className="flex-row items-start justify-between">
-              <View>
-                <Text className="text-[12px] font-semibold text-surface/70 tracking-[2px] uppercase">
-                  Net Position
-                </Text>
-                <Text className="text-[40px] font-black text-surface mt-1">
-                  {formatCurrency(heroNet)}
-                </Text>
-              </View>
-              <View
-                className="flex-row items-center px-3 py-1.5 rounded-full"
-                style={{
-                  backgroundColor:
-                    weekDeltaPct > 0
-                      ? "rgba(34,197,94,0.18)"
-                      : weekDeltaPct < 0
-                        ? "rgba(239,68,68,0.22)"
-                        : "rgba(255,255,255,0.15)",
-                }}
-              >
-                {weekDeltaPct === 0 ? (
-                  <Minus size={16} color={colors.surface} strokeWidth={2.5} />
-                ) : weekDeltaPct > 0 ? (
-                  <TrendingUp size={16} color={colors.surface} strokeWidth={2.5} />
-                ) : (
-                  <TrendingDown size={16} color={colors.surface} strokeWidth={2.5} />
-                )}
-                <Text className="text-[12px] font-semibold text-surface ml-1.5">
-                  {weekDeltaPct === 0
-                    ? "No change vs last week"
-                    : `${Math.abs(weekDeltaPct)}% ${weekDeltaPct > 0 ? "up" : "down"} from last week`}
-                </Text>
-              </View>
-            </View>
-
-            <View className="flex-row gap-2 mt-3 items-center flex-wrap">
-              {NET_POSITION_RANGE_OPTIONS.map((option) => {
-                const isActive = option.value === netPositionRange;
-                return (
-                  <TouchableOpacity
-                    key={option.value}
-                    onPress={() => setNetPositionRange(option.value)}
-                    activeOpacity={0.85}
-                    className="px-3 py-1.5 rounded-full"
-                    style={{
-                      backgroundColor: isActive
-                        ? "rgba(255,255,255,0.18)"
-                        : "rgba(255,255,255,0.08)",
-                      borderWidth: 1,
-                      borderColor: isActive
-                        ? colors.surface
-                        : "rgba(255,255,255,0.2)",
-                    }}
-                  >
-                    <Text
-                      className="text-[12px] font-semibold"
-                      style={{ color: colors.surface, opacity: isActive ? 1 : 0.7 }}
-                    >
-                      {option.label.replace("Last ", "")}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-              {isNetReportFetching && (
-                <ActivityIndicator size="small" color={colors.surface} />
-              )}
-            </View>
-
-            <Text className="text-[12px] text-surface/70 mt-3">
-              {netRangeLabel}
-            </Text>
-
-            <Text className="text-[12px] text-surface/70 mt-1">
-              Includes receivables and supplier payables for {netRangeLabel.toLowerCase()}.
-            </Text>
-
-            <View className="flex-row mt-6">
-              {[
-                {
-                  label: "To Receive",
-                  value: heroToReceive,
-                  bg: colors.successBg,
-                  text: colors.primary,
-                  subtitle: "Customers owe you",
-                },
-                {
-                  label: "To Give",
-                  value: heroToGive,
-                  bg: colors.dangerBg,
-                  text: colors.danger,
-                  subtitle: "You owe suppliers",
-                },
-              ].map((stat, index) => (
-                <View
-                  key={stat.label}
-                  className="flex-1 p-4 rounded-2xl"
-                  style={{
-                    backgroundColor: stat.bg,
-                    marginRight: index === 0 ? 12 : 0,
-                  }}
-                >
-                  <Text className="text-[12px] font-semibold text-textSecondary uppercase tracking-tight">
-                    {stat.label}
-                  </Text>
-                  <Text className="text-[22px] font-extrabold mt-1" style={{ color: stat.text }}>
-                    {formatCurrency(stat.value)}
-                  </Text>
-                  <Text className="text-[12px] text-textSecondary mt-1">
-                    {stat.subtitle}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          </TouchableOpacity>
+          {renderHeroSection()}
 
           <View className="flex-row mt-6 mb-8">
-            {[
-              {
-                label: "New Bill",
-                icon: NotebookPen,
-                iconBg: colors.primaryBlueBg,
-                iconColor: colors.primaryBlue,
-                onPress: () => router.push("/(main)/orders/create" as never),
-              },
-              {
-                label: "Collect",
-                icon: IndianRupee,
-                iconBg: colors.successBg,
-                iconColor: colors.primary,
-                onPress: () => openQuickActionSheet("collect"),
-              },
-              {
-                label: "Remind",
-                icon: BellRing,
-                iconBg: colors.warningBg,
-                iconColor: colors.warning,
-                onPress: () => openQuickActionSheet("remind"),
-              },
-            ].map((action, index, arr) => (
+            {quickActions.map((action, index, arr) => (
               <TouchableOpacity
                 key={action.label}
                 activeOpacity={0.85}
@@ -458,7 +735,24 @@ export default function DashboardScreen() {
             ))}
           </View>
 
-          {overdueCustomers && overdueCustomers.length > 0 ? (
+          {isDistributor ? (
+            <DashboardSupplierFollowups
+              suppliers={overdueSuppliers}
+              onSeeAll={() =>
+                router.push({ pathname: "/(main)/suppliers", params: { filter: "overdue" } } as never)
+              }
+              onRemind={(supplier) =>
+                sendWhatsAppReminder({
+                  id: supplier.id,
+                  name: supplier.name,
+                  phone: supplier.phone,
+                  balance: supplier.amount,
+                  daysSince: supplier.daysSince,
+                })
+              }
+            />
+          ) : (
+            (overdueCustomers.length > 0 ? (
               <View className="mb-8">
                 <View className="flex-row items-center justify-between mb-4">
                   <Text className="text-[18px] font-extrabold text-textPrimary">
@@ -513,7 +807,8 @@ export default function DashboardScreen() {
                   Great! Customers are paying on time.
                 </Text>
               </View>
-            )}
+            ))
+          )}
 
             <View className="mb-6">
               <View className="flex-row items-center justify-between mb-4">
@@ -603,17 +898,13 @@ export default function DashboardScreen() {
         >
           <View style={{ paddingHorizontal: 20, paddingTop: 12, flex: 1 }}>
             <Text style={{ fontSize: 18, fontWeight: "700", color: colors.textPrimary }}>
-              {quickActionMode === "collect"
-                ? "Collect payment"
-                : quickActionMode === "remind"
-                  ? "Send reminder"
-                  : "Quick action"}
+              {sheetTitle}
             </Text>
-            <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 4, marginBottom: 16 }}>
-              {quickActionMode === "collect"
-                ? "Select a customer with outstanding balance to record a payment."
-                : "Pick a customer to nudge on WhatsApp."}
-            </Text>
+            {sheetSubtitle ? (
+              <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 4, marginBottom: 16 }}>
+                {sheetSubtitle}
+              </Text>
+            ) : null}
 
             <BottomSheetFlatList
               data={overdueCustomersAll}
@@ -622,7 +913,7 @@ export default function DashboardScreen() {
               contentContainerStyle={{ paddingBottom: 20 }}
               renderItem={({ item }: { item: OverdueCustomer }) => (
                 <TouchableOpacity
-                  onPress={() => handleSelectActionCustomer(item)}
+                  onPress={() => handleSelectActionItem(item)}
                   activeOpacity={0.85}
                   style={{
                     flexDirection: "row",
@@ -675,6 +966,199 @@ export default function DashboardScreen() {
           </View>
         </BottomSheetModal>
 
+        <BottomSheetModal
+          ref={supplierPickerRef}
+          index={0}
+          snapPoints={["65%"]}
+          enablePanDownToClose
+          backdropComponent={renderBackdrop}
+          backgroundStyle={{ backgroundColor: colors.surface, borderRadius: 32 }}
+          handleIndicatorStyle={{ backgroundColor: colors.border, width: 40, height: 4, borderRadius: 2 }}
+        >
+          <View style={{ paddingHorizontal: 20, paddingTop: 12, flex: 1 }}>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: colors.textPrimary }}>
+              Choose supplier
+            </Text>
+            <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 4 }}>
+              Search any supplier to record a payment.
+            </Text>
+            <View
+              style={{
+                marginTop: 16,
+                marginBottom: 12,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: colors.border,
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+              }}
+            >
+              <TextInput
+                placeholder="Search suppliers"
+                placeholderTextColor={colors.textSecondary}
+                style={{ fontSize: 15, color: colors.textPrimary }}
+                value={supplierSearch}
+                onChangeText={setSupplierSearch}
+              />
+            </View>
+
+            <BottomSheetFlatList
+              data={supplierList}
+              keyExtractor={(item: Supplier) => item.id}
+              style={{ flex: 1 }}
+              contentContainerStyle={{ paddingBottom: 24 }}
+              renderItem={({ item }: { item: Supplier }) => (
+                <TouchableOpacity
+                  onPress={() => handleSupplierSelected(item)}
+                  activeOpacity={0.85}
+                  style={{ flexDirection: "row", alignItems: "center", paddingVertical: 14 }}
+                >
+                  <View
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      backgroundColor: getAvatarBg(item.name),
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginRight: 12,
+                    }}
+                  >
+                    <Text style={{ fontSize: 14, fontWeight: "700", color: colors.surface }}>
+                      {getInitials(item.name)}
+                    </Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 15, fontWeight: "600", color: colors.textPrimary }}>
+                      {item.name}
+                    </Text>
+                    <Text style={{ fontSize: 13, color: colors.textSecondary }}>
+                      Outstanding: {formatCurrency(item.balanceOwed ?? 0)}
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 12, fontWeight: "700", color: colors.primary }}>
+                    Pay
+                  </Text>
+                </TouchableOpacity>
+              )}
+              ListEmptyComponent={() => (
+                <View style={{ alignItems: "center", paddingVertical: 40 }}>
+                  <Text style={{ color: colors.textSecondary }}>
+                    {isSuppliersFetching ? "Loading suppliers..." : "No suppliers found"}
+                  </Text>
+                </View>
+              )}
+            />
+          </View>
+        </BottomSheetModal>
+
+        <BottomSheetModal
+          ref={supplierSummaryRef}
+          index={0}
+          snapPoints={["45%", "60%"]}
+          enablePanDownToClose
+          backdropComponent={renderBackdrop}
+          backgroundStyle={{ backgroundColor: colors.surface, borderRadius: 32 }}
+          handleIndicatorStyle={{ backgroundColor: colors.border, width: 40, height: 4, borderRadius: 2 }}
+          onDismiss={() => setSupplierSummary(null)}
+        >
+          <View style={{ padding: 20, flex: 1 }}>
+            {supplierSummary ? (
+              <>
+                <Text style={{ fontSize: 18, fontWeight: "700", color: colors.textPrimary }}>
+                  {supplierSummary.supplier.name}
+                </Text>
+                <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 4 }}>
+                  Outstanding balance: {formatCurrency(outstandingBalance)}
+                </Text>
+                {supplierSummary.loading ? (
+                  <View style={{ paddingVertical: 20 }}>
+                    <ActivityIndicator color={colors.primary} />
+                  </View>
+                ) : (
+                  <View style={{ marginTop: 16, gap: 10 }}>
+                    {lastDelivery ? (
+                      <View style={{ padding: 12, borderRadius: 16, backgroundColor: colors.background }}>
+                        <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textSecondary }}>
+                          Last delivery
+                        </Text>
+                        <Text style={{ fontSize: 15, fontWeight: "700", color: colors.textPrimary }}>
+                          {formatCurrency(Number(lastDelivery.total_amount ?? 0))}
+                        </Text>
+                        <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                          {new Date(lastDelivery.delivery_date).toLocaleDateString("en-IN")}
+                        </Text>
+                      </View>
+                    ) : null}
+                    {lastPayment ? (
+                      <View style={{ padding: 12, borderRadius: 16, backgroundColor: colors.background }}>
+                        <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textSecondary }}>
+                          Last payment made
+                        </Text>
+                        <Text style={{ fontSize: 15, fontWeight: "700", color: colors.textPrimary }}>
+                          {formatCurrency(Number(lastPayment.paymentAmount ?? 0))}
+                        </Text>
+                        <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                          {new Date(lastPayment.date).toLocaleDateString("en-IN")}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+                )}
+
+                <View style={{ marginTop: 20, gap: 12 }}>
+                  <TouchableOpacity
+                    className="w-full"
+                    style={{
+                      paddingVertical: 14,
+                      borderRadius: 16,
+                      backgroundColor: colors.primary,
+                      alignItems: "center",
+                    }}
+                    onPress={() => {
+                      setSupplierPaymentContext({
+                        id: supplierSummary.supplier.id,
+                        name: supplierSummary.supplier.name,
+                        balance:
+                          supplierSummary.detail?.totalOwed ??
+                          supplierSummary.supplier.balanceOwed ??
+                          0,
+                      });
+                      supplierSummaryRef.current?.dismiss();
+                    }}
+                  >
+                    <Text style={{ color: colors.surface, fontSize: 15, fontWeight: "700" }}>
+                      Record Payment
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    className="w-full"
+                    style={{
+                      paddingVertical: 14,
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      alignItems: "center",
+                    }}
+                    onPress={() => {
+                      supplierSummaryRef.current?.dismiss();
+                      router.push({ pathname: "/(main)/suppliers/[supplierId]", params: { supplierId: supplierSummary.supplier.id } } as never);
+                    }}
+                  >
+                    <Text style={{ color: colors.textPrimary, fontSize: 15, fontWeight: "700" }}>
+                      Open Supplier Detail
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : (
+              <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                <ActivityIndicator color={colors.primary} />
+              </View>
+            )}
+          </View>
+        </BottomSheetModal>
+
         {paymentContext && (
           <RecordCustomerPaymentModal
             ref={paymentModalRef}
@@ -689,6 +1173,19 @@ export default function DashboardScreen() {
             onDismiss={() => setPaymentContext(null)}
           />
         )}
+
+        <RecordPaymentMadeModal
+          visible={!!supplierPaymentContext}
+          balanceOwed={supplierPaymentContext?.balance ?? 0}
+          supplierName={supplierPaymentContext?.name}
+          loading={isPayingSupplier}
+          onClose={() => {
+            if (!isPayingSupplier) setSupplierPaymentContext(null);
+          }}
+          onSubmit={async ({ amount, payment_mode, notes }) => {
+            await handleSubmitSupplierPayment({ amount, payment_mode, notes });
+          }}
+        />
 
         {/* FLOATING ACTION BUTTON */}
         <TouchableOpacity

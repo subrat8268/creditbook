@@ -41,6 +41,13 @@ export interface DashboardData {
   // Distributor mode
   activeSuppliers: number;
   overduePayments: number;
+  overdueSuppliersList: {
+    id: string;
+    name: string;
+    phone?: string;
+    amount: number;
+    daysSince: number;
+  }[];
   recentActivity: RecentActivityItem[];
 }
 
@@ -82,6 +89,7 @@ export async function getDashboardData(
       activeBuyers: 0,
       activeSuppliers: 0,
       overduePayments: 0,
+      overdueSuppliersList: [],
       recentActivity: [],
     };
 
@@ -189,9 +197,44 @@ export async function getDashboardData(
   const activeSuppliers = new Set(
     (deliveries ?? []).map((d: any) => d.supplier_id).filter(Boolean),
   ).size;
-  const overduePayments = (deliveries ?? []).filter(
-    (d: any) => new Date(d.created_at) < thirtyDaysAgo,
-  ).length;
+  const overdueSupplierMap = new Map<
+    string,
+    { name: string; phone?: string; total: number; oldestDate: Date }
+  >();
+  for (const delivery of deliveries ?? []) {
+    const sid: string = (delivery as any).supplier_id;
+    if (!sid) continue;
+    const supName: string = (delivery as any).suppliers?.name ?? "Supplier";
+    const supPhone: string | undefined = (delivery as any).suppliers?.phone;
+    const amount = Number((delivery as any).total_amount ?? 0);
+    const createdAt = new Date((delivery as any).created_at ?? new Date());
+    const entry = overdueSupplierMap.get(sid);
+    if (entry) {
+      entry.total += amount;
+      if (createdAt < entry.oldestDate) entry.oldestDate = createdAt;
+    } else {
+      overdueSupplierMap.set(sid, {
+        name: supName,
+        phone: supPhone,
+        total: amount,
+        oldestDate: createdAt,
+      });
+    }
+  }
+  const overdueSuppliersList = Array.from(overdueSupplierMap.entries())
+    .filter(([, info]) => info.oldestDate < thirtyDaysAgo)
+    .map(([id, info]) => ({
+      id,
+      name: info.name,
+      phone: info.phone,
+      amount: info.total,
+      daysSince: Math.floor(
+        (now.getTime() - info.oldestDate.getTime()) / (1000 * 60 * 60 * 24),
+      ),
+    }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 5);
+  const overduePayments = overdueSuppliersList.length;
 
   // Recent activity — last 8 customer orders + last 4 supplier deliveries, merged by date
   const [{ data: recentOrders }, { data: recentDeliveries }] =
@@ -322,6 +365,7 @@ export async function getDashboardData(
     activeBuyers,
     activeSuppliers,
     overduePayments,
+    overdueSuppliersList,
     recentActivity,
   };
 }

@@ -39,7 +39,7 @@ export default function DashboardHeader({
     <View
       className="flex-row items-center"
       style={{
-        paddingTop: 54,
+        paddingTop: 14,
         paddingHorizontal: spacing.screenPadding - 2,
         paddingBottom: spacing.md,
         backgroundColor: colors.background,
@@ -89,7 +89,7 @@ export default function DashboardHeader({
 
       {/* Bell */}
       <TouchableOpacity
-        className="rounded-full items-center justify-center"
+        className="items-center justify-center rounded-full"
         style={{
           width: 38,
           height: 38,
@@ -123,7 +123,7 @@ export default function DashboardHeader({
 
       {/* Settings */}
       <TouchableOpacity
-        className="rounded-full items-center justify-center"
+        className="items-center justify-center rounded-full"
         style={{
           width: 38,
           height: 38,
