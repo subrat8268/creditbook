@@ -9,7 +9,9 @@ import {
   Download,
   AlertTriangle,
   Clock,
-  Zap
+  Zap,
+  ArrowUpRight,
+  ArrowDownRight,
 } from "lucide-react-native";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useAuthStore } from "@/src/store/authStore";
@@ -27,15 +29,15 @@ const TREND_DATA = [
 ];
 
 const TOP_CUSTOMERS = [
-  { id: 1, initials: "MS", name: "Mohit Sharma", amount: 45200, bg: "#FFEDD5", color: "#F97316" },
-  { id: 2, initials: "AT", name: "Anil Traders", amount: 32150, bg: "#DBEAFE", color: "#3B82F6" },
-  { id: 3, initials: "KS", name: "Karan Store", amount: 18900, bg: "#F3E8FF", color: "#A855F7" },
+  { id: 1, initials: "MS", name: "Mohit Sharma", amount: 45200 },
+  { id: 2, initials: "AT", name: "Anil Traders", amount: 32150 },
+  { id: 3, initials: "KS", name: "Karan Store", amount: 18900 },
 ];
 
 const TOP_SUPPLIERS = [
-  { id: 1, initials: "MD", name: "Metro Distributors", amount: 22000, bg: "#FFEDD5", color: "#F97316" },
-  { id: 2, initials: "PF", name: "Patel Foods", amount: 15400, bg: "#D1FAE5", color: "#10B981" },
-  { id: 3, initials: "RS", name: "Ravi Supplies", amount: 12800, bg: "#DBEAFE", color: "#3B82F6" },
+  { id: 1, initials: "MD", name: "Metro Distributors", amount: 22000 },
+  { id: 2, initials: "PF", name: "Patel Foods", amount: 15400 },
+  { id: 3, initials: "RS", name: "Ravi Supplies", amount: 12800 },
 ];
 
 export default function NetPositionScreen() {
@@ -46,11 +48,11 @@ export default function NetPositionScreen() {
   if (isLoading || !data) return <Loader />;
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-background">
       {/* Header */}
       <View
-        className="flex-row items-center justify-between px-5 py-4 border-b border-gray-100"
-        style={{ paddingTop: 50 }} // safe area roughly
+        className="flex-row items-center justify-between px-5 py-4 border-b border-border"
+        style={{ paddingTop: 50, backgroundColor: colors.surface }} 
       >
         <View className="flex-row items-center gap-3">
           <TouchableOpacity onPress={() => router.back()} className="p-1">
@@ -76,7 +78,7 @@ export default function NetPositionScreen() {
           <Text style={{ fontSize: 12, fontWeight: "600", color: "rgba(255,255,255,0.7)", letterSpacing: 1, marginBottom: 8 }}>
             YOUR NET POSITION
           </Text>
-          <Text style={{ fontSize: 44, fontWeight: "800", color: "#FFF", marginBottom: 8 }}>
+          <Text style={{ fontSize: 44, fontWeight: "800", color: colors.surface, marginBottom: 8 }}>
             {formatINR(data.netPosition)}
           </Text>
           <View className="flex-row items-center gap-2">
@@ -88,105 +90,105 @@ export default function NetPositionScreen() {
         </LinearGradient>
 
         {/* Breakdown Card */}
-        <View className="bg-white rounded-[20px] p-5 mb-6 border border-slate-100 shadow-sm">
-          <Text style={{ fontSize: 11, fontWeight: "700", color: "#64748B", letterSpacing: 1, marginBottom: 16 }}>
+        <View className="bg-surface rounded-[20px] p-5 mb-6 border border-borderLight shadow-sm">
+          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.textMuted, letterSpacing: 1, marginBottom: 16 }}>
             BREAKDOWN
           </Text>
 
           <View className="flex-row justify-between mb-4">
-            <Text style={{ fontSize: 15, color: "#475569", fontWeight: "500" }}>Total Receivables</Text>
-            <Text style={{ fontSize: 15, color: "#16A34A", fontWeight: "700" }}>+{formatINR(data.customersOweMe)}</Text>
+            <Text style={{ fontSize: 15, color: colors.textSecondary, fontWeight: "500" }}>Total Receivables</Text>
+            <Text style={{ fontSize: 15, color: colors.primary, fontWeight: "700" }}>+{formatINR(data.customersOweMe)}</Text>
           </View>
-          <View className="flex-row justify-between mb-4 pb-4 border-b border-gray-100">
-            <Text style={{ fontSize: 15, color: "#475569", fontWeight: "500" }}>Total Payables</Text>
-            <Text style={{ fontSize: 15, color: "#DC2626", fontWeight: "700" }}>-{formatINR(data.iOweSuppliers)}</Text>
+          <View className="flex-row justify-between mb-4 pb-4 border-b border-borderLight">
+            <Text style={{ fontSize: 15, color: colors.textSecondary, fontWeight: "500" }}>Total Payables</Text>
+            <Text style={{ fontSize: 15, color: colors.danger, fontWeight: "700" }}>-{formatINR(data.iOweSuppliers)}</Text>
           </View>
           <View className="flex-row justify-between">
-            <Text style={{ fontSize: 16, color: "#1E293B", fontWeight: "700" }}>Net Balance</Text>
-            <Text style={{ fontSize: 18, color: "#1E293B", fontWeight: "800" }}>{formatINR(data.netPosition)}</Text>
+            <Text style={{ fontSize: 16, color: colors.textPrimary, fontWeight: "700" }}>Net Balance</Text>
+            <Text style={{ fontSize: 18, color: colors.textPrimary, fontWeight: "800" }}>{formatINR(data.netPosition)}</Text>
           </View>
         </View>
 
         {/* Trend Mock */}
-        <Text style={{ fontSize: 11, fontWeight: "700", color: "#64748B", letterSpacing: 1, marginBottom: 12 }}>
+        <Text style={{ fontSize: 11, fontWeight: "700", color: colors.textMuted, letterSpacing: 1, marginBottom: 12 }}>
           CASH FLOW TREND (LAST 6 MONTHS)
         </Text>
-        <View className="bg-white rounded-[20px] p-5 mb-6 border border-slate-100 shadow-sm">
+        <View className="bg-surface rounded-[20px] p-5 mb-6 border border-borderLight shadow-sm">
            <View className="flex-row justify-between h-40 items-end mb-4">
              {TREND_DATA.map((t, i) => (
                 <View key={i} className="items-center w-10">
-                  <View className="w-full bg-[#E2E8F0] rounded-sm overflow-hidden" style={{ height: "100%" }}>
-                     <View style={{ height: `${(t.in / 150) * 100}%`, backgroundColor: "#4ADE80", position: 'absolute', bottom: `${(t.out / 150) * 100}%`, width: '100%' }} />
-                     <View style={{ height: `${(t.out / 150) * 100}%`, backgroundColor: "#F87171", position: 'absolute', bottom: 0, width: '100%', borderTopWidth: 1, borderColor: '#fff' }} />
+                  <View className="w-full bg-background rounded-sm overflow-hidden" style={{ height: "100%" }}>
+                     <View style={{ height: `${(t.in / 150) * 100}%`, backgroundColor: colors.primary, position: 'absolute', bottom: `${(t.out / 150) * 100}%`, width: '100%' }} />
+                     <View style={{ height: `${(t.out / 150) * 100}%`, backgroundColor: colors.danger, position: 'absolute', bottom: 0, width: '100%', borderTopWidth: 1, borderColor: colors.surface }} />
                   </View>
-                  <Text style={{ fontSize: 10, marginTop: 8, color: "#94A3B8" }}>{t.month}</Text>
+                  <Text style={{ fontSize: 10, marginTop: 8, color: colors.textSecondary }}>{t.month}</Text>
                 </View>
              ))}
            </View>
            <View className="flex-row justify-center gap-6">
              <View className="flex-row items-center gap-2">
-               <View className="w-2 h-2 rounded-full bg-[#4ADE80]" />
-               <Text style={{ fontSize: 11, color: "#64748B" }}>Inflow</Text>
+               <View className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.primary }} />
+               <Text style={{ fontSize: 11, color: colors.textSecondary }}>Inflow</Text>
              </View>
              <View className="flex-row items-center gap-2">
-               <View className="w-2 h-2 rounded-full bg-[#F87171]" />
-               <Text style={{ fontSize: 11, color: "#64748B" }}>Outflow</Text>
+               <View className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.danger }} />
+               <Text style={{ fontSize: 11, color: colors.textSecondary }}>Outflow</Text>
              </View>
            </View>
         </View>
 
         {/* Top Customers Owed */}
-        <Text style={{ fontSize: 11, fontWeight: "700", color: "#64748B", letterSpacing: 1, marginBottom: 12 }}>
+        <Text style={{ fontSize: 11, fontWeight: "700", color: colors.textMuted, letterSpacing: 1, marginBottom: 12 }}>
           TOP CUSTOMERS OWED
         </Text>
-        <View className="bg-white rounded-[20px] mb-6 border border-slate-100 shadow-sm overflow-hidden">
+        <View className="bg-surface rounded-[20px] mb-6 border border-borderLight shadow-sm overflow-hidden">
           {TOP_CUSTOMERS.map((c, i) => (
-            <View key={c.id} className={`flex-row items-center justify-between p-4 ${i !== TOP_CUSTOMERS.length - 1 ? 'border-b border-gray-50' : ''}`}>
+            <View key={c.id} className={`flex-row items-center justify-between p-4 ${i !== TOP_CUSTOMERS.length - 1 ? 'border-b border-borderLight' : ''}`}>
                <View className="flex-row items-center gap-3">
-                 <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: c.bg }}>
-                   <Text style={{ color: c.color, fontWeight: "700", fontSize: 14 }}>{c.initials}</Text>
+                 <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: colors.avatarPalette[i % colors.avatarPalette.length] + '22' }}>
+                   <Text style={{ color: colors.avatarPalette[i % colors.avatarPalette.length], fontWeight: "700", fontSize: 14 }}>{c.initials}</Text>
                  </View>
-                 <Text style={{ fontSize: 15, fontWeight: "600", color: "#1E293B" }}>{c.name}</Text>
+                 <Text style={{ fontSize: 15, fontWeight: "600", color: colors.textPrimary }}>{c.name}</Text>
                </View>
-               <Text style={{ fontSize: 15, fontWeight: "700", color: "#16A34A" }}>{formatINR(c.amount)}</Text>
+               <Text style={{ fontSize: 15, fontWeight: "700", color: colors.primary }}>{formatINR(c.amount)}</Text>
             </View>
           ))}
         </View>
 
         {/* Top Suppliers Owed */}
-        <Text style={{ fontSize: 11, fontWeight: "700", color: "#64748B", letterSpacing: 1, marginBottom: 12 }}>
+        <Text style={{ fontSize: 11, fontWeight: "700", color: colors.textMuted, letterSpacing: 1, marginBottom: 12 }}>
           TOP SUPPLIERS OWED
         </Text>
-        <View className="bg-white rounded-[20px] mb-6 border border-slate-100 shadow-sm overflow-hidden">
+        <View className="bg-surface rounded-[20px] mb-6 border border-borderLight shadow-sm overflow-hidden">
           {TOP_SUPPLIERS.map((s, i) => (
-            <View key={s.id} className={`flex-row items-center justify-between p-4 ${i !== TOP_SUPPLIERS.length - 1 ? 'border-b border-gray-50' : ''}`}>
+            <View key={s.id} className={`flex-row items-center justify-between p-4 ${i !== TOP_SUPPLIERS.length - 1 ? 'border-b border-borderLight' : ''}`}>
                <View className="flex-row items-center gap-3">
-                 <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: s.bg }}>
-                   <Text style={{ color: s.color, fontWeight: "700", fontSize: 14 }}>{s.initials}</Text>
+                 <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: colors.supplierAvatarBg[i % colors.supplierAvatarBg.length] }}>
+                   <Text style={{ color: colors.supplierAvatarText[i % colors.supplierAvatarText.length], fontWeight: "700", fontSize: 14 }}>{s.initials}</Text>
                  </View>
-                 <Text style={{ fontSize: 15, fontWeight: "600", color: "#1E293B" }}>{s.name}</Text>
+                 <Text style={{ fontSize: 15, fontWeight: "600", color: colors.textPrimary }}>{s.name}</Text>
                </View>
-               <Text style={{ fontSize: 15, fontWeight: "700", color: "#DC2626" }}>{formatINR(s.amount)}</Text>
+               <Text style={{ fontSize: 15, fontWeight: "700", color: colors.danger }}>{formatINR(s.amount)}</Text>
             </View>
           ))}
         </View>
 
         {/* Quick Insights */}
-        <Text style={{ fontSize: 11, fontWeight: "700", color: "#64748B", letterSpacing: 1, marginBottom: 12 }}>
+        <Text style={{ fontSize: 11, fontWeight: "700", color: colors.textMuted, letterSpacing: 1, marginBottom: 12 }}>
           QUICK INSIGHTS
         </Text>
         <View className="gap-3 mb-6">
-          <View className="flex-row items-center gap-2 bg-[#FEF2F2] p-3 rounded-xl border border-[#FEE2E2]">
-            <AlertTriangle size={16} color="#DC2626" />
-            <Text style={{ fontSize: 13, fontWeight: "600", color: "#DC2626" }}>High collection risk: {data.overdueCustomers} customers</Text>
+          <View className="flex-row items-center gap-2 bg-danger-bg p-3 rounded-xl border border-danger-light">
+            <AlertTriangle size={16} color={colors.danger} />
+            <Text style={{ fontSize: 13, fontWeight: "600", color: colors.danger }}>High collection risk: {data.overdueCustomers} customers</Text>
           </View>
-          <View className="flex-row items-center gap-2 bg-[#FFFBEB] p-3 rounded-xl border border-[#FEF3C7]">
-            <Clock size={16} color="#D97706" />
-            <Text style={{ fontSize: 13, fontWeight: "600", color: "#D97706" }}>Upcoming payables: {formatINR(data.iOweSuppliers / 2)} this week</Text>
+          <View className="flex-row items-center gap-2" style={{ backgroundColor: colors.warningBg, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: colors.warningBadgeBg }}>
+            <Clock size={16} color={colors.warning} />
+            <Text style={{ fontSize: 13, fontWeight: "600", color: colors.warning }}>Upcoming payables: {formatINR(data.iOweSuppliers / 2)} this week</Text>
           </View>
-          <View className="flex-row items-center gap-2 bg-[#FFF7ED] p-3 rounded-xl border border-[#FFEDD5]">
-            <Zap size={16} color="#EA580C" />
-            <Text style={{ fontSize: 13, fontWeight: "600", color: "#EA580C" }}>Cash flow optimized</Text>
+          <View className="flex-row items-center gap-2" style={{ backgroundColor: colors.orange.bg, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: colors.orange.border }}>
+            <Zap size={16} color={colors.orange.text} />
+            <Text style={{ fontSize: 13, fontWeight: "600", color: colors.orange.text }}>Cash flow optimized</Text>
           </View>
         </View>
 
@@ -196,10 +198,10 @@ export default function NetPositionScreen() {
       <View className="absolute bottom-5 left-5 right-5">
          <TouchableOpacity 
            className="flex-row justify-center items-center gap-2 py-4 rounded-2xl" 
-           style={{ backgroundColor: "#0F172A" }}
+           style={{ backgroundColor: colors.textPrimary }}
          >
-           <Download size={18} color="#FFF" />
-           <Text style={{ fontSize: 15, fontWeight: "600", color: "#FFF" }}>Download PDF Report</Text>
+           <Download size={18} color={colors.surface} />
+           <Text style={{ fontSize: 15, fontWeight: "600", color: colors.surface }}>Download PDF Report</Text>
          </TouchableOpacity>
       </View>
     </View>

@@ -206,7 +206,7 @@ export default function NotificationsScreen() {
                   backgroundColor: colors.surface,
                   borderRadius: 16,
                   overflow: "hidden",
-                  shadowColor: "#000",
+                  shadowColor: colors.textPrimary,
                   shadowOffset: { width: 0, height: 2 },
                   shadowOpacity: 0.05,
                   shadowRadius: 8,
@@ -222,7 +222,7 @@ export default function NotificationsScreen() {
                       paddingHorizontal: spacing.lg,
                       paddingVertical: 14,
                       borderBottomWidth: index < overdueList.length - 1 ? 1 : 0,
-                      borderBottomColor: colors.background,
+                      borderBottomColor: colors.borderLight,
                     }}
                   >
                     {/* Avatar */}
@@ -295,7 +295,7 @@ export default function NotificationsScreen() {
                           flexDirection: "row",
                           alignItems: "center",
                           gap: 4,
-                          backgroundColor: "#DCFCE7",
+                          backgroundColor: colors.paid.bg,
                           borderRadius: 999,
                           paddingHorizontal: 10,
                           paddingVertical: 4,
@@ -356,7 +356,7 @@ export default function NotificationsScreen() {
                   backgroundColor: colors.surface,
                   borderRadius: 16,
                   overflow: "hidden",
-                  shadowColor: "#000",
+                  shadowColor: colors.textPrimary,
                   shadowOffset: { width: 0, height: 2 },
                   shadowOpacity: 0.05,
                   shadowRadius: 8,

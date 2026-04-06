@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { Briefcase, Check, Store, Truck } from "lucide-react-native";
 import { ComponentType, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import Button from "@/src/components/ui/Button";
 
 type Role = "retailer" | "wholesaler" | "small-business";
 
@@ -24,8 +25,8 @@ const ROLES: RoleCard[] = [
     title: "Retailer",
     subtitle:
       "Kirana store, medical shop, clothing — sell to local customers on credit",
-    iconColor: "#22C55E",
-    iconBg: "#DCFCE7",
+    iconColor: colors.primary,
+    iconBg: colors.primaryLight,
   },
   {
     role: "wholesaler",
@@ -33,8 +34,8 @@ const ROLES: RoleCard[] = [
     title: "Wholesaler",
     subtitle:
       "Distributor, FMCG supplier — manage bulk deliveries and large credit cycles",
-    iconColor: "#22C55E",
-    iconBg: "#DCFCE7",
+    iconColor: colors.primary,
+    iconBg: colors.primaryLight,
   },
   {
     role: "small-business",
@@ -42,8 +43,8 @@ const ROLES: RoleCard[] = [
     title: "Small Business",
     subtitle:
       "Auto repair, tiffin service, pharmacy — track service charges and payments",
-    iconColor: "#22C55E",
-    iconBg: "#DCFCE7",
+    iconColor: colors.primary,
+    iconBg: colors.primaryLight,
   },
 ];
 
@@ -114,13 +115,13 @@ export default function OnboardingRole() {
               className="flex-1 h-1 rounded-full"
               style={{ backgroundColor: colors.primary }}
             />
-            <View className="flex-1 h-1 rounded-full bg-neutral-200" />
-            <View className="flex-1 h-1 rounded-full bg-neutral-200" />
+            <View className="flex-1 h-1 rounded-full bg-border" />
+            <View className="flex-1 h-1 rounded-full bg-border" />
           </View>
         </View>
 
         {/* ── Title ── */}
-        <Text className="text-2xl font-extrabold text-textDark mb-1.5">
+        <Text className="text-2xl font-extrabold text-textPrimary mb-1.5">
           {"What's your business?"}
         </Text>
         <Text className="text-sm text-textSecondary mb-7">
@@ -138,11 +139,11 @@ export default function OnboardingRole() {
                 activeOpacity={0.85}
               >
                 <View
-                  className="bg-white rounded-2xl p-4 flex-row items-center gap-3.5"
+                  className="bg-surface rounded-2xl p-4 flex-row items-center gap-3.5"
                   style={{
                     borderWidth: isActive ? 2 : 1.5,
-                    borderColor: isActive ? "#22C55E" : "#E5E7EB",
-                    shadowColor: "#000",
+                    borderColor: isActive ? colors.primary : colors.border,
+                    shadowColor: colors.textPrimary,
                     shadowOffset: { width: 0, height: 1 },
                     shadowOpacity: 0.04,
                     shadowRadius: 4,
@@ -163,7 +164,7 @@ export default function OnboardingRole() {
 
                   {/* Text */}
                   <View className="flex-1">
-                    <Text className="text-base font-bold text-textDark mb-0.5">
+                    <Text className="text-base font-bold text-textPrimary mb-0.5">
                       {item.title}
                     </Text>
                     <Text className="text-[13px] text-textSecondary leading-[18px]">
@@ -175,13 +176,13 @@ export default function OnboardingRole() {
                   <View
                     className="w-6 h-6 rounded-full items-center justify-center shrink-0"
                     style={{
-                      backgroundColor: isActive ? "#22C55E" : "#FFFFFF",
+                      backgroundColor: isActive ? colors.primary : colors.surface,
                       borderWidth: isActive ? 0 : 1.5,
-                      borderColor: "#D1D5DB",
+                      borderColor: colors.border,
                     }}
                   >
                     {isActive && (
-                      <Check size={14} color="#FFFFFF" strokeWidth={3} />
+                      <Check size={14} color={colors.surface} strokeWidth={3} />
                     )}
                   </View>
                 </View>
@@ -200,18 +201,14 @@ export default function OnboardingRole() {
         )}
 
         {/* ── Continue button ── */}
-        <TouchableOpacity
-          onPress={handleContinue}
-          disabled={!selected || loading}
-          activeOpacity={0.85}
-          className={`mt-8 rounded-full py-[17px] items-center ${
-            selected && !loading ? "bg-primary" : "bg-neutral-300"
-          }`}
-        >
-          <Text className="text-white text-base font-bold">
-            {loading ? "Saving…" : "Continue"}
-          </Text>
-        </TouchableOpacity>
+        <View className="mt-8">
+          <Button
+            title={loading ? "Saving…" : "Continue"}
+            onPress={handleContinue}
+            disabled={!selected || loading}
+            loading={loading}
+          />
+        </View>
       </ScrollView>
     </View>
   );

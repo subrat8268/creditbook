@@ -15,6 +15,7 @@ export const colors = {
   // ─ Primary Green (Brand, CTAs, Active States)
   primary: "#22C55E",
   primaryDark: "#16A34A",
+  primaryLight: "#DCFCE7", // Green-100 — Light tint of brand color
 
   // ─ Semantic Blues
   fab: "#2563EB", // Floating Action Button (highest elevation)
@@ -67,6 +68,21 @@ export const colors = {
   overdue: {
     bg: "#FEE2E2", // Red-100
     text: "#DC2626", // Red-600
+  },
+
+  // ─ Specialized tool palettes
+  reports: {
+    bg: "#EDE9FE",   // Purple-100
+    text: "#7C3AED", // Purple-600
+  },
+  export: {
+    bg: "#F3F4F6",   // Gray-100
+    text: "#374151", // Gray-700
+  },
+  orange: {
+    bg: "#FFF7ED",   // Orange-50
+    border: "#FFEDD5", // Orange-100
+    text: "#EA580C", // Orange-600
   },
 
   // ─ Avatar palette (deterministic, cycled by name hash)

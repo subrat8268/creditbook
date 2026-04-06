@@ -32,13 +32,11 @@ export default function Button({
     "bg-secondary": variant === "secondary" && !disabled,
     "bg-danger": variant === "danger" && !disabled,
     "bg-surface border border-primary": variant === "outline" && !disabled,
-    "bg-neutral-300": disabled,
   });
 
   const textStyle = clsx("font-semibold text-lg", {
     "text-white": variant !== "outline" && !disabled,
     "text-primary": variant === "outline" && !disabled,
-    "text-neutral-500": disabled,
   });
 
   return (
@@ -47,7 +45,7 @@ export default function Button({
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.8}
-      style={
+      style={[
         variant === "primary" && !disabled
           ? {
               shadowColor: colors.primary,
@@ -56,8 +54,9 @@ export default function Button({
               shadowRadius: 15,
               elevation: 8,
             }
-          : undefined
-      }
+          : undefined,
+        disabled && { backgroundColor: "#E2E8F0" }
+      ]}
     >
       {loading ? (
         <ActivityIndicator
@@ -69,7 +68,7 @@ export default function Button({
             <View className="mr-2">{icon}</View>
           )}
 
-          <Text className={textStyle}>{title}</Text>
+          <Text className={textStyle} style={disabled ? { color: colors.textMuted } : undefined}>{title}</Text>
 
           {icon && iconPosition === "right" && (
             <View className="ml-2">{icon}</View>

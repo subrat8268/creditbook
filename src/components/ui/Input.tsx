@@ -33,7 +33,6 @@ export default function Input({
   const containerStyle = clsx(
     "flex-row items-center border rounded-xl px-4",
     variant === "neutral" ? "bg-background" : "bg-surface",
-    error ? "border-danger" : "border-neutral-300",
   );
 
   return (
@@ -44,7 +43,7 @@ export default function Input({
         </Text>
       )}
 
-      <View className={containerStyle} style={{ height }}>
+      <View className={containerStyle} style={{ height, borderColor: error ? colors.danger : colors.border }}>
         {icon && iconPosition === "left" && (
           <View className="mr-2">{icon}</View>
         )}

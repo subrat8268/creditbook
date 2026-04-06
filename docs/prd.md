@@ -1,7 +1,7 @@
 # KredBook – Product Requirements Document
 
 > **Version**: 1.6
-> **Last Updated**: April 5, 2026
+> **Last Updated**: April 6, 2026
 > **Status**: Active Development — Phase 7 Complete
 > **Owner**: KredBook Product Team
 

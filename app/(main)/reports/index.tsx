@@ -34,19 +34,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // ── avatar color helper ──────────────────────────────────
-const AVATAR_COLORS = [
-  { bg: "#FDE68A", text: "#92400E" },
-  { bg: "#BFDBFE", text: "#1E40AF" },
-  { bg: "#DDD6FE", text: "#5B21B6" },
-  { bg: "#A7F3D0", text: "#065F46" },
-  { bg: "#FECACA", text: "#991B1B" },
-  { bg: "#FED7AA", text: "#92400E" },
-];
 function avatarColor(name: string) {
   const idx =
     name.split("").reduce((a, c) => a + c.charCodeAt(0), 0) %
-    AVATAR_COLORS.length;
-  return AVATAR_COLORS[idx];
+    colors.avatarPalette.length;
+  const color = colors.avatarPalette[idx];
+  return { bg: color + "22", text: color }; // Tinted bg, solid text
 }
 
 // ── Mini bar chart (View-based, no library) ──────────────
@@ -77,7 +70,7 @@ function CashFlowChart({ months }: { months: CashFlowMonth[] }) {
                 <View
                   style={{
                     height: inH || 4,
-                    backgroundColor: "#22C55E",
+                    backgroundColor: colors.primary,
                     borderRadius: 3,
                     opacity: 0.9,
                   }}
@@ -85,7 +78,7 @@ function CashFlowChart({ months }: { months: CashFlowMonth[] }) {
                 <View
                   style={{
                     height: outH || 4,
-                    backgroundColor: "#EF4444",
+                    backgroundColor: colors.danger,
                     borderRadius: 3,
                     opacity: 0.8,
                   }}
@@ -104,7 +97,7 @@ function CashFlowChart({ months }: { months: CashFlowMonth[] }) {
               width: 10,
               height: 10,
               borderRadius: 5,
-              backgroundColor: "#22C55E",
+              backgroundColor: colors.primary,
             }}
           />
           <Text style={s.legendText}>Inflow</Text>
@@ -115,7 +108,7 @@ function CashFlowChart({ months }: { months: CashFlowMonth[] }) {
               width: 10,
               height: 10,
               borderRadius: 5,
-              backgroundColor: "#EF4444",
+              backgroundColor: colors.danger,
             }}
           />
           <Text style={s.legendText}>Outflow</Text>
@@ -231,11 +224,11 @@ export default function NetPositionScreen() {
           <View style={s.heroSubRow}>
             <TrendingUp
               size={14}
-              color={isPositive ? "#86EFAC" : "#FCA5A5"}
+              color={isPositive ? colors.paid.bg : "#FCA5A5"}
               strokeWidth={2}
             />
             <Text
-              style={[s.heroSub, { color: isPositive ? "#86EFAC" : "#FCA5A5" }]}
+              style={[s.heroSub, { color: isPositive ? colors.paid.bg : "#FCA5A5" }]}
             >
               {isPositive ? "Cash surplus available" : "Net liability position"}
             </Text>
@@ -320,7 +313,7 @@ export default function NetPositionScreen() {
           <Text style={s.sectionLabel}>QUICK INSIGHTS</Text>
           <View style={s.insightRow}>
             {report.overdueCount > 0 && (
-              <View style={[s.insightPill, { backgroundColor: "#FEF2F2" }]}>
+              <View style={[s.insightPill, { backgroundColor: colors.dangerBg }]}>
                 <AlertTriangle
                   size={12}
                   color={colors.danger}
@@ -333,7 +326,7 @@ export default function NetPositionScreen() {
               </View>
             )}
             {report.upcomingPayables > 0 && (
-              <View style={[s.insightPill, { backgroundColor: "#FFFBEB" }]}>
+              <View style={[s.insightPill, { backgroundColor: colors.warningBg }]}>
                 <Clock size={12} color={colors.warning} strokeWidth={2} />
                 <Text style={[s.insightText, { color: colors.warning }]}>
                   Upcoming payables: {formatINR(report.upcomingPayables)} this
@@ -341,7 +334,7 @@ export default function NetPositionScreen() {
                 </Text>
               </View>
             )}
-            <View style={[s.insightPill, { backgroundColor: "#F0FDF4" }]}>
+            <View style={[s.insightPill, { backgroundColor: colors.successBg }]}>
               <Sparkles size={12} color={colors.primary} strokeWidth={2} />
               <Text style={[s.insightText, { color: colors.primary }]}>
                 {isPositive ? "Cash flow optimized" : "Review payables"}
@@ -407,7 +400,7 @@ const s = StyleSheet.create({
   heroAmount: {
     fontSize: 40,
     fontWeight: "800",
-    color: "#FFFFFF",
+    color: colors.surface,
     letterSpacing: -0.5,
     marginBottom: 10,
   },
@@ -424,7 +417,7 @@ const s = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: 18,
     padding: 18,
-    shadowColor: "#000",
+    shadowColor: colors.textPrimary,
     shadowOpacity: 0.04,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
@@ -474,7 +467,7 @@ const s = StyleSheet.create({
     paddingVertical: 10,
     gap: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#F1F5F9",
+    borderBottomColor: colors.borderLight,
   },
   personAvatar: {
     width: 38,
@@ -560,8 +553,8 @@ function buildReportHtml(
   <h1>${businessName} — Net Position Report</h1>
   <p style="color:#6B7280;font-size:13px">Generated on ${new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</p>
   <table><tr><th>Metric</th><th style="text-align:right">Amount</th></tr>
-  <tr><td>Total Receivables</td><td style="text-align:right;color:#16A34A">+₹${report.totalReceivables.toLocaleString("en-IN")}</td></tr>
-  <tr><td>Total Payables</td><td style="text-align:right;color:#DC2626">−₹${report.totalPayables.toLocaleString("en-IN")}</td></tr>
+  <tr><td>Total Receivables</td><td style="text-align:right;color:${colors.primary}">+₹${report.totalReceivables.toLocaleString("en-IN")}</td></tr>
+  <tr><td>Total Payables</td><td style="text-align:right;color:${colors.danger}">−₹${report.totalPayables.toLocaleString("en-IN")}</td></tr>
   <tr><td style="font-weight:700">Net Balance</td><td style="text-align:right;font-weight:800">₹${report.netBalance.toLocaleString("en-IN")}</td></tr>
   </table>
   ${

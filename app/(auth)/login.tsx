@@ -131,7 +131,10 @@ export default function LoginPage() {
             </AuthCard>
 
             {(loginMutation.isError || googleSignIn.isError) && (
-              <View className="flex-row items-center self-center gap-2 rounded-full px-4 py-3 mt-4 bg-dangerBg border border-red-200">
+              <View 
+                className="flex-row items-center self-center gap-2 rounded-full px-4 py-3 mt-4"
+                style={{ backgroundColor: colors.dangerBg, borderWidth: 1, borderColor: colors.danger + '44' }}
+              >
                 <AlertCircle
                   size={16}
                   color={colors.dangerStrong}

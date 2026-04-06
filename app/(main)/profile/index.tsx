@@ -30,6 +30,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { colors } from "@/src/utils/theme";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { useLanguageStore } from "@/src/store/languageStore";
@@ -70,7 +71,7 @@ function SectionCard({ title, children }: SectionCardProps) {
 // ─── DetailRow ────────────────────────────────────────────────────────────────
 
 interface DetailRowProps {
-  Icon: ComponentType<{ size: number; className?: string; strokeWidth?: number }>;
+  Icon: ComponentType<{ size: number; color?: string; strokeWidth?: number }>;
   label: string;
   value?: string | null;
   last?: boolean;
@@ -86,8 +87,8 @@ function DetailRow({ Icon, label, value, last, onPress }: DetailRowProps) {
         !last ? "border-b border-border" : "mb-2"
       }`}
     >
-      <View className="w-10 h-10 rounded-xl bg-primaryLight items-center justify-center">
-        <Icon size={20} className="text-primary" strokeWidth={2} />
+      <View className="w-10 h-10 rounded-xl items-center justify-center" style={{ backgroundColor: colors.primaryLight }}>
+        <Icon size={20} color={colors.primary} strokeWidth={2} />
       </View>
       <View className="flex-1 ml-3">
         <Text className="text-[10px] font-bold text-textSecondary uppercase tracking-wide mb-0.5">
@@ -97,7 +98,7 @@ function DetailRow({ Icon, label, value, last, onPress }: DetailRowProps) {
           {value || "—"}
         </Text>
       </View>
-      <ChevronRight size={18} className="text-textSecondary" strokeWidth={2} />
+      <ChevronRight size={18} color={colors.textSecondary} strokeWidth={2} />
     </TouchableOpacity>
   );
 }
@@ -129,9 +130,12 @@ function SegmentControl<T extends string>({
             key={opt.value}
             onPress={() => onChange(opt.value)}
             activeOpacity={0.8}
-            className={`flex-1 py-2.5 items-center bg-surface border-r border-border last:border-r-0 ${
-              isActive ? "bg-primaryLight border-b-2 border-b-primary" : ""
-            }`}
+            className={`flex-1 py-2.5 items-center border-r border-border last:border-r-0`}
+            style={{
+              backgroundColor: isActive ? colors.primaryLight : colors.surface,
+              borderBottomWidth: isActive ? 2 : 0,
+              borderBottomColor: colors.primary,
+            }}
           >
             <Text
               className={`text-[13px] font-bold ${
@@ -205,7 +209,7 @@ export default function ProfileScreen() {
           hitSlop={8}
           className="w-10 items-start justify-center"
         >
-          <ArrowLeft size={24} className="text-textPrimary" strokeWidth={2} />
+          <ArrowLeft size={24} color={colors.textPrimary} strokeWidth={2} />
         </TouchableOpacity>
         <Text className="flex-1 text-center text-[18px] font-extrabold text-textPrimary">
           Profile & Settings
@@ -298,8 +302,8 @@ export default function ProfileScreen() {
         <SectionCard title="APP PREFERENCES">
           <View className="flex-row items-center justify-between py-2 mt-1 mb-2">
             <View className="flex-row items-center gap-3">
-              <View className="w-10 h-10 rounded-xl bg-primaryLight items-center justify-center">
-                <LayoutGrid size={20} className="text-primary" strokeWidth={2} />
+              <View className="w-10 h-10 rounded-xl items-center justify-center" style={{ backgroundColor: colors.primaryLight }}>
+                <LayoutGrid size={20} color={colors.primary} strokeWidth={2} />
               </View>
               <Text className="text-[15px] font-bold text-textPrimary">Dashboard Mode</Text>
             </View>
@@ -319,8 +323,8 @@ export default function ProfileScreen() {
 
           <View className="flex-row items-center justify-between py-2 mb-2">
             <View className="flex-row items-center gap-3">
-              <View className="w-10 h-10 rounded-xl bg-primaryLight items-center justify-center">
-                <Languages size={20} className="text-primary" strokeWidth={2} />
+              <View className="w-10 h-10 rounded-xl items-center justify-center" style={{ backgroundColor: colors.primaryLight }}>
+                <Languages size={20} color={colors.primary} strokeWidth={2} />
               </View>
               <Text className="text-[15px] font-bold text-textPrimary">Language</Text>
             </View>
@@ -375,7 +379,7 @@ export default function ProfileScreen() {
             activeOpacity={0.8}
             className="flex-row items-center justify-center py-4 gap-2"
           >
-            <LogOut size={20} className="text-danger" strokeWidth={2.5} />
+            <LogOut size={20} color={colors.danger} strokeWidth={2.5} />
             <Text className="text-[16px] font-extrabold text-danger">Sign Out</Text>
           </TouchableOpacity>
         </View>

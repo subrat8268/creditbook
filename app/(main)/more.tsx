@@ -32,8 +32,8 @@ const BUSINESS_DETAILS: MenuItem[] = [
     title: "Profile Settings",
     description: "Business details & preferences",
     icon: UserRound,
-    iconBg: "#DCFCE7",
-    iconColor: "#16A34A",
+    iconBg: colors.paid.bg,
+    iconColor: colors.paid.text,
     route: "/(main)/profile",
   },
   {
@@ -41,8 +41,8 @@ const BUSINESS_DETAILS: MenuItem[] = [
     title: "Inventory Management",
     description: "Stock tracking & product ledgers",
     icon: BookOpen,
-    iconBg: "#DBEAFE",
-    iconColor: "#2563EB",
+    iconBg: colors.partial.bg,
+    iconColor: colors.partial.text,
     route: "/(main)/products",
   },
   {
@@ -50,8 +50,8 @@ const BUSINESS_DETAILS: MenuItem[] = [
     title: "Suppliers & Wholesale",
     description: "Bulk purchase history & credit",
     icon: Store,
-    iconBg: "#FEF3C7",
-    iconColor: "#D97706",
+    iconBg: colors.warningBadgeBg,
+    iconColor: colors.warning,
     route: "/(main)/suppliers",
   },
 ];
@@ -62,8 +62,8 @@ const ANALYSIS_TOOLS: MenuItem[] = [
     title: "Advanced Reports",
     description: "Weekly insights & performance",
     icon: BarChart3,
-    iconBg: "#EDE9FE",
-    iconColor: "#7C3AED",
+    iconBg: colors.reports.bg,
+    iconColor: colors.reports.text,
     route: "/(main)/reports",
   },
   {
@@ -71,8 +71,8 @@ const ANALYSIS_TOOLS: MenuItem[] = [
     title: "Data Export",
     description: "Download PDF, Excel or CSV files",
     icon: Download,
-    iconBg: "#F3F4F6",
-    iconColor: "#374151",
+    iconBg: colors.export.bg,
+    iconColor: colors.export.text,
     route: "/(main)/export",
   },
 ];
@@ -202,8 +202,8 @@ export default function MoreScreen() {
               onPress={() => handleNavAndClose("/(main)/help" as Href)}
               activeOpacity={0.7}
             >
-              <View style={[styles.bottomIconBox, { backgroundColor: "#EFF6FF" }]}>
-                <HelpCircle size={22} color="#2563EB" strokeWidth={2} />
+              <View style={[styles.bottomIconBox, { backgroundColor: colors.primaryBlueBg }]}>
+                <HelpCircle size={22} color={colors.primaryBlue} strokeWidth={2} />
               </View>
               <Text style={styles.bottomBtnText}>Help Center</Text>
             </TouchableOpacity>
@@ -213,7 +213,7 @@ export default function MoreScreen() {
               onPress={handleSignOut}
               activeOpacity={0.7}
             >
-              <View style={[styles.bottomIconBox, { backgroundColor: "#FEF2F2" }]}>
+              <View style={[styles.bottomIconBox, { backgroundColor: colors.dangerBg }]}>
                 <LogOut size={22} color={colors.danger} strokeWidth={2} />
               </View>
               <Text style={[styles.bottomBtnText, { color: colors.danger }]}>
@@ -311,8 +311,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   signOutBtn: {
-    backgroundColor: "#FEF2F2",
-    borderColor: "#FECACA",
+    backgroundColor: colors.dangerBg,
+    borderColor: colors.overdue.bg,
   },
   bottomBtnText: {
     fontSize: 13,
