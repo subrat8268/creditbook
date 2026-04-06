@@ -4,14 +4,17 @@ import { useAuthStore } from "@/src/store/authStore";
 import { CalendarDays, CheckCircle2 } from "lucide-react-native";
 import { useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
 export default function OnboardingReady() {
   const { show } = useToast();
   const { user, profile, fetchProfile } = useAuthStore();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const completeOnboarding = async () => {
-    if (!user) return;
+    if (!user) return false;
     setIsLoading(true);
     try {
       const { error: dbErr } = await supabase
@@ -21,6 +24,7 @@ export default function OnboardingReady() {
       if (dbErr) throw dbErr;
       // Sync global state — _layout.tsx routing guard will react and navigate.
       await fetchProfile(user.id);
+      return true;
     } catch (e: any) {
       console.error("Onboarding completion failed:", e);
       show({
@@ -28,6 +32,24 @@ export default function OnboardingReady() {
         type: "error",
       });
       setIsLoading(false);
+      return false;
+    }
+  };
+
+  const handleAddCustomer = async () => {
+    const ok = await completeOnboarding();
+    if (ok) {
+      router.replace({
+        pathname: "/(main)/customers",
+        params: { action: "add" },
+      });
+    }
+  };
+
+  const handleGoDashboard = async () => {
+    const ok = await completeOnboarding();
+    if (ok) {
+      router.replace("/(main)/dashboard" as any);
     }
   };
 
@@ -37,8 +59,8 @@ export default function OnboardingReady() {
     : "Setup pending";
 
   return (
-    <View className="flex-1 bg-background">
-      <View className="flex-1 items-center justify-center px-8">
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
+      <View className="items-center justify-center flex-1 px-8">
         <View className="items-center mb-8">
           <Image
             source={require("../../../assets/images/large-check.png")}
@@ -48,7 +70,7 @@ export default function OnboardingReady() {
         </View>
 
         {/* Title */}
-        <Text className="text-2xl font-extrabold text-textDark text-center mb-3">
+        <Text className="mb-3 text-2xl font-extrabold text-center text-textDark">
           {"You're all set!"}
         </Text>
 
@@ -86,18 +108,27 @@ export default function OnboardingReady() {
         </View>
       </View>
 
-      <View className="px-6 pb-16">
+      <View className="px-6 pb-10">
         <TouchableOpacity
-          onPress={completeOnboarding}
+          onPress={handleAddCustomer}
           disabled={isLoading}
           activeOpacity={0.85}
           className={`rounded-full py-[17px] items-center ${isLoading ? "bg-neutral-300" : "bg-primary"}`}
         >
-          <Text className="text-white text-base font-bold">
-            {isLoading ? "Loading…" : "Enter KredBook"}
+          <Text className="text-base font-bold text-white">
+            {isLoading ? "Loading…" : "Add Your First Customer"}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleGoDashboard}
+          disabled={isLoading}
+          className="items-center mt-4"
+        >
+          <Text className="text-primary font-semibold text-sm">
+            Go to Dashboard
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

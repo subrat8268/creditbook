@@ -1,6 +1,8 @@
 // Step 4 of onboarding — Business Setup (Step 2 of 2) — Bank Details
+import Button from "@/src/components/ui/Button";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
+import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -12,6 +14,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ArrowLeft } from "lucide-react-native";
 
 export default function OnboardingBank() {
   const router = useRouter();
@@ -69,16 +73,25 @@ export default function OnboardingBank() {
   );
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-    >
-      <ScrollView
-        className="flex-1 bg-background"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
       >
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 140 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="w-10 h-10 rounded-full border border-border items-center justify-center mt-2 mb-5"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <ArrowLeft size={20} color={colors.textPrimary} strokeWidth={2} />
+          </TouchableOpacity>
         {/* ── Progress ── */}
         <View className="mt-5 mb-6">
           <Text className="text-[13px] text-textSecondary mb-2">
@@ -93,10 +106,10 @@ export default function OnboardingBank() {
 
         {/* ── Heading ── */}
         <Text className="text-2xl font-extrabold text-textDark mb-1">
-          Add bank details
+          Bank & Payment Info
         </Text>
         <Text className="text-sm text-textSecondary mb-6">
-          These appear on your invoices for easy payment.
+          Your customers will see this on their bills.
         </Text>
 
         {/* ── Card ── */}
@@ -181,30 +194,22 @@ export default function OnboardingBank() {
             {error}
           </Text>
         )}
+      </ScrollView>
 
-        {/* ── CTA ── */}
-        <TouchableOpacity
+      <View className="px-5 pb-6">
+        <Button
+          title={loading ? "Saving…" : "Continue"}
           onPress={handleContinue}
           disabled={loading}
-          activeOpacity={0.85}
-          className={`mt-8 rounded-full py-[17px] items-center ${
-            loading ? "bg-neutral-300" : "bg-primary"
-          }`}
-        >
-          <Text className="text-white text-base font-bold">
-            {loading ? "Saving…" : "Continue →"}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={handleSkip}
-          className="items-center mt-4 py-1.5"
-        >
+          loading={loading}
+        />
+        <TouchableOpacity onPress={handleSkip} className="items-center mt-3">
           <Text className="text-textSecondary text-sm font-medium">
             Skip for now
           </Text>
         </TouchableOpacity>
-      </ScrollView>
+      </View>
     </KeyboardAvoidingView>
+  </SafeAreaView>
   );
 }

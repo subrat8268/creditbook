@@ -3,7 +3,7 @@ import { SignUpSchema } from "@/src/utils/schemas";
 import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { Formik } from "formik";
-import { AlertCircle, Eye, EyeOff } from "lucide-react-native";
+import { AlertCircle, ArrowLeft, Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
 import {
     KeyboardAvoidingView,
@@ -44,9 +44,17 @@ export default function SignUpPage() {
           showsVerticalScrollIndicator={false}
         >
           <View className="flex-1 px-6 pb-10 justify-center">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="w-10 h-10 rounded-full border border-border items-center justify-center mb-6"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <ArrowLeft size={20} color={colors.textPrimary} strokeWidth={2} />
+            </TouchableOpacity>
+
             <AuthHeader
               title="Create Account"
-              subtitle="Set up your KredBook in 2 minutes"
+              subtitle="Set up your CreditBook in 2 minutes"
             />
 
             <AuthCard>

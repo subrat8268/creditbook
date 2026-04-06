@@ -2,10 +2,11 @@ import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
-import { Briefcase, Check, Store, Truck } from "lucide-react-native";
+import { Briefcase, Store, Truck, ArrowLeft } from "lucide-react-native";
 import { ComponentType, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import Button from "@/src/components/ui/Button";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type Role = "retailer" | "wholesaler" | "small-business";
 
@@ -100,11 +101,19 @@ export default function OnboardingRole() {
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="w-10 h-10 rounded-full border border-border items-center justify-center mt-2 mb-5"
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <ArrowLeft size={20} color={colors.textPrimary} strokeWidth={2} />
+        </TouchableOpacity>
+
         {/* ── Progress ── */}
         <View className="mt-5 mb-6">
           <Text className="text-[13px] text-textSecondary mb-2">
@@ -122,10 +131,10 @@ export default function OnboardingRole() {
 
         {/* ── Title ── */}
         <Text className="text-2xl font-extrabold text-textPrimary mb-1.5">
-          {"What's your business?"}
+          What describes your business?
         </Text>
         <Text className="text-sm text-textSecondary mb-7">
-          {"We'll set up KredBook to match your work"}
+          Choose the option that fits you best
         </Text>
 
         {/* ── Role cards ── */}
@@ -176,13 +185,18 @@ export default function OnboardingRole() {
                   <View
                     className="w-6 h-6 rounded-full items-center justify-center shrink-0"
                     style={{
-                      backgroundColor: isActive ? colors.primary : colors.surface,
-                      borderWidth: isActive ? 0 : 1.5,
-                      borderColor: colors.border,
+                      borderWidth: 2,
+                      borderColor: isActive ? colors.primary : colors.border,
+                      backgroundColor: isActive
+                        ? `${colors.primary}15`
+                        : colors.surface,
                     }}
                   >
                     {isActive && (
-                      <Check size={14} color={colors.surface} strokeWidth={3} />
+                      <View
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: colors.primary }}
+                      />
                     )}
                   </View>
                 </View>
@@ -210,6 +224,6 @@ export default function OnboardingRole() {
           />
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

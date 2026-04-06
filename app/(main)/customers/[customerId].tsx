@@ -240,9 +240,14 @@ export default function CustomerDetailScreen() {
     const biz = profile?.business_name || "our store";
     const bal = customer.outstandingBalance.toLocaleString("en-IN");
     const msg = `Dear ${customer.name}, your outstanding balance with ${biz} is ₹${bal}. Please arrange payment. Thank you.`;
-    Linking.openURL(
-      `https://wa.me/91${customer.phone}?text=${encodeURIComponent(msg)}`,
-    );
+    const url = `https://wa.me/91${customer.phone}?text=${encodeURIComponent(msg)}`;
+    Linking.openURL(url)
+      .then(() =>
+        showToast({ message: `Reminder sent to ${customer.name}`, type: "success" }),
+      )
+      .catch(() =>
+        showToast({ message: "Cannot open WhatsApp", type: "error" }),
+      );
   };
 
   const callCustomer = () => {
@@ -731,6 +736,7 @@ export default function CustomerDetailScreen() {
           onSuccess={() => {
             paymentModalRef.current?.dismiss();
             refetch();
+            showToast({ message: `Payment recorded for ${customer.name}`, type: "success" });
           }}
           orderId={customer.pendingOrderId!}
           balanceDue={customer.pendingOrderBalance ?? 0}

@@ -12,9 +12,9 @@ import BottomSheet, {
     BottomSheetBackdrop,
     BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Check, Users } from "lucide-react-native";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Alert,
@@ -38,6 +38,7 @@ type CustomerSort = (typeof SORT_OPTIONS)[number]["value"];
 export default function CustomersScreen() {
   const { profile } = useAuthStore();
   const router = useRouter();
+  const params = useLocalSearchParams<{ action?: string }>();
   const { t } = useTranslation();
 
   const [search, setSearch] = useState("");
@@ -58,6 +59,13 @@ export default function CustomersScreen() {
   } = useCustomers(profile?.id, search);
 
   const addCustomerMutation = useAddCustomer(profile?.id ?? "");
+
+  useEffect(() => {
+    if (params?.action === "add") {
+      setIsModalOpen(true);
+      router.setParams({ action: undefined });
+    }
+  }, [params, router]);
 
   // ── Summary stats ──────────────────────────────────────────────────────────
   // ── Sorted customers (sorted before passing to CustomerList) ───────────────

@@ -1087,4 +1087,4 @@ _This document is intended for use with AI design generation tools and human des
   1. Bottom sheet lists all suppliers (search + outstanding amount). Tapping prefetches supplier detail (cached via `supplierKeys.detail`).
   2. Summary sheet shows outstanding balance, last delivery, last payment, and top three timeline events. Includes Quick Pay chips (25%, 50%, 100%) that remember the user’s preferred ratio per supplier via AsyncStorage. CTAs: “Record Payment” (opens `RecordPaymentMadeModal`) or “Open Supplier Detail”.
   3. Recording payment surfaces a success toast (“Supplier payment recorded”).
-  4. Customer bill creation also fires a toast after `Save & Share` (“Bill shared with …”), per dashboard rule.
+  4. Customer bill creation, order detail “Send Bill”, and customer detail reminder/payment buttons all fire toasts after action completes (“Bill shared…”, “Reminder sent…”, “Payment recorded…”).

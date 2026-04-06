@@ -2,7 +2,7 @@ import { colors } from "@/src/utils/theme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { Eye, ShieldCheck, WifiOff, Zap } from "lucide-react-native";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const FEATURE_CHIPS = [
@@ -33,23 +33,23 @@ export default function WelcomePage() {
 
   const handleStart = async () => {
     await AsyncStorage.setItem("hasSeenWelcome", "true");
-    router.push("/(auth)/login");
+    router.push("/(auth)/signup");
   };
 
   return (
     <View
-      className="flex-1 bg-background items-center px-6"
+      className="items-center flex-1 px-6 bg-white"
       style={{ paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 }}
     >
       {/* Logo */}
       <Image
         source={require("../assets/images/logo.png")}
-        className="w-[120px] h-[40px]"
+        className="w-[150px] h-[130px]"
         resizeMode="contain"
       />
 
       {/* Illustration */}
-      <View className="w-[342px] h-[260px] items-center justify-center">
+      <View className="w-[342px] h-[260px] items-center justify-center -mt-10">
         <Image
           source={require("../assets/images/welcome.png")}
           className="w-[342px] h-[260px]"
@@ -58,9 +58,7 @@ export default function WelcomePage() {
       </View>
 
       {/* Tagline */}
-      <Text className="text-xl font-bold text-textPrimary text-center leading-[30px] mb-5 -tracking-[0.3px]">
-        Track Credit. Get Paid Faster.
-      </Text>
+      <Text style={styles.tagline}>Track Credit. Get Paid Faster.</Text>
 
       {/* Feature chips */}
       <View className="flex-row gap-2.5 justify-center flex-wrap">
@@ -94,15 +92,15 @@ export default function WelcomePage() {
         activeOpacity={0.85}
       >
         <Text className="text-[17px] font-bold text-white tracking-wide">
-          Get Started →
+          Get Started
         </Text>
       </TouchableOpacity>
 
       {/* Login link */}
-      <Text className="text-sm text-textSecondary text-center mb-5">
+      <Text className="mb-5 text-sm text-center text-textSecondary">
         Already have an account?{" "}
         <Text
-          className="text-primary font-bold"
+          className="font-bold text-primary"
           onPress={() => router.push("/(auth)/login")}
         >
           Log In
@@ -119,3 +117,15 @@ export default function WelcomePage() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  tagline: {
+    fontSize: 24,
+    fontWeight: "700",
+    textAlign: "center",
+    color: colors.textPrimary,
+    lineHeight: 32,
+    marginBottom: 20,
+    letterSpacing: -0.3,
+  },
+});

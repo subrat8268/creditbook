@@ -1,6 +1,7 @@
 import RecordCustomerPaymentModal from "@/src/components/customers/RecordCustomerPaymentModal";
 import EmptyState from "@/src/components/feedback/EmptyState";
 import Loader from "@/src/components/feedback/Loader";
+import { useToast } from "@/src/components/feedback/Toast";
 import { orderKeys, useOrderDetail } from "@/src/hooks/useOrders";
 
 import { usePayments } from "@/src/hooks/usePayments";
@@ -90,6 +91,7 @@ export default function OrderDetailScreen() {
 
   const paymentModalRef = useRef<any>(null);
   const [sendingBill, setSendingBill] = useState(false);
+  const { show: showToast } = useToast();
 
   // ── Derived values ───────────────────────────────────────────────
   const customerName = order?.customer?.name ?? "Unknown Customer";
@@ -146,21 +148,26 @@ export default function OrderDetailScreen() {
         })),
         {
           name: profile?.business_name ?? profile?.name ?? "",
+          address: profile?.business_address || undefined,
           phone: profile?.phone ?? "",
           gstin: profile?.gstin ?? "",
-          bankName: profile?.bank_name ?? "",
-          accountNumber: profile?.account_number ?? "",
-          ifscCode: profile?.ifsc_code ?? "",
         },
         order.total_amount,
         customerName,
         {
           invoiceNumber: order.bill_number,
           date: formatDate(order.created_at),
-          upiId: profile?.upi_id ?? "",
-          taxPercent: order.tax_percent,
-          loadingCharge: order.loading_charge,
-          previousBalance: order.previous_balance,
+          subtotal: itemsSubtotal,
+          taxAmount,
+          loadingCharge: order.loading_charge ?? 0,
+          bankDetails:
+            profile?.bank_name && profile?.account_number && profile?.ifsc_code
+              ? {
+                  bankName: profile.bank_name,
+                  accountNo: profile.account_number,
+                  ifsc: profile.ifsc_code,
+                }
+              : undefined,
         },
       );
 
@@ -171,10 +178,14 @@ export default function OrderDetailScreen() {
           dialogTitle: `Bill ${order.bill_number}`,
           UTI: "com.adobe.pdf",
         });
+        showToast({
+          message: `Bill ${order.bill_number} shared`,
+          type: "success",
+        });
       } else {
         throw new Error("sharing-unavailable");
       }
-    } catch {
+    } catch (error: any) {
       // Fallback: pre-filled WhatsApp message
       const cleanPhone = customerPhone.replace(/\D/g, "");
       const msg = encodeURIComponent(
@@ -184,16 +195,27 @@ export default function OrderDetailScreen() {
             : " The bill has been fully paid. Thank you!"),
       );
       const wa = `https://wa.me/91${cleanPhone}?text=${msg}`;
-      Linking.openURL(wa).catch(() =>
+      showToast({
+        message:
+          error?.message === "sharing-unavailable"
+            ? "Sharing unavailable, opened WhatsApp"
+            : "Bill sent via WhatsApp",
+        type: "success",
+      });
+      Linking.openURL(wa).catch(() => {
+        showToast({
+          message: "Cannot open WhatsApp",
+          type: "error",
+        });
         Alert.alert(
           "Cannot open WhatsApp",
           "Please install WhatsApp and try again.",
-        ),
-      );
+        );
+      });
     } finally {
       setSendingBill(false);
     }
-  }, [order, customerName, customerPhone, profile]);
+  }, [order, customerName, customerPhone, profile, showToast, itemsSubtotal, taxAmount]);
 
   // ── Payment success ─────────────────────────────────────────────
   const handlePaymentSuccess = useCallback(() => {
@@ -211,11 +233,11 @@ export default function OrderDetailScreen() {
       }
       queryClient.invalidateQueries({ queryKey: ["dashboard", profile.id] });
     }
-    Alert.alert(
-      "✅ Payment recorded",
-      "The payment has been saved successfully.",
-    );
-  }, [orderId, order?.customer_id, profile?.id, queryClient]);
+    showToast({
+      message: `Payment recorded for ${customerName}`,
+      type: "success",
+    });
+  }, [orderId, order?.customer_id, profile?.id, queryClient, customerName, showToast]);
 
   // ── Loading / Error gates ─────────────────────────────────────────
   if (isLoading) return <Loader />;
