@@ -6,7 +6,7 @@
 > **Bundle ID**: `com.kredbook.app` · **Slug**: `kredbook`
 > **Target Market**: Indian SMBs (Retailers, Wholesalers, Distributors)
 
----
+
 
 ## 📚 Table of Contents
 
