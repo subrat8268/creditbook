@@ -35,12 +35,12 @@ export function useDashboard(vendorId?: string) {
   };
 }
 
-export function useNetPositionReport(vendorId?: string) {
+export function useNetPositionReport(vendorId?: string, rangeDays = 30) {
   return useQuery({
-    queryKey: ["netPositionReport", vendorId],
+    queryKey: ["netPositionReport", vendorId, rangeDays],
     queryFn: async () => {
       if (!vendorId) return null;
-      return getNetPositionReport(vendorId);
+      return getNetPositionReport(vendorId, rangeDays);
     },
     enabled: !!vendorId,
     staleTime: 60_000,

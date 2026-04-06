@@ -1,10 +1,7 @@
-import {
-  CashFlowMonth,
-  NetPositionCustomer,
-  NetPositionSupplier,
-} from "@/src/api/dashboard";
+import { CashFlowMonth } from "@/src/api/dashboard";
 import Loader from "@/src/components/feedback/Loader";
 import { useNetPositionReport } from "@/src/hooks/useDashboard";
+import { buildNetPositionReportHtml } from "@/src/utils/netPositionReportPdf";
 import { useAuthStore } from "@/src/store/authStore";
 import { formatINR } from "@/src/utils/dashboardUi";
 import { colors, gradients, spacing } from "@/src/utils/theme";
@@ -150,14 +147,14 @@ function PersonRow({
 export default function NetPositionScreen() {
   const { profile } = useAuthStore();
   const router = useRouter();
-  const { data, isLoading } = useNetPositionReport(profile?.id);
+  const { data, isLoading } = useNetPositionReport(profile?.id, 30);
   const [downloading, setDownloading] = useState(false);
 
   const handleDownloadPdf = async () => {
     if (!data) return;
     setDownloading(true);
     try {
-      const html = buildReportHtml(
+      const html = buildNetPositionReportHtml(
         data,
         profile?.business_name ?? "My Business",
       );
@@ -525,56 +522,3 @@ const s = StyleSheet.create({
   },
 });
 
-// ── PDF HTML builder ─────────────────────────────────────
-function buildReportHtml(
-  report: {
-    totalReceivables: number;
-    totalPayables: number;
-    netBalance: number;
-    topCustomers: NetPositionCustomer[];
-    topSuppliers: NetPositionSupplier[];
-  },
-  businessName: string,
-) {
-  const rows = (items: { name: string; amount: number }[], label: string) =>
-    items
-      .map(
-        (i) =>
-          `<tr><td>${i.name}</td><td style="text-align:right;font-weight:700">₹${i.amount.toLocaleString("en-IN")}</td></tr>`,
-      )
-      .join("");
-
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"/>
-  <style>body{font-family:sans-serif;padding:24px;color:#1C1C1E}h1{font-size:22px}
-  table{width:100%;border-collapse:collapse;margin-bottom:24px}
-  td,th{padding:10px;border-bottom:1px solid #E2E8F0;font-size:14px}
-  th{background:#F6F7F9;font-weight:700;text-align:left}</style></head>
-  <body>
-  <h1>${businessName} — Net Position Report</h1>
-  <p style="color:#6B7280;font-size:13px">Generated on ${new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</p>
-  <table><tr><th>Metric</th><th style="text-align:right">Amount</th></tr>
-  <tr><td>Total Receivables</td><td style="text-align:right;color:${colors.primary}">+₹${report.totalReceivables.toLocaleString("en-IN")}</td></tr>
-  <tr><td>Total Payables</td><td style="text-align:right;color:${colors.danger}">−₹${report.totalPayables.toLocaleString("en-IN")}</td></tr>
-  <tr><td style="font-weight:700">Net Balance</td><td style="text-align:right;font-weight:800">₹${report.netBalance.toLocaleString("en-IN")}</td></tr>
-  </table>
-  ${
-    report.topCustomers.length > 0
-      ? `<h2>Top Customers Owed</h2><table><tr><th>Customer</th><th style="text-align:right">Balance Due</th></tr>${rows(
-          report.topCustomers.map((c) => ({ name: c.name, amount: c.balance })),
-          "customers",
-        )}</table>`
-      : ""
-  }
-  ${
-    report.topSuppliers.length > 0
-      ? `<h2>Top Suppliers Owed</h2><table><tr><th>Supplier</th><th style="text-align:right">Amount Owed</th></tr>${rows(
-          report.topSuppliers.map((s) => ({
-            name: s.name,
-            amount: s.amountOwed,
-          })),
-          "suppliers",
-        )}</table>`
-      : ""
-  }
-  </body></html>`;
-}

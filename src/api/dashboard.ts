@@ -371,14 +371,13 @@ function getInitials(name: string): string {
 
 export async function getNetPositionReport(
   vendorId: string,
+  rangeDays = 30,
 ): Promise<NetPositionReport> {
   const now = new Date();
 
-  // Build date range for last 6 months
-  const sixMonthsAgo = new Date(now);
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
-  sixMonthsAgo.setDate(1);
-  sixMonthsAgo.setHours(0, 0, 0, 0);
+  const rangeStart = new Date(now);
+  rangeStart.setDate(rangeStart.getDate() - Math.max(rangeDays - 1, 0));
+  rangeStart.setHours(0, 0, 0, 0);
 
   const [
     { data: orders },
@@ -399,12 +398,12 @@ export async function getNetPositionReport(
       .from("payments")
       .select("amount, created_at")
       .eq("vendor_id", vendorId)
-      .gte("created_at", sixMonthsAgo.toISOString()),
+      .gte("created_at", rangeStart.toISOString()),
     supabase
       .from("payments_made")
       .select("amount, created_at")
       .eq("vendor_id", vendorId)
-      .gte("created_at", sixMonthsAgo.toISOString()),
+      .gte("created_at", rangeStart.toISOString()),
   ]);
 
   // Total receivables (customers owe me)
@@ -478,40 +477,36 @@ export async function getNetPositionReport(
     .sort((a, b) => b.amountOwed - a.amountOwed)
     .slice(0, 5);
 
-  // Cash flow trend — last 6 months
-  const monthLabels = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
+  const bucketCount = 6;
+  const bucketSize = Math.max(1, Math.ceil(rangeDays / bucketCount));
   const cashFlow: CashFlowMonth[] = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(now);
-    d.setMonth(d.getMonth() - i);
-    const month = d.getMonth();
-    const year = d.getFullYear();
+
+  for (let i = 0; i < bucketCount; i++) {
+    const bucketStart = new Date(rangeStart);
+    bucketStart.setDate(rangeStart.getDate() + i * bucketSize);
+    if (bucketStart > now) break;
+    const bucketEnd = new Date(bucketStart);
+    bucketEnd.setDate(bucketStart.getDate() + bucketSize);
+
     const inflow = (paymentsReceived ?? [])
       .filter((p) => {
         const pd = new Date(p.created_at);
-        return pd.getMonth() === month && pd.getFullYear() === year;
+        return pd >= bucketStart && pd < bucketEnd;
       })
       .reduce((s, p) => s + Number(p.amount), 0);
+
     const outflow = (paymentsMade ?? [])
       .filter((p) => {
-        const pd = new Date((p as any).created_at);
-        return pd.getMonth() === month && pd.getFullYear() === year;
+        const pd = new Date(p.created_at);
+        return pd >= bucketStart && pd < bucketEnd;
       })
       .reduce((s, p) => s + Number(p.amount), 0);
-    cashFlow.push({ label: monthLabels[month], inflow, outflow });
+
+    const label = bucketSize <= 1
+      ? bucketStart.toLocaleDateString("en-IN", { day: "numeric", month: "short" })
+      : bucketStart.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
+
+    cashFlow.push({ label, inflow, outflow });
   }
 
   // Quick insights
@@ -541,5 +536,24 @@ export async function getNetPositionReport(
     cashFlow,
     overdueCount,
     upcomingPayables,
+  };
+}
+
+export async function exportNetPositionReport(
+  vendorId: string,
+  rangeDays: number,
+) {
+  const { data, error } = await supabase.functions.invoke(
+    "net-position-export",
+    {
+      body: { vendorId, rangeDays },
+    },
+  );
+
+  if (error) throw toApiError(error);
+
+  return data as {
+    pdfBase64: string;
+    fileName?: string;
   };
 }

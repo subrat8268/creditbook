@@ -2,6 +2,9 @@ import { formatINR } from "@/src/utils/dashboardUi";
 import { colors, gradients } from "@/src/utils/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
+import * as FileSystem from "expo-file-system";
 import {
   ArrowLeft,
   Calendar,
@@ -14,22 +17,58 @@ import {
   Wallet,
 } from "lucide-react-native";
 import {
+  Alert,
+  ActivityIndicator,
   RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
 import { useAuthStore } from "@/src/store/authStore";
 import { useNetPositionReport } from "@/src/hooks/useDashboard";
+import { exportNetPositionReport } from "@/src/api/dashboard";
 import Loader from "@/src/components/feedback/Loader";
-import { useMemo } from "react";
+import { useMemo, useRef, useState, useCallback } from "react";
+import { buildNetPositionReportHtml } from "@/src/utils/netPositionReportPdf";
+
+const RANGE_OPTIONS = [
+  { label: "Last 7 days", value: 7 },
+  { label: "Last 30 days", value: 30 },
+  { label: "Last 90 days", value: 90 },
+] as const;
+
+type RangeValue = (typeof RANGE_OPTIONS)[number]["value"];
 
 export default function NetPositionScreen() {
   const router = useRouter();
   const { profile } = useAuthStore();
+  const [range, setRange] = useState<RangeValue>(30);
+  const [downloading, setDownloading] = useState(false);
+  const rangeSheetRef = useRef<BottomSheetModal>(null);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
+  const rangeSnapPoints = useMemo(() => ["30%"], []);
+
   const { data, isLoading, refetch, isRefetching } = useNetPositionReport(
     profile?.id,
+    range,
   );
 
   const cashFlowMax = useMemo(() => {
@@ -40,12 +79,76 @@ export default function NetPositionScreen() {
     );
   }, [data?.cashFlow]);
 
+  const selectedRangeLabel = useMemo(() => {
+    return (
+      RANGE_OPTIONS.find((opt) => opt.value === range)?.label || "Last 30 days"
+    );
+  }, [range]);
+
   const hasSurplus = (data?.netBalance ?? 0) >= 0;
   const TrendIcon = hasSurplus ? ArrowUpRight : ArrowDownRight;
   const trendColor = hasSurplus ? "#A7F3D0" : "#FCA5A5";
   const trendLabel = hasSurplus
     ? "Cash surplus available"
     : "Cash deficit — settle payables";
+
+  const handleSelectRange = (value: RangeValue) => {
+    setRange(value);
+    rangeSheetRef.current?.dismiss();
+  };
+
+  const openRangeSheet = () => rangeSheetRef.current?.present();
+
+  const handleDownloadReport = async () => {
+    if (!data || !profile?.id) return;
+    setDownloading(true);
+    try {
+      const remote = await exportNetPositionReport(profile.id, range);
+      if (remote?.pdfBase64) {
+        const fileName = remote.fileName ?? `net-position-${range}.pdf`;
+        const cacheDir =
+          (FileSystem as any).cacheDirectory ??
+          FileSystem.Paths?.cache?.uri ??
+          FileSystem.Paths?.document?.uri;
+        if (!cacheDir) throw new Error("No cache directory");
+        const fileUri = `${cacheDir}${fileName}`;
+        const encoding =
+          (FileSystem as any).EncodingType?.Base64 ?? "base64";
+        await FileSystem.writeAsStringAsync(fileUri, remote.pdfBase64, {
+          encoding,
+        });
+        await Sharing.shareAsync(fileUri, { mimeType: "application/pdf" });
+        setDownloading(false);
+        return;
+      }
+      throw new Error("Missing PDF payload");
+    } catch (apiErr) {
+      console.warn("Remote export failed, falling back", apiErr);
+      try {
+        const html = buildNetPositionReportHtml(
+          {
+            totalReceivables: data.totalReceivables,
+            totalPayables: data.totalPayables,
+            netBalance: data.netBalance,
+            topCustomers: data.topCustomers,
+            topSuppliers: data.topSuppliers,
+          },
+          profile?.business_name ?? "My Business",
+        );
+        const { uri } = await Print.printToFileAsync({ html });
+        await Sharing.shareAsync(uri, { mimeType: "application/pdf" });
+      } catch (fallbackErr) {
+        console.error("Fallback export failed", fallbackErr);
+        Alert.alert(
+          "Export failed",
+          "Could not generate the report. Please try again.",
+        );
+      } finally {
+        setDownloading(false);
+      }
+      return;
+    }
+  };
 
   if (isLoading || !data) return <Loader />;
 
@@ -65,14 +168,14 @@ export default function NetPositionScreen() {
           </Text>
         </View>
         <TouchableOpacity
-          activeOpacity={0.8}
-          className="flex-row items-center gap-1 px-3 py-1.5 rounded-full border"
+          activeOpacity={0.85}
+          className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border"
           style={{ borderColor: colors.border, backgroundColor: colors.background }}
-          onPress={() => refetch()}
+          onPress={openRangeSheet}
         >
           <Calendar size={16} color={colors.textPrimary} strokeWidth={2.2} />
           <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textPrimary }}>
-            Last 30 days
+            {selectedRangeLabel}
           </Text>
         </TouchableOpacity>
       </View>
@@ -123,7 +226,7 @@ export default function NetPositionScreen() {
             </Text>
           </View>
           <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginTop: 6 }}>
-            Includes receivables and supplier payables for the last 30 days.
+            Includes receivables and supplier payables for {selectedRangeLabel.toLowerCase()}.
           </Text>
         </LinearGradient>
 
@@ -252,15 +355,66 @@ export default function NetPositionScreen() {
 
       </ScrollView>
 
+      <BottomSheetModal
+        ref={rangeSheetRef}
+        index={0}
+        snapPoints={rangeSnapPoints}
+        backdropComponent={renderBackdrop}
+        enablePanDownToClose
+        handleIndicatorStyle={{ backgroundColor: colors.border, width: 40 }}
+        backgroundStyle={{ backgroundColor: colors.surface, borderRadius: 28 }}
+      >
+        <BottomSheetView style={{ padding: 20, gap: 8 }}>
+          <Text style={{ fontSize: 16, fontWeight: "700", color: colors.textPrimary, marginBottom: 8 }}>
+            Select range
+          </Text>
+          {RANGE_OPTIONS.map((option) => {
+            const isActive = option.value === range;
+            return (
+              <TouchableOpacity
+                key={option.value}
+                onPress={() => handleSelectRange(option.value)}
+                activeOpacity={0.8}
+                className="py-3 px-4 rounded-2xl"
+                style={{
+                  backgroundColor: isActive ? colors.primaryLight : colors.background,
+                  borderWidth: 1.5,
+                  borderColor: isActive ? colors.primary : colors.border,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: isActive ? "700" : "600",
+                    color: isActive ? colors.primary : colors.textPrimary,
+                  }}
+                >
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </BottomSheetView>
+      </BottomSheetModal>
+
       {/* Floating Action Bar */}
       <View className="absolute bottom-5 left-5 right-5">
-         <TouchableOpacity 
-           className="flex-row justify-center items-center gap-2 py-4 rounded-2xl" 
-           style={{ backgroundColor: colors.textPrimary }}
-         >
-           <Download size={18} color={colors.surface} />
-           <Text style={{ fontSize: 15, fontWeight: "600", color: colors.surface }}>Download PDF Report</Text>
-         </TouchableOpacity>
+        <TouchableOpacity
+          className="flex-row justify-center items-center gap-2 py-4 rounded-2xl"
+          style={{ backgroundColor: colors.textPrimary, opacity: downloading ? 0.8 : 1 }}
+          onPress={handleDownloadReport}
+          disabled={downloading}
+          activeOpacity={0.85}
+        >
+          {downloading ? (
+            <ActivityIndicator color={colors.surface} />
+          ) : (
+            <Download size={18} color={colors.surface} />
+          )}
+          <Text style={{ fontSize: 15, fontWeight: "600", color: colors.surface }}>
+            {downloading ? "Generating…" : "Download PDF Report"}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
