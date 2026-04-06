@@ -387,13 +387,15 @@ export async function getNetPositionReport(
   ] = await Promise.all([
     supabase
       .from("orders")
-      .select("customer_id, balance_due, status, customers(id, name)")
+      .select("customer_id, balance_due, status, created_at, customers(id, name)")
       .eq("vendor_id", vendorId)
-      .gt("balance_due", 0),
+      .gt("balance_due", 0)
+      .gte("created_at", rangeStart.toISOString()),
     supabase
       .from("supplier_deliveries")
-      .select("supplier_id, total_amount, suppliers(id, name)")
-      .eq("vendor_id", vendorId),
+      .select("supplier_id, total_amount, created_at, suppliers(id, name)")
+      .eq("vendor_id", vendorId)
+      .gte("created_at", rangeStart.toISOString()),
     supabase
       .from("payments")
       .select("amount, created_at")

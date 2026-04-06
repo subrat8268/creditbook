@@ -18,6 +18,7 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
+  Wallet,
 } from "lucide-react-native";
 import {
   BottomSheetModal,
@@ -25,11 +26,15 @@ import {
   BottomSheetFlatList,
 } from "@gorhom/bottom-sheet";
 import { colors, gradients } from "@/src/utils/theme";
-import { useDashboard } from "@/src/hooks/useDashboard";
+import { useDashboard, useNetPositionReport } from "@/src/hooks/useDashboard";
 import { useAuthStore } from "@/src/store/authStore";
 import { useRouter } from "expo-router";
 import Loader from "@/src/components/feedback/Loader";
 import DashboardHeader from "@/src/components/dashboard/DashboardHeader";
+import {
+  NET_POSITION_RANGE_OPTIONS,
+  usePreferencesStore,
+} from "@/src/store/preferencesStore";
 import RecordCustomerPaymentModal from "@/src/components/customers/RecordCustomerPaymentModal";
 import { fetchCustomerDetail } from "@/src/api/customers";
 
@@ -150,6 +155,22 @@ export default function DashboardScreen() {
     isLoading,
     refreshDashboard,
   } = useDashboard(profile?.id);
+  const netPositionRange = usePreferencesStore((s) => s.netPositionRange);
+  const setNetPositionRange = usePreferencesStore((s) => s.setNetPositionRange);
+  const { data: netReport, isFetching: isNetReportFetching } = useNetPositionReport(
+    profile?.id,
+    netPositionRange,
+  );
+  const netRangeLabel = useMemo(() => {
+    return (
+      NET_POSITION_RANGE_OPTIONS.find((opt) => opt.value === netPositionRange)
+        ?.label || "Last 30 days"
+    );
+  }, [netPositionRange]);
+
+  const heroNet = netReport?.netBalance ?? netPosition;
+  const heroToReceive = netReport?.totalReceivables ?? toReceive;
+  const heroToGive = netReport?.totalPayables ?? toGive;
 
   const [quickActionMode, setQuickActionMode] = useState<QuickActionMode | null>(null);
   const actionSheetRef = useRef<BottomSheetModal>(null);
@@ -261,13 +282,25 @@ export default function DashboardScreen() {
             className="p-6 rounded-[28px] mb-6"
             style={{ backgroundColor: gradients.netPosition }}
           >
+            <View style={{ position: "absolute", top: 20, right: 20 }}>
+              <View
+                className="w-12 h-12 rounded-2xl items-center justify-center"
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.18)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.3)",
+                }}
+              >
+                <Wallet size={22} color={colors.surface} strokeWidth={2.2} />
+              </View>
+            </View>
             <View className="flex-row items-start justify-between">
               <View>
                 <Text className="text-[12px] font-semibold text-surface/70 tracking-[2px] uppercase">
                   Net Position
                 </Text>
                 <Text className="text-[40px] font-black text-surface mt-1">
-                  {formatCurrency(netPosition)}
+                  {formatCurrency(heroNet)}
                 </Text>
               </View>
               <View
@@ -296,18 +329,59 @@ export default function DashboardScreen() {
               </View>
             </View>
 
+            <View className="flex-row gap-2 mt-3 items-center flex-wrap">
+              {NET_POSITION_RANGE_OPTIONS.map((option) => {
+                const isActive = option.value === netPositionRange;
+                return (
+                  <TouchableOpacity
+                    key={option.value}
+                    onPress={() => setNetPositionRange(option.value)}
+                    activeOpacity={0.85}
+                    className="px-3 py-1.5 rounded-full"
+                    style={{
+                      backgroundColor: isActive
+                        ? "rgba(255,255,255,0.18)"
+                        : "rgba(255,255,255,0.08)",
+                      borderWidth: 1,
+                      borderColor: isActive
+                        ? colors.surface
+                        : "rgba(255,255,255,0.2)",
+                    }}
+                  >
+                    <Text
+                      className="text-[12px] font-semibold"
+                      style={{ color: colors.surface, opacity: isActive ? 1 : 0.7 }}
+                    >
+                      {option.label.replace("Last ", "")}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+              {isNetReportFetching && (
+                <ActivityIndicator size="small" color={colors.surface} />
+              )}
+            </View>
+
+            <Text className="text-[12px] text-surface/70 mt-3">
+              {netRangeLabel}
+            </Text>
+
+            <Text className="text-[12px] text-surface/70 mt-1">
+              Includes receivables and supplier payables for {netRangeLabel.toLowerCase()}.
+            </Text>
+
             <View className="flex-row mt-6">
               {[
                 {
                   label: "To Receive",
-                  value: toReceive,
+                  value: heroToReceive,
                   bg: colors.successBg,
                   text: colors.primary,
                   subtitle: "Customers owe you",
                 },
                 {
                   label: "To Give",
-                  value: toGive,
+                  value: heroToGive,
                   bg: colors.dangerBg,
                   text: colors.danger,
                   subtitle: "You owe suppliers",

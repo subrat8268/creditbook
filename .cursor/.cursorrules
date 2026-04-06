@@ -1,0 +1,15 @@
+Always compare code with screen images in project.
+
+Always:
+
+- Detect UI gaps
+- Fix mismatches
+- Complete missing logic
+
+Prioritize:
+
+1. Critical UX issues
+2. Business logic correctness
+3. UI polish
+
+Never leave screens partially implemented.

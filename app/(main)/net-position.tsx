@@ -36,21 +36,23 @@ import { exportNetPositionReport } from "@/src/api/dashboard";
 import Loader from "@/src/components/feedback/Loader";
 import { useMemo, useRef, useState, useCallback } from "react";
 import { buildNetPositionReportHtml } from "@/src/utils/netPositionReportPdf";
+import { useToast } from "@/src/components/feedback/Toast";
+import {
+  NET_POSITION_RANGE_OPTIONS,
+  NetPositionRange,
+  usePreferencesStore,
+} from "@/src/store/preferencesStore";
 
-const RANGE_OPTIONS = [
-  { label: "Last 7 days", value: 7 },
-  { label: "Last 30 days", value: 30 },
-  { label: "Last 90 days", value: 90 },
-] as const;
-
-type RangeValue = (typeof RANGE_OPTIONS)[number]["value"];
+type RangeValue = NetPositionRange;
 
 export default function NetPositionScreen() {
   const router = useRouter();
   const { profile } = useAuthStore();
-  const [range, setRange] = useState<RangeValue>(30);
+  const range = usePreferencesStore((s) => s.netPositionRange);
+  const setRangePreference = usePreferencesStore((s) => s.setNetPositionRange);
   const [downloading, setDownloading] = useState(false);
   const rangeSheetRef = useRef<BottomSheetModal>(null);
+  const { show } = useToast();
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -81,7 +83,8 @@ export default function NetPositionScreen() {
 
   const selectedRangeLabel = useMemo(() => {
     return (
-      RANGE_OPTIONS.find((opt) => opt.value === range)?.label || "Last 30 days"
+      NET_POSITION_RANGE_OPTIONS.find((opt) => opt.value === range)?.label ||
+      "Last 30 days"
     );
   }, [range]);
 
@@ -93,7 +96,7 @@ export default function NetPositionScreen() {
     : "Cash deficit — settle payables";
 
   const handleSelectRange = (value: RangeValue) => {
-    setRange(value);
+    setRangePreference(value);
     rangeSheetRef.current?.dismiss();
   };
 
@@ -137,8 +140,16 @@ export default function NetPositionScreen() {
         );
         const { uri } = await Print.printToFileAsync({ html });
         await Sharing.shareAsync(uri, { mimeType: "application/pdf" });
+        show({
+          message: "Server export unavailable. Generated report locally.",
+          type: "success",
+        });
       } catch (fallbackErr) {
         console.error("Fallback export failed", fallbackErr);
+        show({
+          message: "Could not generate report. Please try again.",
+          type: "error",
+        });
         Alert.alert(
           "Export failed",
           "Could not generate the report. Please try again.",
@@ -368,7 +379,7 @@ export default function NetPositionScreen() {
           <Text style={{ fontSize: 16, fontWeight: "700", color: colors.textPrimary, marginBottom: 8 }}>
             Select range
           </Text>
-          {RANGE_OPTIONS.map((option) => {
+          {NET_POSITION_RANGE_OPTIONS.map((option) => {
             const isActive = option.value === range;
             return (
               <TouchableOpacity
@@ -415,6 +426,18 @@ export default function NetPositionScreen() {
             {downloading ? "Generating…" : "Download PDF Report"}
           </Text>
         </TouchableOpacity>
+        {downloading && (
+          <Text
+            style={{
+              textAlign: "center",
+              marginTop: 8,
+              fontSize: 12,
+              color: colors.textSecondary,
+            }}
+          >
+            Generating cloud report… please keep the app open.
+          </Text>
+        )}
       </View>
     </View>
   );

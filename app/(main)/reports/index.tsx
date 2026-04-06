@@ -3,6 +3,10 @@ import Loader from "@/src/components/feedback/Loader";
 import { useNetPositionReport } from "@/src/hooks/useDashboard";
 import { buildNetPositionReportHtml } from "@/src/utils/netPositionReportPdf";
 import { useAuthStore } from "@/src/store/authStore";
+import {
+  NET_POSITION_RANGE_OPTIONS,
+  usePreferencesStore,
+} from "@/src/store/preferencesStore";
 import { formatINR } from "@/src/utils/dashboardUi";
 import { colors, gradients, spacing } from "@/src/utils/theme";
 import { LinearGradient } from "expo-linear-gradient";
@@ -18,7 +22,7 @@ import {
   Sparkles,
   TrendingUp,
 } from "lucide-react-native";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -147,8 +151,19 @@ function PersonRow({
 export default function NetPositionScreen() {
   const { profile } = useAuthStore();
   const router = useRouter();
-  const { data, isLoading } = useNetPositionReport(profile?.id, 30);
+  const range = usePreferencesStore((s) => s.netPositionRange);
+  const setRange = usePreferencesStore((s) => s.setNetPositionRange);
+  const { data, isLoading, isFetching } = useNetPositionReport(
+    profile?.id,
+    range,
+  );
   const [downloading, setDownloading] = useState(false);
+  const selectedRangeLabel = useMemo(() => {
+    return (
+      NET_POSITION_RANGE_OPTIONS.find((opt) => opt.value === range)?.label ||
+      "Last 30 days"
+    );
+  }, [range]);
 
   const handleDownloadPdf = async () => {
     if (!data) return;
@@ -230,6 +245,48 @@ export default function NetPositionScreen() {
               {isPositive ? "Cash surplus available" : "Net liability position"}
             </Text>
           </View>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+            {NET_POSITION_RANGE_OPTIONS.map((option) => {
+              const isActive = option.value === range;
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => setRange(option.value)}
+                  activeOpacity={0.85}
+                  style={{
+                    paddingHorizontal: 14,
+                    paddingVertical: 6,
+                    borderRadius: 999,
+                    borderWidth: 1,
+                    borderColor: isActive ? colors.surface : "rgba(255,255,255,0.3)",
+                    backgroundColor: isActive
+                      ? "rgba(255,255,255,0.2)"
+                      : "rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: colors.surface,
+                      fontWeight: isActive ? "700" : "600",
+                    }}
+                  >
+                    {option.label.replace("Last ", "")}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+            {isFetching && (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: "#fff" }} />
+                <Text style={{ color: "#FFFFFF", opacity: 0.7, fontSize: 12 }}>
+                  Updating…
+                </Text>
+              </View>
+            )}
+          </View>
+          <Text style={{ marginTop: 8, color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
+            {selectedRangeLabel}
+          </Text>
         </LinearGradient>
 
         {/* ── Breakdown ── */}
