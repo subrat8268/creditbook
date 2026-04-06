@@ -849,6 +849,8 @@ Unified chronological feed of bills and payments per customer. Newest entries fi
 
 One-tap WhatsApp reminder from the Customer Detail screen. Pre-fills a message with the customer's name, outstanding balance, and the business name. No typing required — the user taps "Send Reminder" and the WhatsApp compose screen opens with the message ready.
 
+**Rule:** Every reminder or payment action should surface an inline toast (“Reminder sent”, “Payment recorded”) so the user gets instant confirmation without leaving the dashboard.
+
 ---
 
 ## 6. UX Patterns
@@ -1078,3 +1080,11 @@ Every design decision should be evaluated against these four qualities before sh
 ---
 
 _This document is intended for use with AI design generation tools and human designers. For technical implementation details, see [`docs/prd.md`](./prd.md). For the full design token reference, see [`docs/design-system.md`](./design-system.md)._
+### 4.24 Pay Supplier (Dashboard quick action)
+
+- Trigger: Distributor dashboard → “Pay Supplier” quick action
+- Flow:
+  1. Bottom sheet lists all suppliers (search + outstanding amount). Tapping prefetches supplier detail (cached via `supplierKeys.detail`).
+  2. Summary sheet shows outstanding balance, last delivery, last payment, and top three timeline events. Includes Quick Pay chips (25%, 50%, 100%) that remember the user’s preferred ratio per supplier via AsyncStorage. CTAs: “Record Payment” (opens `RecordPaymentMadeModal`) or “Open Supplier Detail”.
+  3. Recording payment surfaces a success toast (“Supplier payment recorded”).
+  4. Customer bill creation also fires a toast after `Save & Share` (“Bill shared with …”), per dashboard rule.

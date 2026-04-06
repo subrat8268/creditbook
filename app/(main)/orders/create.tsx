@@ -5,6 +5,7 @@ import OrderItemCard from "@/src/components/orders/OrderItemCard";
 import CustomerPicker from "@/src/components/picker/CustomerPicker";
 import ProductPicker from "@/src/components/picker/ProductPicker";
 import { useCreateOrder } from "@/src/hooks/useOrders";
+import { useToast } from "@/src/components/feedback/Toast";
 import { useAuthStore } from "@/src/store/authStore";
 import { useOrderStore } from "@/src/store/orderStore";
 import { BillItem, generateBillPdf } from "@/src/utils/generateBillPdf";
@@ -125,6 +126,7 @@ export default function CreateOrderScreen() {
     [setCustomer, fetchPreviousBalance],
   );
 
+  const { show: showToast } = useToast();
   const createOrderMutation = useCreateOrder(vendorId!);
 
   const handleSaveAndShare = async () => {
@@ -206,10 +208,16 @@ export default function CreateOrderScreen() {
 
       // Cleanup Draft on success and pop
       clearOrder();
+      showToast({
+        message: `Bill shared with ${selectedCustomerMeta?.name ?? "customer"}`,
+        type: "success",
+      });
       router.back();
     } catch (err: any) {
       console.error("Save & Share failed:", err.message);
-      Alert.alert("Error", err.message || "Failed to save and share bill");
+      const errorMessage = err.message || "Failed to save and share bill";
+      showToast({ message: errorMessage, type: "error" });
+      Alert.alert("Error", errorMessage);
     }
   };
 

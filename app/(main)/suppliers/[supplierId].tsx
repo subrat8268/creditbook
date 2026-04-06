@@ -34,6 +34,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useToast } from "@/src/components/feedback/Toast";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -181,6 +182,7 @@ export default function SupplierDetailScreen() {
   const { supplierId } = useLocalSearchParams<{ supplierId: string }>();
   const profile = useAuthStore((s) => s.profile);
   const router = useRouter();
+  const { show: showToast } = useToast();
 
   const { data: supplier, isLoading, isError } = useSupplierDetail(supplierId);
   const [deliveryModalOpen, setDeliveryModalOpen] = useState(false);
@@ -485,7 +487,7 @@ export default function SupplierDetailScreen() {
           onSubmit={async (data) => {
             await recordDelivery.mutateAsync(data);
             setDeliveryModalOpen(false);
-            Alert.alert("Success", "Delivery recorded successfully.");
+            showToast({ message: "Delivery recorded", type: "success" });
           }}
         />
 
@@ -499,7 +501,7 @@ export default function SupplierDetailScreen() {
           onSubmit={async (data) => {
             await recordPayment.mutateAsync(data);
             setPaymentModalOpen(false);
-            Alert.alert("Success", "Payment recorded successfully.");
+            showToast({ message: "Payment recorded", type: "success" });
           }}
         />
       </SafeAreaView>

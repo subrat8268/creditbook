@@ -12,6 +12,7 @@ import {
   TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Plus,
   NotebookPen,
@@ -42,11 +43,13 @@ import {
   usePreferencesStore,
 } from "@/src/store/preferencesStore";
 import { Supplier, SupplierDetail } from "@/src/types/supplier";
-import { useSuppliers } from "@/src/hooks/useSuppliers";
+import { useSuppliers, supplierKeys } from "@/src/hooks/useSuppliers";
 import RecordCustomerPaymentModal from "@/src/components/customers/RecordCustomerPaymentModal";
 import RecordPaymentMadeModal from "@/src/components/suppliers/RecordPaymentMadeModal";
 import { fetchCustomerDetail } from "@/src/api/customers";
 import { fetchSupplierDetail, recordPaymentMade } from "@/src/api/suppliers";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/src/components/feedback/Toast";
 
 const currencyFormatter = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 0,
@@ -216,7 +219,7 @@ const normalizePhoneForWhatsApp = (phone?: string) => {
 const buildReminderMessage = (name: string, amount: number) =>
   `Hi ${name}, you have an outstanding balance of ${formatCurrency(amount)}. Please clear it at your earliest convenience. Thank you!`;
 
-const sendWhatsAppReminder = (customer: OverdueCustomer) => {
+const sendWhatsAppReminder = (customer: OverdueCustomer, toast?: (opts: { message: string; type?: "success" | "error" }) => void) => {
   const number = normalizePhoneForWhatsApp(customer.phone);
   if (!number) {
     Alert.alert(
@@ -230,6 +233,8 @@ const sendWhatsAppReminder = (customer: OverdueCustomer) => {
   );
   Linking.openURL(`https://wa.me/${number}?text=${message}`).catch(() => {
     Alert.alert("Unable to open WhatsApp", "Please try again later.");
+  }).finally(() => {
+    toast?.({ message: `Reminder sent to ${customer.name}`, type: "success" });
   });
 };
 
@@ -239,6 +244,8 @@ const formatCountLabel = (count: number, noun: string) =>
 export default function DashboardScreen() {
   const router = useRouter();
   const { profile } = useAuthStore();
+  const queryClient = useQueryClient();
+  const { show: showToast } = useToast();
   const {
     netPosition,
     toReceive,
@@ -286,6 +293,7 @@ export default function DashboardScreen() {
   >(null);
   const [isPayingSupplier, setIsPayingSupplier] = useState(false);
   const [supplierSearch, setSupplierSearch] = useState("");
+  const [preferredRatio, setPreferredRatio] = useState<Record<string, number>>({});
   const { suppliers: supplierList, isFetching: isSuppliersFetching } = useSuppliers(
     profile?.id,
     supplierSearch,
@@ -294,11 +302,37 @@ export default function DashboardScreen() {
   const [supplierSummary, setSupplierSummary] = useState<
     { supplier: Supplier; detail?: SupplierDetail | null; loading: boolean } | null
   >(null);
+  const SUPPLIER_RATIO_KEY = "preferredSupplierRatios";
+
+  useEffect(() => {
+    AsyncStorage.getItem(SUPPLIER_RATIO_KEY)
+      .then((stored) => {
+        if (stored) {
+          setPreferredRatio(JSON.parse(stored));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const updatePreferredRatio = useCallback(
+    (supplierId: string, ratio: number) => {
+      setPreferredRatio((prev) => {
+        const next = { ...prev, [supplierId]: ratio };
+        AsyncStorage.setItem(SUPPLIER_RATIO_KEY, JSON.stringify(next)).catch(() => {});
+        return next;
+      });
+    },
+    [],
+  );
   const outstandingBalance = supplierSummary
     ? supplierSummary.detail?.totalOwed ?? supplierSummary.supplier.balanceOwed ?? 0
     : 0;
   const lastDelivery = supplierSummary?.detail?.deliveries?.[0];
   const lastPayment = supplierSummary?.detail?.timeline?.find((t) => t.type === "payment");
+  const selectedSupplierRatio = supplierSummary
+    ? preferredRatio[supplierSummary.supplier.id] ?? 1
+    : 1;
+  const quickPayRatios: number[] = [0.25, 0.5, 1];
 
   const quickActionSnapPoints = useMemo(() => ["45%", "65%"], []);
   const sheetTitle =
@@ -370,7 +404,7 @@ export default function DashboardScreen() {
   const handleSelectActionItem = (item: OverdueCustomer | OverdueSupplier) => {
     if (!quickActionMode) return;
     if (quickActionMode === "remind") {
-      sendWhatsAppReminder(item as OverdueCustomer);
+      sendWhatsAppReminder(item as OverdueCustomer, showToast);
       actionSheetRef.current?.dismiss();
       return;
     }
@@ -408,6 +442,7 @@ export default function DashboardScreen() {
       );
       refreshDashboard();
       setSupplierPaymentContext(null);
+      showToast({ message: "Supplier payment recorded", type: "success" });
     } catch (error: any) {
       Alert.alert(
         "Payment failed",
@@ -420,6 +455,19 @@ export default function DashboardScreen() {
 
   const handleReminder = (customer: OverdueCustomer) => {
     sendWhatsAppReminder(customer);
+  };
+
+  const handleCustomerPaymentSuccess = () => {
+    if (paymentContext?.customerName) {
+      showToast({
+        message: `Payment recorded for ${paymentContext.customerName}`,
+        type: "success",
+      });
+    } else {
+      showToast({ message: "Payment recorded", type: "success" });
+    }
+    refreshDashboard();
+    setPaymentContext(null);
   };
 
 const renderHeroSection = () => {
@@ -624,10 +672,21 @@ const renderHeroSection = () => {
 
   const handleSupplierSelected = async (supplier: Supplier) => {
     supplierPickerRef.current?.dismiss();
+    const cachedDetail = queryClient.getQueryData<SupplierDetail | null>(
+      supplierKeys.detail(supplier.id),
+    );
+    if (cachedDetail) {
+      setSupplierSummary({ supplier, detail: cachedDetail, loading: false });
+      supplierSummaryRef.current?.present();
+      return;
+    }
     setSupplierSummary({ supplier, detail: null, loading: true });
     supplierSummaryRef.current?.present();
     try {
       const detail = await fetchSupplierDetail(supplier.id);
+      if (detail) {
+        queryClient.setQueryData(supplierKeys.detail(supplier.id), detail);
+      }
       setSupplierSummary({ supplier, detail, loading: false });
     } catch (error: any) {
       Alert.alert("Unable to load supplier", error?.message || "Please try again.");
@@ -790,7 +849,10 @@ const renderHeroSection = () => {
                         </Text>
                       </View>
                       <TouchableOpacity
-                        onPress={() => handleReminder(customer)}
+                        onPress={() => {
+                          handleReminder(customer);
+                          showToast({ message: `Reminder sent to ${customer.name}`, type: "success" });
+                        }}
                         className="px-3.5 py-2 rounded-full"
                         style={{ backgroundColor: colors.primary }}
                       >
@@ -1090,11 +1152,11 @@ const renderHeroSection = () => {
                         </Text>
                       </View>
                     ) : null}
-                    {lastPayment ? (
-                      <View style={{ padding: 12, borderRadius: 16, backgroundColor: colors.background }}>
-                        <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textSecondary }}>
-                          Last payment made
-                        </Text>
+                {lastPayment ? (
+                  <View style={{ padding: 12, borderRadius: 16, backgroundColor: colors.background }}>
+                    <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textSecondary }}>
+                      Last payment made
+                    </Text>
                         <Text style={{ fontSize: 15, fontWeight: "700", color: colors.textPrimary }}>
                           {formatCurrency(Number(lastPayment.paymentAmount ?? 0))}
                         </Text>
@@ -1103,10 +1165,79 @@ const renderHeroSection = () => {
                         </Text>
                       </View>
                     ) : null}
+                    {supplierSummary.detail?.timeline?.length ? (
+                      <View style={{ padding: 12, borderRadius: 16, backgroundColor: colors.background }}>
+                        <Text style={{ fontSize: 12, fontWeight: "600", color: colors.textSecondary, marginBottom: 8 }}>
+                          Recent activity
+                        </Text>
+                        {supplierSummary.detail.timeline.slice(0, 3).map((event) => (
+                          <View key={event.id} style={{ marginBottom: 6 }}>
+                            <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textPrimary }}>
+                              {event.type === "delivery" ? "Delivery" : "Payment"}
+                            </Text>
+                            <Text style={{ fontSize: 13, color: colors.textSecondary }}>
+                              {new Date(event.date).toLocaleDateString("en-IN")} •
+                              {" "}
+                              {formatCurrency(
+                                event.type === "delivery"
+                                  ? Number(event.delivery?.total_amount ?? 0)
+                                  : Number(event.paymentAmount ?? 0),
+                              )}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    ) : null}
                   </View>
                 )}
 
                 <View style={{ marginTop: 20, gap: 12 }}>
+                  <View className="flex-row gap-3">
+                    {quickPayRatios.map((ratio) => (
+                      <TouchableOpacity
+                        key={`quick-pay-${ratio}`}
+                        className="flex-1"
+                        style={{
+                          paddingVertical: 12,
+                          borderRadius: 14,
+                          borderWidth: 1,
+                          borderColor:
+                            selectedSupplierRatio === ratio
+                              ? colors.primary
+                              : colors.border,
+                          backgroundColor:
+                            selectedSupplierRatio === ratio
+                              ? "rgba(15,118,110,0.08)"
+                              : "transparent",
+                          alignItems: "center",
+                        }}
+                        onPress={() => {
+                          const targetAmount = Math.max(
+                            0,
+                            Math.round(outstandingBalance * ratio),
+                          );
+                          setSupplierPaymentContext({
+                            id: supplierSummary.supplier.id,
+                            name: supplierSummary.supplier.name,
+                            balance: targetAmount || outstandingBalance,
+                          });
+                          supplierSummaryRef.current?.dismiss();
+                          updatePreferredRatio(supplierSummary.supplier.id, ratio);
+                        }}
+                      >
+                        <Text style={{ fontSize: 12, fontWeight: "600", color: colors.textSecondary }}>
+                          Pay {ratio === 1 ? "full" : `${ratio * 100}%`}
+                        </Text>
+                        <Text style={{ fontSize: 13, fontWeight: "700", color: colors.textPrimary }}>
+                          {formatCurrency(
+                            ratio === 1
+                              ? outstandingBalance
+                              : Math.round(outstandingBalance * ratio),
+                          )}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                   <TouchableOpacity
                     className="w-full"
                     style={{
@@ -1125,6 +1256,7 @@ const renderHeroSection = () => {
                           0,
                       });
                       supplierSummaryRef.current?.dismiss();
+                      updatePreferredRatio(supplierSummary.supplier.id, 1);
                     }}
                   >
                     <Text style={{ color: colors.surface, fontSize: 15, fontWeight: "700" }}>
@@ -1166,10 +1298,7 @@ const renderHeroSection = () => {
             balanceDue={paymentContext.balanceDue}
             customerId={paymentContext.customerId}
             customerName={paymentContext.customerName}
-            onSuccess={() => {
-              refreshDashboard();
-              setPaymentContext(null);
-            }}
+            onSuccess={handleCustomerPaymentSuccess}
             onDismiss={() => setPaymentContext(null)}
           />
         )}
