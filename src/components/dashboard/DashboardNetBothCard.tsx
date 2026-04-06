@@ -21,9 +21,9 @@ export default function DashboardNetBothCard({
   return (
     <Pressable
       onPress={onPress}
-      className="bg-white rounded-3xl p-6 mb-5 border border-slate-100 items-center overflow-hidden"
+      className="bg-surface rounded-3xl p-6 mb-5 border border-borderLight items-center overflow-hidden"
       style={{
-        shadowColor: "#000",
+        shadowColor: colors.textPrimary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.05,
         shadowRadius: 12,
@@ -55,14 +55,14 @@ export default function DashboardNetBothCard({
         <View
           className="flex-row items-center mt-2 px-2.5 py-1 rounded-full mb-6"
           style={{
-            backgroundColor: "rgba(34,197,94,0.1)",
+            backgroundColor: colors.successBg,
           }}
         >
           <Text
             style={{
               fontSize: 12,
               fontWeight: "600",
-              color: "#16A34A",
+              color: colors.primaryDark,
             }}
           >
             {weekDeltaPct > 0 ? "↗" : "↘"} {Math.abs(weekDeltaPct)}% from last week
@@ -75,17 +75,17 @@ export default function DashboardNetBothCard({
         <View
           className="flex-1 rounded-2xl border p-4 items-start"
           style={{
-            backgroundColor: "#F8FAFC",
-            borderColor: "#F1F5F9",
+            backgroundColor: colors.surfaceAlt,
+            borderColor: colors.borderLight,
           }}
         >
           <View className="flex-row items-center gap-1.5 mb-2">
-            <ArrowDownLeft size={14} color="#16A34A" strokeWidth={2.5} />
-            <Text style={{ fontSize: 11, fontWeight: "600", color: "#64748B" }}>
+            <ArrowDownLeft size={14} color={colors.primaryDark} strokeWidth={2.5} />
+            <Text style={{ fontSize: 11, fontWeight: "600", color: colors.textMuted }}>
               TO RECEIVE
             </Text>
           </View>
-          <Text style={{ fontSize: 18, fontWeight: "700", color: "#16A34A" }}>
+          <Text style={{ fontSize: 18, fontWeight: "700", color: colors.primaryDark }}>
             {formatINR(toReceive)}
           </Text>
         </View>
@@ -93,17 +93,17 @@ export default function DashboardNetBothCard({
         <View
           className="flex-1 rounded-2xl border p-4 items-start"
           style={{
-            backgroundColor: "#FDFDFD",
-            borderColor: "#F1F5F9",
+            backgroundColor: colors.surfaceAlt,
+            borderColor: colors.borderLight,
           }}
         >
           <View className="flex-row items-center gap-1.5 mb-2">
-            <ArrowUpRight size={14} color="#DC2626" strokeWidth={2.5} />
-            <Text style={{ fontSize: 11, fontWeight: "600", color: "#64748B" }}>
+            <ArrowUpRight size={14} color={colors.danger} strokeWidth={2.5} />
+            <Text style={{ fontSize: 11, fontWeight: "600", color: colors.textMuted }}>
               TO GIVE
             </Text>
           </View>
-          <Text style={{ fontSize: 18, fontWeight: "700", color: "#DC2626" }}>
+          <Text style={{ fontSize: 18, fontWeight: "700", color: colors.danger }}>
             {formatINR(toGive)}
           </Text>
         </View>

@@ -19,15 +19,15 @@ type IconCfg = {
 
 const ICON_CONFIG: Record<string, IconCfg> = {
   payment: {
-    bg: colors.paid.bg ?? "#DCFCE7",
+    bg: colors.paid.bg,
     icon: CreditCard,
-    color: colors.primaryDark ?? "#166534",
+    color: colors.primaryDark,
     label: "Customer Payment",
   },
   delivery: {
-    bg: colors.pending.bg ?? "#FEF3C7",
+    bg: colors.pending.bg,
     icon: Truck,
-    color: colors.pending.text ?? "#92400E",
+    color: colors.pending.text,
     label: "Inventory Received",
   },
   bill: {
@@ -50,9 +50,9 @@ export default function ActivityRow({ item }: Props) {
 
   return (
     <View
-      className="bg-white rounded-2xl p-4 flex-row items-center gap-3.5 mb-2.5"
+      className="bg-surface rounded-2xl p-4 flex-row items-center gap-3.5 mb-2.5"
       style={{
-        shadowColor: "#000",
+        shadowColor: colors.textPrimary,
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.04,
         shadowRadius: 4,
@@ -83,7 +83,7 @@ export default function ActivityRow({ item }: Props) {
       <View className="items-end gap-1">
         <Text
           className="text-sm font-bold"
-          style={{ color: isIncoming ? "#16A34A" : colors.danger }}
+          style={{ color: isIncoming ? colors.primaryDark : colors.danger }}
         >
           {isIncoming ? "+" : "−"}
           {formatINR(item.amount)}

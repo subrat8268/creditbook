@@ -19,19 +19,19 @@ export default function DashboardActionBar({
       <TouchableOpacity
         className="flex-1 rounded-[16px] items-center justify-center py-5 border"
         style={{
-          backgroundColor: "#F8FAFC",
-          borderColor: "#E2E8F0",
+          backgroundColor: colors.surfaceAlt,
+          borderColor: colors.border,
         }}
         onPress={onNewBill}
       >
         <View
           className="w-10 h-10 rounded-full items-center justify-center mb-2"
-          style={{ backgroundColor: "#EFF6FF" }}
+          style={{ backgroundColor: colors.primaryBlueBg }}
         >
-          <FilePlus2 size={20} color="#3B82F6" strokeWidth={2} />
+          <FilePlus2 size={20} color={colors.primaryBlue} strokeWidth={2} />
         </View>
         <Text
-          style={{ fontSize: 13, fontWeight: "600", color: "#1E293B" }}
+          style={{ fontSize: 13, fontWeight: "600", color: colors.textPrimary }}
         >
           New Bill
         </Text>
@@ -41,19 +41,19 @@ export default function DashboardActionBar({
       <TouchableOpacity
         className="flex-1 rounded-[16px] items-center justify-center py-5 border"
         style={{
-          backgroundColor: "#F6FDF9",
-          borderColor: "#DCFCE7",
+          backgroundColor: colors.successBg,
+          borderColor: colors.paid.bg,
         }}
         onPress={onCollect}
       >
         <View
           className="w-10 h-10 rounded-full items-center justify-center mb-2"
-          style={{ backgroundColor: "#dcfce7" }}
+          style={{ backgroundColor: colors.paid.bg }}
         >
           <Wallet size={20} color={colors.primary} strokeWidth={2} />
         </View>
         <Text
-          style={{ fontSize: 13, fontWeight: "600", color: "#1E293B" }}
+          style={{ fontSize: 13, fontWeight: "600", color: colors.textPrimary }}
         >
           Collect
         </Text>
@@ -63,19 +63,19 @@ export default function DashboardActionBar({
       <TouchableOpacity
         className="flex-1 rounded-[16px] items-center justify-center py-5 border"
         style={{
-          backgroundColor: "#FFFAEB",
-          borderColor: "#FEF3C7",
+          backgroundColor: colors.warningBg,
+          borderColor: colors.warningBadgeBg,
         }}
         onPress={onRemind}
       >
         <View
           className="w-10 h-10 rounded-full items-center justify-center mb-2"
-          style={{ backgroundColor: "#FEF3C7" }}
+          style={{ backgroundColor: colors.warningBadgeBg }}
         >
-          <BellRing size={20} color="#F59E0B" strokeWidth={2} />
+          <BellRing size={20} color={colors.warning} strokeWidth={2} />
         </View>
         <Text
-          style={{ fontSize: 13, fontWeight: "600", color: "#1E293B" }}
+          style={{ fontSize: 13, fontWeight: "600", color: colors.textPrimary }}
         >
           Remind
         </Text>

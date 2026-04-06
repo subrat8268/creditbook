@@ -40,7 +40,7 @@ export default function DashboardPendingFollowups({
           </Text>
           <View
             className="px-2 py-0.5 rounded-full"
-            style={{ backgroundColor: "#FEF2F2" }}
+            style={{ backgroundColor: colors.dangerBg }}
           >
             <Text
               style={{
@@ -60,9 +60,9 @@ export default function DashboardPendingFollowups({
 
       {/* Customer rows */}
       <View
-        className="bg-white rounded-2xl overflow-hidden"
+        className="bg-surface rounded-2xl overflow-hidden"
         style={{
-          shadowColor: "#000",
+          shadowColor: colors.textPrimary,
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.05,
           shadowRadius: 8,
@@ -75,13 +75,13 @@ export default function DashboardPendingFollowups({
             className="flex-row items-center px-4 py-3.5"
             style={{
               borderBottomWidth: index < visible.length - 1 ? 1 : 0,
-              borderBottomColor: "#F1F5F9",
+              borderBottomColor: colors.borderLight,
             }}
           >
             {/* Avatar */}
             <View
               className="w-10 h-10 rounded-full items-center justify-center mr-3"
-              style={{ backgroundColor: "#FEF2F2" }}
+              style={{ backgroundColor: colors.dangerBg }}
             >
               <Text
                 style={{
@@ -123,7 +123,7 @@ export default function DashboardPendingFollowups({
               </Text>
               <TouchableOpacity
                 className="flex-row items-center gap-1 px-2.5 py-1 rounded-full"
-                style={{ backgroundColor: "#F0FDF4" }}
+                style={{ backgroundColor: colors.successBg }}
                 onPress={() => handleRemind(customer)}
               >
                 <BellRing size={12} color={colors.primary} strokeWidth={2.5} />

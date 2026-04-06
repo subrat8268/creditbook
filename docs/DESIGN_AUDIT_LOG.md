@@ -145,3 +145,19 @@ _Status: ✅ Done_
   - Action strip buttons ×2: `bg-white` → `bg-surface`.
   - `SafeAreaView`: merged `style={}` into `className="flex-1 bg-background"`.
   - Custom header: `bg-white` → `bg-surface`.
+
+### 11. Dashboard (`app/(main)/dashboard/index.tsx` + components)
+_Status: ✅ Done_
+- Discrepancies Found:
+  - `index.tsx`: 7 Lucide icons using `className` for colors (ignored); FAB shadow using raw logic.
+  - `DashboardActionBar.tsx`: 14 raw hex codes for button tints and icon colors.
+  - `DashboardNetBothCard.tsx`: 9 raw hex codes; `bg-white`; `border-slate-100` JIT class; `shadowColor: "#000"`.
+  - `DashboardPendingFollowups.tsx`: 4 raw hex codes; `bg-white`; `shadowColor: "#000"`.
+  - `ActivityRow.tsx`: Fallback hex strings in `ICON_CONFIG`; `bg-white`; `shadowColor: "#000"`.
+- Fixes Applied:
+  - **Theme extended**: Added `surfaceAlt`, `borderLight`, `textMuted`, `primaryBlue`, `primaryBlueBg`, `warningBadgeBg` to `src/utils/theme.ts`.
+  - `index.tsx`: Replaced all icon `className` with explicit `color` props linked to theme tokens.
+  - `DashboardActionBar`: Fully tokenized all 3 buttons (New Bill, Collect, Remind).
+  - `DashboardNetBothCard`: Refactored to `bg-surface`, `border-borderLight`, and mapped all sub-box colors to new tokens.
+  - `DashboardPendingFollowups`: Refactored to `bg-surface` and mapped red/green tints to `dangerBg`/`successBg`.
+  - `ActivityRow`: Removed config fallbacks; fully tokenized icon colors and backgrounds.

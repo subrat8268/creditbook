@@ -59,13 +59,13 @@ export default function DashboardScreen() {
             onPress={() => router.push("/(main)/notifications" as any)}
             className="p-2 bg-surface rounded-full border border-border"
           >
-            <Bell size={22} className="text-textSecondary" strokeWidth={2.2} />
+            <Bell size={22} color={colors.textSecondary} strokeWidth={2.2} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => router.push("/(main)/profile" as any)}
             className="p-2 bg-surface rounded-full border border-border"
           >
-            <Settings size={22} className="text-textSecondary" strokeWidth={2.2} />
+            <Settings size={22} color={colors.textSecondary} strokeWidth={2.2} />
           </TouchableOpacity>
         </View>
       </View>
@@ -90,7 +90,7 @@ export default function DashboardScreen() {
               <Text className="text-[14px] font-bold text-surface mr-2">
                 View Customer Ledger
               </Text>
-              <ChevronRight size={16} className="text-surface" strokeWidth={3} />
+              <ChevronRight size={16} color={colors.surface} strokeWidth={3} />
             </TouchableOpacity>
           </View>
         </View>
@@ -116,7 +116,7 @@ export default function DashboardScreen() {
               >
                 <View className="flex-row items-center flex-1">
                   <View className="w-12 h-12 rounded-full bg-dangerLight items-center justify-center mr-3">
-                    <AlertCircle size={22} className="text-danger" strokeWidth={2.5} />
+                    <AlertCircle size={22} color={colors.danger} strokeWidth={2.5} />
                   </View>
                   <View className="flex-1 mr-2">
                     <Text className="text-[16px] font-bold text-textPrimary mb-0.5" numberOfLines={1}>
@@ -176,9 +176,9 @@ export default function DashboardScreen() {
                       }`}
                     >
                       {isPayment ? (
-                        <ArrowDownLeft size={22} className="text-success" strokeWidth={2.5} />
+                        <ArrowDownLeft size={22} color={colors.paid.text} strokeWidth={2.5} />
                       ) : (
-                        <ArrowUpRight size={22} className="text-primary" strokeWidth={2.5} />
+                        <ArrowUpRight size={22} color={colors.primary} strokeWidth={2.5} />
                       )}
                     </View>
 
@@ -227,7 +227,7 @@ export default function DashboardScreen() {
           elevation: 10,
         }}
       >
-        <Plus size={30} className="text-surface" strokeWidth={2.5} />
+        <Plus size={30} color={colors.surface} strokeWidth={2.5} />
       </TouchableOpacity>
     </SafeAreaView>
   );

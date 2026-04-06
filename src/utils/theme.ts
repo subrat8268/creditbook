@@ -32,12 +32,24 @@ export const colors = {
   surface: "#FFFFFF", // Cards, modals, panels
   textPrimary: "#1C1C1E", // Primary text (near-black)
   textSecondary: "#6B7280", // Secondary text, captions
-  border: "#E2E8F0", // Dividers, input borders, subtle separators
+  border: "#E2E8F0",    // Dividers, input borders, subtle separators
+  borderLight: "#F1F5F9", // Slate-100 — innercard borders, sub-box dividers
+
+  // ─ Semantic Blues (FAB + action bar "New Bill")
+  primaryBlue: "#3B82F6",    // Blue-500 — New Bill icon color
+  primaryBlueBg: "#EFF6FF",  // Blue-50  — New Bill icon circle bg
 
   // ─ Semantic backgrounds (tinted panels)
-  successBg: "#F0FDF4", // Green-50: YOU RECEIVE panel
-  dangerBg: "#FEF2F2", // Red-50: YOU OWE panel
-  warningBg: "#FFFBEB", // Amber-50: Pending/Caution panel
+  successBg: "#F0FDF4",  // Green-50: YOU RECEIVE panel
+  dangerBg: "#FEF2F2",   // Red-50: YOU OWE panel
+  warningBg: "#FFFBEB",  // Amber-50: Pending/Caution panel
+  warningBadgeBg: "#FEF3C7", // Amber-100 — Remind action bar button bg (= pending.bg)
+
+  // ─ Surface variants
+  surfaceAlt: "#F8FAFC",  // Slate-50 — inner sub-boxes on cards
+
+  // ─ Text variants
+  textMuted: "#64748B",   // Slate-500 — secondary labels inside cards
 
   // ─ Status chip colors
   paid: {
