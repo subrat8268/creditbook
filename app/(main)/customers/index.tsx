@@ -1,8 +1,5 @@
 import ContactsPickerModal from "@/src/components/customers/ContactsPickerModal";
-import CustomerList, {
-    CustomerFilter,
-} from "@/src/components/customers/CustomerList";
-import CustomersHeader from "@/src/components/customers/CustomersHeader";
+import CustomerList from "@/src/components/customers/CustomerList";
 import NewCustomerModal from "@/src/components/customers/NewCustomerModal";
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import SearchBar from "@/src/components/ui/SearchBar";
@@ -10,19 +7,17 @@ import { useAddCustomer, useCustomers } from "@/src/hooks/useCustomer";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useAuthStore } from "@/src/store/authStore";
 import { useCustomersStore } from "@/src/store/customersStore";
-import { formatINR } from "@/src/utils/dashboardUi";
 import { colors, spacing, typography } from "@/src/utils/theme";
 import BottomSheet, {
     BottomSheetBackdrop,
     BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import { Check, TrendingDown, Users } from "lucide-react-native";
+import { Check, Users } from "lucide-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Alert,
-    ScrollView,
     StatusBar,
     StyleSheet,
     Text,
@@ -30,8 +25,6 @@ import {
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const FILTERS: CustomerFilter[] = ["All", "Overdue", "Paid", "Pending"];
 
 const SORT_OPTIONS = [
   { label: "Recently Active", value: "recent" },
@@ -48,7 +41,6 @@ export default function CustomersScreen() {
   const { t } = useTranslation();
 
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<CustomerFilter>("All");
   const [sortBy, setSortBy] = useState<CustomerSort>("recent");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isContactsModalOpen, setIsContactsModalOpen] = useState(false);
@@ -68,15 +60,6 @@ export default function CustomersScreen() {
   const addCustomerMutation = useAddCustomer(profile?.id ?? "");
 
   // ── Summary stats ──────────────────────────────────────────────────────────
-  const totalOutstanding = useMemo(
-    () => customers.reduce((s, c) => s + (c.outstandingBalance ?? 0), 0),
-    [customers],
-  );
-  const overdueCount = useMemo(
-    () => customers.filter((c) => c.isOverdue).length,
-    [customers],
-  );
-
   // ── Sorted customers (sorted before passing to CustomerList) ───────────────
   const sortedCustomers = useMemo(() => {
     const list = [...customers];

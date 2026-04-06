@@ -19,6 +19,7 @@ type Props = {
   balanceDue: number;
   customerId: string;
   customerName: string;
+  onDismiss?: () => void;
 };
 
 const MODES: PaymentMode[] = ["Cash", "UPI", "NEFT", "Draft", "Cheque"];
@@ -45,7 +46,10 @@ function formatINR(n: number) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
-  ({ onSuccess, orderId, balanceDue, customerId, customerName }, ref) => {
+  (
+    { onSuccess, orderId, balanceDue, customerId, customerName, onDismiss },
+    ref,
+  ) => {
     const [amount, setAmount] = useState(String(balanceDue));
     const [mode, setMode] = useState<PaymentMode>("Cash");
     const [notes, setNotes] = useState("");
@@ -126,6 +130,7 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
           borderTopRightRadius: 24,
           backgroundColor: colors.surface,
         }}
+        onDismiss={onDismiss}
       >
         <BottomSheetScrollView
           contentContainerStyle={{
@@ -276,5 +281,7 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
     );
   }
 );
+
+RecordCustomerPaymentModal.displayName = "RecordCustomerPaymentModal";
 
 export default RecordCustomerPaymentModal;

@@ -1,49 +1,51 @@
 import { formatINR } from "@/src/utils/dashboardUi";
-import { colors, gradients, spacing, typography } from "@/src/utils/theme";
+import { colors, gradients } from "@/src/utils/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import {
   ArrowLeft,
   Calendar,
-  ChevronRight,
   Download,
   AlertTriangle,
   Clock,
   Zap,
   ArrowUpRight,
   ArrowDownRight,
+  Wallet,
 } from "lucide-react-native";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useAuthStore } from "@/src/store/authStore";
-import { useDashboard } from "@/src/hooks/useDashboard";
+import { useNetPositionReport } from "@/src/hooks/useDashboard";
 import Loader from "@/src/components/feedback/Loader";
-
-// Mock data to match design where API doesn't provide it yet
-const TREND_DATA = [
-  { month: "Aug", in: 100, out: 40 },
-  { month: "Sep", in: 110, out: 55 },
-  { month: "Oct", in: 105, out: 65 },
-  { month: "Nov", in: 120, out: 40 },
-  { month: "Dec", in: 95, out: 60 },
-  { month: "Jan", in: 124, out: 54 },
-];
-
-const TOP_CUSTOMERS = [
-  { id: 1, initials: "MS", name: "Mohit Sharma", amount: 45200 },
-  { id: 2, initials: "AT", name: "Anil Traders", amount: 32150 },
-  { id: 3, initials: "KS", name: "Karan Store", amount: 18900 },
-];
-
-const TOP_SUPPLIERS = [
-  { id: 1, initials: "MD", name: "Metro Distributors", amount: 22000 },
-  { id: 2, initials: "PF", name: "Patel Foods", amount: 15400 },
-  { id: 3, initials: "RS", name: "Ravi Supplies", amount: 12800 },
-];
+import { useMemo } from "react";
 
 export default function NetPositionScreen() {
   const router = useRouter();
   const { profile } = useAuthStore();
-  const { data, isLoading } = useDashboard(profile?.id);
+  const { data, isLoading, refetch, isRefetching } = useNetPositionReport(
+    profile?.id,
+  );
+
+  const cashFlowMax = useMemo(() => {
+    if (!data?.cashFlow?.length) return 1;
+    return Math.max(
+      1,
+      ...data.cashFlow.map((m) => Math.max(m.inflow, m.outflow, 1)),
+    );
+  }, [data?.cashFlow]);
+
+  const hasSurplus = (data?.netBalance ?? 0) >= 0;
+  const TrendIcon = hasSurplus ? ArrowUpRight : ArrowDownRight;
+  const trendColor = hasSurplus ? "#A7F3D0" : "#FCA5A5";
+  const trendLabel = hasSurplus
+    ? "Cash surplus available"
+    : "Cash deficit — settle payables";
 
   if (isLoading || !data) return <Loader />;
 
@@ -62,12 +64,30 @@ export default function NetPositionScreen() {
             Net Position
           </Text>
         </View>
-        <TouchableOpacity className="p-1">
-          <Calendar size={22} color={colors.textPrimary} />
+        <TouchableOpacity
+          activeOpacity={0.8}
+          className="flex-row items-center gap-1 px-3 py-1.5 rounded-full border"
+          style={{ borderColor: colors.border, backgroundColor: colors.background }}
+          onPress={() => refetch()}
+        >
+          <Calendar size={16} color={colors.textPrimary} strokeWidth={2.2} />
+          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.textPrimary }}>
+            Last 30 days
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
+      >
         {/* Net Position Gradient Hero */}
         <LinearGradient
           colors={[gradients.netPosition, gradients.netPosition]}
@@ -75,18 +95,36 @@ export default function NetPositionScreen() {
           end={{ x: 1, y: 1 }}
           className="rounded-[24px] p-6 mb-6"
         >
+          <View
+            style={{ position: "absolute", top: 18, right: 18 }}
+            className="w-12 h-12 rounded-2xl items-center justify-center"
+          >
+            <View
+              style={{
+                backgroundColor: "rgba(255,255,255,0.18)",
+                borderColor: "rgba(255,255,255,0.3)",
+                borderWidth: 1,
+              }}
+              className="w-12 h-12 rounded-2xl items-center justify-center"
+            >
+              <Wallet size={24} color={colors.surface} strokeWidth={2.2} />
+            </View>
+          </View>
           <Text style={{ fontSize: 12, fontWeight: "600", color: "rgba(255,255,255,0.7)", letterSpacing: 1, marginBottom: 8 }}>
             YOUR NET POSITION
           </Text>
           <Text style={{ fontSize: 44, fontWeight: "800", color: colors.surface, marginBottom: 8 }}>
-            {formatINR(data.netPosition)}
+            {formatINR(data.netBalance)}
           </Text>
           <View className="flex-row items-center gap-2">
-            <ArrowUpRight size={14} color="#A7F3D0" />
-            <Text style={{ fontSize: 14, color: "#A7F3D0", fontWeight: "500" }}>
-              Cash surplus available
+            <TrendIcon size={14} color={trendColor} />
+            <Text style={{ fontSize: 14, color: trendColor, fontWeight: "500" }}>
+              {trendLabel}
             </Text>
           </View>
+          <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginTop: 6 }}>
+            Includes receivables and supplier payables for the last 30 days.
+          </Text>
         </LinearGradient>
 
         {/* Breakdown Card */}
@@ -97,15 +135,15 @@ export default function NetPositionScreen() {
 
           <View className="flex-row justify-between mb-4">
             <Text style={{ fontSize: 15, color: colors.textSecondary, fontWeight: "500" }}>Total Receivables</Text>
-            <Text style={{ fontSize: 15, color: colors.primary, fontWeight: "700" }}>+{formatINR(data.customersOweMe)}</Text>
+            <Text style={{ fontSize: 15, color: colors.primary, fontWeight: "700" }}>+{formatINR(data.totalReceivables)}</Text>
           </View>
           <View className="flex-row justify-between mb-4 pb-4 border-b border-borderLight">
             <Text style={{ fontSize: 15, color: colors.textSecondary, fontWeight: "500" }}>Total Payables</Text>
-            <Text style={{ fontSize: 15, color: colors.danger, fontWeight: "700" }}>-{formatINR(data.iOweSuppliers)}</Text>
+            <Text style={{ fontSize: 15, color: colors.danger, fontWeight: "700" }}>-{formatINR(data.totalPayables)}</Text>
           </View>
           <View className="flex-row justify-between">
             <Text style={{ fontSize: 16, color: colors.textPrimary, fontWeight: "700" }}>Net Balance</Text>
-            <Text style={{ fontSize: 18, color: colors.textPrimary, fontWeight: "800" }}>{formatINR(data.netPosition)}</Text>
+            <Text style={{ fontSize: 18, color: colors.textPrimary, fontWeight: "800" }}>{formatINR(data.netBalance)}</Text>
           </View>
         </View>
 
@@ -114,17 +152,37 @@ export default function NetPositionScreen() {
           CASH FLOW TREND (LAST 6 MONTHS)
         </Text>
         <View className="bg-surface rounded-[20px] p-5 mb-6 border border-borderLight shadow-sm">
-           <View className="flex-row justify-between h-40 items-end mb-4">
-             {TREND_DATA.map((t, i) => (
-                <View key={i} className="items-center w-10">
-                  <View className="w-full bg-background rounded-sm overflow-hidden" style={{ height: "100%" }}>
-                     <View style={{ height: `${(t.in / 150) * 100}%`, backgroundColor: colors.primary, position: 'absolute', bottom: `${(t.out / 150) * 100}%`, width: '100%' }} />
-                     <View style={{ height: `${(t.out / 150) * 100}%`, backgroundColor: colors.danger, position: 'absolute', bottom: 0, width: '100%', borderTopWidth: 1, borderColor: colors.surface }} />
+          <View className="flex-row justify-between items-end mb-4" style={{ height: 160 }}>
+            {data.cashFlow.map((month, i) => {
+              const inflowHeight = (month.inflow / cashFlowMax) * 100;
+              const outflowHeight = (month.outflow / cashFlowMax) * 100;
+              return (
+                <View key={`${month.label}-${i}`} className="items-center" style={{ width: 32 }}>
+                  <View className="w-full rounded-md overflow-hidden" style={{ flex: 1, backgroundColor: colors.background }}>
+                    <View
+                      style={{
+                        position: "absolute",
+                        bottom: `${outflowHeight}%`,
+                        height: `${inflowHeight}%`,
+                        width: "100%",
+                        backgroundColor: colors.primary,
+                      }}
+                    />
+                    <View
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        height: `${outflowHeight}%`,
+                        width: "100%",
+                        backgroundColor: colors.danger,
+                      }}
+                    />
                   </View>
-                  <Text style={{ fontSize: 10, marginTop: 8, color: colors.textSecondary }}>{t.month}</Text>
+                  <Text style={{ fontSize: 10, marginTop: 8, color: colors.textSecondary }}>{month.label}</Text>
                 </View>
-             ))}
-           </View>
+              );
+            })}
+          </View>
            <View className="flex-row justify-center gap-6">
              <View className="flex-row items-center gap-2">
                <View className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.primary }} />
@@ -142,15 +200,15 @@ export default function NetPositionScreen() {
           TOP CUSTOMERS OWED
         </Text>
         <View className="bg-surface rounded-[20px] mb-6 border border-borderLight shadow-sm overflow-hidden">
-          {TOP_CUSTOMERS.map((c, i) => (
-            <View key={c.id} className={`flex-row items-center justify-between p-4 ${i !== TOP_CUSTOMERS.length - 1 ? 'border-b border-borderLight' : ''}`}>
-               <View className="flex-row items-center gap-3">
-                 <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: colors.avatarPalette[i % colors.avatarPalette.length] + '22' }}>
+          {data.topCustomers.map((c, i) => (
+            <View key={c.id} className={`flex-row items-center justify-between p-4 ${i !== data.topCustomers.length - 1 ? 'border-b border-borderLight' : ''}`}>
+                <View className="flex-row items-center gap-3">
+                  <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: colors.avatarPalette[i % colors.avatarPalette.length] + '22' }}>
                    <Text style={{ color: colors.avatarPalette[i % colors.avatarPalette.length], fontWeight: "700", fontSize: 14 }}>{c.initials}</Text>
-                 </View>
-                 <Text style={{ fontSize: 15, fontWeight: "600", color: colors.textPrimary }}>{c.name}</Text>
-               </View>
-               <Text style={{ fontSize: 15, fontWeight: "700", color: colors.primary }}>{formatINR(c.amount)}</Text>
+                  </View>
+                  <Text style={{ fontSize: 15, fontWeight: "600", color: colors.textPrimary }}>{c.name}</Text>
+                </View>
+                <Text style={{ fontSize: 15, fontWeight: "700", color: colors.primary }}>{formatINR(c.balance)}</Text>
             </View>
           ))}
         </View>
@@ -160,15 +218,15 @@ export default function NetPositionScreen() {
           TOP SUPPLIERS OWED
         </Text>
         <View className="bg-surface rounded-[20px] mb-6 border border-borderLight shadow-sm overflow-hidden">
-          {TOP_SUPPLIERS.map((s, i) => (
-            <View key={s.id} className={`flex-row items-center justify-between p-4 ${i !== TOP_SUPPLIERS.length - 1 ? 'border-b border-borderLight' : ''}`}>
-               <View className="flex-row items-center gap-3">
-                 <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: colors.supplierAvatarBg[i % colors.supplierAvatarBg.length] }}>
-                   <Text style={{ color: colors.supplierAvatarText[i % colors.supplierAvatarText.length], fontWeight: "700", fontSize: 14 }}>{s.initials}</Text>
-                 </View>
-                 <Text style={{ fontSize: 15, fontWeight: "600", color: colors.textPrimary }}>{s.name}</Text>
-               </View>
-               <Text style={{ fontSize: 15, fontWeight: "700", color: colors.danger }}>{formatINR(s.amount)}</Text>
+          {data.topSuppliers.map((s, i) => (
+            <View key={s.id} className={`flex-row items-center justify-between p-4 ${i !== data.topSuppliers.length - 1 ? 'border-b border-borderLight' : ''}`}>
+                <View className="flex-row items-center gap-3">
+                  <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: colors.supplierAvatarBg[i % colors.supplierAvatarBg.length] }}>
+                    <Text style={{ color: colors.supplierAvatarText[i % colors.supplierAvatarText.length], fontWeight: "700", fontSize: 14 }}>{s.initials}</Text>
+                  </View>
+                  <Text style={{ fontSize: 15, fontWeight: "600", color: colors.textPrimary }}>{s.name}</Text>
+                </View>
+                <Text style={{ fontSize: 15, fontWeight: "700", color: colors.danger }}>{formatINR(s.amountOwed)}</Text>
             </View>
           ))}
         </View>
@@ -180,11 +238,11 @@ export default function NetPositionScreen() {
         <View className="gap-3 mb-6">
           <View className="flex-row items-center gap-2 bg-danger-bg p-3 rounded-xl border border-danger-light">
             <AlertTriangle size={16} color={colors.danger} />
-            <Text style={{ fontSize: 13, fontWeight: "600", color: colors.danger }}>High collection risk: {data.overdueCustomers} customers</Text>
+            <Text style={{ fontSize: 13, fontWeight: "600", color: colors.danger }}>High collection risk: {data.overdueCount} customers</Text>
           </View>
           <View className="flex-row items-center gap-2" style={{ backgroundColor: colors.warningBg, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: colors.warningBadgeBg }}>
             <Clock size={16} color={colors.warning} />
-            <Text style={{ fontSize: 13, fontWeight: "600", color: colors.warning }}>Upcoming payables: {formatINR(data.iOweSuppliers / 2)} this week</Text>
+            <Text style={{ fontSize: 13, fontWeight: "600", color: colors.warning }}>Upcoming payables: {formatINR(data.upcomingPayables)} this week</Text>
           </View>
           <View className="flex-row items-center gap-2" style={{ backgroundColor: colors.orange.bg, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: colors.orange.border }}>
             <Zap size={16} color={colors.orange.text} />

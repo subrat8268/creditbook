@@ -280,7 +280,9 @@ export default function ProductPicker({
                 {search.trim().length > 0 ? (
                   <View className="items-center">
                     <Text className="text-[15px] text-textSecondary text-center mb-4">
-                      No products found for "{search.trim()}"
+                      No products found for {"\""}
+                      {search.trim()}
+                      {"\""}
                     </Text>
                     <TouchableOpacity
                       onPress={handleQuickAdd}
@@ -294,7 +296,9 @@ export default function ProductPicker({
                         <>
                           <Plus size={18} className="text-primary" strokeWidth={2.5} />
                           <Text className="ml-2 text-[15px] font-extrabold text-primary">
-                            Add "{search.trim()}" as new product
+                            Add {"\""}
+                            {search.trim()}
+                            {"\""} as new product
                           </Text>
                         </>
                       )}

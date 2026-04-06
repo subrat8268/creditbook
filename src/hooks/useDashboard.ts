@@ -22,7 +22,14 @@ export function useDashboard(vendorId?: string) {
   return {
     ...query,
     totalReceivables: query.data?.outstandingAmount ?? 0,
-    overdueCustomers: query.data?.overdueCustomersList.slice(0, 3) ?? [],
+    netPosition: query.data?.netPosition ?? 0,
+    toReceive: query.data?.customersOweMe ?? 0,
+    toGive: query.data?.iOweSuppliers ?? 0,
+    weekDelta: query.data?.weekDelta ?? 0,
+    weekDeltaPct: query.data?.weekDeltaPct ?? 0,
+    overdueCustomers: query.data?.overdueCustomersList?.slice(0, 3) ?? [],
+    overdueCustomersAll: query.data?.overdueCustomersList ?? [],
+    overdueTotalCount: query.data?.overdueCustomers ?? 0,
     recentActivity: query.data?.recentActivity ?? [],
     refreshDashboard,
   };

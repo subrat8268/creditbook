@@ -5,15 +5,12 @@ import BottomSheet, {
 import { Formik } from "formik";
 import {
     ChevronRight,
-    CreditCard,
-    Hash,
     Landmark,
     UserPlus,
     X,
 } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-    Pressable,
     Text,
     TextInput,
     TouchableOpacity,
@@ -21,7 +18,6 @@ import {
 } from "react-native";
 import { SupplierSchema } from "../../utils/schemas";
 import { colors } from "../../utils/theme";
-import Button from "../ui/Button";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface NewSupplierValues {

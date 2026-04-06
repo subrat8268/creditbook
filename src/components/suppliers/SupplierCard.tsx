@@ -1,5 +1,5 @@
 import { Text, TouchableOpacity, View } from "react-native";
-import { daysSince, formatRelativeActivity } from "../../utils/helper";
+import { formatRelativeActivity } from "../../utils/helper";
 
 import { Supplier } from "../../types/supplier";
 import { colors } from "../../utils/theme";

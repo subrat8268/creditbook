@@ -11,12 +11,8 @@ interface BillFooterProps {
 }
 
 export default function BillFooter({ isLoading, onSaveAndShare }: BillFooterProps) {
-  const getSubtotal = useOrderStore((state) => state.getSubtotal);
-  const getTaxAmount = useOrderStore((state) => state.getTaxAmount);
-  const loadingCharge = useOrderStore((state) => state.loadingCharge);
   const getGrandTotal = useOrderStore((state) => state.getGrandTotal);
   const items = useOrderStore((state) => state.items);
-  const gstPercent = useOrderStore((state) => state.gstPercent); // Forces re-render on tax change
 
   // Math recalculates instantly via Zustand
   const grandTotal = getGrandTotal();

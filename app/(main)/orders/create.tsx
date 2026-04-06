@@ -87,6 +87,22 @@ export default function CreateOrderScreen() {
   const [previousBalance, setPreviousBalance] = useState<number>(0);
   const [isFetchingBalance, setIsFetchingBalance] = useState(false);
 
+  const fetchPreviousBalance = useCallback(
+    async (customerId: string) => {
+      if (!vendorId) return;
+      try {
+        setIsFetchingBalance(true);
+        const balance = await getCustomerPreviousBalance(customerId, vendorId);
+        setPreviousBalance(balance);
+      } catch {
+        setPreviousBalance(0);
+      } finally {
+        setIsFetchingBalance(false);
+      }
+    },
+    [vendorId],
+  );
+
   // Initialize store if we were routed here with a preselected customer
   useEffect(() => {
     if (customerParams) {
@@ -95,20 +111,7 @@ export default function CreateOrderScreen() {
       setSelectedCustomerMeta(parsed);
       fetchPreviousBalance(parsed.id);
     }
-  }, [customerParams]);
-
-  const fetchPreviousBalance = async (customerId: string) => {
-    if (!vendorId) return;
-    try {
-      setIsFetchingBalance(true);
-      const balance = await getCustomerPreviousBalance(customerId, vendorId);
-      setPreviousBalance(balance);
-    } catch {
-      setPreviousBalance(0);
-    } finally {
-      setIsFetchingBalance(false);
-    }
-  };
+  }, [customerParams, setCustomer, fetchPreviousBalance]);
 
   const handleSelectCustomer = useCallback(
     async (customer: any) => {
@@ -119,7 +122,7 @@ export default function CreateOrderScreen() {
         fetchPreviousBalance(customer.id);
       }
     },
-    [vendorId],
+    [setCustomer, fetchPreviousBalance],
   );
 
   const createOrderMutation = useCreateOrder(vendorId!);
@@ -159,32 +162,41 @@ export default function CreateOrderScreen() {
       const pdfItems: BillItem[] = items.map((c) => ({
         name: c.product_name,
         quantity: c.quantity,
-        price: c.price,
+        rate: c.price,
+        amount: c.price * c.quantity,
       }));
+
+      const businessDetails = {
+        name: profile?.business_name || "Your Store",
+        address: profile?.business_address || "",
+        phone: profile?.phone || "",
+        gstin: profile?.gstin || "",
+      };
+
+      const billMeta = {
+        invoiceNumber: savedOrder.bill_number,
+        date: new Date(savedOrder.created_at ?? Date.now()).toLocaleDateString(
+          "en-IN",
+        ),
+        subtotal: getSubtotal(),
+        taxAmount: getTaxAmount(),
+        loadingCharge,
+        bankDetails:
+          profile?.bank_name && profile?.account_number && profile?.ifsc_code
+            ? {
+                bankName: profile.bank_name,
+                accountNo: profile.account_number,
+                ifsc: profile.ifsc_code,
+              }
+            : undefined,
+      };
 
       const localPdfPath = await generateBillPdf(
         pdfItems,
-        {
-          name: profile?.business_name || "Your Store",
-          address: profile?.business_address || "",
-          phone: profile?.phone || "",
-          gstin: profile?.gstin || "",
-          logoUrl: profile?.business_logo_url || null,
-          bankName: profile?.bank_name,
-          accountNumber: profile?.account_number,
-          ifscCode: profile?.ifsc_code,
-        },
+        businessDetails,
         getGrandTotal(),
         selectedCustomerMeta?.name || "Customer",
-        {
-          invoiceNumber: savedOrder.bill_number,
-          upiId: profile?.upi_id || "",
-          discountAmount: 0,
-          taxPercent,
-          notes: "Thank you for your business!",
-          previousBalance,
-          loadingCharge,
-        },
+        billMeta,
       );
 
       const canShare = await Sharing.isAvailableAsync();

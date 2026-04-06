@@ -36,7 +36,7 @@ export default function ResetPasswordPage() {
             Check Your Inbox!
           </Text>
           <Text className="text-neutral-500 text-body text-center mb-8">
-            We've sent a password reset link to your email address. Follow the
+            We{"'"}ve sent a password reset link to your email address. Follow the
             link to set a new password.
           </Text>
           <TouchableOpacity onPress={() => router.replace("/(auth)/login")}>
@@ -84,7 +84,7 @@ export default function ResetPasswordPage() {
               Forgot Password?
             </Text>
             <Text className="text-neutral-600 text-body mb-6">
-              Enter your registered email and we'll send you a reset link.
+              Enter your registered email and we{"'"}ll send you a reset link.
             </Text>
 
             <Formik

@@ -5,7 +5,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { useCallback } from "react";
 import { Truck } from "lucide-react-native";
 
 import EmptyState from "../feedback/EmptyState";

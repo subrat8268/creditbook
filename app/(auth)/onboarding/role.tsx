@@ -56,7 +56,7 @@ const MODE_MAP = {
 
 export default function OnboardingRole() {
   const router = useRouter();
-  const { user, profile, setProfile, fetchProfile } = useAuthStore();
+  const { user, setProfile, fetchProfile } = useAuthStore();
   const [selected, setSelected] = useState<Role | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +81,7 @@ export default function OnboardingRole() {
           dashboard_mode: dashboardMode,
         });
       } else {
-        await fetchProfile();
+        await fetchProfile(user.id);
         const fetched = useAuthStore.getState().profile;
         if (fetched)
           setProfile({
