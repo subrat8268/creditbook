@@ -3,7 +3,6 @@ import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useOrders } from "@/src/hooks/useOrders";
 import { useAuthStore } from "@/src/store/authStore";
-import { daysSince } from "@/src/utils/helper";
 import { colors, spacing, typography } from "@/src/utils/theme";
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -25,7 +24,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const FILTER_TABS = ["All", "Paid", "Partial", "Pending", "Overdue"] as const;
+const FILTER_TABS = ["All", "Paid", "Partial", "Pending"] as const;
 type FilterTab = (typeof FILTER_TABS)[number];
 
 const SORT_OPTIONS = [
@@ -39,7 +38,6 @@ type SortValue = (typeof SORT_OPTIONS)[number]["value"];
 function tabToApiFilter(tab: FilterTab): string | undefined {
   if (tab === "All") return undefined;
   if (tab === "Partial") return "Partially Paid";
-  if (tab === "Overdue") return "Pending";
   return tab;
 }
 
@@ -68,15 +66,7 @@ export default function OrdersScreen() {
     isFetchingNextPage,
   } = useOrders(profile?.id, search, apiFilter, sortBy);
 
-  // Client-side overdue sub-filter: Pending AND daysSince > 30
-  const orders = useMemo(() => {
-    const list = rawOrders ?? [];
-    if (activeTab === "Overdue")
-      return list.filter(
-        (o) => o.status === "Pending" && daysSince(o.created_at) > 30,
-      );
-    return list;
-  }, [rawOrders, activeTab]);
+  const orders = useMemo(() => rawOrders ?? [], [rawOrders]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -123,12 +113,23 @@ export default function OrdersScreen() {
             onPress={() => sortSheetRef.current?.expand()}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            className="flex-row items-center"
           >
             <SlidersHorizontal
-              size={22}
+              size={20}
               color={colors.textSecondary}
               strokeWidth={2}
             />
+            <Text
+              style={{
+                fontSize: typography.caption.fontSize,
+                fontWeight: typography.caption.fontWeight,
+                color: colors.textSecondary,
+                marginLeft: 6,
+              }}
+            >
+              Sort
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -250,7 +251,7 @@ export default function OrdersScreen() {
       )}
 
       {/* ── FAB ───────────────────────────────────────────────────────── */}
-      <FloatingActionButton onPress={handleCreateBill} bottom={24} right={20} />
+      <FloatingActionButton onPress={handleCreateBill} bottom={spacing.fabBottom} right={spacing.fabMargin} />
 
       {/* ── Sort bottom sheet ──────────────────────────────────────────── */}
       <BottomSheet

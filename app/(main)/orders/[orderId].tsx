@@ -8,9 +8,9 @@ import { usePayments } from "@/src/hooks/usePayments";
 import { useAuthStore } from "@/src/store/authStore";
 import { generateBillPdf } from "@/src/utils/generateBillPdf";
 import { daysSince, formatDate } from "@/src/utils/helper";
-import { colors, spacing, typography } from "@/src/utils/theme";
+import { colors, gradients, spacing, typography } from "@/src/utils/theme";
 import { useQueryClient } from "@tanstack/react-query";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { MessageCircle, Wallet } from "lucide-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -80,6 +80,7 @@ const SHADOW = {
 
 export default function OrderDetailScreen() {
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
+  const router = useRouter();
   const { profile } = useAuthStore();
   const queryClient = useQueryClient();
 
@@ -101,6 +102,13 @@ export default function OrderDetailScreen() {
     order?.status === "Pending" && daysSince(order?.created_at ?? "") > 30;
   const statusKey = isOverdue ? "Overdue" : (order?.status ?? "Pending");
   const chipStyle = STATUS_STYLES[statusKey] ?? STATUS_STYLES["Pending"];
+
+  const heroGradient = useMemo(() => {
+    if (statusKey === "Paid") return gradients.orderPaid;
+    if (statusKey === "Partially Paid") return gradients.orderPartial;
+    if (statusKey === "Overdue") return gradients.orderOverdue;
+    return gradients.orderPending;
+  }, [statusKey]);
 
   const itemsSubtotal = useMemo(
     () => order?.items?.reduce((s, i) => s + i.subtotal, 0) ?? 0,
@@ -252,19 +260,91 @@ export default function OrderDetailScreen() {
   const isPaid = order.status === "Paid";
 
   return (
-    <SafeAreaView
-      edges={["bottom"]}
-      className="flex-1 bg-background"
-    >
-      {/* Override stack header title with dynamic bill number */}
-      <Stack.Screen options={{ title: `Order #${order.bill_number}` }} />
+    <SafeAreaView edges={["top", "bottom"]} className="flex-1 bg-background">
+      <Stack.Screen options={{ headerShown: false }} />
+
+      {/* ── Custom header ─────────────────────────── */}
+      <View
+        style={{
+          paddingHorizontal: spacing.screenPadding,
+          paddingTop: spacing.sm,
+          paddingBottom: spacing.xs,
+          backgroundColor: colors.surface,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => router.back()}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Text style={{ fontSize: 18, color: colors.textPrimary }}>←</Text>
+        </TouchableOpacity>
+        <Text style={{ ...typography.cardTitle }} numberOfLines={1}>
+          Order #{order.bill_number}
+        </Text>
+        <TouchableOpacity
+          onPress={handleSendBill}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <MessageCircle size={20} color={colors.textSecondary} strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: 12, paddingBottom: 120 }}
+        contentContainerStyle={{ paddingTop: spacing.md, paddingBottom: 140 }}
       >
         {/* ───────────────────────────────────────── */}
-        {/* 1. Customer Card                                */}
+        {/* 1. Status Hero */}
+        {/* ───────────────────────────────────────── */}
+        <View
+          style={{
+            marginHorizontal: spacing.screenPadding,
+            marginBottom: spacing.sm,
+            borderRadius: spacing.cardRadius,
+            overflow: "hidden",
+          }}
+        >
+          <View
+            style={{
+              padding: spacing.lg,
+              backgroundColor: heroGradient.start,
+            }}
+          >
+            <Text style={{ ...typography.label, color: colors.surface }}>
+              TOTAL AMOUNT
+            </Text>
+            <Text style={typography.heroAmount}>₹{fmt(grandTotal)}</Text>
+            <View
+              style={{
+                alignSelf: "flex-start",
+                backgroundColor: colors.surface,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 999,
+                marginTop: spacing.sm,
+              }}
+            >
+              <Text
+                style={{
+                  color: heroGradient.start,
+                  fontSize: 11,
+                  fontWeight: "700",
+                  letterSpacing: 0.3,
+                }}
+              >
+                {chipStyle.label}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* ───────────────────────────────────────── */}
+        {/* 2. Customer Card */}
         {/* ───────────────────────────────────────── */}
         <View
           style={[
@@ -698,22 +778,22 @@ export default function OrderDetailScreen() {
       {/* ───────────────────────────────────────── */}
       {/* 5. Fixed Action Bar                              */}
       {/* ───────────────────────────────────────── */}
-      <View
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: colors.surface,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
-          paddingHorizontal: spacing.lg,
-          paddingTop: spacing.sm,
-          paddingBottom: spacing.lg,
-          flexDirection: "row",
-          gap: spacing.sm,
-        }}
-      >
+        <View
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: colors.surface,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+            paddingHorizontal: spacing.lg,
+            paddingTop: spacing.sm,
+            paddingBottom: spacing.lg,
+            flexDirection: "row",
+            gap: spacing.sm,
+          }}
+        >
         {/* Send Bill button — always visible */}
         <TouchableOpacity
           onPress={handleSendBill}

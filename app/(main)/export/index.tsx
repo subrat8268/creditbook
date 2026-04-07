@@ -29,7 +29,7 @@ import {
 } from "@/src/api/export";
 import { useAuthStore } from "@/src/store/authStore";
 import { shareCsv, toCsv } from "@/src/utils/exportCsv";
-import { colors } from "@/src/utils/theme";
+import { colors, spacing, typography } from "@/src/utils/theme";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -116,7 +116,7 @@ function DateInput({
         <TextInput
           style={styles.dateInput}
           placeholder={placeholder}
-          placeholderTextColor={"#AEAEB2"}
+          placeholderTextColor={colors.textSecondary}
           value={value}
           onChangeText={onChangeText}
           keyboardType="numeric"
@@ -124,7 +124,7 @@ function DateInput({
         />
         <CalendarDays
           size={16}
-          color={"#AEAEB2"}
+          color={colors.textSecondary}
           strokeWidth={1.6}
           style={styles.calendarIcon}
         />
@@ -195,19 +195,19 @@ export default function ExportScreen() {
       switch (type) {
         case "orders": {
           const rows = await fetchOrdersForExport(vendorId, from, to);
-          csv = toCsv(rows);
+          csv = toCsv(rows as unknown as Record<string, unknown>[]);
           filename = `kredbook_orders_${today}.csv`;
           break;
         }
         case "payments": {
           const rows = await fetchPaymentsForExport(vendorId, from, to);
-          csv = toCsv(rows);
+          csv = toCsv(rows as unknown as Record<string, unknown>[]);
           filename = `kredbook_payments_${today}.csv`;
           break;
         }
         case "customers": {
           const rows = await fetchCustomersForExport(vendorId);
-          csv = toCsv(rows);
+          csv = toCsv(rows as unknown as Record<string, unknown>[]);
           filename = `kredbook_customer_balances_${today}.csv`;
           break;
         }
@@ -217,7 +217,7 @@ export default function ExportScreen() {
             from,
             to,
           );
-          csv = toCsv(rows);
+          csv = toCsv(rows as unknown as Record<string, unknown>[]);
           filename = `kredbook_supplier_purchases_${today}.csv`;
           break;
         }
@@ -256,37 +256,37 @@ export default function ExportScreen() {
       label: "Orders & Bills",
       desc: "Invoice history with items",
       Icon: Receipt,
-      pillColor: "#FFFFFF",
+    pillColor: colors.surface,
       pillBg: colors.primary,
       iconColor: colors.primaryDark,
-      iconBg: "#DCFCE7",
+    iconBg: colors.paid.bg,
     },
     {
       type: "payments",
       label: "Payments Received",
       desc: "All customer payments",
       Icon: FileText,
-      pillColor: "#FFFFFF",
+    pillColor: colors.surface,
       pillBg: colors.primary,
       iconColor: colors.primaryDark,
-      iconBg: "#DCFCE7",
+    iconBg: colors.paid.bg,
     },
     {
       type: "customers",
       label: "Customer Balances",
       desc: "Outstanding balances per customer",
       Icon: Users,
-      pillColor: "#FFFFFF",
+    pillColor: colors.surface,
       pillBg: colors.primary,
       iconColor: colors.fab,
-      iconBg: "#EFF6FF",
+    iconBg: colors.primaryBlueBg,
     },
     {
       type: "suppliers",
       label: "Supplier Purchases",
       desc: "Deliveries and payments made",
       Icon: Truck,
-      pillColor: "#FFFFFF",
+    pillColor: colors.surface,
       pillBg: colors.primary,
       iconColor: colors.pending.text,
       iconBg: colors.warningBg,
@@ -328,7 +328,7 @@ export default function ExportScreen() {
       >
         {/* ── Date Filter Card ── */}
         <View style={styles.card}>
-          <Text style={styles.sectionLabel}>FILTER BY DATE (OPTIONAL)</Text>
+          <Text style={styles.sectionLabel}>FILTER BY DATE — OPTIONAL</Text>
 
           <View style={styles.dateRow}>
             <DateInput
@@ -447,8 +447,8 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.screenPadding,
+    paddingVertical: spacing.md,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
@@ -462,8 +462,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   headerTitle: {
-    fontSize: 17,
-    fontWeight: "700",
+    fontSize: typography.cardTitle.fontSize,
+    fontWeight: typography.cardTitle.fontWeight,
     color: colors.textPrimary,
   },
   headerSubtitle: {
@@ -475,25 +475,25 @@ const styles = StyleSheet.create({
   // Scroll
   scroll: { flex: 1 },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
-    gap: 16,
+    padding: spacing.screenPadding,
+    paddingBottom: spacing.xl,
+    gap: spacing.md,
   },
 
   // Card
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: "#000",
+    borderRadius: spacing.cardRadius,
+    padding: spacing.cardPadding,
+    shadowColor: colors.textPrimary,
     shadowOpacity: 0.04,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
   sectionLabel: {
-    fontSize: 11,
-    fontWeight: "700",
+    fontSize: typography.overline.fontSize,
+    fontWeight: typography.overline.fontWeight,
     color: colors.textSecondary,
     letterSpacing: 0.8,
     marginBottom: 14,
@@ -520,10 +520,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 10,
+    borderRadius: spacing.sm,
     backgroundColor: colors.background,
     paddingHorizontal: 12,
-    height: 44,
+    height: spacing.searchBarHeight,
   },
   dateInput: {
     flex: 1,
@@ -612,9 +612,9 @@ const styles = StyleSheet.create({
   infoBanner: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "#EFF6FF",
+    backgroundColor: colors.primaryBlueBg,
     borderWidth: 1,
-    borderColor: "#EAF0FB",
+    borderColor: colors.borderLight,
     borderRadius: 12,
     padding: 12,
     gap: 8,
@@ -631,7 +631,7 @@ const styles = StyleSheet.create({
   footer: {
     textAlign: "center",
     fontSize: 12,
-    color: "#AEAEB2",
+    color: colors.textSecondary,
     marginTop: 4,
   },
 });

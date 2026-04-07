@@ -77,7 +77,7 @@ This section catalogs the screens that **must be designed and delivered in Figma
 
 | Position    | Element                     | Detail                                                                                 |
 | ----------- | --------------------------- | -------------------------------------------------------------------------------------- |
-| FIXED TOP   | Header "Orders"             | Bold 28px, left-padded 16dp, SafeArea top inset. Right: notifications/menu icon.       |
+| FIXED TOP   | Header "Orders"             | Bold 22px, left-padded 16dp, SafeArea top inset. Right: sort action (chip).             |
 | FIXED TOP   | Search & Filter bar         | Pill-shaped search input with magnifying glass icon. Right side: sort chip (dropdown). |
 | SCROLL BODY | Inline filter tabs          | Horizontal pill buttons (multiselect): "All" (default), "Paid", "Partial", "Pending"   |
 | SCROLL BODY | Order cards list (FlatList) | Repeating `OrderCard` component for each bill. Scrollable vertically.                  |
@@ -102,12 +102,12 @@ This section catalogs the screens that **must be designed and delivered in Figma
 
 | Position     | Element                   | Detail                                                                                                |
 | ------------ | ------------------------- | ----------------------------------------------------------------------------------------------------- |
-| FIXED TOP    | Header                    | Back arrow (left), "Order #3241" title (center), three-dot menu (right)                               |
-| SCROLL TOP   | Status gradient hero card | Red-to-orange gradient for overdue, green gradient for paid. Large amount (₹2,340), status text below |
+| FIXED TOP    | Header                    | Back arrow (left), "Order #3241" title (center), share icon (right)                                  |
+| SCROLL TOP   | Status gradient hero card | Status gradient (paid/partial/pending/overdue). Large amount (₹2,340), status text below             |
 | SCROLL       | "Items" section           | Repeating `OrderItemCard` rows: product name, qty, rate, amount. No edit in detail view.              |
 | SCROLL       | "Payments" section        | Timeline of payments received: date, amount, payment method (cash/UPI/cheque)                         |
-| SCROLL       | "Actions" buttons strip   | "Download PDF", "Send via WhatsApp", "Record Payment"                                                 |
-| FIXED BOTTOM | Action buttons            | Full-width: "Record Payment" (primary green), "More" (outline)                                        |
+| SCROLL       | "Actions" buttons strip   | Primary actions: "Send Bill" (share) and "Record Payment"                                             |
+| FIXED BOTTOM | Action buttons            | Sticky: "Send Bill" (outline) + "Record Payment" (primary)                                           |
 
 #### Color scheme (status-based)
 
@@ -123,11 +123,11 @@ This section catalogs the screens that **must be designed and delivered in Figma
 
 #### States & Styling
 
-| State       | Background                | Icon                      | Text                                | Animation                |
-| :---------- | :------------------------ | :------------------------ | :---------------------------------- | :----------------------- |
-| **Offline** | Red `#DC2626` (alert)     | cloud-off                 | "Offline • N changes saved locally" | Static (no animation)    |
-| **Syncing** | Amber `#F59E0B` (caution) | cloud-upload with spinner | "Syncing your changes…"             | Spinner rotation         |
-| **Synced**  | Green `#10B981` (success) | cloud-check               | "All changes synced"                | Fade out after 2 seconds |
+| State       | Background               | Icon                      | Text                                | Animation                |
+| :---------- | :----------------------- | :------------------------ | :---------------------------------- | :----------------------- |
+| **Offline** | Amber `#FEF3C7` (alert)  | cloud-off                 | "Offline • N changes saved locally" | Static (no animation)    |
+| **Syncing** | Blue `#DBEAFE` (info)    | cloud-upload with spinner | "Syncing your changes…"             | Spinner rotation         |
+| **Synced**  | Green `#ECFDF5` (success) | cloud-check               | "All changes synced"                | Fade out after 2 seconds |
 
 #### Position & Layout
 

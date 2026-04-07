@@ -389,7 +389,7 @@ Role maps to `dashboard_mode` on the `profiles` table and controls which net-pos
 
 ---
 
-### 4.8 Net Position Screen
+### 4.8 Financial Position Screen
 
 **Purpose**: Aggregate financial health view.
 

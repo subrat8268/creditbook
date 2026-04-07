@@ -166,6 +166,24 @@ export const gradients = {
     start: "#22C55E", // Primary green
     end: "#16A34A", // Primary dark
   },
+
+  // Order status hero gradients
+  orderPaid: {
+    start: "#10B981", // Green-500
+    end: "#059669", // Green-600
+  },
+  orderPartial: {
+    start: "#F59E0B", // Amber-500
+    end: "#D97706", // Amber-600
+  },
+  orderPending: {
+    start: "#9CA3AF", // Gray-400
+    end: "#6B7280", // Gray-500
+  },
+  orderOverdue: {
+    start: "#EF4444", // Red-500
+    end: "#DC2626", // Red-600
+  },
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════════

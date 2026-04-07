@@ -8,7 +8,7 @@ import {
   usePreferencesStore,
 } from "@/src/store/preferencesStore";
 import { formatINR } from "@/src/utils/dashboardUi";
-import { colors, gradients, spacing } from "@/src/utils/theme";
+import { colors, gradients, spacing, typography } from "@/src/utils/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Print from "expo-print";
 import { useRouter } from "expo-router";
@@ -209,7 +209,7 @@ export default function NetPositionScreen() {
         >
           <ArrowLeft size={22} color={colors.textPrimary} strokeWidth={1.75} />
         </TouchableOpacity>
-        <Text style={s.headerTitle}>Net Position</Text>
+        <Text style={s.headerTitle}>Financial Position</Text>
         <TouchableOpacity hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <CalendarDays
             size={22}
@@ -217,6 +217,40 @@ export default function NetPositionScreen() {
             strokeWidth={1.8}
           />
         </TouchableOpacity>
+      </View>
+
+      {/* ── Range selector chips ── */}
+      <View style={{ paddingHorizontal: spacing.screenPadding, marginBottom: spacing.md }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {NET_POSITION_RANGE_OPTIONS.map((opt, idx) => {
+            const active = opt.value === range;
+            return (
+              <TouchableOpacity
+                key={opt.value}
+                onPress={() => setRange(opt.value)}
+                style={{
+                  paddingHorizontal: spacing.lg,
+                  paddingVertical: spacing.xs,
+                  borderRadius: 999,
+                  marginRight: idx === NET_POSITION_RANGE_OPTIONS.length - 1 ? 0 : spacing.sm,
+                  backgroundColor: active ? colors.primary : colors.surface,
+                  borderWidth: 1,
+                  borderColor: active ? colors.primary : colors.border,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: typography.caption.fontSize,
+                    fontWeight: typography.caption.fontWeight,
+                    color: active ? colors.surface : colors.textSecondary,
+                  }}
+                >
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
 
       <ScrollView

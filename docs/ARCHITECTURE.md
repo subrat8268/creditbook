@@ -55,7 +55,7 @@ app/
     │   ├── index.tsx
     │   └── [customerId].tsx      ← Customer detail (inline, no src/screens/ file)
     ├── orders/
-    │   ├── _layout.tsx           ← Stack navigator; header renders `options.title ?? config.title` (dynamic title for Order Detail)  ← v3.7
+    │   ├── _layout.tsx           ← Stack navigator (headerShown: false; custom header in order detail)
     │   ├── index.tsx
     │   ├── create.tsx            ← v3.9: save-first data integrity (handleSaveAndShare); CartItem.productId/rate; smart dedup addItem; updateRate(); expo-sharing replaces uploadPdfToSupabase+Linking; VariantPicker removed (inline in ProductPicker)
     │   └── [orderId].tsx         ← Order Detail: handlePaymentSuccess uses orderKeys.all + customerDetail invalidation  ← v3.9
@@ -71,7 +71,7 @@ app/
     │   └── index.tsx
     ├── reports/
     │   ├── _layout.tsx           ← Created P-13 (headerShown: false, slideFromRight)
-    │   └── index.tsx             ← Financial Position screen: StatCard colors use theme tokens (supplierPrimary); NetCard uses gradients.netPosition  ← v3.9
+    │   └── index.tsx             ← Financial Position screen: StatCard colors use theme tokens (supplierPrimary); NetCard uses gradients.netPosition
     ├── notifications/
     │   └── index.tsx             ← v4.0 NEW: overdue follow-ups + recent activity; bell wired from DashboardHeader
     └── export/

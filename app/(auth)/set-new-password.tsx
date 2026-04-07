@@ -1,7 +1,7 @@
 import { useToast } from "@/src/components/feedback/Toast";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
-import { colors } from "@/src/utils/theme";
+import { colors, spacing, typography } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { Formik } from "formik";
 import { Eye, EyeOff, KeyRound } from "lucide-react-native";
@@ -61,13 +61,10 @@ export default function SetNewPasswordPage() {
   };
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: "#F6F7F9" }}
-      edges={["top"]}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top"]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1 bg-white"
+        style={{ flex: 1, backgroundColor: colors.surface }}
         keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
       >
         <ScrollView
@@ -75,9 +72,27 @@ export default function SetNewPasswordPage() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View className="flex-1 px-6 py-10 justify-center">
+            <View
+              style={{
+                flex: 1,
+                paddingHorizontal: spacing.screenPadding,
+                paddingVertical: spacing.xl,
+                justifyContent: "center",
+              }}
+            >
             {/* Icon */}
-            <View className="w-16 h-16 rounded-full bg-success-light items-center justify-center self-center mb-6">
+            <View
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 32,
+                backgroundColor: colors.paid.bg,
+                alignItems: "center",
+                justifyContent: "center",
+                alignSelf: "center",
+                marginBottom: spacing.lg,
+              }}
+            >
               <KeyRound
                 size={32}
                 color={colors.primaryDark}
@@ -86,10 +101,24 @@ export default function SetNewPasswordPage() {
             </View>
 
             {/* Heading */}
-            <Text className="text-2xl font-bold text-neutral-900 text-center mb-2">
-              Set New Password
+            <Text
+              style={{
+                ...typography.h2,
+                color: colors.textPrimary,
+                textAlign: "center",
+                marginBottom: spacing.xs,
+              }}
+            >
+              Set new password
             </Text>
-            <Text className="text-neutral-500 text-sm text-center mb-8">
+            <Text
+              style={{
+                ...typography.body,
+                color: colors.textSecondary,
+                textAlign: "center",
+                marginBottom: spacing.xl,
+              }}
+            >
               Choose a strong password for your KredBook account.
             </Text>
 
@@ -108,7 +137,7 @@ export default function SetNewPasswordPage() {
               }) => (
                 <>
                   {/* New Password */}
-                  <Text className="text-[13px] font-semibold text-textDark mb-2">
+                  <Text style={{ ...typography.caption, fontWeight: "700", color: colors.textPrimary, marginBottom: spacing.xs }}>
                     New Password
                   </Text>
                   <Input
@@ -127,11 +156,11 @@ export default function SetNewPasswordPage() {
                         {showPassword ? (
                           <EyeOff
                             size={20}
-                            color={"#AEAEB2"}
+                            color={colors.textSecondary}
                             strokeWidth={1.8}
                           />
                         ) : (
-                          <Eye size={20} color={"#AEAEB2"} strokeWidth={1.8} />
+                          <Eye size={20} color={colors.textSecondary} strokeWidth={1.8} />
                         )}
                       </TouchableOpacity>
                     }
@@ -139,7 +168,7 @@ export default function SetNewPasswordPage() {
                   />
 
                   {/* Confirm Password */}
-                  <Text className="text-[13px] font-semibold text-textDark mb-2 mt-4">
+                  <Text style={{ ...typography.caption, fontWeight: "700", color: colors.textPrimary, marginBottom: spacing.xs, marginTop: spacing.md }}>
                     Confirm Password
                   </Text>
                   <Input
@@ -162,11 +191,11 @@ export default function SetNewPasswordPage() {
                         {showConfirm ? (
                           <EyeOff
                             size={20}
-                            color={"#AEAEB2"}
+                            color={colors.textSecondary}
                             strokeWidth={1.8}
                           />
                         ) : (
-                          <Eye size={20} color={"#AEAEB2"} strokeWidth={1.8} />
+                          <Eye size={20} color={colors.textSecondary} strokeWidth={1.8} />
                         )}
                       </TouchableOpacity>
                     }
@@ -185,11 +214,11 @@ export default function SetNewPasswordPage() {
 
             <TouchableOpacity
               onPress={() => router.replace("/(auth)/login")}
-              className="mt-6 items-center"
+              style={{ marginTop: spacing.lg, alignItems: "center" }}
             >
-              <Text className="text-textSecondary text-sm">
+              <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
                 {"Back to "}
-                <Text className="text-primary font-semibold">Log In</Text>
+                <Text style={{ color: colors.primary, fontWeight: "600" }}>Log In</Text>
               </Text>
             </TouchableOpacity>
           </View>
