@@ -22,7 +22,7 @@
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "pan",
       "package": "com.kredbook.app",
-      "permissions": ["READ_CONTACTS", "CAMERA", "READ_MEDIA_IMAGES"]
+      "permissions": ["READ_CONTACTS", "CAMERA", "READ_MEDIA_IMAGES", "POST_NOTIFICATIONS"]
     },
     "web": {
       "output": "static",

@@ -69,12 +69,11 @@ export function useOrderDetail(orderId?: string) {
 export function useCreateOrder(vendorId: string) {
   const queryClient = useQueryClient();
 
-  // Explicit item type — variant_id carried through for future inventory/reporting
-  // (not yet persisted to order_items: column requires a DB migration)
+  // Explicit item type — variant_id is persisted to order_items for inventory/reporting
   type OrderItemInput = {
     product_id: string | null;
     product_name: string;
-    variant_id?: string | null; // future-ready: not written to DB until migration
+    variant_id?: string | null;
     variant_name?: string | null;
     price: number;
     quantity: number;
@@ -152,6 +151,7 @@ export function useCreateOrder(vendorId: string) {
           id: `temp-item-${idx}`,
           order_id: `temp-${Date.now()}`,
           product_id: item.product_id,
+          variant_id: item.variant_id ?? null,
           product_name: item.product_name,
           variant_name: item.variant_name || null,
           price: item.price,

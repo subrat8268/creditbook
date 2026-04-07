@@ -147,13 +147,11 @@ src/components/
 │   ├── OrderList.tsx              ← v3.9: all raw hex removed; AVATAR_COLORS spreads colors.avatarPalette; STATUS_STYLES maps to theme tokens
 │   ├── OrderSummary.tsx
 │   ├── PaymentHistory.tsx
-│   └── RecordPayments.tsx         ← Dead code — zero active importers
 │
 ├── picker/
 │   ├── BottomSheetPicker.tsx      ← Generic sheet used by CustomerPicker; NOT used by ProductPicker (v3.9 ProductPicker owns its sheet)
 │   ├── CustomerPicker.tsx
-│   ├── ProductPicker.tsx          ← v3.9 FULL REWRITE: owns BottomSheet directly; inline variant sub-view (no VariantPicker sheet); stay-open bulk-add; Done button; 1.2s checkmark flash feedback
-│   └── VariantPicker.tsx          ← Orphaned — no active importers after v3.9 ProductPicker rewrite; candidate for deletion
+│   ├── ProductPicker.tsx          ← v3.9 FULL REWRITE: owns BottomSheet directly; inline variant sub-view; stay-open bulk-add; Done button; 1.2s checkmark flash feedback
 │
 ├── products/
 │   ├── NewProductModal.tsx        ← v3.6 rewrite: variants-only (no Base Price); RupeeInput sub-component; FieldArray; sticky CTA; no AppModal
@@ -600,7 +598,7 @@ USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
 | M-01      | **Resolved** — All entry modals now use `@gorhom/bottom-sheet`; `react-native-modal` removed.                                                                                                                             |
 | M-04      | Export screen not in tab bar — only reachable from ProfileScreen. UX decision pending.                                                                                                                                   |
 | M-05–M-08 | Rationalise `src/screens/` indirection inconsistency — now mostly inline. `CustomerScreen.tsx`, `SuppliersScreen.tsx`, `OrdersScreen.tsx`, `CreateOrderScreen.tsx` in `src/screens/` are **stale** (no longer imported). |
-| M-09      | `VariantPicker.tsx` and `RecordPayments.tsx` are orphaned (zero importers). Candidate for deletion.                                                                                                                      |
+| M-09      | **Resolved** — removed orphaned `VariantPicker.tsx` and `RecordPayments.tsx`.                                                                                                                         |
 | M-10      | `order_items` table has no `variant_id` column — DB migration required before variant-level inventory reporting is possible.                                                                                             |
 | M-11      | Notifications screen (`/(main)/notifications`) has no dedicated `_layout.tsx` — uses parent stack navigator. Add if custom back-nav is needed.                                                                           |
 

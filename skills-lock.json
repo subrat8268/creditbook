@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "skills": {
+    "supabase": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "computedHash": "3bc4f56943a13f4fe355742a4b3b30c56008e6d265ae71f19c592410b5f5a01f"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "computedHash": "abf015aafed757edaf2a329299fc106abebdc53bc7f089e92e1f762ed3d8f117"
+    },
+    "modern-ui-agent": {
+      "source": ".agents/skills/modern-ui-agent",
+      "sourceType": "local"
+    },
+    "offline-sync-agent": {
+      "source": ".agents/skills/offline-sync-agent",
+      "sourceType": "local"
+    },
+    "performance-agent": {
+      "source": ".agents/skills/performance-agent",
+      "sourceType": "local"
+    },
+    "frontend-master-agent": {
+      "source": ".agents/skills/frontend-master-agent",
+      "sourceType": "local"
+    },
+    "visual-art-agent": {
+      "source": ".agents/skills/visual-art-agent",
+      "sourceType": "local"
+    },
+    "quality-assurance-agent": {
+      "source": ".agents/skills/quality-assurance-agent",
+      "sourceType": "local"
+    },
+    "mcp-service-agent": {
+      "source": ".agents/skills/mcp-service-agent",
+      "sourceType": "local"
+    },
+    "comms-and-docs-agent": {
+      "source": ".agents/skills/comms-and-docs-agent",
+      "sourceType": "local"
+    }
+  }
+}

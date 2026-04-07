@@ -129,6 +129,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   order_id UUID REFERENCES orders(id) ON DELETE CASCADE NOT NULL,
   vendor_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   product_id UUID REFERENCES products(id) NOT NULL,  -- NOT NULL in live; use ON DELETE RESTRICT
+  variant_id UUID REFERENCES product_variants(id) ON DELETE SET NULL,
   product_name TEXT NOT NULL,
   variant_name TEXT,
   price NUMERIC(10,2) NOT NULL,
@@ -182,6 +183,7 @@ CREATE INDEX IF NOT EXISTS orders_vendor_customer_idx     ON orders(vendor_id, c
 -- order_items
 CREATE INDEX IF NOT EXISTS idx_order_items_order          ON order_items(order_id);
 -- NOTE: live also has 'order_items_order_idx' (plain duplicate of above) — redundant, candidate for DROP
+CREATE INDEX IF NOT EXISTS idx_order_items_variant        ON order_items(variant_id);
 
 -- payments
 CREATE INDEX IF NOT EXISTS idx_payments_order             ON payments(order_id);
@@ -198,6 +200,10 @@ CREATE INDEX IF NOT EXISTS idx_payments_made_supplier       ON payments_made(sup
 -- MIGRATION HELPERS (run these if upgrading an existing database)
 -- =============================================================================
 -- ALTER TABLE profiles ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN NOT NULL DEFAULT FALSE;
+-- ALTER TABLE order_items ADD COLUMN IF NOT EXISTS variant_id UUID;
+-- ALTER TABLE order_items ADD CONSTRAINT order_items_variant_id_fkey FOREIGN KEY (variant_id)
+--   REFERENCES product_variants(id) ON DELETE SET NULL;
+-- CREATE INDEX IF NOT EXISTS idx_order_items_variant ON order_items(variant_id);
 -- ALTER TABLE profiles ADD COLUMN IF NOT EXISTS dashboard_mode TEXT;
 
 -- =============================================================================
@@ -852,6 +858,7 @@ BEGIN
       order_id,
       vendor_id,
       product_id,
+      variant_id,
       product_name,
       variant_name,
       price,
@@ -860,6 +867,7 @@ BEGIN
       v_order_id,
       p_vendor_id,
       (NULLIF(v_item->>'product_id', ''))::UUID,
+      (NULLIF(v_item->>'variant_id', ''))::UUID,
       v_item->>'product_name',
       NULLIF(v_item->>'variant_name', ''),
       (v_item->>'price')::NUMERIC,

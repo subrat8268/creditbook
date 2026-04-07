@@ -57,8 +57,10 @@ design-audit-results.txt
 GEMINI.md
 
 #agents
-_agents/*
-_agentss
+.agents/*
+.agents
+.windsurf/*
+.windsurf
 
 #scripts
 scripts/*

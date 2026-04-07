@@ -15,6 +15,10 @@ import { useEffect, useState } from "react";
 import { StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import {
+  configureNotificationChannels,
+  ensureNotificationPermission,
+} from "@/src/lib/notifications";
 import "../global.css";
 import "../src/i18n";
 import { useAuthStore } from "../src/store/authStore";
@@ -76,6 +80,15 @@ function RootLayout() {
     };
     init();
   }, [loadLanguage]);
+
+  useEffect(() => {
+    const setupNotifications = async () => {
+      await configureNotificationChannels();
+      await ensureNotificationPermission();
+    };
+
+    setupNotifications();
+  }, []);
 
   useEffect(() => {
     if (fontsLoaded && !loading) {

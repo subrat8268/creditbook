@@ -59,6 +59,7 @@ export type Database = {
           product_name: string
           quantity: number
           subtotal: number | null
+          variant_id: string | null
           variant_name: string | null
           vendor_id: string
         }
@@ -71,6 +72,7 @@ export type Database = {
           product_name: string
           quantity: number
           subtotal?: number | null
+          variant_id?: string | null
           variant_name?: string | null
           vendor_id: string
         }
@@ -83,6 +85,7 @@ export type Database = {
           product_name?: string
           quantity?: number
           subtotal?: number | null
+          variant_id?: string | null
           variant_name?: string | null
           vendor_id?: string
         }
@@ -99,6 +102,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
             referencedColumns: ["id"]
           },
           {

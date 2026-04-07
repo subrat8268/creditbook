@@ -50,6 +50,10 @@ import { fetchCustomerDetail } from "@/src/api/customers";
 import { fetchSupplierDetail, recordPaymentMade } from "@/src/api/suppliers";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/src/components/feedback/Toast";
+import {
+  cancelAllOverdueReminders,
+  scheduleOverdueReminder,
+} from "@/src/lib/notifications";
 
 const currencyFormatter = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 0,
@@ -78,6 +82,9 @@ const getAvatarBg = (name: string) => {
   }
   return palette[Math.abs(hash) % palette.length];
 };
+
+const NOTIFICATION_HOUR = 9;
+const NOTIFICATION_MINUTE = 30;
 
 const formatActivityDate = (value: string) => {
   const date = new Date(value);
@@ -303,6 +310,39 @@ export default function DashboardScreen() {
     { supplier: Supplier; detail?: SupplierDetail | null; loading: boolean } | null
   >(null);
   const SUPPLIER_RATIO_KEY = "preferredSupplierRatios";
+
+  useEffect(() => {
+    const syncOverdueReminders = async () => {
+      if (!overdueCustomersAll.length) {
+        await cancelAllOverdueReminders();
+        return;
+      }
+
+      const now = new Date();
+      const trigger = new Date();
+      trigger.setHours(NOTIFICATION_HOUR, NOTIFICATION_MINUTE, 0, 0);
+      if (trigger <= now) {
+        trigger.setDate(trigger.getDate() + 1);
+      }
+
+      await cancelAllOverdueReminders();
+      await Promise.all(
+        overdueCustomersAll.map((customer) =>
+          scheduleOverdueReminder(
+            {
+              customerId: customer.id,
+              customerName: customer.name,
+              balance: customer.balance,
+              daysSince: customer.daysSince,
+            },
+            trigger,
+          ),
+        ),
+      );
+    };
+
+    syncOverdueReminders();
+  }, [overdueCustomersAll]);
 
   useEffect(() => {
     AsyncStorage.getItem(SUPPLIER_RATIO_KEY)

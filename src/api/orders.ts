@@ -5,6 +5,7 @@ export interface OrderItem {
   id: string;
   order_id: string;
   product_id: string | null;
+  variant_id?: string | null;
   product_name: string;
   variant_name?: string | null;
   price: number;
@@ -134,7 +135,7 @@ export async function fetchOrderDetail(
       id, vendor_id, customer_id, bill_number, total_amount, amount_paid, 
       previous_balance, loading_charge, tax_percent, status, created_at,
       customers ( id, name, phone, address ),
-      order_items ( id, product_id, product_name, variant_name, price, quantity, created_at )
+      order_items ( id, product_id, variant_id, product_name, variant_name, price, quantity, created_at )
     `,
     )
     .eq("id", orderId)
@@ -303,6 +304,7 @@ export async function createOrder(
   items: {
     product_id: string | null;
     product_name: string;
+    variant_id?: string | null;
     variant_name?: string | null;
     price: number;
     quantity: number;
