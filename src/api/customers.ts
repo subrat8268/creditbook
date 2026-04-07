@@ -1,5 +1,5 @@
 import { toApiError } from "../lib/supabaseQuery";
-import { supabase } from "../services/supabase";
+import { supabase, executeWithOfflineQueue } from "../services/supabase";
 import { Customer, CustomerDetail } from "../types/customer";
 export type { Customer };
 
@@ -73,25 +73,38 @@ export async function addCustomer(
   vendorId: string,
   values: Omit<Customer, "id" | "vendor_id" | "created_at">,
 ) {
-  const { openingBalance, ...rest } = values as any;
-  const payload: Record<string, any> = { ...rest, vendor_id: vendorId };
-  if (openingBalance && openingBalance > 0) {
-    payload.opening_balance = openingBalance;
-  }
-  const { data, error } = await supabase
-    .from("customers")
-    .insert([payload])
-    .select()
-    .single();
-  if (error) {
-    if (error.code === "23505") {
-      throw new Error(
-        "A customer with this phone number already exists in your account.",
-      );
+  // Wrap mutation with offline queue fallback
+  return executeWithOfflineQueue(
+    async () => {
+      const { openingBalance, ...rest } = values as any;
+      const payload: Record<string, any> = { ...rest, vendor_id: vendorId };
+      if (openingBalance && openingBalance > 0) {
+        payload.opening_balance = openingBalance;
+      }
+      const { data, error } = await supabase
+        .from("customers")
+        .insert([payload])
+        .select()
+        .single();
+      if (error) {
+        if (error.code === "23505") {
+          throw new Error(
+            "A customer with this phone number already exists in your account.",
+          );
+        }
+        throw error;
+      }
+      return data as Customer;
+    },
+    {
+      entity: 'customer',
+      operation: 'CREATE',
+      payload: {
+        vendorId,
+        ...values,
+      },
     }
-    throw error;
-  }
-  return data as Customer;
+  );
 }
 
 export async function fetchCustomerDetail(

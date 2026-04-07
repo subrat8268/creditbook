@@ -6,12 +6,12 @@ import { Formik } from "formik";
 import { AlertCircle, ArrowLeft, Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AuthCard from "../../src/components/ui/AuthCard";
@@ -28,10 +28,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <SafeAreaView
-      className="flex-1 bg-background"
-      edges={["top"]}
-    >
+    <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
@@ -42,10 +39,10 @@ export default function LoginPage() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View className="flex-1 px-6 pb-10 justify-center">
+          <View className="justify-center flex-1 px-6 pb-10">
             <TouchableOpacity
               onPress={() => router.back()}
-              className="w-10 h-10 rounded-full border border-border items-center justify-center mb-6"
+              className="items-center justify-center w-10 h-10 mb-6 border rounded-full border-border"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <ArrowLeft size={20} color={colors.textPrimary} strokeWidth={2} />
@@ -53,7 +50,7 @@ export default function LoginPage() {
 
             <AuthHeader
               title="Welcome Back"
-              subtitle="Sign in to your CreditBook"
+              subtitle="Sign in to your kredBook"
             />
 
             <AuthCard>
@@ -115,7 +112,7 @@ export default function LoginPage() {
                       }
                       className="self-end mt-2.5 mb-5"
                     >
-                      <Text className="text-primary text-sm font-medium">
+                      <Text className="text-sm font-medium text-primary">
                         Forgot password?
                       </Text>
                     </TouchableOpacity>
@@ -139,16 +136,20 @@ export default function LoginPage() {
             </AuthCard>
 
             {(loginMutation.isError || googleSignIn.isError) && (
-              <View 
-                className="flex-row items-center self-center gap-2 rounded-full px-4 py-3 mt-4"
-                style={{ backgroundColor: colors.dangerBg, borderWidth: 1, borderColor: colors.danger + '44' }}
+              <View
+                className="flex-row items-center self-center gap-2 px-4 py-3 mt-4 rounded-full"
+                style={{
+                  backgroundColor: colors.dangerBg,
+                  borderWidth: 1,
+                  borderColor: colors.danger + "44",
+                }}
               >
                 <AlertCircle
                   size={16}
                   color={colors.dangerStrong}
                   strokeWidth={2}
                 />
-                <Text className="text-dangerStrong text-sm">
+                <Text className="text-sm text-dangerStrong">
                   {(loginMutation.error as any)?.message ??
                     (googleSignIn.error as any)?.message ??
                     "Invalid email or password"}
@@ -160,9 +161,9 @@ export default function LoginPage() {
               onPress={() => router.push("/(auth)/signup" as any)}
               className="mt-8"
             >
-              <Text className="text-center text-textSecondary text-sm">
+              <Text className="text-sm text-center text-textSecondary">
                 {"New to KredBook? "}
-                <Text className="text-primary font-semibold">Sign Up</Text>
+                <Text className="font-semibold text-primary">Sign Up</Text>
               </Text>
             </TouchableOpacity>
           </View>

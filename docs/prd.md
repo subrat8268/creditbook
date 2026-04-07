@@ -1,8 +1,8 @@
 # KredBook – Product Requirements Document
 
-> **Version**: 1.6
-> **Last Updated**: April 6, 2026
-> **Status**: Active Development — Phase 7 Complete
+> **Version**: 2.0
+> **Last Updated**: April 7, 2026
+> **Status**: v1.0 Scope Finalized — Ready for Design Completion Sprint
 > **Owner**: KredBook Product Team
 
 ---
@@ -12,12 +12,21 @@
 1. [Product Overview](#1-product-overview)
 2. [Target Users](#2-target-users)
 3. [Key Features](#3-key-features)
+   - 3.1 Customer Credit Ledger
+   - 3.2 Payment Recording
+   - 3.3 Bill Creation
+   - 3.4 Supplier Management
+   - 3.5 Net Position Dashboard
+   - 3.6 Transaction History
+   - 3.7 Payment Reminders
+   - **3.8 Offline-First Architecture** _(new)_
+   - **3.9 Localization** _(new)_
 4. [Core Screens](#4-core-screens)
 5. [UX Principles](#5-ux-principles)
 6. [Design System Summary](#6-design-system-summary)
 7. [Technology Stack](#7-technology-stack)
 8. [Performance Requirements](#8-performance-requirements)
-9. [Future Enhancements](#9-future-enhancements)
+9. [Product Roadmap](#9-product-roadmap) _(v1.0 → v1.1 → v1.2 → v2.0)_
 10. [Success Metrics](#10-success-metrics)
 11. [Vision](#11-vision)
 
@@ -215,6 +224,57 @@ Allow sending payment reminders to customers without leaving the app.
 
 ---
 
+### 3.8 Offline-First Architecture
+
+The app must function without an internet connection. Recording a bill or payment must never fail due to network conditions.
+
+To achieve extreme performance and offline reliability without the heavy overhead of WatermelonDB / SQLite, KredBook v1.0 uses an **MMKV + React Query hybrid approach**.
+
+#### 3.8.1 Read Strategy (React Query)
+
+- All `useQuery` hooks (Customers, Orders, Products, Suppliers) have extended `staleTime` and `gcTime` to maximise cache reuse.
+- Queries are persisted to disk using `@tanstack/react-query-persist-client` with an MMKV storage persister, enabling instant cold boots even while offline.
+- After the first network sync, all subsequent reads are served from the TanStack Query cache — no network round-trip required.
+- Stale data is refetched in the background when the app regains connection.
+
+#### 3.8.2 Write Strategy (MMKV Mutation Queue)
+
+- When offline, `useMutation` calls intercept network failures and push the mutation payload (e.g., `{ operation: 'INSERT_ORDER', payload: {...} }`) into a local Zustand store backed by `react-native-mmkv` (`@kredbook/sync-queue`).
+- **Optimistic UI**: The UI updates instantly as if the mutation succeeded (e.g., Dashboard balance increases immediately, newly created Customer appears in the list, recent bill shows in the Orders feed). This gives the user instant feedback and maintains perceived speed.
+- **Background Sync**: A network listener (via `@react-native-community/netinfo`) watches for connection restoration. On reconnect, the queue is dequeued **sequentially** (FIFO) and each mutation is replayed against Supabase in order.
+- **Conflict Resolution**: Last-write-wins per entity. Sufficient for v1.0 (single user per account). If a server-side update occurred while the user was offline, the local write overwrites it upon sync.
+- **UI Feedback**: A dismissible sync status banner appears at the top of the screen in three states:
+  1. **Offline (red)**: "No internet — entries are saved locally" — shows queued entry count
+  2. **Syncing (amber)**: "Syncing X entries..." — spinner animation
+  3. **Synced (green)**: "All entries synced" — auto-dismisses after 2 seconds
+
+#### 3.8.3 Authentication Architecture
+
+- Supabase GoTrue client handles Email/Password and Google OAuth flows.
+- Session tokens are securely stored in the device's encrypted keychain (via `@kredbook/secure-storage`).
+- Token refresh occurs transparently — if expired, GoTrue refreshes it in the background without user intervention.
+- Sign-out clears the session token from secure storage and resets Zustand auth state.
+
+#### 3.8.4 Implementation Files
+
+- `src/lib/syncQueue.ts` — MMKV queue management (enqueue, dequeue, flush, state)
+- `src/hooks/useNetworkSync.ts` — Network listener + background replay logic
+- `src/components/ui/SyncStatusBanner.tsx` — 3-state sync indicator
+- `src/services/supabase.ts` — Enhanced with error → queue fallback
+
+---
+
+### 3.9 Localization
+
+English and Hindi are both supported from day one.
+
+- All UI strings are externalised to `src/i18n/en.ts` and `src/i18n/hi.ts`
+- Language preference is persisted to AsyncStorage and restored on app start via `languageStore`
+- Language toggle is available in Profile & Settings screen
+- No string literal is permitted directly in component JSX — all copy must go through `i18next` `t()` calls
+
+---
+
 ## 4. Core Screens
 
 ### 4.1 Welcome / Onboarding
@@ -223,9 +283,10 @@ Allow sending payment reminders to customers without leaving the app.
 
 **Steps**:
 
-1. Phone number entry and OTP verification
-2. Business setup (business name, GSTIN, UPI ID, bill prefix, bank details)
-3. Ready screen — summary of setup with nudge to add first customer
+1. Email/password sign-up **or** Google OAuth — no phone OTP in v1.0
+2. Role selection (Retailer / Wholesaler / Small Business)
+3. Business setup (business name, GSTIN, UPI ID, bill prefix, bank details)
+4. Ready screen — summary of setup with nudge to add first customer
 
 **Exit condition**: `profiles.onboarding_complete = true`; subsequent logins skip onboarding.
 
@@ -237,11 +298,13 @@ Allow sending payment reminders to customers without leaving the app.
 
 **Options**:
 
-| Role               | Dashboard Mode | Tab Bar                                         |
-| :----------------- | :------------- | :---------------------------------------------- |
-| **Retailer**       | Seller         | Customers, Orders, Products, Suppliers, Profile |
-| **Wholesaler**     | Distributor    | Customers, Orders, Products, Suppliers, Profile |
-| **Small Business** | Seller         | Customers, Orders, Products, Suppliers, Profile |
+| Role               | Dashboard Mode | Bottom Tab Bar                                 |
+| :----------------- | :------------- | :--------------------------------------------- |
+| **Retailer**       | Seller         | Home · Customers · ➕ New Bill · Orders · More |
+| **Wholesaler**     | Distributor    | Home · Customers · ➕ New Bill · Orders · More |
+| **Small Business** | Seller         | Home · Customers · ➕ New Bill · Orders · More |
+
+> **Suppliers** is accessible from the **More** bottom sheet on all roles. It is not a persistent tab. This keeps the tab bar focused on the highest-frequency daily actions.
 
 Role maps to `dashboard_mode` on the `profiles` table and controls which net-position cards appear on the dashboard.
 
@@ -502,23 +565,23 @@ Full design system documentation is available in [`docs/design-system.md`](./des
 
 ## 7. Technology Stack
 
-| Layer                    | Technology                              | Rationale                                                                                          |
-| :----------------------- | :-------------------------------------- | :------------------------------------------------------------------------------------------------- |
-| **App Framework**        | React Native 19.1 + Expo                | Cross-platform iOS/Android, OTA updates, rich native module ecosystem                              |
-| **Routing**              | Expo Router 6.0                         | File-based routing, deep linking, native stack navigation                                          |
-| **Styling**              | NativeWind 4.2                          | Tailwind CSS utility classes — rapid UI iteration, consistent token usage                          |
-| **Backend / DB**         | Supabase (PostgreSQL + Auth + Realtime) | Managed Postgres, built-in RLS, real-time subscriptions, edge functions                            |
-| **State Management**     | Zustand                                 | Lightweight global state for auth and user profile                                                 |
-| **Server State**         | TanStack Query                          | Cache management, optimistic updates, infinite scroll, background refresh                          |
-| **PDF Engine**           | `expo-print`                            | HTML-to-PDF generation; supports custom templates                                                  |
-| **File Sharing**         | `expo-sharing` + `expo-file-system`     | Share PDFs and CSV exports to any app (WhatsApp, email, Drive)                                     |
-| **Authentication**       | Supabase Auth (Email + Password)        | MVP authentication uses email + password to avoid SMS costs. Phone OTP login is a Phase 7 feature. |
-| **Crash Reporting**      | `@sentry/react-native`                  | Error tracking, crash reports, performance tracing                                                 |
-| **Contacts Import**      | `expo-contacts`                         | Import customers from device contacts                                                              |
-| **Internationalisation** | `i18next` + `react-i18next`             | EN/HI language toggle with AsyncStorage persistence                                                |
-| **Icons**                | `lucide-react-native`                   | Sole icon library — `@expo/vector-icons` removed; all icons migrated to Lucide in v3.3             |
-| **Bottom Sheets**        | `@gorhom/bottom-sheet` v5.2.6           | Payment recording modals (`RecordCustomerPaymentModal`, `RecordPaymentMadeModal`)                  |
-| **Toast / Feedback**     | Custom `Toast.tsx` + `ToastProvider`    | Animated slide-down toasts for success/error feedback; wired into root layout                      |
+| Layer                    | Technology                                    | Rationale                                                                                                                                                      |
+| :----------------------- | :-------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **App Framework**        | React Native 19.1 + Expo                      | Cross-platform iOS/Android, OTA updates, rich native module ecosystem                                                                                          |
+| **Routing**              | Expo Router 6.0                               | File-based routing, deep linking, native stack navigation                                                                                                      |
+| **Styling**              | NativeWind 4.2                                | Tailwind CSS utility classes — rapid UI iteration, consistent token usage                                                                                      |
+| **Backend / DB**         | Supabase (PostgreSQL + Auth + Realtime)       | Managed Postgres, built-in RLS, real-time subscriptions, edge functions                                                                                        |
+| **State Management**     | Zustand                                       | Lightweight global state for auth and user profile                                                                                                             |
+| **Server State**         | TanStack Query                                | Cache management, optimistic updates, infinite scroll, background refresh                                                                                      |
+| **PDF Engine**           | `expo-print`                                  | HTML-to-PDF generation; supports custom templates                                                                                                              |
+| **File Sharing**         | `expo-sharing` + `expo-file-system`           | Share PDFs and CSV exports to any app (WhatsApp, email, Drive)                                                                                                 |
+| **Authentication**       | Supabase Auth — Email/Password + Google OAuth | v1.0 supports email/password and Google Sign-In only. Phone/OTP authentication is explicitly excluded from v1.0 and is not planned until v1.2 at the earliest. |
+| **Crash Reporting**      | `@sentry/react-native`                        | Error tracking, crash reports, performance tracing                                                                                                             |
+| **Contacts Import**      | `expo-contacts`                               | Import customers from device contacts                                                                                                                          |
+| **Internationalisation** | `i18next` + `react-i18next`                   | EN/HI language toggle with AsyncStorage persistence                                                                                                            |
+| **Icons**                | `lucide-react-native`                         | Sole icon library — `@expo/vector-icons` removed; all icons migrated to Lucide in v3.3                                                                         |
+| **Bottom Sheets**        | `@gorhom/bottom-sheet` v5.2.6                 | Payment recording modals (`RecordCustomerPaymentModal`, `RecordPaymentMadeModal`)                                                                              |
+| **Toast / Feedback**     | Custom `Toast.tsx` + `ToastProvider`          | Animated slide-down toasts for success/error feedback; wired into root layout                                                                                  |
 
 ---
 
@@ -535,23 +598,64 @@ Full design system documentation is available in [`docs/design-system.md`](./des
 
 ---
 
-## 9. Future Enhancements
+## 9. Product Roadmap
 
-### Phase 7 — Growth (Planned)
+### v1.0 — Foundation _(First Release, Android)_
 
-| Feature                          | Description                                                                                                                                                               |
-| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **UPI Payment Integration**      | In-app payment collection via UPI deep links or Razorpay SDK                                                                                                              |
-| **Automated Payment Reminders**  | Scheduled WhatsApp/SMS reminders for overdue customers                                                                                                                    |
-| **GST-Ready Invoice Export**     | GSTIN-compliant invoice format with HSN codes and tax breakdown                                                                                                           |
-| **Multi-User Business Accounts** | Staff accounts with role-based access (owner / billing staff / view-only)                                                                                                 |
-| **Analytics Dashboard**          | Revenue trends, top customers, collection rate, monthly comparison                                                                                                        |
-| **AI Payment Prediction**        | Predict likelihood of payment based on customer history                                                                                                                   |
-| **Phone OTP Login**              | Replace email/password with mobile OTP for frictionless signup                                                                                                            |
-| **Cloud Backup & Restore**       | Manual and scheduled backup to user's Google Drive or Supabase storage                                                                                                    |
-| **Online Customer Storefront**   | Shareable product catalog link for customer-facing orders                                                                                                                 |
-| **Inventory Alerts**             | Low-stock notifications based on transaction velocity                                                                                                                     |
-| **Optional Paid Upgrades**       | If the product grows significantly: multi-user access, advanced analytics, custom invoice branding — as additive upgrades only. Core ledger features remain free forever. |
+> **Scope locked.** Everything in §3 Key Features is in scope. Nothing else.
+
+| Area                | Shipped                                             |
+| :------------------ | :-------------------------------------------------- |
+| Authentication      | Email/Password + Google OAuth                       |
+| Platform            | Android only                                        |
+| Navigation          | Home · Customers · New Bill FAB · Orders · More     |
+| Core ledger         | Customer credit, bill creation, payment recording   |
+| Supplier management | Deliveries, payments made, balance tracking         |
+| Product catalog     | Full inventory with variants and category filters   |
+| PDF generation      | Bill PDF + Net Position report PDF                  |
+| Reminders           | WhatsApp deep-link reminders                        |
+| Offline-first       | MMKV write queue + sync status banner               |
+| Localization        | English + Hindi                                     |
+| Export              | CSV export — Orders, Payments, Customers, Suppliers |
+
+---
+
+### v1.1 — Delight _(~6–8 weeks post-launch)_
+
+Improvements driven by early user feedback and Play Store reviews.
+
+| Feature                        | Description                                                      |
+| :----------------------------- | :--------------------------------------------------------------- |
+| **Push notifications**         | Local scheduled reminders for overdue customers                  |
+| **WhatsApp delivery receipts** | Detect if reminder was read (WhatsApp Business API read receipt) |
+| **Bill PDF improvements**      | Business logo upload, bill footer custom message                 |
+| **Play Store rating prompt**   | In-app NPS + review nudge after 5th bill created                 |
+
+---
+
+### v1.2 — Growth _(~3 months post-launch)_
+
+| Feature                     | Description                                                                   |
+| :-------------------------- | :---------------------------------------------------------------------------- |
+| **UPI payment collection**  | Generate UPI QR / deep link embedded in bill PDF                              |
+| **Multi-user staff access** | Owner + billing-staff roles; owner has full access, staff can record only     |
+| **iOS release**             | App Store submission after Android stability is proven                        |
+| **Weekly digest**           | Monday summary: top overdue customers, collection score, week-over-week trend |
+| **Phone OTP login**         | Optional alongside email — for users who prefer mobile-number sign-in         |
+
+---
+
+### v2.0 — Platform _(6–12 months post-launch)_
+
+| Feature                     | Description                                                                 |
+| :-------------------------- | :-------------------------------------------------------------------------- |
+| **GSTN integration**        | GST-ready invoice format with HSN codes, tax breakdown, filing-ready export |
+| **WhatsApp Business API**   | Automated templated reminders, delivery confirmations, payment receipts     |
+| **Custom invoice branding** | Upload logo, choose accent colour, custom bill footer                       |
+| **KredBook for Web**        | Progressive web app for desktop order entry and reporting                   |
+| **AI payment prediction**   | Predict payment likelihood from customer history to prioritise collection   |
+
+> **Pricing policy**: Core ledger features (credit tracking, billing, payments, reminders, PDF, export) are **free forever**. Paid upgrades, if introduced, will be additive only — multi-user access, advanced analytics, custom branding.
 
 ---
 

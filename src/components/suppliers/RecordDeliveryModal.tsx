@@ -1,8 +1,12 @@
-import { Trash2, Truck } from "lucide-react-native";
-import { useState } from "react";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
+import { Trash2, Truck, X } from "lucide-react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
-  ScrollView,
+  Pressable,
   Text,
   TextInput,
   TouchableOpacity,
@@ -11,7 +15,6 @@ import {
 import { RecordDeliveryInput } from "../../api/suppliers";
 import { colors } from "../../utils/theme";
 import Button from "../ui/Button";
-import AppModal from "../ui/Modal";
 
 interface DeliveryItemDraft {
   item_name: string;
@@ -88,6 +91,29 @@ export default function RecordDeliveryModal({
   loading,
   supplierName,
 }: Props) {
+  const sheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ["90%"], []);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
+  useEffect(() => {
+    if (visible) {
+      sheetRef.current?.expand();
+    } else {
+      sheetRef.current?.close();
+    }
+  }, [visible]);
+
   const todayISO = new Date().toISOString().split("T")[0];
   const [items, setItems] = useState<DeliveryItemDraft[]>([emptyItem()]);
   const [loading_charge, setLoadingCharge] = useState("");
@@ -150,32 +176,55 @@ export default function RecordDeliveryModal({
   };
 
   return (
-    <AppModal title="Record Delivery" onClose={onClose} visible={visible}>
-      {/* ── Supplier name pill ── */}
-      {supplierName ? (
-        <View
-          className="flex-row items-center self-start gap-1.5 px-3 py-1.5 rounded-full mb-4"
-          style={{
-            backgroundColor: colors.paid.bg ?? "#DCFCE7",
-            marginTop: -4,
-          }}
-        >
-          <Truck size={13} color={colors.primary} strokeWidth={2} />
-          <Text
-            className="text-[13px] font-semibold"
-            style={{ color: colors.primary }}
-          >
-            {supplierName}
-          </Text>
-        </View>
-      ) : null}
-
-      {/* ── Scrollable fields ── */}
-      <ScrollView
-        showsVerticalScrollIndicator={false}
+    <BottomSheet
+      ref={sheetRef}
+      index={-1}
+      snapPoints={snapPoints}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
+      onChange={(idx) => {
+        if (idx === -1) onClose();
+      }}
+      handleIndicatorStyle={{ backgroundColor: colors.border, width: 40 }}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      backgroundStyle={{
+        borderTopLeftRadius: 28,
+        borderTopRightRadius: 28,
+        backgroundColor: colors.surface,
+      }}
+    >
+      <BottomSheetScrollView
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: 8 }}
       >
+        {/* Header */}
+        <View className="flex-row items-center justify-between py-3 mb-2">
+          <Text className="text-xl font-semibold text-textDark">
+            Record Delivery
+          </Text>
+          <Pressable onPress={onClose} disabled={loading}>
+            <X size={22} color={colors.textPrimary} strokeWidth={2} />
+          </Pressable>
+        </View>
+
+        {/* ── Supplier name pill ── */}
+        {supplierName ? (
+          <View
+            className="flex-row items-center self-start gap-1.5 px-3 py-1.5 rounded-full mb-4"
+            style={{
+              backgroundColor: colors.paid.bg ?? "#DCFCE7",
+            }}
+          >
+            <Truck size={13} color={colors.primary} strokeWidth={2} />
+            <Text
+              className="text-[13px] font-semibold"
+              style={{ color: colors.primary }}
+            >
+              {supplierName}
+            </Text>
+          </View>
+        ) : null}
         {/* Section label */}
         <Text
           className="text-[11px] font-bold tracking-widest mb-3"
@@ -372,16 +421,16 @@ export default function RecordDeliveryModal({
             {fmtINR(netBalance)}
           </Text>
         </View>
-      </ScrollView>
+      </BottomSheetScrollView>
 
       {/* ── Sticky CTA ── */}
-      <View className="pt-4">
+      <View className="pt-4 px-6 pb-6">
         <Button
           title="Record Delivery"
           onPress={handleSubmit}
           loading={loading}
         />
       </View>
-    </AppModal>
+    </BottomSheet>
   );
 }

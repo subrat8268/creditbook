@@ -1,5 +1,5 @@
 import { toApiError } from "../lib/supabaseQuery";
-import { supabase } from "../services/supabase";
+import { supabase, executeWithOfflineQueue } from "../services/supabase";
 
 export interface ProductVariant {
   id: string;
@@ -65,39 +65,48 @@ export async function addProduct(
   vendorId: string,
   values: Omit<Product, "id" | "vendor_id" | "created_at">,
 ) {
-  const { variants, ...productData } = values;
+  // Wrap mutation with offline queue fallback
+  return executeWithOfflineQueue(
+    async () => {
+      const { variants, ...productData } = values;
 
-  // 1. Insert the main product
-  const { data: product, error: pError } = await supabase
-    .from("products")
-    .insert([{ ...productData, vendor_id: vendorId }])
-    .select()
-    .single();
+      // 1. Insert the main product
+      const { data: product, error: pError } = await supabase
+        .from("products")
+        .insert([{ ...productData, vendor_id: vendorId }])
+        .select()
+        .single();
 
-  if (pError) throw toApiError(pError);
+      if (pError) throw toApiError(pError);
 
-  // 2. Insert variants if any
-  if (variants && variants.length > 0) {
-    const variantsWithIds = variants.map((v) => ({
-      product_id: product.id,
-      vendor_id: vendorId,
-      variant_name: v.variant_name,
-      price: v.price,
-    }));
+      // 2. Insert variants if any
+      if (variants && variants.length > 0) {
+        const variantsWithIds = variants.map((v) => ({
+          product_id: product.id,
+          vendor_id: vendorId,
+          variant_name: v.variant_name,
+          price: v.price,
+        }));
 
-    const { error: vError } = await supabase
-      .from("product_variants")
-      .insert(variantsWithIds);
+        const { error: vError } = await supabase
+          .from("product_variants")
+          .insert(variantsWithIds);
 
-    if (vError) {
-      console.error("Failed to insert variants, but product was created:", vError);
-      // We don't throw here to avoid an orphaned product without a UI reference, 
-      // but the user will see a product with missing variants.
+        if (vError) throw toApiError(vError);
+      }
+
+      // 3. Fetch and return the product with variants
+      return fetchProductById(product.id, vendorId);
+    },
+    {
+      entity: 'product',
+      operation: 'CREATE',
+      payload: {
+        vendorId,
+        ...values,
+      },
     }
-  }
-
-  // 3. Return the product with variants (refetch to get the joined data)
-  return fetchProductById(product.id, vendorId);
+  );
 }
 
 /** Helper to fetch a single product with its variants */
@@ -130,51 +139,76 @@ export async function updateProduct(
   productId: string,
   values: Partial<Product>,
 ) {
-  const { variants, ...productData } = values;
-  const vendorId = productData.vendor_id; // Usually passed in values for updates
+  // Wrap mutation with offline queue fallback
+  return executeWithOfflineQueue(
+    async () => {
+      const { variants, ...productData } = values;
+      const vendorId = productData.vendor_id; // Usually passed in values for updates
 
-  // 1. Update the main product row
-  if (Object.keys(productData).length > 0) {
-    const { error: pError } = await supabase
-      .from("products")
-      .update(productData)
-      .eq("id", productId);
-    if (pError) throw toApiError(pError);
-  }
+      // 1. Update the main product row
+      if (Object.keys(productData).length > 0) {
+        const { error: pError } = await supabase
+          .from("products")
+          .update(productData)
+          .eq("id", productId);
+        if (pError) throw toApiError(pError);
+      }
 
-  // 2. Synchronize variants (Overly-simple approach: Delete and re-insert if variants were passed)
-  if (variants !== undefined && vendorId) {
-    const { error: dError } = await supabase
-      .from("product_variants")
-      .delete()
-      .eq("product_id", productId);
+      // 2. Synchronize variants (Overly-simple approach: Delete and re-insert if variants were passed)
+      if (variants !== undefined && vendorId) {
+        const { error: dError } = await supabase
+          .from("product_variants")
+          .delete()
+          .eq("product_id", productId);
 
-    if (!dError && variants.length > 0) {
-      const variantsWithIds = variants.map((v) => ({
-        product_id: productId,
-        vendor_id: vendorId,
-        variant_name: v.variant_name,
-        price: v.price,
-      }));
-      await supabase.from("product_variants").insert(variantsWithIds);
+        if (!dError && variants.length > 0) {
+          const variantsWithIds = variants.map((v) => ({
+            product_id: productId,
+            vendor_id: vendorId,
+            variant_name: v.variant_name,
+            price: v.price,
+          }));
+          await supabase.from("product_variants").insert(variantsWithIds);
+        }
+      }
+
+      // 3. Return updated product
+      // Note: For update, we might not have vendorId in values if it's a minimal update, 
+      // but usually it's there in the Product object. 
+      // If not, we'd need to fetch it first.
+      const { data: check } = await supabase.from("products").select("vendor_id").eq("id", productId).single();
+      return fetchProductById(productId, check!.vendor_id);
+    },
+    {
+      entity: 'product',
+      operation: 'UPDATE',
+      payload: {
+        productId,
+        ...values,
+      },
     }
-  }
-
-  // 3. Return updated product
-  // Note: For update, we might not have vendorId in values if it's a minimal update, 
-  // but usually it's there in the Product object. 
-  // If not, we'd need to fetch it first.
-  const { data: check } = await supabase.from("products").select("vendor_id").eq("id", productId).single();
-  return fetchProductById(productId, check!.vendor_id);
+  );
 }
 
 export async function deleteProduct(productId: string) {
-  const { error } = await supabase
-    .from("products")
-    .delete()
-    .eq("id", productId);
-  if (error) throw toApiError(error);
-  return productId;
+  // Wrap mutation with offline queue fallback
+  return executeWithOfflineQueue(
+    async () => {
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", productId);
+      if (error) throw toApiError(error);
+      return productId;
+    },
+    {
+      entity: 'product',
+      operation: 'DELETE',
+      payload: {
+        productId,
+      },
+    }
+  );
 }
 
 export async function fetchProductCategories(

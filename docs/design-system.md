@@ -12,14 +12,15 @@
 1. [Introduction](#1-introduction)
 2. [Brand Identity](#2-brand-identity)
 3. [Color System](#3-color-system)
-4. [Typography](#4-typography)
-5. [Layout System](#5-layout-system)
-6. [Components](#6-components)
-7. [Icons](#7-icons)
-8. [Motion Guidelines](#8-motion-guidelines)
-9. [UX Patterns](#9-ux-patterns)
-10. [Design Principles](#10-design-principles)
-11. [Screen-Level Sub-Components (v3.6)](#11-screen-level-sub-components-v36)
+4. [System States & Sync Tokens](#4-system-states--sync-tokens)
+5. [Typography](#5-typography)
+6. [Layout System](#6-layout-system)
+7. [Components](#7-components)
+8. [Icons](#8-icons)
+9. [Motion Guidelines](#9-motion-guidelines)
+10. [UX Patterns](#10-ux-patterns)
+11. [Design Principles](#11-design-principles)
+12. [Screen-Level Sub-Components (v3.6)](#12-screen-level-sub-components-v36)
 
 ---
 
@@ -201,7 +202,67 @@ colors: {
 
 ---
 
-## 4. Typography
+## 4. System States & Sync Tokens
+
+In addition to standard success/danger color tokens, KredBook uses specific visual indicators for network and sync status to keep the user informed about data persistence without disrupting the primary task.
+
+### Sync Status Colors
+
+| Token              | Color Name  | Hex       | Usage                                                      |
+| :----------------- | :---------- | :-------- | :--------------------------------------------------------- |
+| `sync.offlineBg`   | Light Amber | `#FEF3C7` | Background for offline indicator banner                    |
+| `sync.offlineText` | Amber       | `#D97706` | Text/icon color for offline state                          |
+| `sync.syncingBg`   | Light Blue  | `#DBEAFE` | Background for syncing indicator banner                    |
+| `sync.syncingText` | Blue        | `#2563EB` | Text/icon color for syncing state                          |
+| `sync.syncedBg`    | Light Green | `#ECFDF5` | Background for synced confirmation banner                  |
+| `sync.syncedText`  | Green       | `#10B981` | Text/icon color for synced state (matches `success` token) |
+
+### SyncBanner Component States
+
+The global `SyncStatusBanner` component (rendered at `src/components/ui/SyncStatusBanner.tsx`) displays three distinct states:
+
+| State       | Background             | Icon                        | Text                                | Animation      | Duration |
+| :---------- | :--------------------- | :-------------------------- | :---------------------------------- | :------------- | :------- |
+| **Offline** | `sync.offlineBg` amber | `cloud-off`                 | "Offline • N changes saved locally" | Static (none)  | Persist  |
+| **Syncing** | `sync.syncingBg` blue  | `cloud-upload` with spinner | "Syncing your changes…"             | Spinner rotate | Persist  |
+| **Synced**  | `sync.syncedBg` green  | `cloud-check`               | "All changes synced"                | Fade out       | 2s auto  |
+
+### Usage Rules
+
+- **Offline state**: Shown immediately when connectivity is lost. Reassures the user that changes are saved locally to MMKV. Dismissible by tap; re-appears if offline again.
+- **Syncing state**: Shown only when mutations are replayed to Supabase. Brief, transient state (typically <2s).
+- **Synced state**: Shown after all queued mutations have successfully synced. Auto-dismisses after 2 seconds.
+- **Placement**: Always at the top of the `SafeAreaView`, above navigation headers. Z-index ensures it never appears behind modals.
+- **Height**: 44dp, tappable for dismissal. Maintains consistent safe area padding.
+
+### Implementation Pattern
+
+These tokens are used **exclusively** in the `SyncStatusBanner` component and its connected hook `useNetworkSync()`. No other components should use sync tokens for color:
+
+```ts
+// In SyncStatusBanner.tsx
+const stateStyles = {
+  offline: {
+    backgroundColor: colors.sync.offlineBg, // #FEF3C7
+    textColor: colors.sync.offlineText, // #D97706
+    icon: CloudOff,
+  },
+  syncing: {
+    backgroundColor: colors.sync.syncingBg, // #DBEAFE
+    textColor: colors.sync.syncingText, // #2563EB
+    icon: CloudUpload,
+  },
+  synced: {
+    backgroundColor: colors.sync.syncedBg, // #ECFDF5
+    textColor: colors.sync.syncedText, // #10B981
+    icon: CloudCheck,
+  },
+};
+```
+
+---
+
+## 5. Typography
 
 ### Font Family
 
@@ -231,7 +292,7 @@ Financial amounts (balances, totals, invoice values) must always be:
 
 ---
 
-## 5. Layout System
+## 6. Layout System
 
 ### Principles
 
@@ -274,7 +335,7 @@ Never left-align financial amounts on list screens.
 
 ---
 
-## 6. Components
+## 7. Components
 
 ### Buttons
 
@@ -454,7 +515,7 @@ Full-screen (or section-level) empty state component used when lists have no dat
 
 ---
 
-## 7. Icons
+## 8. Icons
 
 ### Guidelines
 
@@ -496,7 +557,7 @@ Icons must be:
 
 ---
 
-## 8. Motion Guidelines
+## 9. Motion Guidelines
 
 Animations in **KredBook** should be **functional, not decorative**. Every animation must serve a user comprehension or orientation purpose.
 
@@ -525,7 +586,7 @@ Animations in **KredBook** should be **functional, not decorative**. Every anima
 
 ---
 
-## 9. UX Patterns
+## 10. UX Patterns
 
 ### Color-Coded Financial States
 
@@ -620,7 +681,7 @@ When a list screen has no data, use the shared `EmptyState` component. Never lea
 
 ---
 
-## 10. Design Principles
+## 11. Design Principles
 
 ### The Core Metaphor
 
@@ -651,7 +712,7 @@ _This document is maintained alongside the codebase. Update it whenever a new co
 
 ---
 
-## 11. Screen-Level Sub-Components (v3.6)
+## 12. Screen-Level Sub-Components (v3.6)
 
 Starting in v3.6, multi-step screens extract their repeating UI pieces as **inline sub-components** declared at the top of the screen file (not separate files). These are documented here so designers and developers can reference them without reading individual screen files.
 

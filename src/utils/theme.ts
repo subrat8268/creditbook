@@ -123,6 +123,16 @@ export const colors = {
 
   // ─ Icon backgrounds
   iconBg: "#22C55E22", // Translucent brand green
+
+  // ─ Sync status tokens (for SyncStatusBanner component)
+  sync: {
+    offlineBg: "#FEF3C7",   // Amber-100 — Light amber tint
+    offlineText: "#D97706", // Amber-600
+    syncingBg: "#DBEAFE",   // Blue-100 — Light blue tint
+    syncingText: "#2563EB", // Blue-600
+    syncedBg: "#ECFDF5",    // Green-50 — Light green tint
+    syncedText: "#10B981",  // Green-500 (= success)
+  },
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════════

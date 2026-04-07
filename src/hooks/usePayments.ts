@@ -16,6 +16,8 @@ interface RecordPaymentInput {
  * Standalone mutation-only hook for recording a payment.
  * Used directly by RecordCustomerPaymentModal so the modal
  * does not need its own queryClient or cache invalidation code.
+ * 
+ * Includes optimistic updates for offline-first architecture.
  */
 export function useRecordPayment(
   orderId: string,
@@ -32,12 +34,71 @@ export function useRecordPayment(
       await recordPayment(orderId, vendorId, amount, mode, false, notes);
     },
 
-    onMutate: () => {
+    onMutate: async ({ amount, mode, notes }) => {
       addUpdatingOrderId(orderId);
+
+      // Cancel any outgoing refetches to avoid overwriting our optimistic update
+      await queryClient.cancelQueries({ queryKey: orderKeys.detail(orderId) });
+      await queryClient.cancelQueries({ queryKey: ["payments", orderId] });
+      if (customerId) {
+        await queryClient.cancelQueries({ queryKey: ["customerDetail", customerId] });
+      }
+
+      // Snapshot the previous values for rollback
+      const previousOrder = queryClient.getQueryData(orderKeys.detail(orderId));
+      const previousPayments = queryClient.getQueryData(["payments", orderId]);
+      const previousCustomer = customerId 
+        ? queryClient.getQueryData(["customerDetail", customerId])
+        : undefined;
+
+      // Optimistically update order details
+      queryClient.setQueryData(orderKeys.detail(orderId), (old: any) => {
+        if (!old) return old;
+        const newAmountPaid = (old.amount_paid || 0) + amount;
+        const newBalanceDue = (old.total_amount || 0) - newAmountPaid;
+        const newStatus = newBalanceDue <= 0 ? 'Paid' : newBalanceDue < old.total_amount ? 'Partially Paid' : 'Pending';
+        
+        return {
+          ...old,
+          amount_paid: newAmountPaid,
+          balance_due: newBalanceDue,
+          status: newStatus,
+        };
+      });
+
+      // Optimistically add payment to payment history
+      queryClient.setQueryData(["payments", orderId], (old: any) => {
+        const newPayment = {
+          id: `temp-${Date.now()}`, // Temporary ID
+          order_id: orderId,
+          vendor_id: vendorId || '',
+          amount,
+          payment_mode: mode,
+          payment_date: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          notes,
+        };
+        return [newPayment, ...(old || [])];
+      });
+
+      // Optimistically update customer balance if available
+      if (customerId) {
+        queryClient.setQueryData(["customerDetail", customerId], (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            outstandingBalance: Math.max(0, (old.outstandingBalance || 0) - amount),
+          };
+        });
+      }
+
+      // Return context for rollback
+      return { previousOrder, previousPayments, previousCustomer };
     },
 
     onSuccess: () => {
       if (!vendorId) return;
+      // Invalidate to refetch fresh data from server
       queryClient.invalidateQueries({ queryKey: orderKeys.all(vendorId) });
       queryClient.invalidateQueries({ queryKey: orderKeys.detail(orderId) });
       queryClient.invalidateQueries({ queryKey: ["payments", orderId] });
@@ -50,12 +111,24 @@ export function useRecordPayment(
       queryClient.invalidateQueries({ queryKey: ["dashboard", vendorId] });
     },
 
+    onError: (err: ApiError, _variables, context: any) => {
+      // Rollback optimistic updates on error
+      if (context?.previousOrder) {
+        queryClient.setQueryData(orderKeys.detail(orderId), context.previousOrder);
+      }
+      if (context?.previousPayments) {
+        queryClient.setQueryData(["payments", orderId], context.previousPayments);
+      }
+      if (context?.previousCustomer && customerId) {
+        queryClient.setQueryData(["customerDetail", customerId], context.previousCustomer);
+      }
+      
+      console.error("Failed to record payment:", err.code, err.message);
+    },
+
     onSettled: () => {
       removeUpdatingOrderId(orderId);
     },
-
-    onError: (err: ApiError) =>
-      console.error("Failed to record payment:", err.code, err.message),
   });
 
   return {

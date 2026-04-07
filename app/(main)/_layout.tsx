@@ -1,17 +1,9 @@
-import {
-  BillIcon,
-  CustomerIcon,
-  HomeIcon,
-  MoreIcon,
-  SupplierIcon,
-} from "@/assets/icons/main";
-import { colors, typography } from "@/src/utils/theme";
+import { CustomerIcon, HomeIcon, MoreIcon } from "@/assets/icons/main";
+import { colors, spacing, typography } from "@/src/utils/theme";
 import { Tabs, useRouter } from "expo-router";
+import { Plus, Receipt } from "lucide-react-native";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-const ACTIVE = colors.primary;
-const INACTIVE = "#9CA3AF";
 
 function NewBillButton() {
   const router = useRouter();
@@ -22,12 +14,12 @@ function NewBillButton() {
       style={styles.fabWrapper}
     >
       <View style={styles.fabContainer}>
-        {/* The Orange Circle with White Border */}
+        {/* Orange circle with white border */}
         <View style={styles.fab}>
-          <BillIcon width={26} height={26} color="#FFFFFF" />
+          <Plus size={28} color={colors.surface} strokeWidth={2.5} />
         </View>
 
-        {/* The Floating Label */}
+        {/* Floating label above the FAB */}
         <View style={styles.labelBadge}>
           <Text style={styles.fabLabelText}>New Bill</Text>
         </View>
@@ -43,18 +35,18 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: ACTIVE,
-        tabBarInactiveTintColor: INACTIVE,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
           backgroundColor: colors.surface,
-          borderTopWidth: 1,
+          borderTopWidth: spacing.dividerHeight,
           borderTopColor: colors.border,
           elevation: 8,
-          shadowColor: "#000000",
+          shadowColor: colors.textPrimary,
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.08,
           shadowRadius: 6,
-          height: 62 + insets.bottom,
+          height: spacing.tabBarHeight + insets.bottom,
           paddingBottom: insets.bottom,
           paddingTop: 2,
         },
@@ -87,9 +79,9 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Tab 3 — New Bill (center FAB) */}
+      {/* Tab 3 — New Bill (center FAB, phantom tab) */}
       <Tabs.Screen
-        name="orders"
+        name="new-bill"
         options={{
           title: "",
           tabBarIcon: () => null,
@@ -98,13 +90,13 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Tab 4 — Suppliers */}
+      {/* Tab 4 — Orders list */}
       <Tabs.Screen
-        name="suppliers"
+        name="orders"
         options={{
-          title: "Suppliers",
+          title: "Orders",
           tabBarIcon: ({ color, size }) => (
-            <SupplierIcon width={size} height={20} color={color} />
+            <Receipt size={size} color={color} strokeWidth={1.8} />
           ),
         }}
       />
@@ -120,8 +112,8 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Hidden routes */}
-
+      {/* Hidden routes — accessible via router.push but not shown in the tab bar */}
+      <Tabs.Screen name="suppliers" options={{ href: null }} />
       <Tabs.Screen name="net-position" options={{ href: null }} />
       <Tabs.Screen name="profile" options={{ href: null }} />
       <Tabs.Screen name="products" options={{ href: null }} />
@@ -143,16 +135,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary,
+    width: spacing.fabSize,
+    height: spacing.fabSize,
+    borderRadius: spacing.fabSize / 2,
+    backgroundColor: colors.warning, // orange — per UX spec §2
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 4,
-    borderColor: "#FFFFFF",
-    marginTop: -28,
-    shadowColor: "#000",
+    borderColor: colors.surface,
+    marginTop: -(spacing.fabSize / 2),
+    shadowColor: colors.textPrimary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 10,
@@ -160,17 +152,17 @@ const styles = StyleSheet.create({
   },
   labelBadge: {
     position: "absolute",
-    top: -42,
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    top: -(spacing.fabSize / 2) - 16,
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#F1F5F9",
+    borderColor: colors.borderLight,
   },
   fabLabelText: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: "#1F2937",
+    fontSize: typography.caption.fontSize,
+    fontWeight: "800" as const,
+    color: colors.textPrimary,
   },
 });

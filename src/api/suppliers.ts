@@ -1,5 +1,5 @@
 import { toApiError } from "../lib/supabaseQuery";
-import { supabase } from "../services/supabase";
+import { supabase, executeWithOfflineQueue } from "../services/supabase";
 import {
     Supplier,
     SupplierDelivery,
@@ -81,13 +81,26 @@ export async function addSupplier(
   vendorId: string,
   values: Omit<Supplier, "id" | "vendor_id" | "created_at" | "balanceOwed">,
 ): Promise<Supplier> {
-  const { data, error } = await supabase
-    .from("suppliers")
-    .insert([{ ...values, vendor_id: vendorId }])
-    .select()
-    .single();
-  if (error) throw toApiError(error);
-  return data as Supplier;
+  // Wrap mutation with offline queue fallback
+  return executeWithOfflineQueue(
+    async () => {
+      const { data, error } = await supabase
+        .from("suppliers")
+        .insert([{ ...values, vendor_id: vendorId }])
+        .select()
+        .single();
+      if (error) throw toApiError(error);
+      return data as Supplier;
+    },
+    {
+      entity: 'supplier',
+      operation: 'CREATE',
+      payload: {
+        vendorId,
+        ...values,
+      },
+    }
+  );
 }
 
 export async function fetchSupplierDetail(
@@ -209,58 +222,72 @@ export async function recordDelivery(
   supplierId: string,
   delivery: RecordDeliveryInput,
 ): Promise<void> {
-  const itemsSubtotal = delivery.items.reduce(
-    (s, i) => s + i.quantity * i.rate,
-    0,
+  // Wrap mutation with offline queue fallback
+  return executeWithOfflineQueue(
+    async () => {
+      const itemsSubtotal = delivery.items.reduce(
+        (s, i) => s + i.quantity * i.rate,
+        0,
+      );
+      const total_amount = itemsSubtotal + delivery.loading_charge;
+
+      const { data: deliveryRow, error: dErr } = await supabase
+        .from("supplier_deliveries")
+        .insert([
+          {
+            vendor_id: vendorId,
+            supplier_id: supplierId,
+            delivery_date: delivery.delivery_date,
+            loading_charge: delivery.loading_charge,
+            advance_paid: delivery.advance_paid,
+            total_amount,
+            notes: delivery.notes ?? "",
+          },
+        ])
+        .select("id")
+        .single();
+
+      if (dErr) throw toApiError(dErr);
+
+      if (delivery.items.length > 0) {
+        const itemRows = delivery.items.map((i) => ({
+          delivery_id: deliveryRow.id,
+          vendor_id: vendorId,
+          item_name: i.item_name,
+          quantity: i.quantity,
+          rate: i.rate,
+        }));
+        const { error: iErr } = await supabase
+          .from("supplier_delivery_items")
+          .insert(itemRows);
+        if (iErr) throw toApiError(iErr);
+      }
+
+      // Record advance as a payment_made entry
+      if (delivery.advance_paid > 0) {
+        const { error: pErr } = await supabase.from("payments_made").insert([
+          {
+            vendor_id: vendorId,
+            supplier_id: supplierId,
+            delivery_id: deliveryRow.id,
+            amount: delivery.advance_paid,
+            payment_mode: "Cash",
+            notes: "Advance paid at delivery",
+          },
+        ]);
+        if (pErr) throw toApiError(pErr);
+      }
+    },
+    {
+      entity: 'delivery',
+      operation: 'CREATE',
+      payload: {
+        vendorId,
+        supplierId,
+        ...delivery,
+      },
+    }
   );
-  const total_amount = itemsSubtotal + delivery.loading_charge;
-
-  const { data: deliveryRow, error: dErr } = await supabase
-    .from("supplier_deliveries")
-    .insert([
-      {
-        vendor_id: vendorId,
-        supplier_id: supplierId,
-        delivery_date: delivery.delivery_date,
-        loading_charge: delivery.loading_charge,
-        advance_paid: delivery.advance_paid,
-        total_amount,
-        notes: delivery.notes ?? "",
-      },
-    ])
-    .select("id")
-    .single();
-
-  if (dErr) throw toApiError(dErr);
-
-  if (delivery.items.length > 0) {
-    const itemRows = delivery.items.map((i) => ({
-      delivery_id: deliveryRow.id,
-      vendor_id: vendorId,
-      item_name: i.item_name,
-      quantity: i.quantity,
-      rate: i.rate,
-    }));
-    const { error: iErr } = await supabase
-      .from("supplier_delivery_items")
-      .insert(itemRows);
-    if (iErr) throw toApiError(iErr);
-  }
-
-  // Record advance as a payment_made entry
-  if (delivery.advance_paid > 0) {
-    const { error: pErr } = await supabase.from("payments_made").insert([
-      {
-        vendor_id: vendorId,
-        supplier_id: supplierId,
-        delivery_id: deliveryRow.id,
-        amount: delivery.advance_paid,
-        payment_mode: "Cash",
-        notes: "Advance paid at delivery",
-      },
-    ]);
-    if (pErr) throw toApiError(pErr);
-  }
 }
 
 export async function recordPaymentMade(
@@ -270,14 +297,30 @@ export async function recordPaymentMade(
   payment_mode: string,
   notes?: string,
 ): Promise<void> {
-  const { error } = await supabase.from("payments_made").insert([
-    {
-      vendor_id: vendorId,
-      supplier_id: supplierId,
-      amount,
-      payment_mode,
-      notes: notes ?? "",
+  // Wrap mutation with offline queue fallback
+  return executeWithOfflineQueue(
+    async () => {
+      const { error } = await supabase.from("payments_made").insert([
+        {
+          vendor_id: vendorId,
+          supplier_id: supplierId,
+          amount,
+          payment_mode,
+          notes: notes ?? "",
+        },
+      ]);
+      if (error) throw toApiError(error);
     },
-  ]);
-  if (error) throw toApiError(error);
+    {
+      entity: 'payment_made',
+      operation: 'CREATE',
+      payload: {
+        vendorId,
+        supplierId,
+        amount,
+        paymentMode: payment_mode,
+        notes,
+      },
+    }
+  );
 }

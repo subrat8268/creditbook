@@ -131,6 +131,71 @@ export const useRecordPaymentMade = (vendorId: string, supplierId: string) => {
   >({
     mutationFn: ({ amount, payment_mode, notes }) =>
       recordPaymentMade(vendorId, supplierId, amount, payment_mode, notes),
+    
+    onMutate: async ({ amount, payment_mode, notes }) => {
+      // Cancel any outgoing refetches to avoid overwriting our optimistic update
+      await queryClient.cancelQueries({ queryKey: supplierKeys.detail(supplierId) });
+      await queryClient.cancelQueries({ queryKey: ["suppliers", vendorId] });
+
+      // Snapshot previous values for rollback
+      const previousSupplier = queryClient.getQueryData(supplierKeys.detail(supplierId));
+      const previousSuppliers = queryClient.getQueryData(["suppliers", vendorId]);
+
+      // Optimistically update supplier detail
+      queryClient.setQueryData(supplierKeys.detail(supplierId), (old: any) => {
+        if (!old) return old;
+        
+        const newBalanceOwed = Math.max(0, (old.balanceOwed || old.totalOwed || 0) - amount);
+        
+        // Add optimistic payment to timeline
+        const newPayment = {
+          id: `temp-${Date.now()}`,
+          type: 'payment' as const,
+          date: new Date().toISOString(),
+          runningBalance: newBalanceOwed,
+          paymentAmount: amount,
+          paymentMode: payment_mode,
+          paymentNotes: notes,
+        };
+
+        return {
+          ...old,
+          balanceOwed: newBalanceOwed,
+          totalOwed: newBalanceOwed,
+          timeline: [newPayment, ...(old.timeline || [])],
+        };
+      });
+
+      // Optimistically update supplier in list
+      queryClient.setQueryData(["suppliers", vendorId], (old: any) => {
+        if (!old) return old;
+        
+        const updateSupplier = (supplier: any) => {
+          if (supplier.id !== supplierId) return supplier;
+          return {
+            ...supplier,
+            balanceOwed: Math.max(0, (supplier.balanceOwed || 0) - amount),
+          };
+        };
+
+        // Handle infinite query structure
+        if (old.pages) {
+          return {
+            ...old,
+            pages: old.pages.map((page: any) => 
+              Array.isArray(page) ? page.map(updateSupplier) : page
+            ),
+          };
+        }
+        
+        // Handle flat array structure
+        return Array.isArray(old) ? old.map(updateSupplier) : old;
+      });
+
+      // Return context for rollback
+      return { previousSupplier, previousSuppliers };
+    },
+
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: supplierKeys.detail(supplierId),
@@ -141,7 +206,16 @@ export const useRecordPaymentMade = (vendorId: string, supplierId: string) => {
       });
       queryClient.invalidateQueries({ queryKey: ["dashboard", vendorId] });
     },
-    onError: (err: ApiError) => {
+    
+    onError: (err: ApiError, _variables, context: any) => {
+      // Rollback optimistic updates on error
+      if (context?.previousSupplier) {
+        queryClient.setQueryData(supplierKeys.detail(supplierId), context.previousSupplier);
+      }
+      if (context?.previousSuppliers) {
+        queryClient.setQueryData(["suppliers", vendorId], context.previousSuppliers);
+      }
+      
       console.error("Failed to record payment:", err.code, err.message);
       Alert.alert("Error", err.message || "Failed to record payment");
     },

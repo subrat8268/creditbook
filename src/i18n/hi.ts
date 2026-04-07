@@ -190,7 +190,7 @@ const hi = {
 
   // Onboarding
   onboarding: {
-    welcome: "CreditBook में आपका स्वागत है",
+    welcome: "kredBook में आपका स्वागत है",
     step1Title: "अपना फोन नंबर दर्ज करें",
     step2Title: "अपना व्यापार सेट करें",
     step3Title: "आप तैयार हैं!",

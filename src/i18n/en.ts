@@ -191,7 +191,7 @@ const en = {
 
   // Onboarding
   onboarding: {
-    welcome: "Welcome to CreditBook",
+    welcome: "Welcome to kredBook",
     step1Title: "Enter Your Phone",
     step2Title: "Set Up Your Business",
     step3Title: "You're Ready!",

@@ -1,10 +1,13 @@
 import Loader from "@/src/components/feedback/Loader";
 import { ToastProvider } from "@/src/components/feedback/Toast";
+import { SyncStatusBanner } from "@/src/components/ui/SyncStatusBanner";
 import { useAuth } from "@/src/hooks/useAuth";
 import { useFontsLoader } from "@/src/hooks/useFontsLoader";
 import { ThemeProvider } from "@/src/utils/ThemeProvider";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { createMMKVPersister } from "@/src/lib/mmkvPersister";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as WebBrowser from "expo-web-browser";
@@ -27,7 +30,22 @@ SplashScreen.preventAutoHideAsync().catch(() => {
   // Ignore if already prevented/hidden by the runtime.
 });
 
-const queryClient = new QueryClient();
+// ═══════════════════════════════════════════════════════════════════════════════
+// OFFLINE-FIRST ARCHITECTURE — React Query + MMKV Persistence
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Cache queries for 5 minutes (stale-while-revalidate pattern)
+      gcTime: 1000 * 60 * 60 * 24, // 24 hours (formerly cacheTime)
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
+
+// Create MMKV persister for React Query cache
+const mmkvPersister = createMMKVPersister();
 
 function RootLayout() {
   useAuth();
@@ -108,12 +126,18 @@ function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister: mmkvPersister }}
+    >
       <ThemeProvider>
         <SafeAreaProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <BottomSheetModalProvider>
               <ToastProvider>
+                {/* Global Sync Status Banner */}
+                <SyncStatusBanner />
+                
                 <Stack screenOptions={{ headerShown: false }}>
                   <Stack.Screen name="index" />
                   <Stack.Screen name="(auth)" />
@@ -126,7 +150,7 @@ function RootLayout() {
           </GestureHandlerRootView>
         </SafeAreaProvider>
       </ThemeProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }
 

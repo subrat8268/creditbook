@@ -32,7 +32,122 @@ The UI must always reflect this — put the money front and center, make recordi
 
 ---
 
-## 2. Target Users
+## 2. Global Navigation
+
+**Bottom Tab Bar Layout:**
+
+The app uses a persistent 5-item bottom tab bar across all main screens (`app/(main)/`). This navigation pattern is consistent and enables single-tap access to core app functions.
+
+| Position | Component       | Route Destination              | Purpose                                                              |
+| :------- | :-------------- | :----------------------------- | :------------------------------------------------------------------- |
+| 1        | **Home**        | `/dashboard`                   | Dashboard with net position, pending followups, quick actions        |
+| 2        | **Customers**   | `/customers`                   | Customer ledger, add customer, import contacts                       |
+| 3        | **[ + ]** (FAB) | Modal trigger or quick action  | Floating action button to initiate "New Bill" workflow from anywhere |
+| 4        | **Orders**      | `/orders`                      | List of all generated bills with filtering (Paid/Pending/Partial)    |
+| 5        | **More**        | Bottom sheet or dedicated page | Profile, Settings, Export Data, and Suppliers (Wholesale Ledger)     |
+
+### Tab Bar Design Details
+
+- **Height**: 64dp + device bottom safe area inset
+- **Background**: White `#FFFFFF` with 1dp top border `#F3F3F3`
+- **Icons**: Lucide React Native, 24×24dp, gray `#6B7280` (inactive), green `#10B981` (active)
+- **Labels**: Disabled (icon-only) for cleaner, faster touch targets
+- **Active indicator**: Bottom border accent (2dp, green `#10B981`)
+- **FAB**: Orange/amber `#F59E0B`, circular 56dp, positioned centered above tab bar with shadow. Icon: `Plus` (white, 28×28dp)
+
+### Suppliers Tab → More Sheet
+
+**v1.0 Navigation Change**: Suppliers have been moved from a persistent fifth tab to the "More" bottom sheet. This reduces cognitive load in the main tab bar while keeping the wholesale ledger fully accessible.
+
+Inside the **More** sheet, Suppliers appears as the first action (after Profile and Settings) — maintaining its prominence for distributor-focused users.
+
+---
+
+## 3. Screen Inventory & Missing Figma Files
+
+This section catalogs the screens that **must be designed and delivered in Figma** to complete the v1.0 UI spec. It also specifies the design system patterns each screen should follow (from `docs/design-system.md`).
+
+### Orders List Screen
+
+**Route**: `/(main)/orders`
+**SafeArea**: Top only (`edges={["top"]}`)
+**Pattern**: Inline route in `app/(main)/orders/index.tsx`
+
+#### Layout
+
+| Position    | Element                     | Detail                                                                                 |
+| ----------- | --------------------------- | -------------------------------------------------------------------------------------- |
+| FIXED TOP   | Header "Orders"             | Bold 28px, left-padded 16dp, SafeArea top inset. Right: notifications/menu icon.       |
+| FIXED TOP   | Search & Filter bar         | Pill-shaped search input with magnifying glass icon. Right side: sort chip (dropdown). |
+| SCROLL BODY | Inline filter tabs          | Horizontal pill buttons (multiselect): "All" (default), "Paid", "Partial", "Pending"   |
+| SCROLL BODY | Order cards list (FlatList) | Repeating `OrderCard` component for each bill. Scrollable vertically.                  |
+| EMPTY STATE | "No orders yet" + CTA       | If list is empty, show `EmptyState` component with FAB link to create bill.            |
+| BOTTOM      | FAB button (sticky)         | Orange `#F59E0B`, positioned above tab bar, triggers "New Bill" flow.                  |
+
+#### OrderCard component
+
+- **Container**: White card, rounded-lg, 1dp border `#E5E7EB`, 12dp margin, elevation 1
+- **TOP ROW**: Bill number (e.g., "Bill #3241") left, status badge right (green "Paid" / amber "Pending" / red icon "Overdue")
+- **MIDDLE**: Customer name (bold 16px), sub-text "3 items"
+- **BOTTOM**: Date string left (e.g., "Mar 5, 2024"), amount right (bold, large, green/red based on status)
+- **Tap action**: Navigate to `/(main)/orders/[orderId]`
+
+### Order Detail Screen
+
+**Route**: `/(main)/orders/[orderId]`
+**SafeArea**: Top only
+**Pattern**: Inline route
+
+#### Layout
+
+| Position     | Element                   | Detail                                                                                                |
+| ------------ | ------------------------- | ----------------------------------------------------------------------------------------------------- |
+| FIXED TOP    | Header                    | Back arrow (left), "Order #3241" title (center), three-dot menu (right)                               |
+| SCROLL TOP   | Status gradient hero card | Red-to-orange gradient for overdue, green gradient for paid. Large amount (₹2,340), status text below |
+| SCROLL       | "Items" section           | Repeating `OrderItemCard` rows: product name, qty, rate, amount. No edit in detail view.              |
+| SCROLL       | "Payments" section        | Timeline of payments received: date, amount, payment method (cash/UPI/cheque)                         |
+| SCROLL       | "Actions" buttons strip   | "Download PDF", "Send via WhatsApp", "Record Payment"                                                 |
+| FIXED BOTTOM | Action buttons            | Full-width: "Record Payment" (primary green), "More" (outline)                                        |
+
+#### Color scheme (status-based)
+
+- **Paid**: Green gradient `#10B981` → `#059669`
+- **Partial**: Amber gradient `#F59E0B` → `#D97706`
+- **Pending**: Gray gradient `#9CA3AF` → `#6B7280`
+- **Overdue (>30 days)**: Red gradient `#EF4444` → `#DC2626`
+
+### Sync Status UI (Top Banner)
+
+**Pattern**: Absolute-positioned top banner, above all scrollable content
+**Component**: `SyncStatusBanner.tsx` (lives in `src/components/ui/`)
+
+#### States & Styling
+
+| State       | Background                | Icon                      | Text                                | Animation                |
+| :---------- | :------------------------ | :------------------------ | :---------------------------------- | :----------------------- |
+| **Offline** | Red `#DC2626` (alert)     | cloud-off                 | "Offline • N changes saved locally" | Static (no animation)    |
+| **Syncing** | Amber `#F59E0B` (caution) | cloud-upload with spinner | "Syncing your changes…"             | Spinner rotation         |
+| **Synced**  | Green `#10B981` (success) | cloud-check               | "All changes synced"                | Fade out after 2 seconds |
+
+#### Position & Layout
+
+- **Height**: 44dp (content safe, always tappable for dismissal)
+- **Width**: Full screen width, 16dp horizontal padding
+- **Position**: Absolute, `top: 0`, above SafeAreaView. Positioned to not overlap header elements.
+- **Text**: 13px medium, white `#FFFFFF`, left-aligned after icon
+- **Dismissal**: Tap anywhere on banner → fade out (Animated.timing 300ms)
+- **Re-appear**: Only when state changes (e.g., goes offline again after showing "Synced")
+
+#### Implementation Details
+
+- Connected to `useNetworkSync()` hook which listens to `@react-native-community/netinfo`
+- Queue length (N changes) sourced from `syncQueue.list().length`
+- Automatically dismisses "Synced" after 2 seconds; "Offline" and "Syncing" persist until state changes
+- Z-index: always above other content; never behind modals
+
+---
+
+## 4. Target Users
 
 ### Retailers
 
@@ -84,7 +199,7 @@ The UI must always reflect this — put the money front and center, make recordi
 
 ---
 
-## 3. Core User Goals
+## 5. Core User Goals
 
 Every screen should support at least one of these goals:
 
@@ -99,7 +214,7 @@ Every screen should support at least one of these goals:
 
 ---
 
-## 4. Main Screens
+## 6. Main Screens
 
 > **Layout notation used below**:
 >
@@ -807,7 +922,7 @@ Bell icon in `DashboardHeader` — tapping it navigates here. The bell has a red
 
 ---
 
-## 5. Key Features
+## 7. Key Features
 
 ### Customer Credit Ledger
 
@@ -853,7 +968,7 @@ One-tap WhatsApp reminder from the Customer Detail screen. Pre-fills a message w
 
 ---
 
-## 6. UX Patterns
+## 8. UX Patterns
 
 ### Color-Coded Financial States
 
@@ -964,7 +1079,7 @@ Success and error feedback is delivered via the shared `Toast` component — nev
 
 ---
 
-## 7. Visual Design Rules
+## 9. Visual Design Rules
 
 ### Design Philosophy
 
@@ -1026,7 +1141,7 @@ Success and error feedback is delivered via the shared `Toast` component — nev
 
 ---
 
-## 8. Important UX Constraints
+## 10. Important UX Constraints
 
 | Constraint                                      | Reason                                                                                       |
 | :---------------------------------------------- | :------------------------------------------------------------------------------------------- |
@@ -1041,7 +1156,7 @@ Success and error feedback is delivered via the shared `Toast` component — nev
 
 ---
 
-## 9. Future Features (Context Only)
+## 11. Future Features (Context Only)
 
 These features are planned but should **not** be included in initial UI designs:
 
@@ -1060,7 +1175,7 @@ Design the MVP screens without placeholders for these features.
 
 ---
 
-## 10. UX Goal
+## 12. UX Goal
 
 > "A digital khata book designed for modern shop owners — combining the familiarity of a traditional ledger with modern fintech dashboards."
 
@@ -1080,6 +1195,7 @@ Every design decision should be evaluated against these four qualities before sh
 ---
 
 _This document is intended for use with AI design generation tools and human designers. For technical implementation details, see [`docs/prd.md`](./prd.md). For the full design token reference, see [`docs/design-system.md`](./design-system.md)._
+
 ### 4.24 Pay Supplier (Dashboard quick action)
 
 - Trigger: Distributor dashboard → “Pay Supplier” quick action

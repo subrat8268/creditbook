@@ -1,5 +1,5 @@
 import { toApiError } from "../lib/supabaseQuery";
-import { supabase } from "../services/supabase";
+import { supabase, executeWithOfflineQueue } from "../services/supabase";
 
 export interface OrderItem {
   id: string;
@@ -187,39 +187,56 @@ export async function recordPayment(
   markFull: boolean,
   notes?: string,
 ): Promise<void> {
-  // 1. Get current order to calculate balance
-  const { data: order, error: orderErr } = await supabase
-    .from("orders")
-    .select("total_amount, amount_paid")
-    .eq("id", orderId)
-    .single();
+  // Wrap mutation with offline queue fallback
+  return executeWithOfflineQueue(
+    async () => {
+      // 1. Get current order to calculate balance
+      const { data: order, error: orderErr } = await supabase
+        .from("orders")
+        .select("total_amount, amount_paid")
+        .eq("id", orderId)
+        .single();
 
-  if (orderErr) throw toApiError(orderErr);
-  if (!order) throw new Error("Order not found");
+      if (orderErr) throw toApiError(orderErr);
+      if (!order) throw new Error("Order not found");
 
-  const totalAmount = Number(order.total_amount);
-  const currentPaid = Number(order.amount_paid);
-  const currentBalance = totalAmount - currentPaid;
+      const totalAmount = Number(order.total_amount);
+      const currentPaid = Number(order.amount_paid);
+      const currentBalance = totalAmount - currentPaid;
 
-  // 2. Determine payment amount
-  const paymentAmount = markFull ? currentBalance : amount;
-  if (paymentAmount <= 0) throw new Error("Invalid payment amount");
+      // 2. Determine payment amount
+      const paymentAmount = markFull ? currentBalance : amount;
+      if (paymentAmount <= 0) throw new Error("Invalid payment amount");
 
-  // 3. Insert into payments
-  // NOTE: The `on_payment_upsert` DB trigger will automatically update
-  // the parent order's amount_paid and status. Do not update it here.
-  const paymentRow: Record<string, unknown> = {
-    order_id: orderId,
-    vendor_id: vendorId,
-    amount: paymentAmount,
-    payment_mode: paymentMode,
-  };
-  if (notes?.trim()) paymentRow.notes = notes.trim();
+      // 3. Insert into payments
+      // NOTE: The `on_payment_upsert` DB trigger will automatically update
+      // the parent order's amount_paid and status. Do not update it here.
+      const paymentRow: Record<string, unknown> = {
+        order_id: orderId,
+        vendor_id: vendorId,
+        amount: paymentAmount,
+        payment_mode: paymentMode,
+      };
+      if (notes?.trim()) paymentRow.notes = notes.trim();
 
-  const { error: insertErr } = await supabase
-    .from("payments")
-    .insert([paymentRow]);
-  if (insertErr) throw toApiError(insertErr);
+      const { error: insertErr } = await supabase
+        .from("payments")
+        .insert([paymentRow]);
+      if (insertErr) throw toApiError(insertErr);
+    },
+    {
+      entity: 'payment',
+      operation: 'CREATE',
+      payload: {
+        vendorId,
+        orderId,
+        amount,
+        paymentMode,
+        markFull,
+        notes,
+      },
+    }
+  );
 }
 
 /**
@@ -296,23 +313,42 @@ export async function createOrder(
   taxPercent: number = 0,
   billNumberPrefix: string = "INV",
 ): Promise<OrderDetail> {
-  // Use Postgres RPC to ensure order, items, and payments are inserted atomically
-  const { data, error } = await supabase.rpc("create_order_transaction", {
-    p_vendor_id: vendorId,
-    p_customer_id: customerId,
-    p_items: items,
-    p_amount_paid: amountPaid,
-    p_payment_mode: paymentMode || null,
-    p_loading_charge: loadingCharge,
-    p_tax_percent: taxPercent,
-    p_bill_prefix: billNumberPrefix,
-  });
+  // Wrap mutation with offline queue fallback
+  return executeWithOfflineQueue(
+    async () => {
+      // Use Postgres RPC to ensure order, items, and payments are inserted atomically
+      const { data, error } = await supabase.rpc("create_order_transaction", {
+        p_vendor_id: vendorId,
+        p_customer_id: customerId,
+        p_items: items,
+        p_amount_paid: amountPaid,
+        p_payment_mode: paymentMode || null,
+        p_loading_charge: loadingCharge,
+        p_tax_percent: taxPercent,
+        p_bill_prefix: billNumberPrefix,
+      });
 
-  if (error) throw toApiError(error);
-  if (!data?.order_id) throw new Error("Failed to create order");
+      if (error) throw toApiError(error);
+      if (!data?.order_id) throw new Error("Failed to create order");
 
-  // Fetch and return the fully detailed order
-  const orderDetail = await fetchOrderDetail(data.order_id);
-  if (!orderDetail) throw new Error("Failed to fetch created order details");
-  return orderDetail;
+      // Fetch and return the fully detailed order
+      const orderDetail = await fetchOrderDetail(data.order_id);
+      if (!orderDetail) throw new Error("Failed to fetch created order details");
+      return orderDetail;
+    },
+    {
+      entity: 'order',
+      operation: 'CREATE',
+      payload: {
+        vendorId,
+        customerId,
+        items,
+        amountPaid,
+        paymentMode,
+        loadingCharge,
+        taxPercent,
+        billNumberPrefix,
+      },
+    }
+  );
 }
