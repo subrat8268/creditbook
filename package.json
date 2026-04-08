@@ -31,8 +31,10 @@
     "@supabase/supabase-js": "^2.57.4",
     "@tanstack/react-query": "^5.89.0",
     "@tanstack/react-query-persist-client": "^5.96.2",
+    "@types/node": "^25.5.2",
     "base64-arraybuffer": "^1.0.2",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "expo": "~54.0.33",
     "expo-constants": "~18.0.9",
     "expo-contacts": "~15.0.11",
@@ -72,6 +74,7 @@
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.5.1",
     "tailwindcss": "^3.4.17",
+    "ts-node": "^10.9.2",
     "yup": "^1.7.0",
     "zustand": "^5.0.8"
   },

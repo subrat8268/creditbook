@@ -3,6 +3,7 @@ import EmptyState from "@/src/components/feedback/EmptyState";
 import Loader from "@/src/components/feedback/Loader";
 import { useToast } from "@/src/components/feedback/Toast";
 import { useCustomerDetail } from "@/src/hooks/useCustomer";
+import { useWhatsAppShare } from "@/src/hooks/useWhatsAppShare";
 import { useAuthStore } from "@/src/store/authStore";
 import { Transaction } from "@/src/types/customer";
 import { colors, gradients } from "@/src/utils/theme";
@@ -22,6 +23,7 @@ import {
     Phone,
     Plus,
     Receipt,
+    Share2,
 } from "lucide-react-native";
 import { useMemo, useRef, useState } from "react";
 import {
@@ -227,6 +229,7 @@ export default function CustomerDetailScreen() {
   const profile = useAuthStore((s) => s.profile);
 
   const { show: showToast } = useToast();
+  const { shareLedger, isSharing } = useWhatsAppShare();
 
   const [txFilter, setTxFilter] = useState<TxFilter>("All");
   const [exporting, setExporting] = useState(false);
@@ -282,6 +285,18 @@ export default function CustomerDetailScreen() {
     } finally {
       setExporting(false);
     }
+  };
+
+  const handleShareLedger = async () => {
+    if (!customer || !profile) return;
+    
+    await shareLedger(
+      profile.id,
+      customer.id,
+      customer.name,
+      customer.phone,
+      profile.business_name || profile.name || 'KredBook'
+    );
   };
 
   const listItems = useMemo<ListItem[]>(() => {
@@ -440,103 +455,133 @@ export default function CustomerDetailScreen() {
           ) : null}
         </LinearGradient>
 
-        {/* ── Action Buttons ── */}
-        <View className="flex-row mx-4 mt-4 gap-3">
-          <TouchableOpacity
-            className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
-            style={{
-              shadowColor: colors.textPrimary,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 6,
-              elevation: 2,
-            }}
-            activeOpacity={0.8}
-            onPress={() =>
-              router.push({
-                pathname: "/orders/create",
-                params: { customer: JSON.stringify(customer) },
-              })
-            }
-          >
-            <View
-              className="w-11 h-11 rounded-full items-center justify-center"
+        {/* ── Action Buttons (2x2 Grid) ── */}
+        <View className="mx-4 mt-4 gap-3">
+          {/* First Row */}
+          <View className="flex-row gap-3">
+            <TouchableOpacity
+              className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
               style={{
-                backgroundColor:
-                  customer.outstandingBalance === 0
-                    ? colors.successBg
-                    : colors.dangerBg,
+                shadowColor: colors.textPrimary,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.05,
+                shadowRadius: 6,
+                elevation: 2,
+              }}
+              activeOpacity={0.8}
+              onPress={() =>
+                router.push({
+                  pathname: "/orders/create",
+                  params: { customer: JSON.stringify(customer) },
+                })
+              }
+            >
+              <View
+                className="w-11 h-11 rounded-full items-center justify-center"
+                style={{
+                  backgroundColor:
+                    customer.outstandingBalance === 0
+                      ? colors.successBg
+                      : colors.dangerBg,
+                }}
+              >
+                <Plus
+                  size={22}
+                  color={
+                    customer.outstandingBalance === 0
+                      ? colors.primary
+                      : colors.danger
+                  }
+                  strokeWidth={2.5}
+                />
+              </View>
+              <Text className="text-[13px] font-semibold text-textDark">
+                New Bill
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
+              style={{
+                shadowColor: colors.textPrimary,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.05,
+                shadowRadius: 6,
+                elevation: 2,
+              }}
+              activeOpacity={0.8}
+              onPress={() => {
+                if (!hasPendingPayment) {
+                  showToast({
+                    message: "No outstanding balance for this customer.",
+                    type: "error",
+                  });
+                  return;
+                }
+                paymentModalRef.current?.present();
               }}
             >
-              <Plus
-                size={22}
-                color={
-                  customer.outstandingBalance === 0
-                    ? colors.primary
-                    : colors.danger
-                }
-                strokeWidth={2.5}
-              />
-            </View>
-            <Text className="text-[13px] font-semibold text-textDark">
-              New Bill
-            </Text>
-          </TouchableOpacity>
+              <View
+                className="w-11 h-11 rounded-full items-center justify-center"
+                style={{ backgroundColor: colors.successBg }}
+              >
+                <Banknote size={22} color={colors.primary} strokeWidth={2} />
+              </View>
+              <Text className="text-[13px] font-semibold text-textDark">
+                Received
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity
-            className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
-            style={{
-              shadowColor: colors.textPrimary,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 6,
-              elevation: 2,
-            }}
-            activeOpacity={0.8}
-            onPress={() => {
-              if (!hasPendingPayment) {
-                showToast({
-                  message: "No outstanding balance for this customer.",
-                  type: "error",
-                });
-                return;
-              }
-              paymentModalRef.current?.present();
-            }}
-          >
-            <View
-              className="w-11 h-11 rounded-full items-center justify-center"
-              style={{ backgroundColor: colors.successBg }}
+          {/* Second Row */}
+          <View className="flex-row gap-3">
+            <TouchableOpacity
+              className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
+              style={{
+                shadowColor: colors.textPrimary,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.05,
+                shadowRadius: 6,
+                elevation: 2,
+              }}
+              activeOpacity={0.8}
+              onPress={handleShareLedger}
+              disabled={isSharing}
             >
-              <Banknote size={22} color={colors.primary} strokeWidth={2} />
-            </View>
-            <Text className="text-[13px] font-semibold text-textDark">
-              Received
-            </Text>
-          </TouchableOpacity>
+              <View
+                className="w-11 h-11 rounded-full items-center justify-center"
+                style={{ backgroundColor: colors.primaryLight }}
+              >
+                <Share2 size={22} color={colors.primary} strokeWidth={2} />
+              </View>
+              <Text className="text-[13px] font-semibold text-textDark">
+                Share Ledger
+              </Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
-            style={{
-              shadowColor: colors.textPrimary,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 6,
-              elevation: 2,
-            }}
-            activeOpacity={0.8}
-            onPress={sendWhatsAppReminder}
-          >
-            <View
-              className="w-11 h-11 rounded-full items-center justify-center"
-              style={{ backgroundColor: colors.pending.bg }}
+            <TouchableOpacity
+              className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
+              style={{
+                shadowColor: colors.textPrimary,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.05,
+                shadowRadius: 6,
+                elevation: 2,
+              }}
+              activeOpacity={0.8}
+              onPress={sendWhatsAppReminder}
             >
-              <MessageCircle size={22} color={colors.warning} strokeWidth={2} />
-            </View>
-            <Text className="text-[13px] font-semibold text-textDark">
-              Send Reminder
-            </Text>
-          </TouchableOpacity>
+              <View
+                className="w-11 h-11 rounded-full items-center justify-center"
+                style={{ backgroundColor: colors.pending.bg }}
+              >
+                <MessageCircle size={22} color={colors.warning} strokeWidth={2} />
+              </View>
+              <Text className="text-[13px] font-semibold text-textDark">
+                Reminder
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* ── Transactions ── */}

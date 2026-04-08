@@ -15,7 +15,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft } from "lucide-react-native";
+import { ArrowLeft, ChevronDown, ChevronUp } from "lucide-react-native";
 
 export default function OnboardingBusiness() {
   const router = useRouter();
@@ -30,6 +30,7 @@ export default function OnboardingBusiness() {
   );
   const [nameError, setNameError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleContinue = async () => {
     if (!businessName.trim()) {
@@ -101,7 +102,7 @@ export default function OnboardingBusiness() {
           Set up your business
         </Text>
         <Text className="text-sm text-textSecondary mb-6">
-          This appears on your bills and invoices.
+          Just your business name is enough to get started!
         </Text>
 
         {/* ── Card ── */}
@@ -134,45 +135,65 @@ export default function OnboardingBusiness() {
             <Text className="text-danger-strong text-xs mt-1">{nameError}</Text>
           )}
 
-          {/* GSTIN */}
-          <View className="flex-row items-center mt-5 mb-2 gap-2">
-            <Text className="text-sm font-semibold text-neutral-800">
-              GSTIN
+          {/* Advanced Settings Toggle */}
+          <TouchableOpacity
+            onPress={() => setShowAdvanced(!showAdvanced)}
+            className="flex-row items-center justify-between mt-5 py-2"
+            activeOpacity={0.7}
+          >
+            <Text className="text-sm font-semibold text-textSecondary">
+              Advanced Settings (optional)
             </Text>
-            <View className="bg-neutral-100 rounded-md px-2 py-0.5">
-              <Text className="text-[11px] font-semibold text-textSecondary uppercase tracking-wide">
-                OPTIONAL
-              </Text>
-            </View>
-          </View>
-          <TextInput
-            placeholder="27AAAAA0000A1Z5"
-            placeholderTextColor="#AEAEB2"
-            value={gstin}
-            onChangeText={(t) => setGstin(t.toUpperCase())}
-            autoCapitalize="characters"
-            className="border-[1.5px] border-border rounded-xl px-3.5 py-3 text-[15px] text-textDark bg-white"
-          />
-          <Text className="text-xs text-textMuted mt-1.5">
-            You can add this later from Profile → Settings
-          </Text>
+            {showAdvanced ? (
+              <ChevronUp size={18} color={colors.textSecondary} />
+            ) : (
+              <ChevronDown size={18} color={colors.textSecondary} />
+            )}
+          </TouchableOpacity>
 
-          {/* Bill Prefix */}
-          <Text className="text-sm font-semibold text-neutral-800 mt-5 mb-2">
-            Bill Prefix
-          </Text>
-          <TextInput
-            placeholder="INV"
-            placeholderTextColor="#AEAEB2"
-            value={billPrefix}
-            onChangeText={(t) => setBillPrefix(t.toUpperCase())}
-            autoCapitalize="characters"
-            className="border-[1.5px] border-border rounded-xl px-3.5 py-3 text-[15px] text-textDark bg-white"
-          />
-          <Text className="text-xs text-textMuted mt-1.5">
-            Your bills will be numbered {billPrefix || "INV"}-001,{" "}
-            {billPrefix || "INV"}-002...
-          </Text>
+          {showAdvanced && (
+            <>
+              {/* GSTIN */}
+              <View className="flex-row items-center mt-4 mb-2 gap-2">
+                <Text className="text-sm font-semibold text-neutral-800">
+                  GSTIN
+                </Text>
+                <View className="bg-neutral-100 rounded-md px-2 py-0.5">
+                  <Text className="text-[11px] font-semibold text-textSecondary uppercase tracking-wide">
+                    OPTIONAL
+                  </Text>
+                </View>
+              </View>
+              <TextInput
+                placeholder="27AAAAA0000A1Z5"
+                placeholderTextColor="#AEAEB2"
+                value={gstin}
+                onChangeText={(t) => setGstin(t.toUpperCase())}
+                autoCapitalize="characters"
+                className="border-[1.5px] border-border rounded-xl px-3.5 py-3 text-[15px] text-textDark bg-white"
+              />
+              <Text className="text-xs text-textMuted mt-1.5">
+                You can add this later from Profile → Settings
+              </Text>
+
+              {/* Bill Prefix */}
+              <Text className="text-sm font-semibold text-neutral-800 mt-5 mb-2">
+                Bill Prefix
+              </Text>
+              <TextInput
+                placeholder="INV"
+                placeholderTextColor="#AEAEB2"
+                value={billPrefix}
+                onChangeText={(t) => setBillPrefix(t.toUpperCase())}
+                autoCapitalize="characters"
+                className="border-[1.5px] border-border rounded-xl px-3.5 py-3 text-[15px] text-textDark bg-white"
+              />
+              <Text className="text-xs text-textMuted mt-1.5">
+                Your bills will be numbered {billPrefix || "INV"}-001,{" "}
+                {billPrefix || "INV"}-002...
+              </Text>
+            </>
+          )}
         </View>
 
         </ScrollView>

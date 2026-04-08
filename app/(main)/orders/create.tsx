@@ -16,6 +16,8 @@ import {
   ArrowLeft,
   CirclePlus,
   Pencil,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -24,6 +26,7 @@ import {
   Platform,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -55,7 +58,7 @@ export default function CreateOrderScreen() {
   const { customer: customerParams } = useLocalSearchParams<{
     customer?: string;
   }>();
-  
+
   const { profile, isFetchingProfile } = useAuthStore();
   const vendorId = profile?.id;
   const router = useRouter();
@@ -66,7 +69,7 @@ export default function CreateOrderScreen() {
   const items = useOrderStore((state) => state.items);
   const loadingCharge = useOrderStore((state) => state.loadingCharge);
   const taxPercent = useOrderStore((state) => state.gstPercent);
-  
+
   const addItem = useOrderStore((state) => state.addItem);
   const removeItem = useOrderStore((state) => state.removeItem);
   const updateItemQuantity = useOrderStore((state) => state.updateItemQuantity);
@@ -74,7 +77,7 @@ export default function CreateOrderScreen() {
   const setLoadingCharge = useOrderStore((state) => state.setLoadingCharge);
   const setGst = useOrderStore((state) => state.setGst);
   const clearOrder = useOrderStore((state) => state.clearOrder);
-  
+
   const getSubtotal = useOrderStore((state) => state.getSubtotal);
   const getTaxAmount = useOrderStore((state) => state.getTaxAmount);
   const getGrandTotal = useOrderStore((state) => state.getGrandTotal);
@@ -87,6 +90,11 @@ export default function CreateOrderScreen() {
   const [isProductPickerVisible, setProductPickerVisible] = useState(false);
   const [previousBalance, setPreviousBalance] = useState<number>(0);
   const [isFetchingBalance, setIsFetchingBalance] = useState(false);
+
+  // NEW: Quick entry states
+  const [quickAmount, setQuickAmount] = useState<string>("");
+  const [note, setNote] = useState<string>("");
+  const [isItemsExpanded, setIsItemsExpanded] = useState(false);
 
   const fetchPreviousBalance = useCallback(
     async (customerId: string) => {
@@ -129,44 +137,87 @@ export default function CreateOrderScreen() {
   const { show: showToast } = useToast();
   const createOrderMutation = useCreateOrder(vendorId!);
 
+  // Calculate effective total (either from items or quick amount)
+  const itemsTotal = getSubtotal();
+  const hasItems = items.length > 0;
+  const billAmount = hasItems ? getGrandTotal() : parseFloat(quickAmount) || 0;
+  const totalWithBalance = billAmount + previousBalance;
+
   const handleSaveAndShare = async () => {
-    if (!selectedCustomerId || items.length === 0) {
-      return Alert.alert("Error", "Select a customer and add products");
-    }
-    if (
-      !profile?.bank_name ||
-      !profile?.account_number ||
-      !profile?.ifsc_code
-    ) {
-      return Alert.alert(
-        "Bank Details Missing",
-        "Please fill in your Bank Name, Account Number, and IFSC Code to generate valid standard invoices.",
-      );
+    // Validation
+    if (!selectedCustomerId) {
+      return Alert.alert("Error", "Please select a customer");
     }
 
+    // Either quick amount OR items must be provided
+    if (!hasItems && !quickAmount.trim()) {
+      return Alert.alert("Error", "Please enter an amount or add items");
+    }
+
+    // Check bank details (soft warning, not blocking)
+    const hasBankDetails =
+      profile?.bank_name && profile?.account_number && profile?.ifsc_code;
+
+    if (!hasBankDetails) {
+      Alert.alert(
+        "Bank Details Missing",
+        "PDF invoice will not include bank details. You can add them later in Settings.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Continue Anyway", onPress: () => performSave() },
+        ],
+      );
+      return;
+    }
+
+    await performSave();
+  };
+
+  const performSave = async () => {
     try {
+      // If using quick amount (no items), create a generic bill item
+      const orderItems = hasItems
+        ? items.map((c) => ({
+            product_id: c.product_id,
+            product_name: c.product_name,
+            price: c.price,
+            quantity: c.quantity,
+          }))
+        : [
+            {
+              product_id: null,
+              product_name: note.trim() || "Bill Amount",
+              price: parseFloat(quickAmount) || 0,
+              quantity: 1,
+            },
+          ];
+
       const savedOrder = await createOrderMutation.mutateAsync({
-        customerId: selectedCustomerId,
+        customerId: selectedCustomerId!,
         vendorId: vendorId!,
-        items: items.map((c) => ({
-          product_id: c.product_id,
-          product_name: c.product_name,
-          price: c.price,
-          quantity: c.quantity,
-        })),
+        items: orderItems,
         amountPaid: 0,
-        loadingCharge,
-        taxPercent,
+        loadingCharge: hasItems ? loadingCharge : 0,
+        taxPercent: hasItems ? taxPercent : 0,
         billNumberPrefix: profile?.bill_number_prefix || "INV",
       });
 
       // Generate Native Shareable PDF
-      const pdfItems: BillItem[] = items.map((c) => ({
-        name: c.product_name,
-        quantity: c.quantity,
-        rate: c.price,
-        amount: c.price * c.quantity,
-      }));
+      const pdfItems: BillItem[] = hasItems
+        ? items.map((c) => ({
+            name: c.product_name,
+            quantity: c.quantity,
+            rate: c.price,
+            amount: c.price * c.quantity,
+          }))
+        : [
+            {
+              name: note.trim() || "Bill Amount",
+              quantity: 1,
+              rate: parseFloat(quickAmount) || 0,
+              amount: parseFloat(quickAmount) || 0,
+            },
+          ];
 
       const businessDetails = {
         name: profile?.business_name || "Your Store",
@@ -180,9 +231,9 @@ export default function CreateOrderScreen() {
         date: new Date(savedOrder.created_at ?? Date.now()).toLocaleDateString(
           "en-IN",
         ),
-        subtotal: getSubtotal(),
-        taxAmount: getTaxAmount(),
-        loadingCharge,
+        subtotal: hasItems ? getSubtotal() : parseFloat(quickAmount) || 0,
+        taxAmount: hasItems ? getTaxAmount() : 0,
+        loadingCharge: hasItems ? loadingCharge : 0,
         bankDetails:
           profile?.bank_name && profile?.account_number && profile?.ifsc_code
             ? {
@@ -196,7 +247,7 @@ export default function CreateOrderScreen() {
       const localPdfPath = await generateBillPdf(
         pdfItems,
         businessDetails,
-        getGrandTotal(),
+        billAmount,
         selectedCustomerMeta?.name || "Customer",
         billMeta,
       );
@@ -208,6 +259,8 @@ export default function CreateOrderScreen() {
 
       // Cleanup Draft on success and pop
       clearOrder();
+      setQuickAmount("");
+      setNote("");
       showToast({
         message: `Bill shared with ${selectedCustomerMeta?.name ?? "customer"}`,
         type: "success",
@@ -251,10 +304,10 @@ export default function CreateOrderScreen() {
             </View>
           </View>
 
-          {/* Scrollable List */}
+          {/* Scrollable Content */}
           <ScrollView
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ padding: 16, paddingBottom: 60, gap: 12 }}
+            contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 12 }}
             showsVerticalScrollIndicator={false}
           >
             <Text className="text-[11px] font-bold text-textSecondary tracking-widest -mb-1 mt-1">
@@ -284,8 +337,13 @@ export default function CreateOrderScreen() {
                 </View>
 
                 <View className="flex-1">
-                  <Text className="text-[17px] font-bold text-textPrimary" numberOfLines={1}>
-                    {selectedCustomerMeta ? selectedCustomerMeta.name : "Select Customer"}
+                  <Text
+                    className="text-[17px] font-bold text-textPrimary"
+                    numberOfLines={1}
+                  >
+                    {selectedCustomerMeta
+                      ? selectedCustomerMeta.name
+                      : "Select Customer"}
                   </Text>
                   {!selectedCustomerMeta && (
                     <Text className="text-[14px] text-textSecondary mt-0.5">
@@ -297,68 +355,202 @@ export default function CreateOrderScreen() {
                 <Pencil size={18} color={colors.primary} strokeWidth={2} />
               </View>
 
-              {selectedCustomerMeta && previousBalance > 0 && !isFetchingBalance && (
-                <View className="flex-row items-center gap-2 px-4 py-3 bg-dangerLight border-t border-border">
-                  <Text className="text-[13px] font-bold text-danger">
-                    ⚠️ Previous Balance: ₹{previousBalance.toLocaleString("en-IN")}
+              {selectedCustomerMeta &&
+                previousBalance > 0 &&
+                !isFetchingBalance && (
+                  <View className="flex-row items-center gap-2 px-4 py-3 bg-dangerBg border-t border-border">
+                    <Text className="text-[13px] font-bold text-danger">
+                      ⚠️ Previous Balance: ₹
+                      {previousBalance.toLocaleString("en-IN")}
+                    </Text>
+                  </View>
+                )}
+            </TouchableOpacity>
+
+            {/* QUICK AMOUNT INPUT (NEW) */}
+            <View className="mt-2">
+              <Text className="text-[11px] font-bold text-textSecondary tracking-widest mb-2">
+                AMOUNT
+              </Text>
+              <View className="rounded-2xl bg-surface border-2 border-primary px-5 py-4">
+                <View className="flex-row items-center">
+                  <Text
+                    className="text-[32px] font-extrabold mr-2"
+                    style={{ color: colors.primary }}
+                  >
+                    ₹
                   </Text>
+                  <TextInput
+                    value={quickAmount}
+                    onChangeText={setQuickAmount}
+                    placeholder="500"
+                    placeholderTextColor={colors.border}
+                    keyboardType="numeric"
+                    className="flex-1 text-[32px] font-extrabold"
+                    style={{ color: colors.textPrimary }}
+                    editable={!hasItems} // Disable if using items
+                    autoFocus={!selectedCustomerMeta} // Focus if no customer preselected
+                  />
                 </View>
+                {hasItems && (
+                  <Text className="text-[11px] text-textSecondary mt-2">
+                    Amount calculated from items below
+                  </Text>
+                )}
+              </View>
+            </View>
+
+            {/* OPTIONAL NOTE */}
+            <View>
+              <Text className="text-[11px] font-bold text-textSecondary tracking-widest mb-2">
+                NOTE (OPTIONAL)
+              </Text>
+              <View className="rounded-2xl bg-surface border border-border px-4 py-3">
+                <TextInput
+                  value={note}
+                  onChangeText={setNote}
+                  placeholder="e.g., Rice purchase, Monthly bill..."
+                  placeholderTextColor={colors.textSecondary}
+                  className="text-[15px]"
+                  style={{ color: colors.textPrimary }}
+                  multiline
+                />
+              </View>
+            </View>
+
+            {/* COLLAPSIBLE ITEMS SECTION */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setIsItemsExpanded(!isItemsExpanded)}
+              className="rounded-2xl bg-surface border border-border px-4 py-3.5 flex-row items-center justify-between mt-2"
+            >
+              <View className="flex-row items-center gap-2">
+                {isItemsExpanded ? (
+                  <ChevronUp size={20} color={colors.textSecondary} />
+                ) : (
+                  <ChevronDown size={20} color={colors.textSecondary} />
+                )}
+                <Text className="text-[15px] font-bold text-textPrimary">
+                  Add Items (optional)
+                </Text>
+              </View>
+              {hasItems && (
+                <Text className="text-[13px] font-bold text-primary">
+                  {items.length} item{items.length > 1 ? "s" : ""} · ₹
+                  {itemsTotal.toFixed(0)}
+                </Text>
               )}
             </TouchableOpacity>
 
-            {/* Items List */}
-            {items.length > 0 && (
-              <View className="rounded-2xl bg-surface border border-border overflow-hidden mt-2">
-                <Text className="text-[15px] font-bold text-textPrimary px-4 pt-4 pb-2">
-                  Items
-                </Text>
-                <View className="px-4 pb-2">
-                  {items.map((item, idx) => (
-                    <View key={item.id}>
-                      {idx > 0 && <View className="h-px bg-border my-2" />}
-                      <OrderItemCard
-                        id={item.product_id || item.id}
-                        name={item.product_name}
-                        rate={item.price}
-                        quantity={item.quantity}
-                        onRemove={() => removeItem(item.id)}
-                        onUpdateQuantity={(qty) => updateItemQuantity(item.id, qty)}
-                        onUpdateRate={(r) => updateItemRate(item.id, r)}
+            {/* EXPANDED ITEMS SECTION */}
+            {isItemsExpanded && (
+              <View className="rounded-2xl bg-surface border border-border overflow-hidden">
+                {items.length > 0 && (
+                  <>
+                    <Text className="text-[15px] font-bold text-textPrimary px-4 pt-4 pb-2">
+                      Items
+                    </Text>
+                    <View className="px-4 pb-2">
+                      {items.map((item, idx) => (
+                        <View key={item.id}>
+                          {idx > 0 && <View className="h-px bg-border my-2" />}
+                          <OrderItemCard
+                            id={item.product_id || item.id}
+                            name={item.product_name}
+                            rate={item.price}
+                            quantity={item.quantity}
+                            onRemove={() => removeItem(item.id)}
+                            onUpdateQuantity={(qty) =>
+                              updateItemQuantity(item.id, qty)
+                            }
+                            onUpdateRate={(r) => updateItemRate(item.id, r)}
+                          />
+                        </View>
+                      ))}
+                    </View>
+                  </>
+                )}
+
+                <View className="px-4 pb-4">
+                  <TouchableOpacity
+                    onPress={() => setProductPickerVisible(true)}
+                    activeOpacity={0.7}
+                    className="flex-row items-center justify-center py-3.5 mt-2 rounded-xl border-[1.5px] border-dashed border-primary bg-primaryLight"
+                  >
+                    <CirclePlus
+                      size={18}
+                      color={colors.primary}
+                      strokeWidth={2.5}
+                    />
+                    <Text className="ml-2 text-[15px] font-extrabold text-primary">
+                      Add Product
+                    </Text>
+                  </TouchableOpacity>
+
+                  {hasItems && (
+                    <View className="mt-4">
+                      <OrderSummary
+                        itemsTotal={getSubtotal()}
+                        loadingCharge={loadingCharge}
+                        taxPercent={taxPercent}
+                        taxAmount={getTaxAmount()}
+                        previousBalance={0} // Don't show in collapsed section
+                        grandTotal={getGrandTotal()}
+                        onLoadingChargeChange={setLoadingCharge}
+                        onTaxChange={setGst}
+                        isFetchingBalance={false}
                       />
                     </View>
-                  ))}
+                  )}
                 </View>
               </View>
             )}
 
-            <TouchableOpacity
-              onPress={() => setProductPickerVisible(true)}
-              activeOpacity={0.7}
-              className="flex-row items-center justify-center py-4 mt-2 rounded-2xl border-[1.5px] border-dashed border-primary bg-primaryLight"
-            >
-              <CirclePlus size={18} color={colors.primary} strokeWidth={2.5} />
-              <Text className="ml-2 text-[15px] font-extrabold text-primary">
-                Add Product
-              </Text>
-            </TouchableOpacity>
+            {/* SUMMARY (Always visible) */}
+            {(quickAmount || hasItems) && (
+              <View className="rounded-2xl bg-surface border border-border p-4 mt-2">
+                <View className="flex-row justify-between items-center mb-2">
+                  <Text className="text-[14px] text-textSecondary">
+                    Bill Amount
+                  </Text>
+                  <Text className="text-[16px] font-bold text-textPrimary">
+                    ₹{billAmount.toFixed(2)}
+                  </Text>
+                </View>
 
-            <View className="mt-2" />
-            
-            <OrderSummary
-              itemsTotal={getSubtotal()}
-              loadingCharge={loadingCharge}
-              taxPercent={taxPercent}
-              taxAmount={getTaxAmount()}
-              previousBalance={previousBalance}
-              grandTotal={getGrandTotal() + previousBalance}
-              onLoadingChargeChange={setLoadingCharge}
-              onTaxChange={setGst}
-              isFetchingBalance={isFetchingBalance}
-            />
+                {previousBalance > 0 && (
+                  <View className="flex-row justify-between items-center mb-2">
+                    <Text className="text-[14px] text-textSecondary">
+                      Previous Balance
+                    </Text>
+                    <Text className="text-[16px] font-bold text-danger">
+                      ₹{previousBalance.toFixed(2)}
+                    </Text>
+                  </View>
+                )}
+
+                <View
+                  className="h-px my-2"
+                  style={{ backgroundColor: colors.border }}
+                />
+
+                <View className="flex-row justify-between items-center">
+                  <Text className="text-[16px] font-bold text-textPrimary">
+                    Grand Total
+                  </Text>
+                  <Text
+                    className="text-[24px] font-extrabold"
+                    style={{ color: colors.primary }}
+                  >
+                    ₹{totalWithBalance.toFixed(2)}
+                  </Text>
+                </View>
+              </View>
+            )}
           </ScrollView>
 
-          {/* Absolute Footer using Zustand math exclusively */}
-          <View className="bottom-0 w-full">
+          {/* Absolute Footer */}
+          <View className="absolute bottom-0 w-full">
             <BillFooter
               isLoading={createOrderMutation.isPending}
               onSaveAndShare={handleSaveAndShare}
@@ -378,7 +570,16 @@ export default function CreateOrderScreen() {
             visible={isProductPickerVisible}
             onClose={() => setProductPickerVisible(false)}
             vendorId={vendorId!}
-            addToCart={(productId, name, rate) => addItem({ product_id: productId, product_name: name, price: rate, quantity: 1})}
+            addToCart={(productId, name, rate) => {
+              addItem({
+                product_id: productId,
+                product_name: name,
+                price: rate,
+                quantity: 1,
+              });
+              // Clear quick amount when items are added
+              setQuickAmount(itemsTotal.toString());
+            }}
           />
         </KeyboardAvoidingView>
       </SafeAreaView>

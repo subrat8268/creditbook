@@ -112,6 +112,9 @@ function RootLayout() {
       router.replace(showWelcome ? "/" : ("/(auth)/login" as any));
     } else if (!profile) {
       router.replace("/profile-error" as any);
+    } else if (!profile.phone) {
+      // NEW: Enforce phone collection after login
+      router.replace("/(auth)/phone-setup" as any);
     } else if (!profile.onboarding_complete) {
       router.replace("/(auth)/onboarding/role" as any);
     } else {
@@ -155,6 +158,7 @@ function RootLayout() {
                   <Stack.Screen name="index" />
                   <Stack.Screen name="(auth)" />
                   <Stack.Screen name="(main)" />
+                  <Stack.Screen name="l/[token]" options={{ presentation: 'modal' }} />
                   <Stack.Screen name="profile-error" />
                 </Stack>
                 <StatusBar barStyle="dark-content" />
