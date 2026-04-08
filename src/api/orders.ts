@@ -15,6 +15,15 @@ export interface OrderItem {
   created_at: string;
 }
 
+export interface OrderItemInput {
+  product_id: string | null;
+  product_name: string;
+  variant_id?: string | null;
+  variant_name?: string | null;
+  price: number;
+  quantity: number;
+}
+
 export interface Order {
   id: string;
   vendor_id: string;
@@ -27,6 +36,8 @@ export interface Order {
   loading_charge: number;
   tax_percent: number;
   status: "Paid" | "Pending" | "Partially Paid";
+  edited_at?: string | null;
+  edit_count?: number | null;
   created_at: string;
   customer?: { id: string; name: string; phone: string } | null;
 }
@@ -133,7 +144,7 @@ export async function fetchOrderDetail(
     .select(
       `
       id, vendor_id, customer_id, bill_number, total_amount, amount_paid, 
-      previous_balance, loading_charge, tax_percent, status, created_at,
+      previous_balance, loading_charge, tax_percent, status, edited_at, edit_count, created_at,
       customers ( id, name, phone, address ),
       order_items ( id, product_id, variant_id, product_name, variant_name, price, quantity, created_at )
     `,
@@ -151,6 +162,8 @@ export async function fetchOrderDetail(
     previous_balance: Number(data.previous_balance || 0),
     loading_charge: Number(data.loading_charge || 0),
     tax_percent: Number(data.tax_percent || 0),
+    edited_at: data.edited_at ?? null,
+    edit_count: data.edit_count ?? 0,
     customer: Array.isArray(data.customers)
       ? (data.customers[0] ?? null)
       : (data.customers ?? null),
@@ -301,14 +314,7 @@ export async function getCustomerPreviousBalance(
 export async function createOrder(
   vendorId: string,
   customerId: string,
-  items: {
-    product_id: string | null;
-    product_name: string;
-    variant_id?: string | null;
-    variant_name?: string | null;
-    price: number;
-    quantity: number;
-  }[],
+  items: OrderItemInput[],
   amountPaid: number,
   paymentMode?: PaymentMode,
   loadingCharge: number = 0,
@@ -352,5 +358,125 @@ export async function createOrder(
         billNumberPrefix,
       },
     }
+  );
+}
+
+/**
+ * Update an existing order (items + totals)
+ */
+export async function updateOrder(
+  orderId: string,
+  vendorId: string,
+  items: OrderItemInput[],
+  loadingCharge: number,
+  taxPercent: number,
+  quickAmount: number,
+): Promise<OrderDetail> {
+  // Wrap mutation with offline queue fallback
+  return executeWithOfflineQueue(
+    async () => {
+      // Fetch order to validate ownership and access customer_id
+      const { data: existing, error: existingErr } = await supabase
+        .from("orders")
+        .select("id, vendor_id, customer_id, amount_paid")
+        .eq("id", orderId)
+        .single();
+
+      if (existingErr) throw toApiError(existingErr);
+      if (!existing || existing.vendor_id !== vendorId) {
+        throw new Error("Order not found");
+      }
+
+      const useItems = items.length > 0;
+      const normalizedItems = useItems
+        ? items
+        : [
+            {
+              product_id: null,
+              product_name: "Bill Amount",
+              variant_id: null,
+              variant_name: null,
+              price: Number(quickAmount || 0),
+              quantity: 1,
+            },
+          ];
+      const itemsTotal = normalizedItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      );
+      const safeQuickAmount = Number.isFinite(quickAmount) ? quickAmount : 0;
+      const totalAmount = useItems
+        ? Number((itemsTotal + (itemsTotal * taxPercent) / 100 + loadingCharge).toFixed(2))
+        : safeQuickAmount;
+
+      if (totalAmount <= 0) {
+        throw new Error("Total amount must be greater than zero");
+      }
+
+      const amountPaid = Number(existing.amount_paid || 0);
+      const balanceDue = totalAmount - amountPaid;
+      const status =
+        balanceDue <= 0
+          ? "Paid"
+          : amountPaid > 0
+          ? "Partially Paid"
+          : "Pending";
+
+      const { error: orderErr } = await supabase
+        .from("orders")
+        .update({
+          total_amount: totalAmount,
+          loading_charge: useItems ? loadingCharge : 0,
+          tax_percent: useItems ? taxPercent : 0,
+          status,
+        })
+        .eq("id", orderId)
+        .eq("vendor_id", vendorId);
+
+      if (orderErr) throw toApiError(orderErr);
+
+      const { error: deleteErr } = await supabase
+        .from("order_items")
+        .delete()
+        .eq("order_id", orderId)
+        .eq("vendor_id", vendorId);
+
+      if (deleteErr) throw toApiError(deleteErr);
+
+      if (normalizedItems.length > 0) {
+        const payload = normalizedItems.map((item) => ({
+          order_id: orderId,
+          vendor_id: vendorId,
+          product_id: item.product_id,
+          variant_id: item.variant_id ?? null,
+          product_name: item.product_name,
+          variant_name: item.variant_name ?? null,
+          price: item.price,
+          quantity: item.quantity,
+        }));
+
+        const { error: insertErr } = await supabase
+          .from("order_items")
+          .insert(payload);
+
+        if (insertErr) throw toApiError(insertErr);
+      }
+
+      const updated = await fetchOrderDetail(orderId);
+      if (!updated) throw new Error("Failed to fetch updated order");
+      return updated;
+    },
+    {
+      entity: "order",
+      operation: "UPDATE",
+      payload: {
+        orderId,
+        vendorId,
+        items,
+        loadingCharge,
+        taxPercent,
+        quickAmount,
+      },
+    },
   );
 }

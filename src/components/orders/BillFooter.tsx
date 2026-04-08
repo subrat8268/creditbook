@@ -8,15 +8,22 @@ import { colors } from "@/src/utils/theme";
 interface BillFooterProps {
   isLoading: boolean;
   onSaveAndShare: () => void;
+  shareLabel?: string;
+  disabled?: boolean;
 }
 
-export default function BillFooter({ isLoading, onSaveAndShare }: BillFooterProps) {
+export default function BillFooter({
+  isLoading,
+  onSaveAndShare,
+  shareLabel = "Save & Share",
+  disabled,
+}: BillFooterProps) {
   const getGrandTotal = useOrderStore((state) => state.getGrandTotal);
   const items = useOrderStore((state) => state.items);
 
   // Math recalculates instantly via Zustand
   const grandTotal = getGrandTotal();
-  const isDisabled = items.length === 0 || isLoading;
+  const isDisabled = disabled ?? (items.length === 0 || isLoading);
 
   return (
     <View className="bg-surface border-t border-border pt-4 px-5 pb-8">
@@ -43,7 +50,7 @@ export default function BillFooter({ isLoading, onSaveAndShare }: BillFooterProp
           <>
             <Share2 size={20} color={colors.surface} strokeWidth={2.5} />
             <Text className="ml-2 text-[17px] font-bold text-surface">
-              Save & Share
+              {shareLabel}
             </Text>
           </>
         )}

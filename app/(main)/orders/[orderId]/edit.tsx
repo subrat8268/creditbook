@@ -5,7 +5,6 @@
  * Tracks edits with edited_at and edit_count fields.
  */
 
-import { getCustomerPreviousBalance } from "@/src/api/orders";
 import Loader from "@/src/components/feedback/Loader";
 import OrderSummary from "@/src/components/orders/OrderBillSummary";
 import OrderItemCard from "@/src/components/orders/OrderItemCard";
@@ -14,9 +13,9 @@ import { useOrderDetail, useUpdateOrder } from "@/src/hooks/useOrders";
 import { useToast } from "@/src/components/feedback/Toast";
 import { useAuthStore } from "@/src/store/authStore";
 import { useOrderStore } from "@/src/store/orderStore";
-import { BillItem, generateBillPdf } from "@/src/utils/generateBillPdf";
 import { colors } from "@/src/utils/theme";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { generateBillPdf } from "@/src/utils/generateBillPdf";
 import * as Sharing from "expo-sharing";
 import {
   ArrowLeft,
@@ -26,7 +25,7 @@ import {
   ChevronUp,
   AlertCircle,
 } from "lucide-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -65,6 +64,7 @@ export default function EditOrderScreen() {
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
   const router = useRouter();
   const { profile, isFetchingProfile } = useAuthStore();
+  const { show: showToast } = useToast();
   const vendorId = profile?.id;
 
   // Fetch existing order
@@ -72,6 +72,7 @@ export default function EditOrderScreen() {
 
   // Zustand Draft Bills Store
   const setCustomer = useOrderStore((state) => state.setCustomer);
+  const setItems = useOrderStore((state) => state.setItems);
   const items = useOrderStore((state) => state.items);
   const loadingCharge = useOrderStore((state) => state.loadingCharge);
   const taxPercent = useOrderStore((state) => state.gstPercent);
@@ -86,56 +87,59 @@ export default function EditOrderScreen() {
 
   // Quick entry mode (amount-first)
   const [quickAmount, setQuickAmount] = useState("");
-  const [note, setNote] = useState("");
   const [itemsExpanded, setItemsExpanded] = useState(false);
+  const [isProductPickerVisible, setProductPickerVisible] = useState(false);
 
-  const [previousBalance, setPreviousBalance] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
-  const updateMutation = useUpdateOrder(orderId || "");
+  const updateMutation = useUpdateOrder(vendorId || "");
 
   // Pre-populate form when order loads
   useEffect(() => {
     if (!order) return;
 
-    // Set customer
     if (order.customer) {
-      setCustomer(order.customer.id, order.customer.name, order.customer.phone);
+      setCustomer(order.customer.id);
     }
 
-    // Pre-populate items if order has them
     if (order.items && order.items.length > 0) {
-      clearOrder();
-      order.items.forEach((item: any) => {
-        addItem({
-          productId: item.product_id,
-          variantId: item.variant_id || undefined,
-          name: item.product_name,
-          variantName: item.variant_name || undefined,
-          rate: Number(item.price),
-          quantity: item.quantity,
-        });
-      });
-      setItemsExpanded(true); // Expand items section
+      const mapped = order.items.map((item: any) => ({
+        id: `order-${item.id}`,
+        product_id: item.product_id ?? null,
+        product_name: item.product_name,
+        variant_id: item.variant_id ?? null,
+        variant_name: item.variant_name ?? null,
+        price: Number(item.price),
+        quantity: Number(item.quantity),
+      }));
+      setItems(mapped);
+      setItemsExpanded(true);
+      setQuickAmount("");
     } else {
-      // No items - use quick amount mode
+      clearOrder();
       setQuickAmount(order.total_amount.toString());
     }
 
-    // Set loading charge and tax
     setLoadingCharge(Number(order.loading_charge || 0));
     setGst(Number(order.tax_percent || 0));
-
-    // Set previous balance
-    setPreviousBalance(Number(order.previous_balance || 0));
-  }, [order]);
+  }, [order, setCustomer, setItems, clearOrder, setLoadingCharge, setGst]);
 
   // Calculate totals
-  const itemsTotal = items.reduce((sum, item) => sum + item.rate * item.quantity, 0);
-  const taxAmount = (itemsTotal * taxPercent) / 100;
-  const finalTotal = items.length > 0
-    ? itemsTotal + taxAmount + loadingCharge
-    : Number(quickAmount || 0);
+  const itemsTotal = useMemo(
+    () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [items],
+  );
+  const taxAmount = useMemo(
+    () => (itemsTotal * taxPercent) / 100,
+    [itemsTotal, taxPercent],
+  );
+  const finalTotal = useMemo(
+    () =>
+      items.length > 0
+        ? itemsTotal + taxAmount + loadingCharge
+        : Number(quickAmount || 0),
+    [items, itemsTotal, taxAmount, loadingCharge, quickAmount],
+  );
 
   const handleSubmit = async () => {
     if (!vendorId || !order) return;
@@ -151,48 +155,113 @@ export default function EditOrderScreen() {
       return;
     }
 
+    const buildItemsPayload = () =>
+      items.map((item) => ({
+        product_id: item.product_id,
+        product_name: item.product_name,
+        variant_id: item.variant_id ?? null,
+        variant_name: item.variant_name ?? null,
+        price: item.price,
+        quantity: item.quantity,
+      }));
+
+    const shareUpdatedBill = async (updatedOrder: any) => {
+      const canShare = await Sharing.isAvailableAsync();
+      if (!canShare) throw new Error("sharing-unavailable");
+
+      const pdfItems = (updatedOrder.items ?? []).map((item: any) => ({
+        name: item.product_name,
+        quantity: item.quantity,
+        rate: item.price,
+        amount: item.subtotal,
+      }));
+
+      const subtotal = (updatedOrder.items ?? []).reduce(
+        (sum: number, item: any) => sum + item.subtotal,
+        0,
+      );
+      const taxAmount = updatedOrder.tax_percent
+        ? Math.round(((subtotal * updatedOrder.tax_percent) / 100) * 100) / 100
+        : 0;
+
+      const pdfUri = await generateBillPdf(
+        pdfItems,
+        {
+          name: profile?.business_name ?? profile?.name ?? "",
+          address: profile?.business_address || undefined,
+          phone: profile?.phone ?? "",
+          gstin: profile?.gstin ?? "",
+        },
+        updatedOrder.total_amount,
+        updatedOrder.customer?.name ?? "Customer",
+        {
+          invoiceNumber: updatedOrder.bill_number,
+          date: new Date(updatedOrder.created_at).toLocaleDateString("en-IN"),
+          subtotal,
+          taxAmount,
+          loadingCharge: updatedOrder.loading_charge ?? 0,
+          bankDetails:
+            profile?.bank_name && profile?.account_number && profile?.ifsc_code
+              ? {
+                  bankName: profile.bank_name,
+                  accountNo: profile.account_number,
+                  ifsc: profile.ifsc_code,
+                }
+              : undefined,
+        },
+      );
+
+      await Sharing.shareAsync(pdfUri, {
+        mimeType: "application/pdf",
+        dialogTitle: `Bill ${updatedOrder.bill_number}`,
+        UTI: "com.adobe.pdf",
+      });
+    };
+
+    const performSave = async (shouldShare: boolean) => {
+      setSubmitting(true);
+      try {
+        const updatedOrder = await updateMutation.mutateAsync({
+          orderId: order.id,
+          items: buildItemsPayload(),
+          loadingCharge,
+          taxPercent,
+          quickAmount: Number(quickAmount || 0),
+          customerId: order.customer?.id ?? null,
+        });
+
+        if (shouldShare) {
+          try {
+            await shareUpdatedBill(updatedOrder);
+          } catch (shareError) {
+            console.error("Share failed:", shareError);
+            showToast({ message: "Updated bill saved. Sharing failed.", type: "error" });
+          }
+        }
+
+        showToast({ message: "Bill updated", type: "success" });
+        router.back();
+      } catch (error: any) {
+        console.error("Error updating order:", error);
+        Alert.alert("Error", error.message || "Failed to update bill");
+      } finally {
+        setSubmitting(false);
+      }
+    };
+
     // Warn about editing
     Alert.alert(
       "Edit Bill",
       "Are you sure you want to edit this bill? Changes will be reflected in the customer's ledger.",
       [
         { text: "Cancel", style: "cancel" },
-        {
-          text: "Save Changes",
-          style: "default",
-          onPress: async () => {
-            setSubmitting(true);
-
-            try {
-              // Prepare order data
-              const orderData: any = {
-                total_amount: finalTotal,
-                loading_charge: loadingCharge,
-                tax_percent: taxPercent,
-              };
-
-              // Update order
-              await updateMutation.mutateAsync(orderData);
-
-              // If items changed, update order_items
-              // Note: Full item update requires deleting old items and inserting new ones
-              // This is simplified - in production you'd want a proper update strategy
-
-              Alert.alert("Success", "Bill updated successfully");
-              router.back();
-            } catch (error: any) {
-              console.error("Error updating order:", error);
-              Alert.alert("Error", error.message || "Failed to update bill");
-            } finally {
-              setSubmitting(false);
-            }
-          },
-        },
-      ]
+        { text: "Save Only", style: "default", onPress: () => performSave(false) },
+        { text: "Save & Share PDF", style: "default", onPress: () => performSave(true) },
+      ],
     );
   };
 
-  if (orderLoading || !order) {
+  if (isFetchingProfile || orderLoading || !order) {
     return <Loader />;
   }
 
@@ -224,9 +293,9 @@ export default function EditOrderScreen() {
           <Text style={{ fontSize: 18, fontWeight: "600", color: colors.textPrimary }}>
             Edit Bill {order.bill_number}
           </Text>
-          {order.edit_count > 0 && (
+          {(order.edit_count ?? 0) > 0 && (
             <Text style={{ fontSize: 12, color: colors.textSecondary }}>
-              Edited {order.edit_count} {order.edit_count === 1 ? 'time' : 'times'}
+              Edited {order.edit_count} {order.edit_count === 1 ? "time" : "times"}
             </Text>
           )}
         </View>
@@ -310,65 +379,44 @@ export default function EditOrderScreen() {
             </View>
           </View>
 
-          {/* Quick Amount Entry */}
-          {items.length === 0 && (
-            <View
-              style={{
-                backgroundColor: colors.surface,
-                padding: 16,
-                marginBottom: 8,
-              }}
-            >
-              <Text style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 8 }}>
-                Total Amount
-              </Text>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={{ fontSize: 32, fontWeight: "700", color: colors.textPrimary }}>
-                  ₹
-                </Text>
-                <TextInput
-                  style={{
-                    flex: 1,
-                    fontSize: 32,
-                    fontWeight: "700",
-                    color: colors.textPrimary,
-                    padding: 0,
-                    marginLeft: 8,
-                  }}
-                  value={quickAmount}
-                  onChangeText={setQuickAmount}
-                  placeholder="0"
-                  placeholderTextColor={colors.textSecondary}
-                  keyboardType="numeric"
-                  autoFocus
-                />
-              </View>
+           {/* Quick Amount Entry */}
+           {items.length === 0 && (
+             <View
+               style={{
+                 backgroundColor: colors.surface,
+                 padding: 16,
+                 marginBottom: 8,
+               }}
+             >
+               <Text style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 8 }}>
+                 Total Amount
+               </Text>
+               <View style={{ flexDirection: "row", alignItems: "center" }}>
+                 <Text style={{ fontSize: 32, fontWeight: "700", color: colors.textPrimary }}>
+                   ₹
+                 </Text>
+                 <TextInput
+                   style={{
+                     flex: 1,
+                     fontSize: 32,
+                     fontWeight: "700",
+                     color: colors.textPrimary,
+                     padding: 0,
+                     marginLeft: 8,
+                   }}
+                   value={quickAmount}
+                   onChangeText={setQuickAmount}
+                   placeholder="0"
+                   placeholderTextColor={colors.textSecondary}
+                   keyboardType="numeric"
+                   autoFocus
+                 />
+               </View>
+             </View>
+           )}
 
-              <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 16, marginBottom: 8 }}>
-                Note (Optional)
-              </Text>
-              <TextInput
-                style={{
-                  backgroundColor: colors.background,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  borderRadius: 8,
-                  padding: 12,
-                  fontSize: 15,
-                  color: colors.textPrimary,
-                }}
-                value={note}
-                onChangeText={setNote}
-                placeholder="Add a note..."
-                placeholderTextColor={colors.textSecondary}
-                multiline
-                numberOfLines={2}
-              />
-            </View>
-          )}
-
-          {/* Items Section */}
-          <View style={{ backgroundColor: colors.surface, marginBottom: 8 }}>
+           {/* Items Section */}
+           <View style={{ backgroundColor: colors.surface, marginBottom: 8 }}>
             <TouchableOpacity
               onPress={() => setItemsExpanded(!itemsExpanded)}
               style={{
@@ -400,69 +448,103 @@ export default function EditOrderScreen() {
               )}
             </TouchableOpacity>
 
-            {itemsExpanded && (
-              <View style={{ padding: 16 }}>
-                {items.map((item) => (
-                  <OrderItemCard
-                    key={item.productId + (item.variantId || "")}
-                    item={item}
-                    onUpdateQuantity={updateItemQuantity}
-                    onUpdateRate={updateItemRate}
-                    onRemove={removeItem}
+             {itemsExpanded && (
+               <View style={{ padding: 16 }}>
+                 {items.map((item, idx) => (
+                   <View key={item.id}>
+                     {idx > 0 && <View style={{ height: 1, backgroundColor: colors.border, marginVertical: 8 }} />}
+                     <OrderItemCard
+                       id={item.id}
+                       name={item.product_name}
+                       variantName={item.variant_name ?? undefined}
+                       rate={item.price}
+                       quantity={item.quantity}
+                       onUpdateQuantity={(qty) => updateItemQuantity(item.id, qty)}
+                       onUpdateRate={(rate) => updateItemRate(item.id, rate)}
+                       onRemove={() => removeItem(item.id)}
+                     />
+                   </View>
+                 ))}
+
+                 <TouchableOpacity
+                   onPress={() => setProductPickerVisible(true)}
+                   activeOpacity={0.7}
+                   style={{
+                     flexDirection: "row",
+                     alignItems: "center",
+                     justifyContent: "center",
+                     paddingVertical: 12,
+                     marginTop: 8,
+                     borderRadius: 12,
+                     borderWidth: 1.5,
+                     borderStyle: "dashed",
+                     borderColor: colors.primary,
+                     backgroundColor: colors.primaryLight,
+                   }}
+                 >
+                   <CirclePlus size={18} color={colors.primary} strokeWidth={2.5} />
+                   <Text style={{ marginLeft: 8, fontSize: 15, fontWeight: "700", color: colors.primary }}>
+                     Add Product
+                   </Text>
+                 </TouchableOpacity>
+
+                  <ProductPicker
+                    visible={isProductPickerVisible}
+                    onClose={() => setProductPickerVisible(false)}
+                    vendorId={vendorId!}
+                    addToCart={(productId, name, rate, variantId, variantName) => {
+                      addItem({
+                        product_id: productId,
+                        product_name: name,
+                        variant_id: variantId ?? null,
+                        variant_name: variantName ?? null,
+                        price: rate,
+                        quantity: 1,
+                      });
+                      if (quickAmount) setQuickAmount("");
+                      setProductPickerVisible(false);
+                    }}
                   />
-                ))}
 
-                <ProductPicker
-                  vendorId={vendorId!}
-                  onSelect={(product, variant) => {
-                    addItem({
-                      productId: product.id,
-                      variantId: variant?.id,
-                      name: product.name,
-                      variantName: variant?.variant_name,
-                      rate: variant?.price || product.base_price || 0,
-                      quantity: 1,
-                    });
-                    if (quickAmount) setQuickAmount(""); // Clear quick amount when adding items
-                  }}
-                />
+                 {/* Loading Charge & GST */}
+                 <View style={{ marginTop: 16 }}>
+                   <OrderSummary
+                     itemsTotal={itemsTotal}
+                     loadingCharge={loadingCharge}
+                     taxPercent={taxPercent}
+                     taxAmount={taxAmount}
+                     previousBalance={order.previous_balance || 0}
+                     grandTotal={finalTotal + (order.previous_balance || 0)}
+                     onLoadingChargeChange={setLoadingCharge}
+                     onTaxChange={setGst}
+                   />
+                 </View>
+               </View>
+             )}
+           </View>
 
-                {/* Loading Charge & GST */}
-                <View style={{ marginTop: 16 }}>
-                  <OrderSummary
-                    itemsTotal={itemsTotal}
-                    loadingCharge={loadingCharge}
-                    taxPercent={taxPercent}
-                    onLoadingChargeChange={setLoadingCharge}
-                    onTaxPercentChange={setGst}
-                  />
-                </View>
-              </View>
-            )}
-          </View>
-
-          {/* Bill Summary */}
-          <View
-            style={{
-              backgroundColor: colors.surface,
-              padding: 16,
-              marginBottom: 8,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 8,
-              }}
-            >
-              <Text style={{ fontSize: 13, color: colors.textSecondary }}>
-                Previous Balance
-              </Text>
-              <Text style={{ fontSize: 13, color: colors.textSecondary }}>
-                ₹{previousBalance.toLocaleString("en-IN")}
-              </Text>
-            </View>
+           {/* Bill Summary */}
+           <View
+             style={{
+               backgroundColor: colors.surface,
+               padding: 16,
+               marginBottom: 8,
+             }}
+           >
+             <View
+               style={{
+                 flexDirection: "row",
+                 justifyContent: "space-between",
+                 marginBottom: 8,
+               }}
+             >
+               <Text style={{ fontSize: 13, color: colors.textSecondary }}>
+                 Previous Balance
+               </Text>
+               <Text style={{ fontSize: 13, color: colors.textSecondary }}>
+                 ₹{Number(order.previous_balance || 0).toLocaleString("en-IN")}
+               </Text>
+             </View>
 
             <View
               style={{
@@ -493,7 +575,7 @@ export default function EditOrderScreen() {
                 Total Outstanding
               </Text>
               <Text style={{ fontSize: 16, fontWeight: "700", color: colors.danger }}>
-                ₹{(previousBalance + finalTotal).toLocaleString("en-IN")}
+                ₹{(Number(order.previous_balance || 0) + finalTotal).toLocaleString("en-IN")}
               </Text>
             </View>
           </View>
@@ -501,10 +583,10 @@ export default function EditOrderScreen() {
 
         {/* Footer */}
         <BillFooter
-          onSave={handleSubmit}
+          isLoading={submitting}
+          onSaveAndShare={handleSubmit}
+          shareLabel="Save"
           disabled={submitting || finalTotal <= 0}
-          loading={submitting}
-          buttonText="Save Changes"
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

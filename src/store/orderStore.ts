@@ -4,6 +4,8 @@ export interface DraftOrderItem {
   id: string; // frontend-only unique identifier
   product_id: string | null;
   product_name: string;
+  variant_id?: string | null;
+  variant_name?: string | null;
   price: number;
   quantity: number;
 }
@@ -24,6 +26,7 @@ interface OrderState {
   // Actions
   setCustomer: (id: string | null) => void;
   addItem: (item: Omit<DraftOrderItem, "id">) => void;
+  setItems: (items: DraftOrderItem[]) => void;
   updateItemQuantity: (id: string, quantity: number) => void;
   updateItemRate: (id: string, rate: number) => void;
   removeItem: (id: string) => void;
@@ -64,6 +67,8 @@ export const useOrderStore = create<OrderState>((set, get) => ({
         { ...item, id: Math.random().toString(36).substring(2, 9) },
       ],
     })),
+
+  setItems: (items) => set({ items }),
 
   updateItemQuantity: (id, quantity) =>
     set((state) => ({

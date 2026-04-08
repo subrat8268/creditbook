@@ -12,7 +12,7 @@ import { colors, gradients, spacing, typography } from "@/src/utils/theme";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
-import { MessageCircle, Wallet } from "lucide-react-native";
+import { MessageCircle, Pencil, Wallet } from "lucide-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
     Alert,
@@ -263,8 +263,8 @@ export default function OrderDetailScreen() {
     <SafeAreaView edges={["top", "bottom"]} className="flex-1 bg-background">
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* ── Custom header ─────────────────────────── */}
-      <View
+       {/* ── Custom header ─────────────────────────── */}
+       <View
         style={{
           paddingHorizontal: spacing.screenPadding,
           paddingTop: spacing.sm,
@@ -286,12 +286,22 @@ export default function OrderDetailScreen() {
         <Text style={{ ...typography.cardTitle }} numberOfLines={1}>
           Order #{order.bill_number}
         </Text>
-        <TouchableOpacity
-          onPress={handleSendBill}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <MessageCircle size={20} color={colors.textSecondary} strokeWidth={2} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          {!isPaid && (
+            <TouchableOpacity
+              onPress={() => router.push(`/(main)/orders/${order.id}/edit` as never)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Pencil size={20} color={colors.textSecondary} strokeWidth={2} />
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            onPress={handleSendBill}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <MessageCircle size={20} color={colors.textSecondary} strokeWidth={2} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView

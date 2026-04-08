@@ -5,13 +5,15 @@ import {
     useQueryClient,
 } from "@tanstack/react-query";
 import {
-    createOrder,
-    fetchOrderDetail,
-    fetchOrders,
-    Order,
-    OrderDetail,
-    PAGE_SIZE,
-    PaymentMode,
+  createOrder,
+  fetchOrderDetail,
+  fetchOrders,
+  updateOrder,
+  Order,
+  OrderDetail,
+  OrderItemInput,
+  PAGE_SIZE,
+  PaymentMode,
 } from "../api/orders";
 import { ApiError } from "../lib/supabaseQuery";
 import { useDebounce } from "./useDebounce";
@@ -65,19 +67,39 @@ export function useOrderDetail(orderId?: string) {
   });
 }
 
+export function useUpdateOrder(vendorId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    OrderDetail,
+    ApiError,
+    {
+      orderId: string;
+      items: OrderItemInput[];
+      loadingCharge: number;
+      taxPercent: number;
+      quickAmount: number;
+      customerId?: string | null;
+    }
+  >({
+    mutationFn: ({ orderId, items, loadingCharge, taxPercent, quickAmount }) =>
+      updateOrder(orderId, vendorId, items, loadingCharge, taxPercent, quickAmount),
+    onSuccess: (updatedOrder, variables) => {
+      queryClient.setQueryData(orderKeys.detail(updatedOrder.id), updatedOrder);
+      queryClient.invalidateQueries({ queryKey: orderKeys.all(vendorId) });
+      if (variables.customerId) {
+        queryClient.invalidateQueries({
+          queryKey: ["customerDetail", variables.customerId],
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["dashboard", vendorId] });
+    },
+  });
+}
+
 // ✅ Create order mutation with optimistic updates
 export function useCreateOrder(vendorId: string) {
   const queryClient = useQueryClient();
-
-  // Explicit item type — variant_id is persisted to order_items for inventory/reporting
-  type OrderItemInput = {
-    product_id: string | null;
-    product_name: string;
-    variant_id?: string | null;
-    variant_name?: string | null;
-    price: number;
-    quantity: number;
-  };
 
   return useMutation<
     OrderDetail,
