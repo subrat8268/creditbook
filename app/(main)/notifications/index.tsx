@@ -22,6 +22,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useMemo } from "react";
+import type { ReminderLogEntry } from "@/src/store/preferencesStore";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 function getInitials(name: string) {
@@ -30,13 +32,20 @@ function getInitials(name: string) {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
-function sendWhatsAppReminder(name: string, phone: string, balance: number) {
+function sendWhatsAppReminder(
+  name: string,
+  phone: string,
+  balance: number,
+  onSuccess?: () => void,
+) {
   const message = encodeURIComponent(
     `Hi ${name}, you have an outstanding balance of ${formatINR(balance)}. Please clear it at your earliest convenience. Thank you!`,
   );
   const cleaned = phone.replace(/\D/g, "");
   const number = cleaned.startsWith("91") ? cleaned : `91${cleaned}`;
-  Linking.openURL(`https://wa.me/${number}?text=${message}`).catch(() => {});
+  Linking.openURL(`https://wa.me/${number}?text=${message}`)
+    .then(() => onSuccess?.())
+    .catch(() => {});
 }
 
 const REMINDER_TIME_OPTIONS = [
@@ -64,6 +73,16 @@ const formatSnoozeDate = (timestamp: number) => {
   });
 };
 
+const formatReminderAge = (timestamp: string) => {
+  const time = new Date(timestamp).getTime();
+  if (Number.isNaN(time)) return "";
+  const diff = Date.now() - time;
+  const days = Math.floor(diff / 86_400_000);
+  if (days <= 0) return "Today";
+  if (days === 1) return "Yesterday";
+  return `${days}d ago`;
+};
+
 export default function NotificationsScreen() {
   const router = useRouter();
   const { profile } = useAuthStore();
@@ -84,9 +103,23 @@ export default function NotificationsScreen() {
   const clearReminderSnooze = usePreferencesStore(
     (s) => s.clearOverdueReminderSnooze,
   );
+  const reminderLog = usePreferencesStore((s) => s.reminderLog);
+  const logReminderSent = usePreferencesStore((s) => s.logReminderSent);
 
   const overdueList = data?.overdueCustomersList ?? [];
   const recentActivity = data?.recentActivity ?? [];
+
+  const lastReminderByCustomer = useMemo(() => {
+    const map = new Map<string, { createdAt: string }>();
+    for (const entry of reminderLog) {
+      if (!map.has(entry.customerId)) {
+        map.set(entry.customerId, { createdAt: entry.createdAt });
+      }
+    }
+    return map;
+  }, [reminderLog]);
+
+  const recentReminders = reminderLog.slice(0, 5);
 
   const totalNotifications = overdueList.length + recentActivity.length;
 
@@ -403,15 +436,29 @@ export default function NotificationsScreen() {
                       >
                         {customer.name}
                       </Text>
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: colors.danger,
-                          marginTop: 2,
-                        }}
-                      >
-                        {customer.daysSince} days overdue
-                      </Text>
+                        <Text
+                          style={{
+                            fontSize: 12,
+                            color: colors.danger,
+                            marginTop: 2,
+                          }}
+                        >
+                          {customer.daysSince} days overdue
+                        </Text>
+                        {lastReminderByCustomer.has(customer.id) && (
+                          <Text
+                            style={{
+                              fontSize: 11,
+                              color: colors.textSecondary,
+                              marginTop: 2,
+                            }}
+                          >
+                            Reminded {formatReminderAge(
+                              lastReminderByCustomer.get(customer.id)!
+                                .createdAt,
+                            )}
+                          </Text>
+                        )}
                     </View>
 
                     {/* Balance + remind button */}
@@ -431,14 +478,21 @@ export default function NotificationsScreen() {
                            Snoozed till {formatSnoozeDate(reminderSnoozes[customer.id])}
                          </Text>
                        ) : null}
-                       <TouchableOpacity
-                         onPress={() =>
-                           sendWhatsAppReminder(
-                             customer.name,
-                             customer.phone,
-                             customer.balance,
-                           )
-                         }
+                        <TouchableOpacity
+                          onPress={() =>
+                            sendWhatsAppReminder(
+                              customer.name,
+                              customer.phone,
+                              customer.balance,
+                              () =>
+                                logReminderSent({
+                                  customerId: customer.id,
+                                  customerName: customer.name,
+                                  amount: customer.balance,
+                                  channel: "whatsapp",
+                                }),
+                            )
+                          }
                          activeOpacity={0.75}
                          style={{
                            flexDirection: "row",
@@ -548,6 +602,93 @@ export default function NotificationsScreen() {
               >
                 {recentActivity.map((item) => (
                   <ActivityRow key={item.id} item={item} />
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* ── Reminder Activity (Local) ── */}
+          {recentReminders.length > 0 && (
+            <View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 12,
+                }}
+              >
+                <MessageCircle
+                  size={16}
+                  color={colors.primary}
+                  strokeWidth={2}
+                />
+                <Text
+                  style={{
+                    fontSize: 15,
+                    fontWeight: "700",
+                    color: colors.textPrimary,
+                  }}
+                >
+                  Reminder Activity
+                </Text>
+              </View>
+              <View
+                style={{
+                  backgroundColor: colors.surface,
+                  borderRadius: 16,
+                  overflow: "hidden",
+                  shadowColor: colors.textPrimary,
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 8,
+                  elevation: 2,
+                }}
+              >
+                {recentReminders.map((entry: ReminderLogEntry, idx: number) => (
+                  <View
+                    key={entry.id}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      paddingHorizontal: spacing.lg,
+                      paddingVertical: 12,
+                      borderBottomWidth:
+                        idx < recentReminders.length - 1 ? 1 : 0,
+                      borderBottomColor: colors.borderLight,
+                    }}
+                  >
+                    <View>
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontWeight: "600",
+                          color: colors.textPrimary,
+                        }}
+                      >
+                        {entry.customerName}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: colors.textSecondary,
+                          marginTop: 2,
+                        }}
+                      >
+                        {formatReminderAge(entry.createdAt)}
+                      </Text>
+                    </View>
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: "700",
+                        color: colors.primary,
+                      }}
+                    >
+                      {formatINR(entry.amount)}
+                    </Text>
+                  </View>
                 ))}
               </View>
             </View>

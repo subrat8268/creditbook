@@ -220,7 +220,16 @@ const normalizePhoneForWhatsApp = (phone?: string) => {
 const buildReminderMessage = (name: string, amount: number) =>
   `Hi ${name}, you have an outstanding balance of ${formatCurrency(amount)}. Please clear it at your earliest convenience. Thank you!`;
 
-const sendWhatsAppReminder = (customer: OverdueCustomer, toast?: (opts: { message: string; type?: "success" | "error" }) => void) => {
+const sendWhatsAppReminder = (
+  customer: OverdueCustomer,
+  toast?: (opts: { message: string; type?: "success" | "error" }) => void,
+  logReminder?: (entry: {
+    customerId: string;
+    customerName: string;
+    amount: number;
+    channel: "whatsapp";
+  }) => void,
+) => {
   const number = normalizePhoneForWhatsApp(customer.phone);
   if (!number) {
     Alert.alert(
@@ -232,11 +241,19 @@ const sendWhatsAppReminder = (customer: OverdueCustomer, toast?: (opts: { messag
   const message = encodeURIComponent(
     buildReminderMessage(customer.name, customer.balance ?? 0),
   );
-  Linking.openURL(`https://wa.me/${number}?text=${message}`).catch(() => {
-    Alert.alert("Unable to open WhatsApp", "Please try again later.");
-  }).finally(() => {
-    toast?.({ message: `Reminder sent to ${customer.name}`, type: "success" });
-  });
+  Linking.openURL(`https://wa.me/${number}?text=${message}`)
+    .then(() => {
+      logReminder?.({
+        customerId: customer.id,
+        customerName: customer.name,
+        amount: customer.balance ?? 0,
+        channel: "whatsapp",
+      });
+      toast?.({ message: `Reminder sent to ${customer.name}`, type: "success" });
+    })
+    .catch(() => {
+      Alert.alert("Unable to open WhatsApp", "Please try again later.");
+    });
 };
 
 const formatCountLabel = (count: number, noun: string) =>
@@ -265,6 +282,7 @@ export default function DashboardScreen() {
   } = useDashboard(profile?.id);
   const netPositionRange = usePreferencesStore((s) => s.netPositionRange);
   const setNetPositionRange = usePreferencesStore((s) => s.setNetPositionRange);
+  const logReminderSent = usePreferencesStore((s) => s.logReminderSent);
   const { data: netReport, isFetching: isNetReportFetching } = useNetPositionReport(
     profile?.id,
     netPositionRange,
@@ -406,7 +424,7 @@ export default function DashboardScreen() {
   const handleSelectActionItem = (item: OverdueCustomer | OverdueSupplier) => {
     if (!quickActionMode) return;
     if (quickActionMode === "remind") {
-      sendWhatsAppReminder(item as OverdueCustomer, showToast);
+      sendWhatsAppReminder(item as OverdueCustomer, showToast, logReminderSent);
       actionSheetRef.current?.dismiss();
       return;
     }
@@ -456,7 +474,7 @@ export default function DashboardScreen() {
   };
 
   const handleReminder = (customer: OverdueCustomer) => {
-    sendWhatsAppReminder(customer);
+    sendWhatsAppReminder(customer, showToast, logReminderSent);
   };
 
   const handleCustomerPaymentSuccess = () => {

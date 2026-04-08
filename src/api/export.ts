@@ -66,7 +66,7 @@ export async function fetchOrdersForExport(
     .select(
       `bill_number, created_at, status,
        total_amount, amount_paid, previous_balance, loading_charge, tax_percent,
-       customers ( name, phone ),
+       parties ( name, phone ),
        order_items ( id )`,
     )
     .eq("vendor_id", vendorId)
@@ -86,9 +86,9 @@ export async function fetchOrdersForExport(
     const tax = Number(o.tax_percent ?? 0);
     const subtotal =
       total - prev - loading - (total - prev - loading) * (tax / (100 + tax));
-    const customer = Array.isArray(o.customers)
-      ? (o.customers[0] ?? {})
-      : (o.customers ?? {});
+    const customer = Array.isArray(o.parties)
+      ? (o.parties[0] ?? {})
+      : (o.parties ?? {});
     return {
       bill_number: o.bill_number ?? "",
       date: o.created_at ? o.created_at.substring(0, 10) : "",
@@ -120,7 +120,7 @@ export async function fetchPaymentsForExport(
     .from("payments")
     .select(
       `payment_date, amount, payment_mode,
-       orders ( bill_number, total_amount, customers ( name, phone ) )`,
+       orders ( bill_number, total_amount, parties ( name, phone ) )`,
     )
     .eq("vendor_id", vendorId)
     .order("payment_date", { ascending: false });
@@ -135,9 +135,9 @@ export async function fetchPaymentsForExport(
     const order = Array.isArray(p.orders)
       ? (p.orders[0] ?? {})
       : (p.orders ?? {});
-    const customer = Array.isArray(order.customers)
-      ? (order.customers[0] ?? {})
-      : (order.customers ?? {});
+    const customer = Array.isArray(order.parties)
+      ? (order.parties[0] ?? {})
+      : (order.parties ?? {});
     return {
       date: p.payment_date ? p.payment_date.substring(0, 10) : "",
       bill_number: order.bill_number ?? "",
@@ -155,26 +155,27 @@ export async function fetchCustomersForExport(
   vendorId: string,
 ): Promise<ExportCustomer[]> {
   const { data: customers, error } = await supabase
-    .from("customers")
+    .from("parties")
     .select("id, name, phone, address")
     .eq("vendor_id", vendorId)
+    .eq("is_customer", true)
     .order("name", { ascending: true });
   if (error) throw toApiError(error);
 
   if (!customers || customers.length === 0) return [];
 
   // Get outstanding balance per customer from orders
-  const { data: orders, error: oErr } = await supabase
-    .from("orders")
-    .select("customer_id, total_amount, amount_paid")
-    .eq("vendor_id", vendorId);
+   const { data: orders, error: oErr } = await supabase
+     .from("orders")
+     .select("customer_id, balance_due")
+     .eq("vendor_id", vendorId);
   if (oErr) throw toApiError(oErr);
 
   const balanceMap: Record<string, number> = {};
-  for (const o of orders ?? []) {
-    const b = Number(o.total_amount) - Number(o.amount_paid);
-    balanceMap[o.customer_id] = (balanceMap[o.customer_id] ?? 0) + b;
-  }
+   for (const o of orders ?? []) {
+     const b = Number(o.balance_due ?? 0);
+     balanceMap[o.customer_id] = (balanceMap[o.customer_id] ?? 0) + b;
+   }
 
   return customers.map((c: any) => ({
     name: c.name ?? "",
@@ -197,7 +198,7 @@ export async function fetchSupplierPurchasesForExport(
     .from("supplier_deliveries")
     .select(
       `delivery_date, total_amount, advance_paid,
-       suppliers ( name, phone )`,
+       parties ( name, phone )`,
     )
     .eq("vendor_id", vendorId)
     .order("delivery_date", { ascending: false });
@@ -209,9 +210,9 @@ export async function fetchSupplierPurchasesForExport(
   if (error) throw toApiError(error);
 
   return (data ?? []).map((d: any) => {
-    const supplier = Array.isArray(d.suppliers)
-      ? (d.suppliers[0] ?? {})
-      : (d.suppliers ?? {});
+    const supplier = Array.isArray(d.parties)
+      ? (d.parties[0] ?? {})
+      : (d.parties ?? {});
     const total = Number(d.total_amount ?? 0);
     const advance = Number(d.advance_paid ?? 0);
     return {

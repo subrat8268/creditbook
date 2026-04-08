@@ -79,8 +79,8 @@ export async function fetchOrders(
   // Use !inner when searching so the join filters the result set;
   // fall back to regular join (allows orders with no customer) when not searching.
   const selectClause = search?.trim()
-    ? "*, customers!inner(id, name, phone)"
-    : "*, customers(id, name, phone)";
+    ? "*, parties!inner(id, name, phone)"
+    : "*, parties(id, name, phone)";
 
   let query = supabase
     .from("orders")
@@ -96,7 +96,7 @@ export async function fetchOrders(
   if (search && search.trim() !== "") {
     const searchTerm = `%${search.trim()}%`;
     query = query.or(
-      `bill_number.ilike.${searchTerm},customers.name.ilike.${searchTerm},customers.phone.ilike.${searchTerm}`,
+      `bill_number.ilike.${searchTerm},parties.name.ilike.${searchTerm},parties.phone.ilike.${searchTerm}`,
     );
   }
 
@@ -145,7 +145,7 @@ export async function fetchOrderDetail(
       `
       id, vendor_id, customer_id, bill_number, total_amount, amount_paid, 
       previous_balance, loading_charge, tax_percent, status, edited_at, edit_count, created_at,
-      customers ( id, name, phone, address ),
+       parties ( id, name, phone, address ),
       order_items ( id, product_id, variant_id, product_name, variant_name, price, quantity, created_at )
     `,
     )
@@ -164,9 +164,9 @@ export async function fetchOrderDetail(
     tax_percent: Number(data.tax_percent || 0),
     edited_at: data.edited_at ?? null,
     edit_count: data.edit_count ?? 0,
-    customer: Array.isArray(data.customers)
-      ? (data.customers[0] ?? null)
-      : (data.customers ?? null),
+    customer: Array.isArray(data.parties)
+      ? (data.parties[0] ?? null)
+      : (data.parties ?? null),
     items: (data.order_items ?? []).map((item: any) => ({
       ...item,
       price: Number(item.price),
@@ -428,40 +428,103 @@ export async function updateOrder(
           : "Pending";
 
 
-      const { data: previousItems, error: previousItemsErr } = await supabase
-        .from("order_items")
-        .select("product_id, variant_id, product_name, variant_name, price, quantity")
-        .eq("order_id", orderId)
-        .eq("vendor_id", vendorId);
+      const isMissingRpc = (error: any) => {
+        const message = String(error?.message ?? "").toLowerCase();
+        return (
+          error?.code === "PGRST202" ||
+          (message.includes("function") &&
+            message.includes("update_order_transaction"))
+        );
+      };
 
-      if (previousItemsErr) throw toApiError(previousItemsErr);
+      const rpcPayload = {
+        p_order_id: orderId,
+        p_vendor_id: vendorId,
+        p_items: normalizedItems,
+        p_loading_charge: useItems ? safeLoading : 0,
+        p_tax_percent: useItems ? safeTax : 0,
+        p_quick_amount: safeQuickAmount,
+      };
 
-      const { error: deleteErr } = await supabase
-        .from("order_items")
-        .delete()
-        .eq("order_id", orderId)
-        .eq("vendor_id", vendorId);
+      const { data: rpcData, error: rpcError } = await supabase.rpc(
+        "update_order_transaction",
+        rpcPayload,
+      );
 
-      if (deleteErr) throw toApiError(deleteErr);
+      if (rpcError && !isMissingRpc(rpcError)) {
+        throw toApiError(rpcError);
+      }
 
-      if (normalizedItems.length > 0) {
-        const payload = normalizedItems.map((item) => ({
-          order_id: orderId,
-          vendor_id: vendorId,
-          product_id: item.product_id,
-          variant_id: item.variant_id ?? null,
-          product_name: item.product_name,
-          variant_name: item.variant_name ?? null,
-          price: item.price,
-          quantity: item.quantity,
-        }));
-
-        const { error: insertErr } = await supabase
+      if (rpcError && isMissingRpc(rpcError)) {
+        const { data: previousItems, error: previousItemsErr } = await supabase
           .from("order_items")
-          .insert(payload);
+          .select("product_id, variant_id, product_name, variant_name, price, quantity")
+          .eq("order_id", orderId)
+          .eq("vendor_id", vendorId);
 
-        if (insertErr) {
+        if (previousItemsErr) throw toApiError(previousItemsErr);
+
+        const { error: deleteErr } = await supabase
+          .from("order_items")
+          .delete()
+          .eq("order_id", orderId)
+          .eq("vendor_id", vendorId);
+
+        if (deleteErr) throw toApiError(deleteErr);
+
+        if (normalizedItems.length > 0) {
+          const payload = normalizedItems.map((item) => ({
+            order_id: orderId,
+            vendor_id: vendorId,
+            product_id: item.product_id,
+            variant_id: item.variant_id ?? null,
+            product_name: item.product_name,
+            variant_name: item.variant_name ?? null,
+            price: item.price,
+            quantity: item.quantity,
+          }));
+
+          const { error: insertErr } = await supabase
+            .from("order_items")
+            .insert(payload);
+
+          if (insertErr) {
+            if (previousItems?.length) {
+              await supabase.from("order_items").insert(
+                previousItems.map((item) => ({
+                  order_id: orderId,
+                  vendor_id: vendorId,
+                  product_id: item.product_id,
+                  variant_id: item.variant_id ?? null,
+                  product_name: item.product_name,
+                  variant_name: item.variant_name ?? null,
+                  price: item.price,
+                  quantity: item.quantity,
+                })),
+              );
+            }
+            throw toApiError(insertErr);
+          }
+        }
+
+        const { error: orderErr } = await supabase
+          .from("orders")
+          .update({
+            total_amount: totalAmount,
+            loading_charge: useItems ? safeLoading : 0,
+            tax_percent: useItems ? safeTax : 0,
+            status,
+          })
+          .eq("id", orderId)
+          .eq("vendor_id", vendorId);
+
+        if (orderErr) {
           if (previousItems?.length) {
+            await supabase
+              .from("order_items")
+              .delete()
+              .eq("order_id", orderId)
+              .eq("vendor_id", vendorId);
             await supabase.from("order_items").insert(
               previousItems.map((item) => ({
                 order_id: orderId,
@@ -475,42 +538,8 @@ export async function updateOrder(
               })),
             );
           }
-          throw toApiError(insertErr);
+          throw toApiError(orderErr);
         }
-      }
-
-      const { error: orderErr } = await supabase
-        .from("orders")
-        .update({
-          total_amount: totalAmount,
-          loading_charge: useItems ? safeLoading : 0,
-          tax_percent: useItems ? safeTax : 0,
-          status,
-        })
-        .eq("id", orderId)
-        .eq("vendor_id", vendorId);
-
-      if (orderErr) {
-        if (previousItems?.length) {
-          await supabase
-            .from("order_items")
-            .delete()
-            .eq("order_id", orderId)
-            .eq("vendor_id", vendorId);
-          await supabase.from("order_items").insert(
-            previousItems.map((item) => ({
-              order_id: orderId,
-              vendor_id: vendorId,
-              product_id: item.product_id,
-              variant_id: item.variant_id ?? null,
-              product_name: item.product_name,
-              variant_name: item.variant_name ?? null,
-              price: item.price,
-              quantity: item.quantity,
-            })),
-          );
-        }
-        throw toApiError(orderErr);
       }
 
       const updated = await fetchOrderDetail(orderId);

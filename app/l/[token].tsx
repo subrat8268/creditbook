@@ -17,6 +17,7 @@ import {
   Image,
   RefreshControl,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/src/services/supabase';
@@ -161,7 +162,28 @@ export default function PublicLedgerView() {
     );
   }
 
-  const { transactions } = ledgerData;
+   const { transactions } = ledgerData;
+   const lastUpdatedLabel = ledgerData.last_transaction_date
+     ? format(new Date(ledgerData.last_transaction_date), 'dd MMM yyyy, hh:mm a')
+     : 'Not available';
+   const vendorName = ledgerData.vendor_business_name || ledgerData.vendor_name;
+   const vendorPhone = ledgerData.vendor_phone?.trim();
+
+   const openPhone = () => {
+     if (!vendorPhone) return;
+     Linking.openURL(`tel:${vendorPhone}`).catch(() => {});
+   };
+
+   const openWhatsApp = () => {
+     if (!vendorPhone) return;
+     const digits = vendorPhone.replace(/\D/g, '');
+     if (!digits) return;
+     const number = digits.startsWith('91') ? digits : `91${digits}`;
+     const message = encodeURIComponent(
+       `Hi ${vendorName}, I have a question about my ledger.`,
+     );
+     Linking.openURL(`https://wa.me/${number}?text=${message}`).catch(() => {});
+   };
   const balanceColor =
     ledgerData.current_balance > 0
       ? colors.danger
@@ -190,7 +212,7 @@ export default function PublicLedgerView() {
             )}
             <View className="flex-1">
               <Text className="text-lg font-bold text-textPrimary">
-                {ledgerData.vendor_business_name || ledgerData.vendor_name}
+                {vendorName}
               </Text>
               {ledgerData.vendor_gstin && (
                 <Text className="text-xs text-textSecondary">
@@ -217,15 +239,54 @@ export default function PublicLedgerView() {
                   {ledgerData.vendor_address}
                 </Text>
               </View>
-            )}
+              )}
+            <View className="flex-row gap-3 mt-3">
+              <TouchableOpacity
+                className={`flex-1 py-2 rounded-lg border ${
+                  vendorPhone ? 'border-primary' : 'border-gray-200'
+                }`}
+                onPress={openPhone}
+                disabled={!vendorPhone}
+              >
+                <Text
+                  className={`text-center text-sm font-semibold ${
+                    vendorPhone ? 'text-primary' : 'text-textSecondary'
+                  }`}
+                >
+                  Call Business
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className={`flex-1 py-2 rounded-lg border ${
+                  vendorPhone ? 'border-primary' : 'border-gray-200'
+                }`}
+                onPress={openWhatsApp}
+                disabled={!vendorPhone}
+              >
+                <Text
+                  className={`text-center text-sm font-semibold ${
+                    vendorPhone ? 'text-primary' : 'text-textSecondary'
+                  }`}
+                >
+                  WhatsApp
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
         {/* Balance Summary Card */}
         <View className="p-5 mx-4 mt-4 bg-white rounded-2xl">
-          <Text className="mb-3 text-sm font-medium text-textSecondary">
-            Your Account with {ledgerData.vendor_business_name}
-          </Text>
+          <View className="flex-row items-center justify-between mb-3">
+            <Text className="text-sm font-medium text-textSecondary">
+              Your Account with {vendorName}
+            </Text>
+            <View className="px-2 py-1 rounded-full bg-gray-50">
+              <Text className="text-[11px] text-textSecondary">
+                Updated {lastUpdatedLabel}
+              </Text>
+            </View>
+          </View>
 
           <View className="flex-row items-center justify-between pb-4 mb-4 border-b border-gray-100">
             <View>
@@ -255,6 +316,9 @@ export default function PublicLedgerView() {
                 : ledgerData.current_balance < 0
                 ? 'To receive'
                 : 'Settled'}
+            </Text>
+            <Text className="mt-2 text-[11px] text-textSecondary text-center">
+              Balance reflects all bills and payments listed below.
             </Text>
           </View>
         </View>

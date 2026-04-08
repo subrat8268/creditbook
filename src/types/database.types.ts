@@ -55,7 +55,7 @@ export type Database = {
           id: string
           order_id: string
           price: number
-          product_id: string
+          product_id: string | null
           product_name: string
           quantity: number
           subtotal: number | null
@@ -68,7 +68,7 @@ export type Database = {
           id?: string
           order_id: string
           price: number
-          product_id: string
+          product_id?: string | null
           product_name: string
           quantity: number
           subtotal?: number | null
@@ -81,7 +81,7 @@ export type Database = {
           id?: string
           order_id?: string
           price?: number
-          product_id?: string
+          product_id?: string | null
           product_name?: string
           quantity?: number
           subtotal?: number | null

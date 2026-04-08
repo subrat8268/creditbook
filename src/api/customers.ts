@@ -11,9 +11,10 @@ export async function fetchCustomers(
   search?: string,
 ) {
   let query = supabase
-    .from("customers")
-    .select("*")
+    .from("parties")
+    .select("id, vendor_id, name, phone, address, created_at")
     .eq("vendor_id", vendorId)
+    .eq("is_customer", true)
     .order("created_at", { ascending: false })
     .range(pageParam * PAGE_SIZE, pageParam * PAGE_SIZE + PAGE_SIZE - 1);
 
@@ -82,8 +83,14 @@ export async function addCustomer(
         payload.opening_balance = openingBalance;
       }
       const { data, error } = await supabase
-        .from("customers")
-        .insert([payload])
+        .from("parties")
+        .insert([
+          {
+            ...payload,
+            is_customer: true,
+            is_supplier: false,
+          },
+        ])
         .select()
         .single();
       if (error) {

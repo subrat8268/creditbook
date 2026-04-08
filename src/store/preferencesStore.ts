@@ -4,6 +4,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export type NetPositionRange = 7 | 30 | 90;
 
+export type ReminderLogEntry = {
+  id: string;
+  customerId: string;
+  customerName: string;
+  amount: number;
+  channel: "whatsapp";
+  createdAt: string;
+};
+
+const MAX_REMINDER_LOG = 50;
+
 export const NET_POSITION_RANGE_OPTIONS: {
   label: string;
   value: NetPositionRange;
@@ -20,11 +31,13 @@ type PreferencesState = {
   overdueReminderHour: number;
   overdueReminderMinute: number;
   overdueReminderSnoozes: Record<string, number>;
+  reminderLog: ReminderLogEntry[];
   setOverdueRemindersEnabled: (value: boolean) => void;
   setOverdueReminderTime: (hour: number, minute: number) => void;
   snoozeOverdueReminder: (customerId: string, days?: number) => void;
   clearOverdueReminderSnooze: (customerId: string) => void;
   pruneOverdueReminderSnoozes: (now?: number) => void;
+  logReminderSent: (entry: Omit<ReminderLogEntry, "id" | "createdAt">) => void;
 };
 
 export const usePreferencesStore = create<PreferencesState>()(
@@ -36,6 +49,7 @@ export const usePreferencesStore = create<PreferencesState>()(
       overdueReminderHour: 9,
       overdueReminderMinute: 30,
       overdueReminderSnoozes: {},
+      reminderLog: [],
       setOverdueRemindersEnabled: (value) =>
         set({ overdueRemindersEnabled: value }),
       setOverdueReminderTime: (hour, minute) =>
@@ -63,6 +77,20 @@ export const usePreferencesStore = create<PreferencesState>()(
           }
           return { overdueReminderSnoozes: next };
         }),
+      logReminderSent: (entry) =>
+        set((state) => {
+          const nextEntry: ReminderLogEntry = {
+            ...entry,
+            id: `reminder-${Date.now()}-${entry.customerId}`,
+            createdAt: new Date().toISOString(),
+          };
+          return {
+            reminderLog: [nextEntry, ...state.reminderLog].slice(
+              0,
+              MAX_REMINDER_LOG,
+            ),
+          };
+        }),
     }),
     {
       name: "preferences-store",
@@ -73,6 +101,7 @@ export const usePreferencesStore = create<PreferencesState>()(
         overdueReminderHour: state.overdueReminderHour,
         overdueReminderMinute: state.overdueReminderMinute,
         overdueReminderSnoozes: state.overdueReminderSnoozes,
+        reminderLog: state.reminderLog,
       }),
     },
   ),

@@ -116,7 +116,7 @@ export async function getDashboardData(
 
   const { data: overdueOrdersWithCustomers } = await supabase
     .from("orders")
-    .select("customer_id, balance_due, created_at, customers(id, name, phone)")
+    .select("customer_id, balance_due, created_at, parties!inner(id, name, phone)")
     .eq("vendor_id", vendorId)
     .gt("balance_due", 0)
     .lt("created_at", thirtyDaysAgo.toISOString());
@@ -138,7 +138,9 @@ export async function getDashboardData(
   >();
   for (const order of overdueOrdersWithCustomers ?? []) {
     const cid: string = (order as any).customer_id;
-    const customer = (order as any).customers;
+    const customer = Array.isArray((order as any).parties)
+      ? (order as any).parties[0]
+      : (order as any).parties;
     const orderDate = new Date((order as any).created_at);
     const existing = customerOverdueMap.get(cid);
     if (existing) {
@@ -204,8 +206,11 @@ export async function getDashboardData(
   for (const delivery of deliveries ?? []) {
     const sid: string = (delivery as any).supplier_id;
     if (!sid) continue;
-    const supName: string = (delivery as any).suppliers?.name ?? "Supplier";
-    const supPhone: string | undefined = (delivery as any).suppliers?.phone;
+      const supplier = Array.isArray((delivery as any).parties)
+        ? (delivery as any).parties[0]
+        : (delivery as any).parties;
+      const supName: string = supplier?.name ?? "Supplier";
+      const supPhone: string | undefined = supplier?.phone;
     const amount = Number((delivery as any).total_amount ?? 0);
     const createdAt = new Date((delivery as any).created_at ?? new Date());
     const entry = overdueSupplierMap.get(sid);
@@ -241,15 +246,15 @@ export async function getDashboardData(
     await Promise.all([
       supabase
         .from("orders")
-        .select(
-          "id, bill_number, total_amount, amount_paid, balance_due, status, created_at, customers(name)",
+      .select(
+          "id, bill_number, total_amount, amount_paid, balance_due, status, created_at, parties(name)",
         )
         .eq("vendor_id", vendorId)
         .order("created_at", { ascending: false })
         .limit(8),
       supabase
         .from("supplier_deliveries")
-        .select("id, total_amount, created_at, suppliers(name)")
+      .select("id, total_amount, created_at, parties(name)")
         .eq("vendor_id", vendorId)
         .order("created_at", { ascending: false })
         .limit(4),
@@ -257,7 +262,7 @@ export async function getDashboardData(
 
   const orderItems: RecentActivityItem[] = (recentOrders ?? []).map(
     (o: any) => {
-      const customerName: string = o.customers?.name ?? "Unknown";
+      const customerName: string = o.parties?.name ?? "Unknown";
       const isPaid =
         (o.status ?? "").toLowerCase() === "paid" ||
         Number(o.balance_due) === 0;
@@ -295,7 +300,7 @@ export async function getDashboardData(
 
   const deliveryItems: RecentActivityItem[] = (recentDeliveries ?? []).map(
     (d: any) => {
-      const supplierName: string = d.suppliers?.name ?? "Supplier";
+      const supplierName: string = d.parties?.name ?? "Supplier";
       return {
         id: `delivery-${d.id}`,
         type: "delivery" as const,
@@ -431,13 +436,13 @@ export async function getNetPositionReport(
   ] = await Promise.all([
     supabase
       .from("orders")
-      .select("customer_id, balance_due, status, created_at, customers(id, name)")
+      .select("customer_id, balance_due, status, created_at, parties!inner(id, name)")
       .eq("vendor_id", vendorId)
       .gt("balance_due", 0)
       .gte("created_at", rangeStart.toISOString()),
     supabase
       .from("supplier_deliveries")
-      .select("supplier_id, total_amount, created_at, suppliers(id, name)")
+      .select("supplier_id, total_amount, created_at, parties!inner(id, name)")
       .eq("vendor_id", vendorId)
       .gte("created_at", rangeStart.toISOString()),
     supabase
@@ -474,7 +479,9 @@ export async function getNetPositionReport(
   const customerMap = new Map<string, { name: string; balance: number }>();
   for (const order of orders ?? []) {
     const cid: string = (order as any).customer_id;
-    const name: string = (order as any).customers?.name ?? "Unknown";
+    const name: string = Array.isArray((order as any).parties)
+      ? (order as any).parties[0]?.name ?? "Unknown"
+      : (order as any).parties?.name ?? "Unknown";
     const existing = customerMap.get(cid);
     if (existing) {
       existing.balance += Number(order.balance_due);
@@ -501,7 +508,9 @@ export async function getNetPositionReport(
 
   for (const d of deliveries ?? []) {
     const sid: string = (d as any).supplier_id;
-    const name: string = (d as any).suppliers?.name ?? "Supplier";
+    const name: string = Array.isArray((d as any).parties)
+      ? (d as any).parties[0]?.name ?? "Supplier"
+      : (d as any).parties?.name ?? "Supplier";
     const existing = supplierDeliveryMap.get(sid);
     if (existing) {
       existing.total += Number(d.total_amount);

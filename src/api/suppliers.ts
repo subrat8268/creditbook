@@ -18,9 +18,12 @@ export async function fetchSuppliers(
   search?: string,
 ): Promise<Supplier[]> {
   let query = supabase
-    .from("suppliers")
-    .select("*")
+    .from("parties")
+    .select(
+      "id, vendor_id, name, phone, address, basket_mark, bank_name, account_number, ifsc_code, upi_id, created_at",
+    )
     .eq("vendor_id", vendorId)
+    .eq("is_supplier", true)
     .order("created_at", { ascending: false })
     .range(pageParam * PAGE_SIZE, pageParam * PAGE_SIZE + PAGE_SIZE - 1);
 
@@ -85,8 +88,15 @@ export async function addSupplier(
   return executeWithOfflineQueue(
     async () => {
       const { data, error } = await supabase
-        .from("suppliers")
-        .insert([{ ...values, vendor_id: vendorId }])
+        .from("parties")
+        .insert([
+          {
+            ...values,
+            vendor_id: vendorId,
+            is_supplier: true,
+            is_customer: false,
+          },
+        ])
         .select()
         .single();
       if (error) throw toApiError(error);
@@ -107,16 +117,19 @@ export async function fetchSupplierDetail(
   supplierId: string,
 ): Promise<SupplierDetail | null> {
   const { data: supplier, error: sErr } = await supabase
-    .from("suppliers")
-    .select("*")
+    .from("parties")
+    .select(
+      "id, vendor_id, name, phone, address, basket_mark, bank_name, account_number, ifsc_code, upi_id, created_at",
+    )
     .eq("id", supplierId)
+    .eq("is_supplier", true)
     .maybeSingle();
 
   if (sErr || !supplier) return null;
 
   const { data: deliveries, error: dErr } = await supabase
     .from("supplier_deliveries")
-    .select("*, supplier_delivery_items(*)")
+    .select("*, supplier_delivery_items(*), parties(name, phone)")
     .eq("supplier_id", supplierId)
     .order("delivery_date", { ascending: false });
 
@@ -156,7 +169,7 @@ export async function fetchSupplierDetail(
   };
 
   const events: RawEvent[] = [
-    ...mappedDeliveries.map((d) => ({
+    ...mappedDeliveries.map((d: any) => ({
       id: d.id,
       type: "delivery" as const,
       date: d.delivery_date,

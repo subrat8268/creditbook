@@ -239,6 +239,7 @@ export default function CustomerDetailScreen() {
   const clearReminderSnooze = usePreferencesStore(
     (s) => s.clearOverdueReminderSnooze,
   );
+  const logReminderSent = usePreferencesStore((s) => s.logReminderSent);
 
   const [txFilter, setTxFilter] = useState<TxFilter>("All");
   const [exporting, setExporting] = useState(false);
@@ -259,9 +260,15 @@ export default function CustomerDetailScreen() {
     const msg = `Dear ${customer.name}, your outstanding balance with ${biz} is ₹${bal}. Please arrange payment. Thank you.`;
     const url = `https://wa.me/91${customer.phone}?text=${encodeURIComponent(msg)}`;
     Linking.openURL(url)
-      .then(() =>
-        showToast({ message: `Reminder sent to ${customer.name}`, type: "success" }),
-      )
+      .then(() => {
+        logReminderSent({
+          customerId: customer.id,
+          customerName: customer.name,
+          amount: customer.outstandingBalance,
+          channel: "whatsapp",
+        });
+        showToast({ message: `Reminder sent to ${customer.name}`, type: "success" });
+      })
       .catch(() =>
         showToast({ message: "Cannot open WhatsApp", type: "error" }),
       );

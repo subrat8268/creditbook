@@ -1,11 +1,11 @@
 -- =============================================================================
 -- KredBook App - Full Database Schema
--- Version: 3.0 (Parties & Clean Architecture Refactor)
--- Last Updated: April 08, 2026
+-- Version: 5.0 (Architecture Cleanup Complete)
+-- Last Updated: April 09, 2026
 --
--- SYNC NOTE: Schema reflects the Unified Parties Model and Phase 2 Clean Architecture.
--- Consolidated 'customers' and 'suppliers' into the 'parties' table.
--- Removed legacy 'role' and 'dashboard_mode' fields from profiles.
+-- SYNC NOTE: Legacy customers and suppliers tables have been removed.
+-- All entities redirected to the unified 'parties' table.
+-- Consolidated performance indexes and storage security hardening.
 -- =============================================================================
 
 
@@ -78,35 +78,6 @@ CREATE TABLE IF NOT EXISTS parties (
 
 -- -----------------------------------------------------------------------------
 
--- DEPRECATED: Customers table (Moved to parties table)
--- Kept as backup during Phase 2 transition.
-CREATE TABLE IF NOT EXISTS customers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  vendor_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-  name TEXT NOT NULL,
-  phone TEXT NOT NULL,
-  address TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-COMMENT ON TABLE customers IS 'DEPRECATED: Use parties table instead (is_customer=true).';
-
--- DEPRECATED: Suppliers table (Moved to parties table)
--- Kept as backup during Phase 2 transition.
-CREATE TABLE IF NOT EXISTS suppliers (
-  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  vendor_id        UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  name             TEXT NOT NULL,
-  phone            TEXT,
-  address          TEXT,
-  basket_mark      TEXT,
-  bank_name        TEXT,
-  account_number   TEXT,
-  ifsc_code        TEXT,
-  upi              TEXT,
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-COMMENT ON TABLE suppliers IS 'DEPRECATED: Use parties table instead (is_supplier=true).';
-
 -- -----------------------------------------------------------------------------
 
 -- Public Access Tokens (Shared Ledger System)
@@ -114,7 +85,7 @@ CREATE TABLE IF NOT EXISTS access_tokens (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   token TEXT NOT NULL UNIQUE,
   vendor_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-  customer_id UUID REFERENCES customers(id) ON DELETE CASCADE NOT NULL,
+  customer_id UUID REFERENCES parties(id) ON DELETE CASCADE NOT NULL,
   
   expires_at TIMESTAMP WITH TIME ZONE,
   is_revoked BOOLEAN NOT NULL DEFAULT FALSE,
@@ -126,7 +97,7 @@ CREATE TABLE IF NOT EXISTS access_tokens (
   
   CONSTRAINT unique_active_token UNIQUE (vendor_id, customer_id)
 );
-COMMENT ON COLUMN access_tokens.customer_id IS 'References parties.id (is_customer=true). Legacy: was customers.id.';
+COMMENT ON COLUMN access_tokens.customer_id IS 'References parties.id (is_customer=true).';
 
 -- -----------------------------------------------------------------------------
 
@@ -171,7 +142,7 @@ CREATE TABLE IF NOT EXISTS orders (
   loading_charge NUMERIC(10,2) NOT NULL DEFAULT 0,
   tax_percent NUMERIC(5,2) NOT NULL DEFAULT 0,
 
-  status TEXT NOT NULL DEFAULT 'Unpaid',
+  status TEXT NOT NULL DEFAULT 'Pending',
   
   -- Audit fields
   edited_at TIMESTAMPTZ,
@@ -179,8 +150,11 @@ CREATE TABLE IF NOT EXISTS orders (
 
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 
-  CONSTRAINT orders_status_check CHECK (status IN ('Unpaid', 'Pending', 'Partially Paid', 'Paid')),
-  CONSTRAINT orders_vendor_bill_unique UNIQUE (vendor_id, bill_number)
+  CONSTRAINT orders_status_check CHECK (status IN ('Pending', 'Partially Paid', 'Paid')),
+  CONSTRAINT orders_vendor_bill_unique UNIQUE (vendor_id, bill_number),
+  CONSTRAINT orders_total_amount_nonnegative CHECK (total_amount >= 0),
+  CONSTRAINT orders_amount_paid_nonnegative CHECK (amount_paid >= 0),
+  CONSTRAINT orders_amount_paid_lte_total CHECK (amount_paid <= total_amount)
 );
 COMMENT ON COLUMN orders.customer_id IS 'References parties.id (is_customer=true). Legacy: was customers.id.';
 
@@ -191,7 +165,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id UUID REFERENCES orders(id) ON DELETE CASCADE NOT NULL,
   vendor_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-  product_id UUID REFERENCES products(id) NOT NULL,
+  product_id UUID REFERENCES products(id),
   variant_id UUID REFERENCES product_variants(id) ON DELETE SET NULL,
   product_name TEXT NOT NULL,
   variant_name TEXT,
@@ -222,7 +196,7 @@ CREATE TABLE IF NOT EXISTS payments (
 CREATE TABLE IF NOT EXISTS supplier_deliveries (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   vendor_id        UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  supplier_id      UUID NOT NULL REFERENCES suppliers(id) ON DELETE CASCADE,
+  supplier_id      UUID NOT NULL REFERENCES parties(id) ON DELETE CASCADE,
   delivery_date    DATE NOT NULL DEFAULT CURRENT_DATE,
   loading_charge   NUMERIC(10,2) NOT NULL DEFAULT 0,
   advance_paid     NUMERIC(10,2) NOT NULL DEFAULT 0,
@@ -230,7 +204,7 @@ CREATE TABLE IF NOT EXISTS supplier_deliveries (
   notes            TEXT,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-COMMENT ON COLUMN supplier_deliveries.supplier_id IS 'References parties.id (is_supplier=true). Legacy: was suppliers.id.';
+COMMENT ON COLUMN supplier_deliveries.supplier_id IS 'References parties.id (is_supplier=true).';
 
 -- Supplier delivery items
 CREATE TABLE IF NOT EXISTS supplier_delivery_items (
@@ -248,7 +222,7 @@ CREATE TABLE IF NOT EXISTS supplier_delivery_items (
 CREATE TABLE IF NOT EXISTS payments_made (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   vendor_id        UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  supplier_id      UUID NOT NULL REFERENCES suppliers(id) ON DELETE CASCADE,
+  supplier_id      UUID NOT NULL REFERENCES parties(id) ON DELETE CASCADE,
   delivery_id      UUID REFERENCES supplier_deliveries(id) ON DELETE SET NULL,
   amount           NUMERIC(10,2) NOT NULL CHECK (amount > 0),
   payment_mode     TEXT NOT NULL DEFAULT 'Cash'
@@ -256,7 +230,7 @@ CREATE TABLE IF NOT EXISTS payments_made (
   notes            TEXT,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-COMMENT ON COLUMN payments_made.supplier_id IS 'References parties.id (is_supplier=true). Legacy: was suppliers.id.';
+COMMENT ON COLUMN payments_made.supplier_id IS 'References parties.id (is_supplier=true).';
 
 
 -- =============================================================================
@@ -282,44 +256,18 @@ CREATE INDEX IF NOT EXISTS idx_access_tokens_customer     ON access_tokens(custo
 CREATE INDEX IF NOT EXISTS idx_orders_vendor              ON orders(vendor_id);
 CREATE INDEX IF NOT EXISTS idx_orders_customer            ON orders(customer_id);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at          ON orders(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_orders_vendor_balance_due   ON orders(vendor_id, balance_due) WHERE balance_due > 0;
+
+-- order_items
+CREATE INDEX IF NOT EXISTS idx_order_items_order           ON order_items(order_id);
+
+-- payments
+CREATE INDEX IF NOT EXISTS idx_payments_order              ON payments(order_id);
+CREATE INDEX IF NOT EXISTS idx_payments_vendor             ON payments(vendor_id);
 
 -- supplier domain
 CREATE INDEX IF NOT EXISTS idx_supplier_deliveries_supplier ON supplier_deliveries(supplier_id);
 CREATE INDEX IF NOT EXISTS idx_payments_made_supplier       ON payments_made(supplier_id);
-
-
--- =============================================================================
--- COMPATIBILITY VIEWS
--- =============================================================================
-
--- View that mimics old customers table
-CREATE OR REPLACE VIEW customers_view AS
-SELECT 
-  id,
-  vendor_id,
-  name,
-  phone,
-  address,
-  created_at
-FROM parties
-WHERE is_customer = TRUE;
-
--- View that mimics old suppliers table
-CREATE OR REPLACE VIEW suppliers_view AS
-SELECT 
-  id,
-  vendor_id,
-  name,
-  phone,
-  address,
-  basket_mark,
-  bank_name,
-  account_number,
-  ifsc_code,
-  upi_id,
-  created_at
-FROM parties
-WHERE is_supplier = TRUE;
 
 
 -- =============================================================================
@@ -370,6 +318,33 @@ CREATE POLICY "Public read via valid token" ON access_tokens FOR SELECT
 CREATE POLICY "Vendors manage own tokens" ON access_tokens FOR ALL
   USING (vendor_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
 
+-- ------------ storage --------------------------------------------------------
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public read for public buckets" ON storage.objects
+  FOR SELECT TO public
+  USING (bucket_id IN ('product-images', 'business-logos'));
+
+CREATE POLICY "Product images upload" ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'product-images');
+
+CREATE POLICY "Product images read" ON storage.objects
+  FOR SELECT TO authenticated
+  USING (bucket_id = 'product-images');
+
+CREATE POLICY "Business logos upload" ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'business-logos');
+
+CREATE POLICY "Business logos read" ON storage.objects
+  FOR SELECT TO authenticated
+  USING (bucket_id = 'business-logos');
+
+CREATE POLICY "Business logos update" ON storage.objects
+  FOR UPDATE TO authenticated
+  USING (bucket_id = 'business-logos');
+
 
 -- =============================================================================
 -- SQL FUNCTIONS & TRIGGERS
@@ -410,3 +385,94 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER orders_edit_tracking
   BEFORE UPDATE ON orders
   FOR EACH ROW EXECUTE FUNCTION update_order_edit_tracking();
+
+-- Atomic update: order + items with validations
+CREATE OR REPLACE FUNCTION public.update_order_transaction(
+  p_order_id UUID,
+  p_vendor_id UUID,
+  p_items JSONB,
+  p_loading_charge NUMERIC,
+  p_tax_percent NUMERIC,
+  p_quick_amount NUMERIC
+) RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY INVOKER
+AS $$
+DECLARE
+  v_amount_paid NUMERIC;
+  v_items_total NUMERIC := 0;
+  v_tax_amount NUMERIC := 0;
+  v_total_amount NUMERIC := 0;
+  v_item JSONB;
+  v_has_items BOOLEAN := FALSE;
+BEGIN
+  IF p_loading_charge IS NULL THEN p_loading_charge := 0; END IF;
+  IF p_tax_percent IS NULL THEN p_tax_percent := 0; END IF;
+  IF p_quick_amount IS NULL THEN p_quick_amount := 0; END IF;
+
+  IF p_loading_charge < 0 THEN RAISE EXCEPTION 'loading_charge cannot be negative'; END IF;
+  IF p_tax_percent < 0 OR p_tax_percent > 100 THEN RAISE EXCEPTION 'tax_percent must be between 0 and 100'; END IF;
+
+  SELECT amount_paid INTO v_amount_paid
+  FROM public.orders
+  WHERE id = p_order_id AND vendor_id = p_vendor_id;
+
+  IF NOT FOUND THEN RAISE EXCEPTION 'order not found'; END IF;
+
+  FOR v_item IN SELECT * FROM jsonb_array_elements(p_items)
+  LOOP
+    v_has_items := TRUE;
+    v_items_total := v_items_total + (COALESCE((v_item->>'price')::NUMERIC, 0) * COALESCE((v_item->>'quantity')::NUMERIC, 0));
+  END LOOP;
+
+  IF v_has_items THEN
+    v_tax_amount := ROUND((v_items_total * p_tax_percent) / 100.0, 2);
+    v_total_amount := v_items_total + v_tax_amount + p_loading_charge;
+  ELSE
+    v_total_amount := p_quick_amount;
+  END IF;
+
+  IF v_total_amount <= 0 THEN RAISE EXCEPTION 'total_amount must be greater than zero'; END IF;
+  IF v_total_amount < v_amount_paid THEN RAISE EXCEPTION 'total_amount cannot be less than amount already paid'; END IF;
+
+  -- Replace items (transactional)
+  DELETE FROM public.order_items
+  WHERE order_id = p_order_id AND vendor_id = p_vendor_id;
+
+  FOR v_item IN SELECT * FROM jsonb_array_elements(p_items)
+  LOOP
+    INSERT INTO public.order_items (
+      order_id,
+      vendor_id,
+      product_id,
+      variant_id,
+      product_name,
+      variant_name,
+      price,
+      quantity
+    ) VALUES (
+      p_order_id,
+      p_vendor_id,
+      NULLIF(v_item->>'product_id', '')::UUID,
+      NULLIF(v_item->>'variant_id', '')::UUID,
+      v_item->>'product_name',
+      NULLIF(v_item->>'variant_name', ''),
+      (v_item->>'price')::NUMERIC,
+      (v_item->>'quantity')::INTEGER
+    );
+  END LOOP;
+
+  UPDATE public.orders
+  SET total_amount = v_total_amount,
+      loading_charge = CASE WHEN v_has_items THEN p_loading_charge ELSE 0 END,
+      tax_percent = CASE WHEN v_has_items THEN p_tax_percent ELSE 0 END,
+      status = CASE
+        WHEN v_amount_paid >= v_total_amount THEN 'Paid'
+        WHEN v_amount_paid > 0 THEN 'Partially Paid'
+        ELSE 'Pending'
+      END
+  WHERE id = p_order_id AND vendor_id = p_vendor_id;
+
+  RETURN jsonb_build_object('order_id', p_order_id, 'total_amount', v_total_amount);
+END;
+$$;
