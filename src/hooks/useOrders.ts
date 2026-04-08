@@ -80,10 +80,91 @@ export function useUpdateOrder(vendorId: string) {
       taxPercent: number;
       quickAmount: number;
       customerId?: string | null;
-    }
+    },
+    { previousOrder?: OrderDetail | null }
   >({
     mutationFn: ({ orderId, items, loadingCharge, taxPercent, quickAmount }) =>
       updateOrder(orderId, vendorId, items, loadingCharge, taxPercent, quickAmount),
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: orderKeys.detail(variables.orderId) });
+      await queryClient.cancelQueries({ queryKey: orderKeys.all(vendorId) });
+      if (variables.customerId) {
+        await queryClient.cancelQueries({
+          queryKey: ["customerDetail", variables.customerId],
+        });
+      }
+
+      const previousOrder =
+        (queryClient.getQueryData(orderKeys.detail(variables.orderId)) as
+          | OrderDetail
+          | null
+          | undefined) ?? null;
+
+      const hasItems = variables.items.length > 0;
+      const normalizedItems = hasItems
+        ? variables.items
+        : [
+            {
+              product_id: null,
+              product_name: "Bill Amount",
+              variant_id: null,
+              variant_name: null,
+              price: Math.max(0, variables.quickAmount || 0),
+              quantity: 1,
+            },
+          ];
+
+      const itemsSubtotal = normalizedItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      );
+      const safeTax = Math.min(100, Math.max(0, variables.taxPercent || 0));
+      const safeLoading = Math.max(0, variables.loadingCharge || 0);
+      const totalAmount = hasItems
+        ? Number((itemsSubtotal + (itemsSubtotal * safeTax) / 100 + safeLoading).toFixed(2))
+        : Math.max(0, variables.quickAmount || 0);
+
+      queryClient.setQueryData(orderKeys.detail(variables.orderId), (old: any) => {
+        if (!old) return old;
+        const amountPaid = Number(old.amount_paid || 0);
+        const balanceDue = totalAmount - amountPaid;
+        const status =
+          balanceDue <= 0
+            ? "Paid"
+            : amountPaid > 0
+            ? "Partially Paid"
+            : "Pending";
+
+        return {
+          ...old,
+          total_amount: totalAmount,
+          loading_charge: hasItems ? safeLoading : 0,
+          tax_percent: hasItems ? safeTax : 0,
+          balance_due: balanceDue,
+          status,
+          items: normalizedItems.map((item, idx) => ({
+            id: old.items?.[idx]?.id ?? `temp-${idx}`,
+            order_id: old.id,
+            vendor_id: old.vendor_id,
+            product_id: item.product_id,
+            variant_id: item.variant_id ?? null,
+            product_name: item.product_name,
+            variant_name: item.variant_name ?? null,
+            price: item.price,
+            quantity: item.quantity,
+            subtotal: item.price * item.quantity,
+            created_at: old.created_at,
+          })),
+        };
+      });
+
+      return { previousOrder };
+    },
+    onError: (_err, variables, context) => {
+      if (context?.previousOrder) {
+        queryClient.setQueryData(orderKeys.detail(variables.orderId), context.previousOrder);
+      }
+    },
     onSuccess: (updatedOrder, variables) => {
       queryClient.setQueryData(orderKeys.detail(updatedOrder.id), updatedOrder);
       queryClient.invalidateQueries({ queryKey: orderKeys.all(vendorId) });

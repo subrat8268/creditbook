@@ -16,6 +16,11 @@ export const NET_POSITION_RANGE_OPTIONS: {
 type PreferencesState = {
   netPositionRange: NetPositionRange;
   setNetPositionRange: (value: NetPositionRange) => void;
+  overdueRemindersEnabled: boolean;
+  overdueReminderHour: number;
+  overdueReminderMinute: number;
+  setOverdueRemindersEnabled: (value: boolean) => void;
+  setOverdueReminderTime: (hour: number, minute: number) => void;
 };
 
 export const usePreferencesStore = create<PreferencesState>()(
@@ -23,11 +28,23 @@ export const usePreferencesStore = create<PreferencesState>()(
     (set) => ({
       netPositionRange: 30,
       setNetPositionRange: (value) => set({ netPositionRange: value }),
+      overdueRemindersEnabled: true,
+      overdueReminderHour: 9,
+      overdueReminderMinute: 30,
+      setOverdueRemindersEnabled: (value) =>
+        set({ overdueRemindersEnabled: value }),
+      setOverdueReminderTime: (hour, minute) =>
+        set({ overdueReminderHour: hour, overdueReminderMinute: minute }),
     }),
     {
       name: "preferences-store",
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ netPositionRange: state.netPositionRange }),
+      partialize: (state) => ({
+        netPositionRange: state.netPositionRange,
+        overdueRemindersEnabled: state.overdueRemindersEnabled,
+        overdueReminderHour: state.overdueReminderHour,
+        overdueReminderMinute: state.overdueReminderMinute,
+      }),
     },
   ),
 );

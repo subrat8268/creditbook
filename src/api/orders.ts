@@ -378,7 +378,7 @@ export async function updateOrder(
       // Fetch order to validate ownership and access customer_id
       const { data: existing, error: existingErr } = await supabase
         .from("orders")
-        .select("id, vendor_id, customer_id, amount_paid")
+        .select("id, vendor_id, customer_id, amount_paid, total_amount, loading_charge, tax_percent, status")
         .eq("id", orderId)
         .single();
 
@@ -388,6 +388,8 @@ export async function updateOrder(
       }
 
       const useItems = items.length > 0;
+      const safeLoading = Math.max(0, Number(loadingCharge) || 0);
+      const safeTax = Math.min(100, Math.max(0, Number(taxPercent) || 0));
       const normalizedItems = useItems
         ? items
         : [
@@ -404,9 +406,9 @@ export async function updateOrder(
         (sum, item) => sum + item.price * item.quantity,
         0,
       );
-      const safeQuickAmount = Number.isFinite(quickAmount) ? quickAmount : 0;
+      const safeQuickAmount = Math.max(0, Number.isFinite(quickAmount) ? quickAmount : 0);
       const totalAmount = useItems
-        ? Number((itemsTotal + (itemsTotal * taxPercent) / 100 + loadingCharge).toFixed(2))
+        ? Number((itemsTotal + (itemsTotal * safeTax) / 100 + safeLoading).toFixed(2))
         : safeQuickAmount;
 
       if (totalAmount <= 0) {
@@ -414,6 +416,9 @@ export async function updateOrder(
       }
 
       const amountPaid = Number(existing.amount_paid || 0);
+      if (totalAmount < amountPaid) {
+        throw new Error("Total amount cannot be less than amount already paid");
+      }
       const balanceDue = totalAmount - amountPaid;
       const status =
         balanceDue <= 0
@@ -422,18 +427,14 @@ export async function updateOrder(
           ? "Partially Paid"
           : "Pending";
 
-      const { error: orderErr } = await supabase
-        .from("orders")
-        .update({
-          total_amount: totalAmount,
-          loading_charge: useItems ? loadingCharge : 0,
-          tax_percent: useItems ? taxPercent : 0,
-          status,
-        })
-        .eq("id", orderId)
+
+      const { data: previousItems, error: previousItemsErr } = await supabase
+        .from("order_items")
+        .select("product_id, variant_id, product_name, variant_name, price, quantity")
+        .eq("order_id", orderId)
         .eq("vendor_id", vendorId);
 
-      if (orderErr) throw toApiError(orderErr);
+      if (previousItemsErr) throw toApiError(previousItemsErr);
 
       const { error: deleteErr } = await supabase
         .from("order_items")
@@ -459,7 +460,57 @@ export async function updateOrder(
           .from("order_items")
           .insert(payload);
 
-        if (insertErr) throw toApiError(insertErr);
+        if (insertErr) {
+          if (previousItems?.length) {
+            await supabase.from("order_items").insert(
+              previousItems.map((item) => ({
+                order_id: orderId,
+                vendor_id: vendorId,
+                product_id: item.product_id,
+                variant_id: item.variant_id ?? null,
+                product_name: item.product_name,
+                variant_name: item.variant_name ?? null,
+                price: item.price,
+                quantity: item.quantity,
+              })),
+            );
+          }
+          throw toApiError(insertErr);
+        }
+      }
+
+      const { error: orderErr } = await supabase
+        .from("orders")
+        .update({
+          total_amount: totalAmount,
+          loading_charge: useItems ? safeLoading : 0,
+          tax_percent: useItems ? safeTax : 0,
+          status,
+        })
+        .eq("id", orderId)
+        .eq("vendor_id", vendorId);
+
+      if (orderErr) {
+        if (previousItems?.length) {
+          await supabase
+            .from("order_items")
+            .delete()
+            .eq("order_id", orderId)
+            .eq("vendor_id", vendorId);
+          await supabase.from("order_items").insert(
+            previousItems.map((item) => ({
+              order_id: orderId,
+              vendor_id: vendorId,
+              product_id: item.product_id,
+              variant_id: item.variant_id ?? null,
+              product_name: item.product_name,
+              variant_name: item.variant_name ?? null,
+              price: item.price,
+              quantity: item.quantity,
+            })),
+          );
+        }
+        throw toApiError(orderErr);
       }
 
       const updated = await fetchOrderDetail(orderId);

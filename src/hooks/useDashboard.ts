@@ -1,8 +1,16 @@
+import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDashboardData, getNetPositionReport } from "../api/dashboard";
+import { syncOverdueReminders } from "../lib/notifications";
+import { usePreferencesStore } from "../store/preferencesStore";
 
 export function useDashboard(vendorId?: string) {
   const queryClient = useQueryClient();
+  const remindersEnabled = usePreferencesStore(
+    (s) => s.overdueRemindersEnabled,
+  );
+  const reminderHour = usePreferencesStore((s) => s.overdueReminderHour);
+  const reminderMinute = usePreferencesStore((s) => s.overdueReminderMinute);
 
   const query = useQuery({
     queryKey: ["dashboard", vendorId],
@@ -18,6 +26,30 @@ export function useDashboard(vendorId?: string) {
     if (vendorId)
       queryClient.invalidateQueries({ queryKey: ["dashboard", vendorId] });
   };
+
+  useEffect(() => {
+    if (!vendorId) return;
+    const overdue = query.data?.overdueCustomersList ?? [];
+    syncOverdueReminders(
+      overdue.map((customer: any) => ({
+        customerId: customer.id,
+        customerName: customer.name,
+        balance: customer.balance,
+        daysSince: customer.daysSince,
+      })),
+      {
+        enabled: remindersEnabled,
+        hour: reminderHour,
+        minute: reminderMinute,
+      },
+    );
+  }, [
+    vendorId,
+    remindersEnabled,
+    reminderHour,
+    reminderMinute,
+    query.data?.overdueCustomersList,
+  ]);
 
   return {
     ...query,

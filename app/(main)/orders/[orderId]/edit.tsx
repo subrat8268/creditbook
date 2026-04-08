@@ -155,6 +155,14 @@ export default function EditOrderScreen() {
       return;
     }
 
+    if (order.amount_paid > finalTotal) {
+      Alert.alert(
+        "Amount too low",
+        "Total cannot be less than the amount already paid for this bill.",
+      );
+      return;
+    }
+
     const buildItemsPayload = () =>
       items.map((item) => ({
         product_id: item.product_id,

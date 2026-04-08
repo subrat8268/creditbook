@@ -10,10 +10,13 @@ export type OverdueReminder = {
 };
 
 const OVERDUE_CATEGORY = "overdue-reminders";
+const MAX_DAILY_REMINDERS = 10;
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: false,
     shouldSetBadge: false,
   }),
@@ -79,4 +82,40 @@ export async function cancelAllOverdueReminders() {
       Notifications.cancelScheduledNotificationAsync(id),
     ),
   );
+}
+
+export async function syncOverdueReminders(
+  reminders: OverdueReminder[],
+  options: { enabled: boolean; hour: number; minute: number; maxPerDay?: number },
+) {
+  try {
+    if (!options.enabled || reminders.length === 0) {
+      await cancelAllOverdueReminders();
+      return;
+    }
+
+    const now = new Date();
+    const trigger = new Date();
+    trigger.setHours(options.hour, options.minute, 0, 0);
+    if (trigger <= now) {
+      trigger.setDate(trigger.getDate() + 1);
+    }
+
+    await cancelAllOverdueReminders();
+
+    const max = options.maxPerDay ?? MAX_DAILY_REMINDERS;
+    const selected = reminders
+      .slice()
+      .sort((a, b) => {
+        if (b.balance !== a.balance) return b.balance - a.balance;
+        return b.daysSince - a.daysSince;
+      })
+      .slice(0, max);
+
+    await Promise.all(
+      selected.map((reminder) => scheduleOverdueReminder(reminder, trigger)),
+    );
+  } catch (error) {
+    console.warn("Failed to sync overdue reminders", error);
+  }
 }
