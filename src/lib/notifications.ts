@@ -86,7 +86,13 @@ export async function cancelAllOverdueReminders() {
 
 export async function syncOverdueReminders(
   reminders: OverdueReminder[],
-  options: { enabled: boolean; hour: number; minute: number; maxPerDay?: number },
+  options: {
+    enabled: boolean;
+    hour: number;
+    minute: number;
+    maxPerDay?: number;
+    snoozes?: Record<string, number>;
+  },
 ) {
   try {
     if (!options.enabled || reminders.length === 0) {
@@ -103,8 +109,14 @@ export async function syncOverdueReminders(
 
     await cancelAllOverdueReminders();
 
+    const snoozes = options.snoozes ?? {};
+    const eligible = reminders.filter((reminder) => {
+      const until = snoozes[reminder.customerId];
+      return !until || until <= trigger.getTime();
+    });
+
     const max = options.maxPerDay ?? MAX_DAILY_REMINDERS;
-    const selected = reminders
+    const selected = eligible
       .slice()
       .sort((a, b) => {
         if (b.balance !== a.balance) return b.balance - a.balance;

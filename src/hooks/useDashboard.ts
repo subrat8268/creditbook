@@ -11,6 +11,12 @@ export function useDashboard(vendorId?: string) {
   );
   const reminderHour = usePreferencesStore((s) => s.overdueReminderHour);
   const reminderMinute = usePreferencesStore((s) => s.overdueReminderMinute);
+  const reminderSnoozes = usePreferencesStore(
+    (s) => s.overdueReminderSnoozes,
+  );
+  const pruneReminderSnoozes = usePreferencesStore(
+    (s) => s.pruneOverdueReminderSnoozes,
+  );
 
   const query = useQuery({
     queryKey: ["dashboard", vendorId],
@@ -29,6 +35,7 @@ export function useDashboard(vendorId?: string) {
 
   useEffect(() => {
     if (!vendorId) return;
+    pruneReminderSnoozes();
     const overdue = query.data?.overdueCustomersList ?? [];
     syncOverdueReminders(
       overdue.map((customer: any) => ({
@@ -41,6 +48,7 @@ export function useDashboard(vendorId?: string) {
         enabled: remindersEnabled,
         hour: reminderHour,
         minute: reminderMinute,
+        snoozes: reminderSnoozes,
       },
     );
   }, [
@@ -48,6 +56,8 @@ export function useDashboard(vendorId?: string) {
     remindersEnabled,
     reminderHour,
     reminderMinute,
+    reminderSnoozes,
+    pruneReminderSnoozes,
     query.data?.overdueCustomersList,
   ]);
 

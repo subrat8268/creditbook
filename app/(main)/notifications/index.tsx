@@ -55,6 +55,15 @@ const formatTimeLabel = (hour: number, minute: number) => {
   });
 };
 
+const formatSnoozeDate = (timestamp: number) => {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+  });
+};
+
 export default function NotificationsScreen() {
   const router = useRouter();
   const { profile } = useAuthStore();
@@ -68,6 +77,13 @@ export default function NotificationsScreen() {
     (s) => s.setOverdueRemindersEnabled,
   );
   const setReminderTime = usePreferencesStore((s) => s.setOverdueReminderTime);
+  const reminderSnoozes = usePreferencesStore(
+    (s) => s.overdueReminderSnoozes,
+  );
+  const snoozeReminder = usePreferencesStore((s) => s.snoozeOverdueReminder);
+  const clearReminderSnooze = usePreferencesStore(
+    (s) => s.clearOverdueReminderSnooze,
+  );
 
   const overdueList = data?.overdueCustomersList ?? [];
   const recentActivity = data?.recentActivity ?? [];
@@ -399,53 +415,93 @@ export default function NotificationsScreen() {
                     </View>
 
                     {/* Balance + remind button */}
-                    <View style={{ alignItems: "flex-end", gap: 6 }}>
-                      <Text
-                        style={{
-                          fontSize: 14,
-                          fontWeight: "700",
-                          color: colors.danger,
-                        }}
-                      >
-                        {formatINR(customer.balance)}
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() =>
-                          sendWhatsAppReminder(
-                            customer.name,
-                            customer.phone,
-                            customer.balance,
-                          )
-                        }
-                        activeOpacity={0.75}
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          gap: 4,
-                          backgroundColor: colors.paid.bg,
-                          borderRadius: 999,
-                          paddingHorizontal: 10,
-                          paddingVertical: 4,
-                        }}
-                      >
-                        <MessageCircle
-                          size={12}
-                          color={colors.primary}
-                          strokeWidth={2}
-                        />
-                        <Text
-                          style={{
-                            fontSize: 11,
-                            fontWeight: "700",
-                            color: colors.primaryDark,
-                          }}
-                        >
-                          Remind
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                ))}
+                     <View style={{ alignItems: "flex-end", gap: 6 }}>
+                       <Text
+                         style={{
+                           fontSize: 14,
+                           fontWeight: "700",
+                           color: colors.danger,
+                         }}
+                       >
+                         {formatINR(customer.balance)}
+                       </Text>
+                       {reminderSnoozes[customer.id] &&
+                       reminderSnoozes[customer.id] > Date.now() ? (
+                         <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+                           Snoozed till {formatSnoozeDate(reminderSnoozes[customer.id])}
+                         </Text>
+                       ) : null}
+                       <TouchableOpacity
+                         onPress={() =>
+                           sendWhatsAppReminder(
+                             customer.name,
+                             customer.phone,
+                             customer.balance,
+                           )
+                         }
+                         activeOpacity={0.75}
+                         style={{
+                           flexDirection: "row",
+                           alignItems: "center",
+                           gap: 4,
+                           backgroundColor: colors.paid.bg,
+                           borderRadius: 999,
+                           paddingHorizontal: 10,
+                           paddingVertical: 4,
+                         }}
+                       >
+                         <MessageCircle
+                           size={12}
+                           color={colors.primary}
+                           strokeWidth={2}
+                         />
+                         <Text
+                           style={{
+                             fontSize: 11,
+                             fontWeight: "700",
+                             color: colors.primaryDark,
+                           }}
+                         >
+                           Remind
+                         </Text>
+                       </TouchableOpacity>
+                       <TouchableOpacity
+                         onPress={() => {
+                           const until = reminderSnoozes[customer.id] ?? 0;
+                           if (until > Date.now()) {
+                             clearReminderSnooze(customer.id);
+                           } else {
+                             snoozeReminder(customer.id, 7);
+                           }
+                         }}
+                         activeOpacity={0.75}
+                         style={{
+                           flexDirection: "row",
+                           alignItems: "center",
+                           gap: 4,
+                           backgroundColor: colors.background,
+                           borderRadius: 999,
+                           paddingHorizontal: 10,
+                           paddingVertical: 4,
+                           borderWidth: 1,
+                           borderColor: colors.border,
+                         }}
+                       >
+                         <Text
+                           style={{
+                             fontSize: 11,
+                             fontWeight: "700",
+                             color: colors.textSecondary,
+                           }}
+                         >
+                           {(reminderSnoozes[customer.id] ?? 0) > Date.now()
+                             ? "Undo snooze"
+                             : "Snooze 7d"}
+                         </Text>
+                       </TouchableOpacity>
+                     </View>
+                   </View>
+                 ))}
               </View>
             </View>
           )}

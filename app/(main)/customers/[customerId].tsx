@@ -5,6 +5,7 @@ import { useToast } from "@/src/components/feedback/Toast";
 import { useCustomerDetail } from "@/src/hooks/useCustomer";
 import { useWhatsAppShare } from "@/src/hooks/useWhatsAppShare";
 import { useAuthStore } from "@/src/store/authStore";
+import { usePreferencesStore } from "@/src/store/preferencesStore";
 import { Transaction } from "@/src/types/customer";
 import { colors, gradients } from "@/src/utils/theme";
 import { LinearGradient } from "expo-linear-gradient";
@@ -17,6 +18,7 @@ import {
     ArrowLeft,
     ArrowUp,
     Banknote,
+    BellRing,
     Download,
     FileText,
     MessageCircle,
@@ -230,6 +232,13 @@ export default function CustomerDetailScreen() {
 
   const { show: showToast } = useToast();
   const { shareLedger, isSharing } = useWhatsAppShare();
+  const reminderSnoozes = usePreferencesStore(
+    (s) => s.overdueReminderSnoozes,
+  );
+  const snoozeReminder = usePreferencesStore((s) => s.snoozeOverdueReminder);
+  const clearReminderSnooze = usePreferencesStore(
+    (s) => s.clearOverdueReminderSnooze,
+  );
 
   const [txFilter, setTxFilter] = useState<TxFilter>("All");
   const [exporting, setExporting] = useState(false);
@@ -240,6 +249,11 @@ export default function CustomerDetailScreen() {
 
   const sendWhatsAppReminder = () => {
     if (!customer) return;
+    const snoozedUntil = reminderSnoozes[customer.id] ?? 0;
+    if (snoozedUntil > Date.now()) {
+      showToast({ message: "Reminder is snoozed for this customer", type: "error" });
+      return;
+    }
     const biz = profile?.business_name || "our store";
     const bal = customer.outstandingBalance.toLocaleString("en-IN");
     const msg = `Dear ${customer.name}, your outstanding balance with ${biz} is ₹${bal}. Please arrange payment. Thank you.`;
@@ -458,9 +472,9 @@ export default function CustomerDetailScreen() {
         {/* ── Action Buttons (2x2 Grid) ── */}
         <View className="mx-4 mt-4 gap-3">
           {/* First Row */}
-          <View className="flex-row gap-3">
-            <TouchableOpacity
-              className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
+           <View className="flex-row flex-wrap gap-3">
+             <TouchableOpacity
+               className="flex-1 min-w-[48%] bg-surface rounded-2xl py-[18px] items-center gap-2"
               style={{
                 shadowColor: colors.textPrimary,
                 shadowOffset: { width: 0, height: 2 },
@@ -500,8 +514,8 @@ export default function CustomerDetailScreen() {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
+             <TouchableOpacity
+               className="flex-1 min-w-[48%] bg-surface rounded-2xl py-[18px] items-center gap-2"
               style={{
                 shadowColor: colors.textPrimary,
                 shadowOffset: { width: 0, height: 2 },
@@ -581,7 +595,42 @@ export default function CustomerDetailScreen() {
                 Reminder
               </Text>
             </TouchableOpacity>
-          </View>
+
+            <TouchableOpacity
+              className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
+              style={{
+                shadowColor: colors.textPrimary,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.05,
+                shadowRadius: 6,
+                elevation: 2,
+              }}
+              activeOpacity={0.8}
+              onPress={() => {
+                if (!customer) return;
+                const snoozedUntil = reminderSnoozes[customer.id] ?? 0;
+                if (snoozedUntil > Date.now()) {
+                  clearReminderSnooze(customer.id);
+                  showToast({ message: "Reminder snooze removed", type: "success" });
+                } else {
+                  snoozeReminder(customer.id, 7);
+                  showToast({ message: "Reminder snoozed for 7 days", type: "success" });
+                }
+              }}
+            >
+              <View
+                className="w-11 h-11 rounded-full items-center justify-center"
+                style={{ backgroundColor: colors.background }}
+              >
+                <BellRing size={22} color={colors.textSecondary} strokeWidth={2} />
+              </View>
+              <Text className="text-[13px] font-semibold text-textDark">
+                {((reminderSnoozes[customer?.id ?? ""] ?? 0) > Date.now())
+                  ? "Undo Snooze"
+                  : "Snooze 7d"}
+              </Text>
+            </TouchableOpacity>
+      </View>
         </View>
 
         {/* ── Transactions ── */}

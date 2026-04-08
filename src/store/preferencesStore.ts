@@ -19,8 +19,12 @@ type PreferencesState = {
   overdueRemindersEnabled: boolean;
   overdueReminderHour: number;
   overdueReminderMinute: number;
+  overdueReminderSnoozes: Record<string, number>;
   setOverdueRemindersEnabled: (value: boolean) => void;
   setOverdueReminderTime: (hour: number, minute: number) => void;
+  snoozeOverdueReminder: (customerId: string, days?: number) => void;
+  clearOverdueReminderSnooze: (customerId: string) => void;
+  pruneOverdueReminderSnoozes: (now?: number) => void;
 };
 
 export const usePreferencesStore = create<PreferencesState>()(
@@ -31,10 +35,34 @@ export const usePreferencesStore = create<PreferencesState>()(
       overdueRemindersEnabled: true,
       overdueReminderHour: 9,
       overdueReminderMinute: 30,
+      overdueReminderSnoozes: {},
       setOverdueRemindersEnabled: (value) =>
         set({ overdueRemindersEnabled: value }),
       setOverdueReminderTime: (hour, minute) =>
         set({ overdueReminderHour: hour, overdueReminderMinute: minute }),
+      snoozeOverdueReminder: (customerId, days = 7) =>
+        set((state) => ({
+          overdueReminderSnoozes: {
+            ...state.overdueReminderSnoozes,
+            [customerId]: Date.now() + days * 24 * 60 * 60 * 1000,
+          },
+        })),
+      clearOverdueReminderSnooze: (customerId) =>
+        set((state) => {
+          const next = { ...state.overdueReminderSnoozes };
+          delete next[customerId];
+          return { overdueReminderSnoozes: next };
+        }),
+      pruneOverdueReminderSnoozes: (now = Date.now()) =>
+        set((state) => {
+          const entries = Object.entries(state.overdueReminderSnoozes);
+          if (!entries.length) return state;
+          const next: Record<string, number> = {};
+          for (const [id, until] of entries) {
+            if (until > now) next[id] = until;
+          }
+          return { overdueReminderSnoozes: next };
+        }),
     }),
     {
       name: "preferences-store",
@@ -44,6 +72,7 @@ export const usePreferencesStore = create<PreferencesState>()(
         overdueRemindersEnabled: state.overdueRemindersEnabled,
         overdueReminderHour: state.overdueReminderHour,
         overdueReminderMinute: state.overdueReminderMinute,
+        overdueReminderSnoozes: state.overdueReminderSnoozes,
       }),
     },
   ),
