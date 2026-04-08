@@ -380,7 +380,6 @@ export type Database = {
           name: string
           onboarding_complete: boolean
           phone: string | null
-          role: string | null
           subscription_expiry: string | null
           subscription_plan: string | null
           upi_id: string | null
@@ -402,7 +401,6 @@ export type Database = {
           name: string
           onboarding_complete?: boolean
           phone?: string | null
-          role?: string | null
           subscription_expiry?: string | null
           subscription_plan?: string | null
           upi_id?: string | null
@@ -424,7 +422,6 @@ export type Database = {
           name?: string
           onboarding_complete?: boolean
           phone?: string | null
-          role?: string | null
           subscription_expiry?: string | null
           subscription_plan?: string | null
           upi_id?: string | null

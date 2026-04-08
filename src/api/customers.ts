@@ -110,11 +110,12 @@ export async function addCustomer(
 export async function fetchCustomerDetail(
   customerId: string,
 ): Promise<CustomerDetail | null> {
-  // Fetch customer profile
+  // Fetch customer profile from parties table
   const { data: customer, error: custErr } = await supabase
-    .from("customers")
+    .from("parties")
     .select("id, name, phone, address")
     .eq("id", customerId.trim())
+    .eq("is_customer", true)
     .maybeSingle();
 
   if (custErr) {

@@ -74,7 +74,7 @@ export default function ProductsScreen() {
         name: values.name,
         base_price: values.base_price,
         category: values.category || "General",
-        image_url: null,
+        image_url: values.image_url ?? null,
         variants: values.variants as any,
       });
       setIsBottomSheetOpen(false);
@@ -93,7 +93,7 @@ export default function ProductsScreen() {
           name: values.name,
           base_price: values.base_price,
           category: values.category || "General",
-          image_url: null,
+          image_url: values.image_url ?? null,
           variants: values.variants as any,
         },
       });
@@ -308,6 +308,8 @@ export default function ProductsScreen() {
             ? {
                 name: editingProduct.name,
                 base_price: editingProduct.base_price,
+                category: editingProduct.category ?? "General",
+                image_url: editingProduct.image_url ?? null,
                 variants: editingProduct.variants ?? [],
               }
             : undefined

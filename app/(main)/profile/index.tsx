@@ -10,7 +10,6 @@ import {
   HelpCircle,
   Info,
   Languages,
-  LayoutGrid,
   LogOut,
   Package,
   Receipt,
@@ -152,7 +151,7 @@ function SegmentControl<T extends string>({
 }
 
 export default function ProfileScreen() {
-  const { user, profile, setProfile, logout } = useAuthStore();
+  const { user, profile, logout } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
   const router = useRouter();
 
@@ -163,18 +162,6 @@ export default function ProfileScreen() {
       </SafeAreaView>
     );
   }
-
-  const updateField = async (field: string, value: unknown) => {
-    if (!user) return;
-    const { error } = await supabase
-      .from("profiles")
-      .update({ [field]: value })
-      .eq("user_id", user.id);
-    if (!error) {
-      const current = useAuthStore.getState().profile;
-      if (current) setProfile({ ...current, [field]: value });
-    }
-  };
 
   const handleSignOut = async () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
@@ -190,11 +177,6 @@ export default function ProfileScreen() {
       },
     ]);
   };
-
-  const dashboardMode = (profile.dashboard_mode ?? "seller") as
-    | "seller"
-    | "distributor"
-    | "both";
 
   const email = user?.email ?? user?.phone ?? "";
 
@@ -235,7 +217,7 @@ export default function ProfileScreen() {
           {!!email && <Text className="text-[14px] font-semibold text-textSecondary mt-1">{email}</Text>}
           
           <TouchableOpacity
-            onPress={() => Alert.alert("Edit Profile", "Profile editing coming soon.")}
+            onPress={() => router.push("/(main)/profile/edit" as never)}
             activeOpacity={0.8}
             className="mt-4 py-2 px-8 rounded-full border-2 border-primary"
           >
@@ -300,27 +282,6 @@ export default function ProfileScreen() {
 
         {/* ── App Preferences ── */}
         <SectionCard title="APP PREFERENCES">
-          <View className="flex-row items-center justify-between py-2 mt-1 mb-2">
-            <View className="flex-row items-center gap-3">
-              <View className="w-10 h-10 rounded-xl items-center justify-center" style={{ backgroundColor: colors.primaryLight }}>
-                <LayoutGrid size={20} color={colors.primary} strokeWidth={2} />
-              </View>
-              <Text className="text-[15px] font-bold text-textPrimary">Dashboard Mode</Text>
-            </View>
-          </View>
-          
-          <SegmentControl<"seller" | "distributor" | "both">
-            options={[
-              { value: "seller", label: "Seller" },
-              { value: "both", label: "Both" },
-              { value: "distributor", label: "Distributor" },
-            ]}
-            value={dashboardMode}
-            onChange={(v) => updateField("dashboard_mode", v)}
-          />
-
-          <View className="h-[1px] bg-border my-2" />
-
           <View className="flex-row items-center justify-between py-2 mb-2">
             <View className="flex-row items-center gap-3">
               <View className="w-10 h-10 rounded-xl items-center justify-center" style={{ backgroundColor: colors.primaryLight }}>

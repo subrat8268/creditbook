@@ -70,7 +70,7 @@ export default function OnboardingRole() {
     try {
       const { error: dbErr } = await supabase
         .from("profiles")
-        .update({ role: selected, dashboard_mode: dashboardMode })
+        .update({ dashboard_mode: dashboardMode })
         .eq("user_id", user.id);
       if (dbErr) throw dbErr;
 
@@ -78,7 +78,6 @@ export default function OnboardingRole() {
       if (currentProfile) {
         setProfile({
           ...currentProfile,
-          role: selected,
           dashboard_mode: dashboardMode,
         });
       } else {
@@ -87,7 +86,6 @@ export default function OnboardingRole() {
         if (fetched)
           setProfile({
             ...fetched,
-            role: selected,
             dashboard_mode: dashboardMode,
           });
       }

@@ -7,7 +7,6 @@ export interface Profile {
   user_id: string;
   name: string | null;
   phone: string | null;
-  role: string | null;
   created_at: string;
 
   //Business details

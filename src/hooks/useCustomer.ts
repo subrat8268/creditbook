@@ -1,27 +1,104 @@
+/**
+ * useCustomer - Backward compatibility wrapper for useParties
+ * 
+ * This hook wraps the new useParties hook and adapts the Party type
+ * to the old Customer type, allowing existing UI components to work
+ * without changes during the migration period.
+ * 
+ * MIGRATION NOTE: This is a temporary compatibility layer.
+ * New code should use useParties directly from '@/src/hooks/useParties'
+ */
+
 import {
-    useInfiniteQuery,
-    useMutation,
-    useQuery,
-    useQueryClient,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
 } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Alert } from "react-native";
 import {
-    addCustomer,
-    fetchCustomerDetail,
-    fetchCustomers,
-    PAGE_SIZE,
+  fetchCustomerDetail,
+  PAGE_SIZE,
 } from "../api/customers";
 import { ApiError } from "../lib/supabaseQuery";
 import { useCustomersStore } from "../store/customersStore";
 import { Customer, CustomerDetail } from "../types/customer";
 import { useDebounce } from "./useDebounce";
+import { supabase } from "../services/supabase";
+import type { Party } from "../types/party";
+
+// Helper: Convert Party to Customer type
+function partyToCustomer(party: Party): Customer {
+  return {
+    id: party.id,
+    name: party.name,
+    phone: party.phone || '',
+    vendor_id: party.vendor_id,
+    address: party.address || undefined,
+    created_at: party.created_at,
+    outstandingBalance: party.customer_balance,
+    isOverdue: false, // Will be calculated if needed
+    lastActiveAt: party.updated_at,
+  };
+}
 
 export const customerKeys = {
   all: (vendorId: string) => ["customers", vendorId] as const,
   list: (vendorId: string, search: string) =>
     [...customerKeys.all(vendorId), { search }] as const,
 };
+
+/**
+ * Fetch customers using new parties table
+ */
+async function fetchCustomersFromParties(
+  pageParam: number,
+  vendorId: string,
+  search?: string
+): Promise<Customer[]> {
+  let query = supabase
+    .from('parties')
+    .select('*')
+    .eq('vendor_id', vendorId)
+    .eq('is_customer', true)
+    .order('created_at', { ascending: false })
+    .range(pageParam * PAGE_SIZE, pageParam * PAGE_SIZE + PAGE_SIZE - 1);
+
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,phone.ilike.%${search}%`);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  const parties = (data ?? []) as Party[];
+  
+  // Convert parties to customers
+  const customers = parties.map(partyToCustomer);
+
+  // Determine overdue status (same logic as before)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const { data: overdueOrders } = await supabase
+    .from("orders")
+    .select("customer_id")
+    .eq("vendor_id", vendorId)
+    .gt("balance_due", 0)
+    .lt("created_at", thirtyDaysAgo.toISOString());
+
+  const overdueIds = new Set(
+    (overdueOrders ?? []).map((o: any) => o.customer_id),
+  );
+
+  // Mark overdue customers
+  customers.forEach((c) => {
+    c.isOverdue = overdueIds.has(c.id);
+  });
+
+  return customers;
+}
 
 export const useCustomers = (vendorId?: string, search?: string) => {
   const debouncedSearch = useDebounce(search ?? "", 300);
@@ -32,7 +109,7 @@ export const useCustomers = (vendorId?: string, search?: string) => {
       ? customerKeys.list(vendorId, debouncedSearch)
       : ["customers-disabled"],
     queryFn: ({ pageParam }) =>
-      fetchCustomers(pageParam as number, vendorId!, debouncedSearch),
+      fetchCustomersFromParties(pageParam as number, vendorId!, debouncedSearch),
     getNextPageParam: (lastPage, allPages) =>
       lastPage.length === PAGE_SIZE ? allPages.length : undefined,
     initialPageParam: 0,
@@ -70,18 +147,33 @@ export const useAddCustomer = (vendorId: string) => {
     >,
     { previousQueries: [import("@tanstack/react-query").QueryKey, unknown][] }
   >({
-    mutationFn: (values) => addCustomer(vendorId, values),
+    mutationFn: async (values) => {
+      // Insert into parties table instead of customers
+      const { data, error } = await supabase
+        .from('parties')
+        .insert({
+          vendor_id: vendorId,
+          name: values.name,
+          phone: values.phone || null,
+          address: values.address || null,
+          is_customer: true,
+          is_supplier: false,
+          customer_balance: (values as any).openingBalance || 0,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return partyToCustomer(data as Party);
+    },
     onMutate: async (newCustomer) => {
-      // 1. Cancel any outgoing refetches to prevent them from overwriting our optimistic update
       const queryKey = customerKeys.all(vendorId);
       await queryClient.cancelQueries({ queryKey });
 
-      // 2. Snapshot the current state of all customer list cache permutations (e.g. ones with active search strings)
       const previousQueries = queryClient.getQueriesData({ queryKey });
 
-      // 3. Construct a temporary Optimistic Customer object
       const optimisticCustomer: Customer = {
-        id: `temp-${Date.now()}`, // Temporary ID
+        id: `temp-${Date.now()}`,
         vendor_id: vendorId,
         name: newCustomer.name,
         phone: newCustomer.phone,
@@ -92,11 +184,9 @@ export const useAddCustomer = (vendorId: string) => {
         lastActiveAt: new Date().toISOString(),
       };
 
-      // 4. Optimistically inject into all cached search permutations
       queryClient.setQueriesData<any>({ queryKey }, (oldData: any) => {
         if (!oldData || !oldData.pages) return oldData;
         const newPages = [...oldData.pages];
-        // Prepend optimistic customer to the first page
         newPages[0] = [optimisticCustomer, ...newPages[0]];
         return {
           ...oldData,
@@ -104,12 +194,10 @@ export const useAddCustomer = (vendorId: string) => {
         };
       });
 
-      // 5. Return context containing the snapshot so we can rollback if needed
       return { previousQueries };
     },
     onError: (err: ApiError, _, context) => {
       console.error("Failed to add customer:", err.message);
-      // Rollback cache to the snapshot on error
       if (context?.previousQueries) {
         context.previousQueries.forEach(([cacheKey, oldData]) => {
           queryClient.setQueryData(cacheKey, oldData);
@@ -118,7 +206,6 @@ export const useAddCustomer = (vendorId: string) => {
       Alert.alert("Error", err.message || "Failed to add customer.");
     },
     onSettled: () => {
-      // Invalidate query to refetch actual data from Supabase (to swap the temp ID)
       queryClient.invalidateQueries({
         queryKey: customerKeys.all(vendorId),
         exact: false,

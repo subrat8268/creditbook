@@ -8,14 +8,25 @@ import {
     Check,
     ChevronDown,
     ChevronUp,
+    ImagePlus,
     Plus,
     Trash2,
     X,
 } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import * as Yup from "yup";
 import Button from "../ui/Button";
+import { pickImageFromLibrary } from "@/src/utils/imagePicker";
+import { uploadProductImage } from "@/src/api/upload";
 
 // ── Types ──────────────────────────────────────────────────
 interface VariantRow {
@@ -35,6 +46,7 @@ export interface ProductSubmitValues {
   base_price: number | null;
   category: string;
   variants: { variant_name: string; price: number }[];
+  image_url: string | null;
 }
 
 export interface NewProductModalProps {
@@ -48,6 +60,7 @@ export interface NewProductModalProps {
     base_price?: number | null;
     category?: string | null;
     variants?: { variant_name: string; price: number }[];
+    image_url?: string | null;
   };
   loading?: boolean;
   errorMessage?: string;
@@ -191,10 +204,32 @@ export default function NewProductModal({
   const [customCategories, setCustomCategories] = useState<string[]>([]);
   const [addingCustom, setAddingCustom] = useState(false);
   const [newCategoryInput, setNewCategoryInput] = useState("");
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    initialValues?.image_url ?? null,
+  );
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
   const allCategories = useMemo(
     () => [...DEFAULT_CATEGORIES, ...customCategories],
     [customCategories],
   );
+
+  useEffect(() => {
+    if (visible) {
+      setImagePreview(initialValues?.image_url ?? null);
+      setImageUri(null);
+      setImageError(null);
+    }
+  }, [visible, initialValues?.image_url]);
+
+  const handlePickImage = useCallback(async () => {
+    const uri = await pickImageFromLibrary();
+    if (!uri) return;
+    setImagePreview(uri);
+    setImageUri(uri);
+    setImageError(null);
+  }, []);
 
   return (
     <BottomSheet
@@ -245,6 +280,14 @@ export default function NewProductModal({
         validationSchema={FormSchema}
         onSubmit={async (values, { resetForm, setSubmitting }) => {
           try {
+            setImageError(null);
+            let imageUrl: string | null = imagePreview ?? null;
+
+            if (imageUri) {
+              setImageUploading(true);
+              imageUrl = await uploadProductImage(imageUri);
+            }
+
             await onSubmit({
               name: values.name,
               base_price:
@@ -256,9 +299,15 @@ export default function NewProductModal({
                 variant_name: v.variant_name,
                 price: Number(v.price),
               })),
+              image_url: imageUrl,
             });
             resetForm();
+            setImageUri(null);
+          } catch (err: any) {
+            console.error("Image upload failed:", err);
+            setImageError(err?.message || "Failed to upload image");
           } finally {
+            setImageUploading(false);
             setSubmitting(false);
           }
         }}
@@ -292,6 +341,100 @@ export default function NewProductModal({
               >
                 PRODUCT INFORMATION
               </Text>
+
+              {/* ── Product Image ── */}
+              <Text
+                style={{
+                  fontWeight: "600",
+                  fontSize: 14,
+                  color: colors.textPrimary,
+                  marginBottom: 8,
+                }}
+              >
+                Product Image
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginBottom: 12,
+                }}
+              >
+                <View
+                  style={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: 16,
+                    backgroundColor: colors.background,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                  }}
+                >
+                  {imagePreview ? (
+                    <Image
+                      source={{ uri: imagePreview }}
+                      style={{ width: 72, height: 72 }}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <ImagePlus size={24} color={colors.textSecondary} />
+                  )}
+                </View>
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: colors.textSecondary,
+                      marginBottom: 6,
+                    }}
+                  >
+                    Square image works best
+                  </Text>
+                  <TouchableOpacity
+                    onPress={handlePickImage}
+                    disabled={imageUploading}
+                    style={{
+                      alignSelf: "flex-start",
+                      paddingHorizontal: 14,
+                      paddingVertical: 8,
+                      borderRadius: 10,
+                      backgroundColor: imageUploading
+                        ? colors.border
+                        : colors.primary,
+                    }}
+                  >
+                    {imageUploading ? (
+                      <ActivityIndicator color={colors.surface} />
+                    ) : (
+                      <Text
+                        style={{
+                          color: colors.surface,
+                          fontSize: 13,
+                          fontWeight: "600",
+                        }}
+                      >
+                        {imagePreview ? "Change Image" : "Upload Image"}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+              {imageError ? (
+                <Text
+                  style={{
+                    color: colors.danger,
+                    fontSize: 12,
+                    marginBottom: 12,
+                  }}
+                >
+                  {imageError}
+                </Text>
+              ) : (
+                <View style={{ height: 8 }} />
+              )}
               {/* ── Product Name ── */}
               <Text
                 style={{
