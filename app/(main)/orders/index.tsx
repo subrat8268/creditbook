@@ -60,7 +60,7 @@ export default function OrdersScreen() {
     [router],
   );
 
-  const handleCreateBill = useCallback(
+  const handleCreateEntry = useCallback(
     () => router.push("/orders/create"),
     [router],
   );
@@ -166,7 +166,7 @@ export default function OrdersScreen() {
                 Add your first entry to start tracking.
               </Text>
               <TouchableOpacity
-                onPress={handleCreateBill}
+                onPress={handleCreateEntry}
                 activeOpacity={0.85}
                 className="mt-5 rounded-full bg-primary px-8 py-3"
               >
@@ -180,7 +180,7 @@ export default function OrdersScreen() {
       )}
 
       {/* ── FAB ───────────────────────────────────────────────────────── */}
-      <FloatingActionButton onPress={handleCreateBill} bottom={spacing.fabBottom} right={spacing.fabMargin} />
+      <FloatingActionButton onPress={handleCreateEntry} bottom={spacing.fabBottom} right={spacing.fabMargin} />
 
       {/* ── Sort bottom sheet removed for Phase 1 ──────────────────────── */}
     </SafeAreaView>

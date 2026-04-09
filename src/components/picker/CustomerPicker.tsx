@@ -1,4 +1,4 @@
-import { useCustomers } from "@/src/hooks/useCustomer";
+import { usePeople } from "@/src/hooks/useCustomer";
 import { useCallback, useMemo, useState } from "react";
 import { FlatList, Keyboard, Text, TouchableOpacity, View } from "react-native";
 import BottomSheetPicker from "./BottomSheetPicker";
@@ -7,8 +7,8 @@ import Loader from "../feedback/Loader";
 
 interface CustomerPickerProps {
   visible: boolean;
-  selectedCustomer: any;
-  setSelectedCustomer: (customer: any) => void;
+  selectedPerson: any;
+  setSelectedPerson: (person: any) => void;
   vendorId: string;
   onClose?: () => void;
   variant?: "sheet" | "inline";
@@ -16,8 +16,8 @@ interface CustomerPickerProps {
 
 export default function CustomerPicker({
   visible,
-  selectedCustomer,
-  setSelectedCustomer,
+  selectedPerson,
+  setSelectedPerson,
   vendorId,
   onClose,
   variant = "sheet",
@@ -25,17 +25,17 @@ export default function CustomerPicker({
   const [search, setSearch] = useState("");
 
   const {
-    data: customersData,
+    data: peopleData,
     isLoading,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useCustomers(vendorId, search);
+  } = usePeople(vendorId, search);
 
   // ✅ Flatten paginated data
-  const customers = useMemo(
-    () => customersData?.pages.flatMap((page) => page) ?? [],
-    [customersData]
+  const people = useMemo(
+    () => peopleData?.pages.flatMap((page) => page) ?? [],
+    [peopleData]
   );
 
   // ✅ Infinite scroll loader
@@ -46,10 +46,10 @@ export default function CustomerPicker({
   const handleSelect = useCallback(
     (item: any) => {
       Keyboard.dismiss();
-      setSelectedCustomer(item);
+      setSelectedPerson(item);
       onClose?.();
     },
-    [setSelectedCustomer, onClose]
+    [setSelectedPerson, onClose]
   );
 
   // ✅ Render each customer
@@ -70,7 +70,7 @@ export default function CustomerPicker({
   const keyExtractor = (item: any) => item.id.toString();
 
    if (variant === "inline") {
-    const inlineCustomers = customers ?? [];
+    const inlinePeople = people ?? [];
     return (
       <View className="rounded-2xl bg-surface border border-border overflow-hidden">
         <View className="px-4 py-3 border-b border-border">
@@ -86,12 +86,12 @@ export default function CustomerPicker({
           </View>
         </View>
         <FlatList
-          data={inlineCustomers}
+          data={inlinePeople}
           keyExtractor={keyExtractor}
           renderItem={({ item }: { item: any }) => (
             <TouchableOpacity
               className={`px-4 py-3 border-b border-border ${
-                selectedCustomer?.id === item.id ? "bg-primaryLight" : "bg-surface"
+                selectedPerson?.id === item.id ? "bg-primaryLight" : "bg-surface"
               }`}
               onPress={() => handleSelect(item)}
               activeOpacity={0.8}
@@ -137,7 +137,7 @@ export default function CustomerPicker({
         visible={visible}
         onClose={onClose ?? (() => {})}
         title="Person"
-        items={customers}
+        items={people}
       isLoading={isLoading}
       isFetchingNextPage={isFetchingNextPage}
       onEndReached={handleEndReached}

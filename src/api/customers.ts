@@ -51,22 +51,22 @@ export async function fetchPeople(
       customers.map((c) => c.id),
     );
 
-  const balanceByCustomer: Record<string, number> = {};
-  const lastActiveByCustomer: Record<string, string> = {};
+  const balanceByPerson: Record<string, number> = {};
+  const lastActiveByPerson: Record<string, string> = {};
   for (const row of balanceRows ?? []) {
-    balanceByCustomer[row.customer_id] =
-      (balanceByCustomer[row.customer_id] ?? 0) + Number(row.balance_due);
-    const existing = lastActiveByCustomer[row.customer_id];
+    balanceByPerson[row.customer_id] =
+      (balanceByPerson[row.customer_id] ?? 0) + Number(row.balance_due);
+    const existing = lastActiveByPerson[row.customer_id];
     if (!existing || row.created_at > existing) {
-      lastActiveByCustomer[row.customer_id] = row.created_at;
+      lastActiveByPerson[row.customer_id] = row.created_at;
     }
   }
 
   return customers.map((c) => ({
     ...c,
     isOverdue: overdueIds.has(c.id),
-    outstandingBalance: balanceByCustomer[c.id] ?? 0,
-    lastActiveAt: lastActiveByCustomer[c.id] ?? c.created_at,
+    outstandingBalance: balanceByPerson[c.id] ?? 0,
+    lastActiveAt: lastActiveByPerson[c.id] ?? c.created_at,
   }));
 }
 

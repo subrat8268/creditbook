@@ -62,7 +62,7 @@ export default function CustomersScreen() {
     return list.sort((a, b) => a.name.localeCompare(b.name));
   }, [customers]);
 
-  const handleAddCustomer = async (values: {
+  const handleAddPerson = async (values: {
     name: string;
     phone?: string;
     address?: string;
@@ -72,13 +72,13 @@ export default function CustomersScreen() {
     redirectToEntry?: boolean;
   }) => {
     try {
-      const createdCustomer = await addPersonMutation.mutateAsync({
+      const createdPerson = await addPersonMutation.mutateAsync({
         ...values,
         phone: values.phone || "",
       } as any);
       if (values.entryAmount && values.entryAmount > 0) {
         await createOrderMutation.mutateAsync({
-          customerId: createdCustomer.id,
+          customerId: createdPerson.id,
           vendorId: profile?.id ?? "",
           items: [
             {
@@ -93,10 +93,10 @@ export default function CustomersScreen() {
           taxPercent: 0,
           billNumberPrefix: profile?.bill_number_prefix || "INV",
         });
-        showToast({ message: `Entry added for ${createdCustomer.name}`, type: "success" });
+        showToast({ message: `Entry added for ${createdPerson.name}`, type: "success" });
         router.push({
           pathname: "/customers/[customerId]",
-          params: { customerId: createdCustomer.id },
+          params: { customerId: createdPerson.id },
         });
       }
       setIsModalOpen(false);
@@ -106,7 +106,7 @@ export default function CustomersScreen() {
           router.push({
             pathname: "/orders/create",
             params: {
-              customer: JSON.stringify(createdCustomer),
+              customer: JSON.stringify(createdPerson),
               next: shouldRedirect ? "share" : undefined,
             },
           });
@@ -214,7 +214,7 @@ export default function CustomersScreen() {
               title="Add Person"
               onPress={async () => {
                 if (!inlineName.trim()) return;
-                await handleAddCustomer({
+                await handleAddPerson({
                   name: inlineName.trim(),
                   phone: inlinePhone.trim(),
                   entryAmount: 0,
@@ -250,7 +250,7 @@ export default function CustomersScreen() {
           setRedirectAfterAdd(false);
         }}
         onSubmit={(values) =>
-          handleAddCustomer({
+          handleAddPerson({
             ...values,
             redirectToEntry: redirectAfterAdd,
           })

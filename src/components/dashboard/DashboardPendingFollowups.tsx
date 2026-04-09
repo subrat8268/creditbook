@@ -3,7 +3,7 @@ import { colors } from "@/src/utils/theme";
 import { BellRing } from "lucide-react-native";
 import { Linking, Text, TouchableOpacity, View } from "react-native";
 
-type OverdueCustomer = {
+type OverduePerson = {
   id: string;
   name: string;
   phone: string;
@@ -12,21 +12,21 @@ type OverdueCustomer = {
 };
 
 type Props = {
-  customers: OverdueCustomer[];
+  people: OverduePerson[];
   onSeeAll?: () => void;
 };
 
 export default function DashboardPendingFollowups({
-  customers,
+  people,
   onSeeAll,
 }: Props) {
-  const visible = customers.slice(0, 2);
+  const visible = people.slice(0, 2);
 
-  const handleRemind = (customer: OverdueCustomer) => {
+  const handleRemind = (person: OverduePerson) => {
     const message = encodeURIComponent(
-      `Hi ${customer.name}, you have an outstanding balance of ₹${customer.balance.toLocaleString("en-IN")}. Please clear at your earliest convenience. Thank you!`,
+      `Hi ${person.name}, you have an outstanding balance of ₹${person.balance.toLocaleString("en-IN")}. Please clear at your earliest convenience. Thank you!`,
     );
-    const phone = customer.phone.replace(/\D/g, "");
+    const phone = person.phone.replace(/\D/g, "");
     Linking.openURL(`https://wa.me/91${phone}?text=${message}`).catch(() => {});
   };
 
@@ -49,7 +49,7 @@ export default function DashboardPendingFollowups({
                 color: colors.danger,
               }}
             >
-              {customers.length}
+              {people.length}
             </Text>
           </View>
         </View>
@@ -69,9 +69,9 @@ export default function DashboardPendingFollowups({
           elevation: 2,
         }}
       >
-        {visible.map((customer, index) => (
+        {visible.map((person, index) => (
           <View
-            key={customer.id}
+            key={person.id}
             className="flex-row items-center px-4 py-3.5"
             style={{
               borderBottomWidth: index < visible.length - 1 ? 1 : 0,
@@ -90,7 +90,7 @@ export default function DashboardPendingFollowups({
                   color: colors.danger,
                 }}
               >
-                {customer.name.charAt(0).toUpperCase()}
+                {person.name.charAt(0).toUpperCase()}
               </Text>
             </View>
 
@@ -100,7 +100,7 @@ export default function DashboardPendingFollowups({
                 className="text-sm font-semibold text-textDark"
                 numberOfLines={1}
               >
-                {customer.name}
+                {person.name}
               </Text>
               <View className="flex-row items-center gap-1 mt-0.5">
                 <View
@@ -108,7 +108,7 @@ export default function DashboardPendingFollowups({
                   style={{ backgroundColor: colors.danger }}
                 />
                 <Text style={{ fontSize: 12, color: colors.danger }}>
-                  {customer.daysSince} days overdue
+                  {person.daysSince} days overdue
                 </Text>
               </View>
             </View>
@@ -119,12 +119,12 @@ export default function DashboardPendingFollowups({
                 className="text-sm font-bold"
                 style={{ color: colors.danger }}
               >
-                {formatINR(customer.balance)}
+                {formatINR(person.balance)}
               </Text>
               <TouchableOpacity
                 className="flex-row items-center gap-1 px-2.5 py-1 rounded-full"
                 style={{ backgroundColor: colors.successBg }}
-                onPress={() => handleRemind(customer)}
+                onPress={() => handleRemind(person)}
               >
                 <BellRing size={12} color={colors.primary} strokeWidth={2.5} />
                 <Text

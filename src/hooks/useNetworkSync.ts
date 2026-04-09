@@ -104,7 +104,7 @@ async function replayMutation(
       return true;
     }
 
-    // ── Customer Mutations ───────────────────────────────────────────────
+    // ── Person Mutations ───────────────────────────────────────────────
     if (entity === 'customer' && operation === 'CREATE') {
       const vendorId = payload.vendorId || payload.vendor_id;
       if (!vendorId) throw new Error('Missing vendorId in customer payload');

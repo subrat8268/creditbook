@@ -75,7 +75,7 @@ async function fetchCustomersFromParties(
   const parties = (data ?? []) as Party[];
   
   // Convert parties to customers
-  const customers = parties.map(partyToCustomer);
+  const people = parties.map(partyToCustomer);
 
   // Determine overdue status (same logic as before)
   const thirtyDaysAgo = new Date();
@@ -93,11 +93,11 @@ async function fetchCustomersFromParties(
   );
 
   // Mark overdue customers
-  customers.forEach((c) => {
-    c.isOverdue = overdueIds.has(c.id);
+  people.forEach((p) => {
+    p.isOverdue = overdueIds.has(p.id);
   });
 
-  return customers;
+  return people;
 }
 
 export const useCustomers = (vendorId?: string, search?: string) => {

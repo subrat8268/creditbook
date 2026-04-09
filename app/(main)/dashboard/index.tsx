@@ -42,7 +42,7 @@ const getAvatarBg = (name: string) => {
 
 
 
-type OverdueCustomer = {
+type OverduePerson = {
   id: string;
   name: string;
   phone?: string;
@@ -129,16 +129,16 @@ export default function DashboardScreen() {
                 </TouchableOpacity>
               </View>
 
-              {overdueCustomers.map((customer: OverdueCustomer) => {
-                const initials = getInitials(customer.name);
-                const avatarBg = getAvatarBg(customer.name);
+  {overdueCustomers.map((person: OverduePerson) => {
+                const initials = getInitials(person.name);
+                const avatarBg = getAvatarBg(person.name);
                 return (
                   <TouchableOpacity
-                    key={customer.id}
+                    key={person.id}
                     className="flex-row items-center p-4 mb-3 bg-surface rounded-2xl border border-border"
                     activeOpacity={0.8}
                     onPress={() =>
-                      router.push({ pathname: "/(main)/customers/[customerId]", params: { customerId: customer.id } } as never)
+                      router.push({ pathname: "/(main)/customers/[customerId]", params: { customerId: person.id } } as never)
                     }
                   >
                     <View
@@ -149,10 +149,10 @@ export default function DashboardScreen() {
                     </View>
                     <View className="flex-1">
                       <Text className="text-[15px] font-bold text-textPrimary" numberOfLines={1}>
-                        {customer.name}
+                        {person.name}
                       </Text>
                       <Text className="text-[12px] font-semibold text-danger mt-0.5">
-                        {formatCurrency(customer.balance)} • {customer.daysSince} days overdue
+                        {formatCurrency(person.balance)} • {person.daysSince} days overdue
                       </Text>
                     </View>
                   </TouchableOpacity>

@@ -132,12 +132,12 @@ export default function CreateOrderScreen() {
     }
   }, [customerParams, amountParam, setCustomer, fetchPreviousBalance]);
 
-  const handleSelectCustomer = useCallback(
-    async (customer: any) => {
-      setCustomer(customer?.id || null);
-      setSelectedCustomerMeta(customer);
-      if (customer) {
-        fetchPreviousBalance(customer.id);
+  const handleSelectPerson = useCallback(
+    async (person: any) => {
+      setCustomer(person?.id || null);
+      setSelectedCustomerMeta(person);
+      if (person) {
+        fetchPreviousBalance(person.id);
       }
     },
     [setCustomer, fetchPreviousBalance],
@@ -453,8 +453,8 @@ export default function CreateOrderScreen() {
             <CustomerPicker
               visible
               variant="inline"
-              selectedCustomer={selectedCustomerMeta}
-              setSelectedCustomer={handleSelectCustomer}
+              selectedPerson={selectedCustomerMeta}
+              setSelectedPerson={handleSelectPerson}
               vendorId={vendorId!}
             />
 
@@ -662,8 +662,8 @@ export default function CreateOrderScreen() {
             {/* Pickers */}
             <CustomerPicker
               visible={false}
-              selectedCustomer={selectedCustomerMeta}
-              setSelectedCustomer={handleSelectCustomer}
+              selectedPerson={selectedCustomerMeta}
+              setSelectedPerson={handleSelectPerson}
               vendorId={vendorId!}
             />
 

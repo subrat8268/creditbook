@@ -33,7 +33,7 @@ import { colors, spacing, typography } from "@/src/utils/theme";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ExportType = "orders" | "payments" | "customers" | "suppliers";
+type ExportType = "orders" | "payments" | "people" | "suppliers";
 type DatePreset = "all" | "month";
 
 // ─── ExportRow sub-component ──────────────────────────────────────────────────
@@ -205,10 +205,10 @@ export default function ExportScreen() {
           filename = `kredbook_payments_${today}.csv`;
           break;
         }
-        case "customers": {
+        case "people": {
           const rows = await fetchPeopleForExport(vendorId);
           csv = toCsv(rows as unknown as Record<string, unknown>[]);
-          filename = `kredbook_customer_balances_${today}.csv`;
+          filename = `kredbook_people_balances_${today}.csv`;
           break;
         }
         case "suppliers": {
@@ -272,14 +272,14 @@ export default function ExportScreen() {
     iconBg: colors.paid.bg,
     },
     {
-      type: "customers",
+      type: "people",
       label: "People Balances",
       desc: "Outstanding balances per person",
       Icon: Users,
-    pillColor: colors.surface,
+      pillColor: colors.surface,
       pillBg: colors.primary,
       iconColor: colors.fab,
-    iconBg: colors.primaryBlueBg,
+      iconBg: colors.primaryBlueBg,
     },
     {
       type: "suppliers",
