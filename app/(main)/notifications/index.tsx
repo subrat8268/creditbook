@@ -287,7 +287,7 @@ export default function NotificationsScreen() {
             </View>
 
             <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-              Up to 10 highest-balance customers are scheduled each day.
+              Up to 10 highest-balance people are scheduled each day.
             </Text>
           </View>
           {/* ── Empty state ── */}
@@ -376,7 +376,7 @@ export default function NotificationsScreen() {
                 </View>
               </View>
 
-              {/* Customer cards */}
+              {/* People cards */}
               <View
                 style={{
                   backgroundColor: colors.surface,

@@ -3,26 +3,26 @@ import { BellRing, FilePlus2, Wallet } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
-  onNewBill?: () => void;
+  onNewEntry?: () => void;
   onCollect?: () => void;
   onRemind?: () => void;
 };
 
 export default function DashboardActionBar({
-  onNewBill,
+  onNewEntry,
   onCollect,
   onRemind,
 }: Props) {
   return (
     <View className="flex-row justify-between w-full mb-4 gap-3">
-      {/* New Bill */}
+      {/* Add Entry */}
       <TouchableOpacity
         className="flex-1 rounded-[16px] items-center justify-center py-5 border"
         style={{
           backgroundColor: colors.surfaceAlt,
           borderColor: colors.border,
         }}
-        onPress={onNewBill}
+        onPress={onNewEntry}
       >
         <View
           className="w-10 h-10 rounded-full items-center justify-center mb-2"
@@ -33,7 +33,7 @@ export default function DashboardActionBar({
         <Text
           style={{ fontSize: 13, fontWeight: "600", color: colors.textPrimary }}
         >
-          New Bill
+          Add Entry
         </Text>
       </TouchableOpacity>
 

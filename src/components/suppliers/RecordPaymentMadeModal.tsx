@@ -149,7 +149,7 @@ export default function RecordPaymentMadeModal({
             color: colors.textPrimary,
           }}
         >
-          Pay Supplier
+          Pay Party
         </Text>
       </View>
       <BottomSheetScrollView
@@ -157,7 +157,7 @@ export default function RecordPaymentMadeModal({
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 8 }}
       >
-        {/* ── Supplier card ── */}
+        {/* ── Party card ── */}
         {supplierName ? (
           <View
             className="flex-row items-center px-4 py-3 rounded-2xl mb-5"

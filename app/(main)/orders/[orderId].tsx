@@ -91,11 +91,12 @@ export default function OrderDetailScreen() {
   );
 
   const paymentModalRef = useRef<any>(null);
-  const [sendingBill, setSendingBill] = useState(false);
+  const [sendingEntry, setSendingEntry] = useState(false);
+  const [quickPaymentAmount, setQuickPaymentAmount] = useState<string>("");
   const { show: showToast } = useToast();
 
   // ── Derived values ───────────────────────────────────────────────
-  const customerName = order?.customer?.name ?? "Unknown Customer";
+  const customerName = order?.customer?.name ?? "Unknown Person";
   const customerPhone = order?.customer?.phone ?? "";
 
   const isOverdue =
@@ -140,10 +141,10 @@ export default function OrderDetailScreen() {
     });
   }, [sortedPayments, grandTotal]);
 
-  // ── Send Bill ───────────────────────────────────────────────────
-  const handleSendBill = useCallback(async () => {
+  // ── Send Entry ──────────────────────────────────────────────────
+  const handleSendEntry = useCallback(async () => {
     if (!order) return;
-    setSendingBill(true);
+    setSendingEntry(true);
     try {
       const pdfUri = await generateBillPdf(
         order.items.map((i) => ({
@@ -183,11 +184,11 @@ export default function OrderDetailScreen() {
       if (canShare) {
         await Sharing.shareAsync(pdfUri, {
           mimeType: "application/pdf",
-          dialogTitle: `Bill ${order.bill_number}`,
+          dialogTitle: `Entry ${order.bill_number}`,
           UTI: "com.adobe.pdf",
         });
         showToast({
-          message: `Bill ${order.bill_number} shared`,
+          message: `Entry ${order.bill_number} shared`,
           type: "success",
         });
       } else {
@@ -197,17 +198,17 @@ export default function OrderDetailScreen() {
       // Fallback: pre-filled WhatsApp message
       const cleanPhone = customerPhone.replace(/\D/g, "");
       const msg = encodeURIComponent(
-        `Hi ${customerName}, your bill *${order.bill_number}* of *₹${fmt(order.total_amount)}* is ready.` +
+        `Hi ${customerName}, your entry *${order.bill_number}* of *₹${fmt(order.total_amount)}* is ready.` +
           (order.balance_due > 0
             ? ` Remaining balance: *₹${fmt(order.balance_due)}*. Please arrange payment at your earliest convenience.`
-            : " The bill has been fully paid. Thank you!"),
+            : " The entry has been fully paid. Thank you!"),
       );
       const wa = `https://wa.me/91${cleanPhone}?text=${msg}`;
       showToast({
         message:
           error?.message === "sharing-unavailable"
             ? "Sharing unavailable, opened WhatsApp"
-            : "Bill sent via WhatsApp",
+            : "Entry sent via WhatsApp",
         type: "success",
       });
       Linking.openURL(wa).catch(() => {
@@ -221,7 +222,7 @@ export default function OrderDetailScreen() {
         );
       });
     } finally {
-      setSendingBill(false);
+      setSendingEntry(false);
     }
   }, [order, customerName, customerPhone, profile, showToast, itemsSubtotal, taxAmount]);
 
@@ -247,14 +248,30 @@ export default function OrderDetailScreen() {
     });
   }, [orderId, order?.customer_id, profile?.id, queryClient, customerName, showToast]);
 
+  const openPaymentFlow = (amountSeed?: number) => {
+    if (!order || order.balance_due <= 0) {
+      showToast({ message: "No outstanding balance for this person.", type: "error" });
+      return;
+    }
+    if (amountSeed && amountSeed > 0) {
+      router.push({
+        pathname: "/orders/create",
+        params: { customer: JSON.stringify(order.customer), amount: String(amountSeed) },
+      });
+      return;
+    }
+    setQuickPaymentAmount("");
+    paymentModalRef.current?.present();
+  };
+
   // ── Loading / Error gates ─────────────────────────────────────────
   if (isLoading) return <Loader />;
   if (isError || !order)
     return (
-      <EmptyState
-        title="Order not found"
-        description="This order could not be loaded."
-      />
+        <EmptyState
+          title="Entry not found"
+          description="This entry could not be loaded."
+        />
     );
 
   const isPaid = order.status === "Paid";
@@ -283,9 +300,9 @@ export default function OrderDetailScreen() {
         >
           <Text style={{ fontSize: 18, color: colors.textPrimary }}>←</Text>
         </TouchableOpacity>
-        <Text style={{ ...typography.cardTitle }} numberOfLines={1}>
-          Order #{order.bill_number}
-        </Text>
+          <Text style={{ ...typography.cardTitle }} numberOfLines={1}>
+            Entry #{order.bill_number}
+          </Text>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           {!isPaid && (
             <TouchableOpacity
@@ -296,7 +313,7 @@ export default function OrderDetailScreen() {
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            onPress={handleSendBill}
+            onPress={handleSendEntry}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <MessageCircle size={20} color={colors.textSecondary} strokeWidth={2} />
@@ -354,7 +371,7 @@ export default function OrderDetailScreen() {
         </View>
 
         {/* ───────────────────────────────────────── */}
-        {/* 2. Customer Card */}
+        {/* 2. Person Card */}
         {/* ───────────────────────────────────────── */}
         <View
           style={[
@@ -435,7 +452,7 @@ export default function OrderDetailScreen() {
         </View>
 
         {/* ───────────────────────────────────────── */}
-        {/* 2. Order Items                                  */}
+        {/* 2. Entry Items                                  */}
         {/* ───────────────────────────────────────── */}
         <View
           style={[
@@ -480,7 +497,7 @@ export default function OrderDetailScreen() {
                   alignItems: "center",
                 }}
               >
-                {/* Product name */}
+                {/* Item name */}
                 <Text
                   style={{ flex: 1, fontSize: 15, color: colors.textPrimary }}
                   numberOfLines={1}
@@ -518,7 +535,7 @@ export default function OrderDetailScreen() {
         </View>
 
         {/* ───────────────────────────────────────── */}
-        {/* 3. Bill Summary (flush below items card)        */}
+        {/* 3. Entry Summary (flush below items card)        */}
         {/* ───────────────────────────────────────── */}
         <View
           style={[
@@ -684,7 +701,7 @@ export default function OrderDetailScreen() {
               marginBottom: 14,
             }}
           >
-            Payments Received
+            Payments
           </Text>
 
           {paymentsLoading ? (
@@ -804,10 +821,10 @@ export default function OrderDetailScreen() {
             gap: spacing.sm,
           }}
         >
-        {/* Send Bill button — always visible */}
+        {/* Send Entry button — always visible */}
         <TouchableOpacity
-          onPress={handleSendBill}
-          disabled={sendingBill}
+          onPress={handleSendEntry}
+          disabled={sendingEntry}
           activeOpacity={0.8}
           style={[
             {
@@ -822,21 +839,21 @@ export default function OrderDetailScreen() {
               backgroundColor: colors.surface,
               gap: spacing.sm,
             },
-            sendingBill && { opacity: 0.5 },
+            sendingEntry && { opacity: 0.5 },
           ]}
         >
           <MessageCircle size={18} color={colors.primary} strokeWidth={2} />
           <Text
             style={{ fontSize: 15, fontWeight: "600", color: colors.primary }}
           >
-            {sendingBill ? "Generating…" : "Send Bill"}
+            {sendingEntry ? "Generating…" : "Send Entry"}
           </Text>
         </TouchableOpacity>
 
         {/* Record Payment button — hidden when order is Paid */}
         {!isPaid && (
           <TouchableOpacity
-          onPress={() => paymentModalRef.current?.present()}
+          onPress={() => openPaymentFlow()}
             activeOpacity={0.85}
             style={{
               flex: 1,
@@ -867,6 +884,7 @@ export default function OrderDetailScreen() {
         balanceDue={order.balance_due}
         customerId={order.customer_id}
         customerName={customerName}
+        initialAmount={quickPaymentAmount ? Number(quickPaymentAmount) : undefined}
       />
     </SafeAreaView>
   );

@@ -1,23 +1,19 @@
-import ContactsPickerModal from "@/src/components/customers/ContactsPickerModal";
 import CustomerList from "@/src/components/customers/CustomerList";
 import NewCustomerModal from "@/src/components/customers/NewCustomerModal";
-import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import SearchBar from "@/src/components/ui/SearchBar";
-import { useAddCustomer, useCustomers } from "@/src/hooks/useCustomer";
+import Input from "@/src/components/ui/Input";
+import Button from "@/src/components/ui/Button";
+import { useAddPerson, usePeople } from "@/src/hooks/useCustomer";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
+import { useCreateOrder } from "@/src/hooks/useOrders";
+import { useToast } from "@/src/components/feedback/Toast";
 import { useAuthStore } from "@/src/store/authStore";
 import { useCustomersStore } from "@/src/store/customersStore";
-import { colors, spacing, typography } from "@/src/utils/theme";
-import BottomSheet, {
-    BottomSheetBackdrop,
-    BottomSheetView,
-} from "@gorhom/bottom-sheet";
+import { colors } from "@/src/utils/theme";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Check, Users } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { UserPlus } from "lucide-react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-    Alert,
     StatusBar,
     StyleSheet,
     Text,
@@ -26,28 +22,18 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const SORT_OPTIONS = [
-  { label: "Recently Active", value: "recent" },
-  { label: "Balance: High → Low", value: "balanceDesc" },
-  { label: "Balance: Low → High", value: "balanceAsc" },
-  { label: "Name: A → Z", value: "nameAsc" },
-  { label: "Name: Z → A", value: "nameDesc" },
-] as const;
-type CustomerSort = (typeof SORT_OPTIONS)[number]["value"];
-
 export default function CustomersScreen() {
   const { profile } = useAuthStore();
   const router = useRouter();
   const params = useLocalSearchParams<{ action?: string }>();
-  const { t } = useTranslation();
 
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<CustomerSort>("recent");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isContactsModalOpen, setIsContactsModalOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [redirectAfterAdd, setRedirectAfterAdd] = useState(false);
+  const [inlineName, setInlineName] = useState("");
+  const [inlinePhone, setInlinePhone] = useState("");
   const customers = useCustomersStore((s) => s.customers);
-  const sortSheetRef = useRef<BottomSheet | null>(null);
 
   const {
     refetch,
@@ -56,82 +42,82 @@ export default function CustomersScreen() {
     isFetchingNextPage,
     isLoading,
     error,
-  } = useCustomers(profile?.id, search);
+  } = usePeople(profile?.id, search);
 
-  const addCustomerMutation = useAddCustomer(profile?.id ?? "");
+  const addPersonMutation = useAddPerson(profile?.id ?? "");
+  const createOrderMutation = useCreateOrder(profile?.id ?? "");
+  const { show: showToast } = useToast();
 
   useEffect(() => {
     if (params?.action === "add") {
       setIsModalOpen(true);
+      setRedirectAfterAdd(true);
       router.setParams({ action: undefined });
     }
   }, [params, router]);
 
-  // ── Summary stats ──────────────────────────────────────────────────────────
-  // ── Sorted customers (sorted before passing to CustomerList) ───────────────
-  const sortedCustomers = useMemo(() => {
+  // ── Sorted people (sorted before passing to list) ───────────────────────────
+  const sortedPeople = useMemo(() => {
     const list = [...customers];
-    switch (sortBy) {
-      case "balanceDesc":
-        return list.sort(
-          (a, b) => (b.outstandingBalance ?? 0) - (a.outstandingBalance ?? 0),
-        );
-      case "balanceAsc":
-        return list.sort(
-          (a, b) => (a.outstandingBalance ?? 0) - (b.outstandingBalance ?? 0),
-        );
-      case "nameAsc":
-        return list.sort((a, b) => a.name.localeCompare(b.name));
-      case "nameDesc":
-        return list.sort((a, b) => b.name.localeCompare(a.name));
-      default:
-        return list.sort(
-          (a, b) =>
-            new Date(b.lastActiveAt ?? b.created_at).getTime() -
-            new Date(a.lastActiveAt ?? a.created_at).getTime(),
-        );
-    }
-  }, [customers, sortBy]);
+    return list.sort((a, b) => a.name.localeCompare(b.name));
+  }, [customers]);
 
   const handleAddCustomer = async (values: {
     name: string;
     phone?: string;
     address?: string;
     openingBalance?: number;
+    entryAmount?: number;
+    entryNote?: string;
+    redirectToEntry?: boolean;
   }) => {
     try {
-      await addCustomerMutation.mutateAsync({
+      const createdCustomer = await addPersonMutation.mutateAsync({
         ...values,
         phone: values.phone || "",
       } as any);
+      if (values.entryAmount && values.entryAmount > 0) {
+        await createOrderMutation.mutateAsync({
+          customerId: createdCustomer.id,
+          vendorId: profile?.id ?? "",
+          items: [
+            {
+              product_id: null,
+              product_name: values.entryNote?.trim() || "Entry Amount",
+              price: values.entryAmount,
+              quantity: 1,
+            },
+          ],
+          amountPaid: 0,
+          loadingCharge: 0,
+          taxPercent: 0,
+          billNumberPrefix: profile?.bill_number_prefix || "INV",
+        });
+        showToast({ message: `Entry added for ${createdCustomer.name}`, type: "success" });
+        router.push({
+          pathname: "/customers/[customerId]",
+          params: { customerId: createdCustomer.id },
+        });
+      }
       setIsModalOpen(false);
+      if (!values.entryAmount || values.entryAmount <= 0) {
+        const shouldRedirect = values.redirectToEntry ?? redirectAfterAdd;
+        if (shouldRedirect) {
+          router.push({
+            pathname: "/orders/create",
+            params: {
+              customer: JSON.stringify(createdCustomer),
+              next: shouldRedirect ? "share" : undefined,
+            },
+          });
+        }
+      }
+      setRedirectAfterAdd(false);
     } catch (err: any) {
       console.error("Failed to add customer:", err);
     }
   };
 
-  const handleBulkImport = async (
-    contacts: { name: string; phone: string }[],
-  ) => {
-    let imported = 0;
-    let skipped = 0;
-    for (const contact of contacts) {
-      try {
-        await addCustomerMutation.mutateAsync({
-          name: contact.name,
-          phone: contact.phone,
-          address: "",
-        });
-        imported++;
-      } catch {
-        skipped++;
-      }
-    }
-    Alert.alert(
-      t("customers:importSuccess"),
-      t("customers:importSummary", { imported, skipped }),
-    );
-  };
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -149,11 +135,25 @@ export default function CustomersScreen() {
   ]);
 
   const handlePressCustomer = (customerId: string) => {
+    const selected = customers.find((c) => c.id === customerId);
+    if (!selected) return;
+    // Tap person → amount-first entry flow.
     router.push({
-      pathname: "/customers/[customerId]",
-      params: { customerId },
+      pathname: "/orders/create",
+      params: { customer: JSON.stringify(selected) },
     });
   };
+
+  const handleOpenLedger = useCallback(
+    (customerId: string) => {
+      router.push({
+        pathname: "/customers/[customerId]",
+        params: { customerId },
+      });
+    },
+    [router],
+  );
+
 
   return (
     <SafeAreaView
@@ -165,143 +165,119 @@ export default function CustomersScreen() {
       {/* ── Screen header ── */}
       <View className="px-5 py-4 flex-row justify-between items-center">
         <Text style={{ fontSize: 24, fontWeight: "800", color: colors.textPrimary }}>
-          Customers
+          People
         </Text>
         <TouchableOpacity
-          onPress={() => sortSheetRef.current?.expand()}
-          className="p-2"
+          onPress={() => setIsModalOpen(true)}
+          activeOpacity={0.8}
+          className="flex-row items-center"
         >
-          {/* We use a search/sort icon from the design */}
+          <View style={styles.inlineAddPill}>
+            <UserPlus size={16} color={colors.primary} strokeWidth={2} />
+            <Text style={styles.inlineAddText}>Add Person</Text>
+          </View>
         </TouchableOpacity>
       </View>
 
       {/* Summary Removed per design */}
 
-      {/* ── Search + filter bar ── */}
+      {/* ── Search bar ── */}
       <View className="px-5 pt-1 pb-2">
         <SearchBar
           value={search}
           onChangeText={setSearch}
-          placeholder={t("customers.search", "Search customers...")}
+          placeholder="Search people..."
         />
       </View>
 
-      {/* ── Divider removed ── */}
+      {/* ── Inline add person (name + phone) ── */}
+      <View className="px-5 pb-3">
+        <View className="bg-surface border border-border rounded-2xl p-4">
+          <Text className="text-[12px] font-bold text-textSecondary tracking-widest mb-3">
+            ADD PERSON
+          </Text>
+          <View className="gap-3">
+            <Input
+              label="Name"
+              placeholder="e.g. Mohit Sharma"
+              value={inlineName}
+              onChangeText={setInlineName}
+            />
+            <Input
+              label="Phone"
+              placeholder="9876543210"
+              value={inlinePhone}
+              onChangeText={setInlinePhone}
+              keyboardType="numeric"
+            />
+            <Button
+              title="Add Person"
+              onPress={async () => {
+                if (!inlineName.trim()) return;
+                await handleAddCustomer({
+                  name: inlineName.trim(),
+                  phone: inlinePhone.trim(),
+                  entryAmount: 0,
+                });
+                setInlineName("");
+                setInlinePhone("");
+              }}
+               loading={addPersonMutation.isPending}
+              disabled={!inlineName.trim()}
+            />
+          </View>
+        </View>
+      </View>
 
-      {/* ── Customer list (full-width) ── */}
-      <CustomerList
-        customers={sortedCustomers}
-        isLoading={isLoading}
-        error={error}
-        onRefresh={onRefresh}
-        refreshing={refreshing}
-        onEndReached={handleEndReached}
-        isFetchingNextPage={isFetchingNextPage}
-        onPressCustomer={handlePressCustomer}
-        onAddCustomer={() => setIsModalOpen(true)}
-      />
-
-      {/* ── Primary FAB — add customer ── */}
-      <FloatingActionButton onPress={() => setIsModalOpen(true)} />
-
-      {/* ── Secondary FAB — contacts import ── */}
-      <TouchableOpacity
-        onPress={() => setIsContactsModalOpen(true)}
-        activeOpacity={0.85}
-        accessibilityLabel="Import from contacts"
-        style={styles.secondaryFab}
-      >
-        <Users size={20} color={colors.primary} strokeWidth={2} />
-      </TouchableOpacity>
+       {/* ── People list (full-width) ── */}
+        <CustomerList
+          people={sortedPeople}
+          isLoading={isLoading}
+          error={error}
+          onRefresh={onRefresh}
+          refreshing={refreshing}
+          onEndReached={handleEndReached}
+          isFetchingNextPage={isFetchingNextPage}
+          onPressPerson={handlePressCustomer}
+          onLongPressPerson={handleOpenLedger}
+          onAddPerson={() => setIsModalOpen(true)}
+        />
 
       <NewCustomerModal
         visible={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleAddCustomer}
-        loading={addCustomerMutation.isPending}
-        errorMessage={addCustomerMutation.error?.message}
+        onClose={() => {
+          setIsModalOpen(false);
+          setRedirectAfterAdd(false);
+        }}
+        onSubmit={(values) =>
+          handleAddCustomer({
+            ...values,
+            redirectToEntry: redirectAfterAdd,
+          })
+        }
+        loading={addPersonMutation.isPending}
+        errorMessage={addPersonMutation.error?.message}
+        entryFlow
       />
-
-      <ContactsPickerModal
-        visible={isContactsModalOpen}
-        onClose={() => setIsContactsModalOpen(false)}
-        onImport={handleBulkImport}
-      />
-
-      {/* ── Sort bottom sheet ── */}
-      <BottomSheet
-        ref={sortSheetRef}
-        index={-1}
-        snapPoints={[320]}
-        backdropComponent={(props) => (
-          <BottomSheetBackdrop {...props} pressBehavior="close" />
-        )}
-        enablePanDownToClose
-        backgroundStyle={{ backgroundColor: colors.surface, borderRadius: 24 }}
-        handleIndicatorStyle={{ backgroundColor: colors.border, width: 40 }}
-      >
-        <BottomSheetView style={{ padding: spacing.lg }}>
-          <Text style={{ ...typography.cardTitle, marginBottom: spacing.md }}>
-            Sort Customers
-          </Text>
-          {SORT_OPTIONS.map((opt) => {
-            const active = sortBy === opt.value;
-            return (
-              <TouchableOpacity
-                key={opt.value}
-                onPress={() => {
-                  setSortBy(opt.value);
-                  sortSheetRef.current?.close();
-                }}
-                style={{
-                  paddingVertical: spacing.md,
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  borderBottomWidth: 1,
-                  borderBottomColor: colors.background,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 15,
-                    color: active ? colors.primaryDark : colors.textPrimary,
-                    fontWeight: active ? "600" : "400",
-                  }}
-                >
-                  {opt.label}
-                </Text>
-                {active && (
-                  <Check size={18} color={colors.primaryDark} strokeWidth={2} />
-                )}
-              </TouchableOpacity>
-            );
-          })}
-        </BottomSheetView>
-      </BottomSheet>
     </SafeAreaView>
   );
 }
 
-const SECONDARY_FAB_BOTTOM = 80 + 16 + 56; // above main FAB (bottom=80, gap=16, mainFAB height=56)
-
 const styles = StyleSheet.create({
-  secondaryFab: {
-    position: "absolute",
-    bottom: SECONDARY_FAB_BOTTOM,
-    right: 20,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.primary,
+  inlineAddPill: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    elevation: 4,
-    shadowColor: colors.textPrimary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
+  },
+  inlineAddText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.primary,
   },
 });

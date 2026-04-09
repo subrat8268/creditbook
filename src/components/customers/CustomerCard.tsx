@@ -12,6 +12,7 @@ type Props = {
   outstandingBalance?: number;
   lastActiveAt?: string;
   onPress?: () => void;
+  onLongPress?: () => void;
 };
 
 function getAvatarColor(name: string): string {
@@ -77,6 +78,7 @@ export default function CustomerCard({
   outstandingBalance = 0,
   lastActiveAt,
   onPress,
+  onLongPress,
 }: Props) {
   const status = getStatus(isOverdue, outstandingBalance);
   const amountStr = formatAmount(status, outstandingBalance);
@@ -90,6 +92,7 @@ export default function CustomerCard({
   return (
     <TouchableOpacity
       onPress={onPress}
+      onLongPress={onLongPress}
       activeOpacity={0.7}
       className="flex-row items-center bg-surface p-4 rounded-2xl mb-3 border border-border"
       style={{

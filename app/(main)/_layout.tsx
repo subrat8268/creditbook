@@ -1,7 +1,7 @@
-import { CustomerIcon, HomeIcon, MoreIcon } from "@/assets/icons/main";
+import { CustomerIcon, HomeIcon } from "@/assets/icons/main";
 import { colors, spacing, typography } from "@/src/utils/theme";
 import { Tabs, useRouter } from "expo-router";
-import { Plus, Receipt } from "lucide-react-native";
+import { Plus, Receipt, UserRound } from "lucide-react-native";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -21,7 +21,7 @@ function NewBillButton() {
 
         {/* Floating label above the FAB */}
         <View style={styles.labelBadge}>
-          <Text style={styles.fabLabelText}>New Bill</Text>
+          <Text style={styles.fabLabelText}>Add Entry</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -68,54 +68,54 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Tab 2 — Customers */}
+      {/* Tab 2 — People */}
       <Tabs.Screen
         name="customers"
         options={{
-          title: "Customers",
+          title: "People",
           tabBarIcon: ({ color, size }) => (
             <CustomerIcon width={size} height={size} color={color} />
           ),
         }}
       />
 
-      {/* Tab 3 — New Bill (center FAB, phantom tab) */}
+      {/* Tab 3 — Add Entry (center FAB, phantom tab) */}
       <Tabs.Screen
         name="new-bill"
         options={{
-          title: "",
+          title: "Add",
           tabBarIcon: () => null,
           tabBarLabel: () => null,
           tabBarButton: () => <NewBillButton />,
         }}
       />
 
-      {/* Tab 4 — Orders list */}
+      {/* Tab 4 — Entries list */}
       <Tabs.Screen
         name="orders"
         options={{
-          title: "Orders",
+          title: "Entries",
           tabBarIcon: ({ color, size }) => (
             <Receipt size={size} color={color} strokeWidth={1.8} />
           ),
         }}
       />
 
-      {/* Tab 5 — More */}
+      {/* Tab 5 — Profile */}
       <Tabs.Screen
-        name="more"
+        name="profile"
         options={{
-          title: "More",
+          title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <MoreIcon width={size} height={18} color={color} />
+            <UserRound size={size} color={color} strokeWidth={1.8} />
           ),
         }}
       />
 
       {/* Hidden routes — accessible via router.push but not shown in the tab bar */}
+      <Tabs.Screen name="more" options={{ href: null }} />
       <Tabs.Screen name="suppliers" options={{ href: null }} />
       <Tabs.Screen name="net-position" options={{ href: null }} />
-      <Tabs.Screen name="profile" options={{ href: null }} />
       <Tabs.Screen name="products" options={{ href: null }} />
       <Tabs.Screen name="export" options={{ href: null }} />
       <Tabs.Screen name="reports" options={{ href: null }} />

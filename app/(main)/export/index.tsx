@@ -22,7 +22,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
-    fetchCustomersForExport,
+    fetchPeopleForExport,
     fetchOrdersForExport,
     fetchPaymentsForExport,
     fetchSupplierPurchasesForExport,
@@ -206,7 +206,7 @@ export default function ExportScreen() {
           break;
         }
         case "customers": {
-          const rows = await fetchCustomersForExport(vendorId);
+          const rows = await fetchPeopleForExport(vendorId);
           csv = toCsv(rows as unknown as Record<string, unknown>[]);
           filename = `kredbook_customer_balances_${today}.csv`;
           break;
@@ -253,8 +253,8 @@ export default function ExportScreen() {
   }[] = [
     {
       type: "orders",
-      label: "Orders & Bills",
-      desc: "Invoice history with items",
+      label: "Entries",
+      desc: "Entry history with items",
       Icon: Receipt,
     pillColor: colors.surface,
       pillBg: colors.primary,
@@ -263,8 +263,8 @@ export default function ExportScreen() {
     },
     {
       type: "payments",
-      label: "Payments Received",
-      desc: "All customer payments",
+      label: "Payments",
+      desc: "All payments received",
       Icon: FileText,
     pillColor: colors.surface,
       pillBg: colors.primary,
@@ -273,8 +273,8 @@ export default function ExportScreen() {
     },
     {
       type: "customers",
-      label: "Customer Balances",
-      desc: "Outstanding balances per customer",
+      label: "People Balances",
+      desc: "Outstanding balances per person",
       Icon: Users,
     pillColor: colors.surface,
       pillBg: colors.primary,
@@ -283,7 +283,7 @@ export default function ExportScreen() {
     },
     {
       type: "suppliers",
-      label: "Supplier Purchases",
+      label: "Party Purchases",
       desc: "Deliveries and payments made",
       Icon: Truck,
     pillColor: colors.surface,

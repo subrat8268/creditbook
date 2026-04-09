@@ -7,37 +7,22 @@ import { useAddSupplier, useSuppliers } from "@/src/hooks/useSuppliers";
 import { useAuthStore } from "@/src/store/authStore";
 import { useSuppliersStore } from "@/src/store/suppliersStore";
 import { formatINR } from "@/src/utils/dashboardUi";
-import { colors, spacing, typography } from "@/src/utils/theme";
-import BottomSheet, {
-    BottomSheetBackdrop,
-    BottomSheetView,
-} from "@gorhom/bottom-sheet";
+import { colors, spacing } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
-import { Check, MoreVertical, TrendingUp } from "lucide-react-native";
-import { useCallback, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { TrendingUp } from "lucide-react-native";
+import { useCallback, useMemo, useState } from "react";
 import { StatusBar, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const SORT_OPTIONS = [
-  { label: "Recently Active", value: "recent" },
-  { label: "Amount Owed: High → Low", value: "owedDesc" },
-  { label: "Amount Owed: Low → High", value: "owedAsc" },
-  { label: "Name: A → Z", value: "nameAsc" },
-  { label: "Name: Z → A", value: "nameDesc" },
-] as const;
-type SupplierSort = (typeof SORT_OPTIONS)[number]["value"];
+// Sort options removed for simplified flow.
 
 export default function SuppliersScreen() {
   const { profile } = useAuthStore();
   const router = useRouter();
-  const { t } = useTranslation();
 
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<SupplierSort>("recent");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const sortSheetRef = useRef<BottomSheet | null>(null);
 
   const suppliers = useSuppliersStore((s) => s.suppliers);
 
@@ -90,23 +75,12 @@ export default function SuppliersScreen() {
 
   const sortedSuppliers = useMemo(() => {
     const list = [...suppliers];
-    switch (sortBy) {
-      case "owedDesc":
-        return list.sort((a, b) => (b.balanceOwed ?? 0) - (a.balanceOwed ?? 0));
-      case "owedAsc":
-        return list.sort((a, b) => (a.balanceOwed ?? 0) - (b.balanceOwed ?? 0));
-      case "nameAsc":
-        return list.sort((a, b) => a.name.localeCompare(b.name));
-      case "nameDesc":
-        return list.sort((a, b) => b.name.localeCompare(a.name));
-      default:
-        return list.sort(
-          (a, b) =>
-            new Date(b.lastDeliveryAt ?? b.created_at).getTime() -
-            new Date(a.lastDeliveryAt ?? a.created_at).getTime(),
-        );
-    }
-  }, [suppliers, sortBy]);
+    return list.sort(
+      (a, b) =>
+        new Date(b.lastDeliveryAt ?? b.created_at).getTime() -
+        new Date(a.lastDeliveryAt ?? a.created_at).getTime(),
+    );
+  }, [suppliers]);
 
   return (
     <SafeAreaView
@@ -138,7 +112,7 @@ export default function SuppliersScreen() {
               color: colors.textPrimary,
             }}
           >
-            Suppliers
+            Parties
           </Text>
           <View
             style={{
@@ -160,7 +134,7 @@ export default function SuppliersScreen() {
           </View>
         </View>
 
-        {/* Right — owed badge + sort icon */}
+        {/* Right — owed badge */}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           {totalOwed > 0 && (
             <View
@@ -178,21 +152,10 @@ export default function SuppliersScreen() {
                   color: colors.supplierPrimary,
                 }}
               >
-                I Owe {formatINR(totalOwed)}
-              </Text>
-            </View>
-          )}
-          <TouchableOpacity
-            onPress={() => sortSheetRef.current?.expand()}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            activeOpacity={0.7}
-          >
-            <MoreVertical
-              size={22}
-              color={colors.textSecondary}
-              strokeWidth={2}
-            />
-          </TouchableOpacity>
+               I Owe {formatINR(totalOwed)}
+            </Text>
+          </View>
+        )}
         </View>
       </View>
 
@@ -255,11 +218,11 @@ export default function SuppliersScreen() {
           borderBottomColor: colors.border,
         }}
       >
-        <SearchBar
-          value={search}
-          onChangeText={setSearch}
-          placeholder={t("suppliers.search")}
-        />
+          <SearchBar
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search parties..."
+          />
       </View>
 
       {/* ── List ── */}
@@ -286,61 +249,7 @@ export default function SuppliersScreen() {
         loading={addSupplierMutation.isPending}
       />
 
-      {/* ── Sort bottom sheet ── */}
-      <BottomSheet
-        ref={sortSheetRef}
-        index={-1}
-        snapPoints={[340]}
-        backdropComponent={(props) => (
-          <BottomSheetBackdrop {...props} pressBehavior="close" />
-        )}
-        enablePanDownToClose
-        backgroundStyle={{ backgroundColor: colors.surface, borderRadius: 24 }}
-        handleIndicatorStyle={{ backgroundColor: colors.border, width: 40 }}
-      >
-        <BottomSheetView style={{ padding: spacing.lg }}>
-          <Text style={{ ...typography.cardTitle, marginBottom: spacing.md }}>
-            Sort Suppliers
-          </Text>
-          {SORT_OPTIONS.map((opt) => {
-            const active = sortBy === opt.value;
-            return (
-              <TouchableOpacity
-                key={opt.value}
-                onPress={() => {
-                  setSortBy(opt.value);
-                  sortSheetRef.current?.close();
-                }}
-                style={{
-                  paddingVertical: spacing.md,
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  borderBottomWidth: 1,
-                  borderBottomColor: colors.background,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 15,
-                    color: active ? colors.supplierPrimary : colors.textPrimary,
-                    fontWeight: active ? "600" : "400",
-                  }}
-                >
-                  {opt.label}
-                </Text>
-                {active && (
-                  <Check
-                    size={18}
-                    color={colors.supplierPrimary}
-                    strokeWidth={2}
-                  />
-                )}
-              </TouchableOpacity>
-            );
-          })}
-        </BottomSheetView>
-      </BottomSheet>
+      {/* ── Sort bottom sheet removed for simplified flow ── */}
     </SafeAreaView>
   );
 }

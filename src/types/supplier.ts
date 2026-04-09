@@ -9,7 +9,7 @@ export interface Supplier {
   account_number?: string;
   ifsc_code?: string;
   created_at: string;
-  upi?: string; // UPI handle for Copy UPI
+  upi?: string; // UPI handle for Copy UPI (mapped from upi_id)
   balanceOwed?: number; // computed on fetch
   lastDeliveryAt?: string; // ISO date of most recent delivery, computed on fetch
 }

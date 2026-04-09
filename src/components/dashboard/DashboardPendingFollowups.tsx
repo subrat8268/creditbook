@@ -58,7 +58,7 @@ export default function DashboardPendingFollowups({
         </TouchableOpacity>
       </View>
 
-      {/* Customer rows */}
+      {/* People rows */}
       <View
         className="bg-surface rounded-2xl overflow-hidden"
         style={{

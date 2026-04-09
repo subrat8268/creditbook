@@ -92,7 +92,7 @@ export async function fetchOrders(
     query = query.eq("status", statusFilter);
   }
 
-  // Apply search filter — uses dot notation to reference joined customers columns
+  // Apply search filter — uses dot notation to reference joined parties columns
   if (search && search.trim() !== "") {
     const searchTerm = `%${search.trim()}%`;
     query = query.or(

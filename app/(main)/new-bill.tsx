@@ -5,7 +5,7 @@ import { Redirect } from "expo-router";
  * The FAB button entirely replaces the tab touch target and navigates
  * imperatively to /orders/create — this screen is never normally rendered.
  * If a user navigates here directly the redirect ensures they land on the
- * create-order flow.
+ * create-entry flow.
  */
 export default function NewBillPhantom() {
   return <Redirect href="/orders/create" />;

@@ -21,7 +21,7 @@ import * as syncQueue from '@/src/lib/syncQueue';
 import type { QueuedMutation } from '@/src/lib/syncQueue';
 import { createOrder } from '@/src/api/orders';
 import { recordPayment } from '@/src/api/orders';
-import { addCustomer } from '@/src/api/customers';
+import { addPerson } from '@/src/api/customers';
 import { addProduct, updateProduct, deleteProduct } from '@/src/api/products';
 import { addSupplier, recordDelivery, recordPaymentMade } from '@/src/api/suppliers';
 
@@ -111,7 +111,7 @@ async function replayMutation(
       
       // Remove vendorId/vendor_id from payload and pass the rest as customer data
       const { vendorId: _, vendor_id: __, ...customerData } = payload;
-      await addCustomer(vendorId, customerData as any);
+      await addPerson(vendorId, customerData as any);
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       return true;
     }

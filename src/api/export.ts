@@ -28,7 +28,7 @@ export interface ExportPayment {
   payment_mode: string;
 }
 
-export interface ExportCustomer {
+export interface ExportPerson {
   name: string;
   phone: string;
   address: string;
@@ -149,11 +149,11 @@ export async function fetchPaymentsForExport(
   });
 }
 
-// ─── Customer balances export ─────────────────────────────────────────────────
+// ─── People balances export ───────────────────────────────────────────────────
 
-export async function fetchCustomersForExport(
+export async function fetchPeopleForExport(
   vendorId: string,
-): Promise<ExportCustomer[]> {
+): Promise<ExportPerson[]> {
   const { data: customers, error } = await supabase
     .from("parties")
     .select("id, name, phone, address")

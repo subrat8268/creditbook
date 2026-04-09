@@ -50,7 +50,7 @@ export interface ProductSubmitValues {
 }
 
 export interface NewProductModalProps {
-  /** "Add" | "Edit" — modal title becomes "{title} Product" */
+  /** "Add" | "Edit" — modal title becomes "{title} Item" */
   title?: string;
   visible: boolean;
   onClose: () => void;
@@ -70,7 +70,7 @@ export interface NewProductModalProps {
 
 // ── Validation ─────────────────────────────────────────────
 const FormSchema = Yup.object().shape({
-  name: Yup.string().required("Product name is required"),
+  name: Yup.string().required("Item name is required"),
   base_price: Yup.string().test(
     "price-required-without-variants",
     "Enter a price (or add variants with prices)",
@@ -264,7 +264,7 @@ export default function NewProductModal({
             color: colors.textPrimary,
           }}
         >
-          {`${title} Product`}
+          {`${title} Item`}
         </Text>
         <TouchableOpacity
           onPress={onClose}
@@ -339,10 +339,10 @@ export default function NewProductModal({
                   marginBottom: 16,
                 }}
               >
-                PRODUCT INFORMATION
+                ITEM INFORMATION
               </Text>
 
-              {/* ── Product Image ── */}
+              {/* ── Item Image ── */}
               <Text
                 style={{
                   fontWeight: "600",
@@ -351,7 +351,7 @@ export default function NewProductModal({
                   marginBottom: 8,
                 }}
               >
-                Product Image
+                Item Image
               </Text>
               <View
                 style={{
@@ -435,7 +435,7 @@ export default function NewProductModal({
               ) : (
                 <View style={{ height: 8 }} />
               )}
-              {/* ── Product Name ── */}
+              {/* ── Item Name ── */}
               <Text
                 style={{
                   fontWeight: "600",
@@ -444,7 +444,7 @@ export default function NewProductModal({
                   marginBottom: 8,
                 }}
               >
-                Product Name *
+                Item Name *
               </Text>
               <TextInput
                 placeholder="e.g. Basmati Rice"
@@ -824,11 +824,11 @@ export default function NewProductModal({
               }}
             >
               <Button
-                title={title === "Edit" ? "Save Changes" : `${title} Product`}
+                title={title === "Edit" ? "Save Changes" : `${title} Item`}
                 onPress={() => handleSubmit()}
                 loading={loading}
               />
-              {/* Delete Product — only in Edit mode */}
+              {/* Delete Item — only in Edit mode */}
               {onDelete && (
                 <TouchableOpacity
                   onPress={onDelete}
@@ -850,7 +850,7 @@ export default function NewProductModal({
                       fontWeight: "600",
                     }}
                   >
-                    Delete Product
+                    Delete Item
                   </Text>
                 </TouchableOpacity>
               )}

@@ -22,7 +22,7 @@ const ICON_CONFIG: Record<string, IconCfg> = {
     bg: colors.paid.bg,
     icon: CreditCard,
     color: colors.primaryDark,
-    label: "Customer Payment",
+    label: "Payment",
   },
   delivery: {
     bg: colors.pending.bg,
@@ -34,7 +34,7 @@ const ICON_CONFIG: Record<string, IconCfg> = {
     bg: colors.background,
     icon: FileText,
     color: colors.textSecondary,
-    label: "Bill Created",
+    label: "Entry Added",
   },
 };
 

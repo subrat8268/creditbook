@@ -20,6 +20,7 @@ type Props = {
   customerId: string;
   customerName: string;
   onDismiss?: () => void;
+  initialAmount?: number;
 };
 
 const MODES: PaymentMode[] = ["Cash", "UPI", "NEFT", "Draft", "Cheque"];
@@ -47,10 +48,10 @@ function formatINR(n: number) {
 
 const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
   (
-    { onSuccess, orderId, balanceDue, customerId, customerName, onDismiss },
+    { onSuccess, orderId, balanceDue, customerId, customerName, onDismiss, initialAmount },
     ref,
   ) => {
-    const [amount, setAmount] = useState(String(balanceDue));
+    const [amount, setAmount] = useState(String(initialAmount ?? balanceDue));
     const [mode, setMode] = useState<PaymentMode>("Cash");
     const [notes, setNotes] = useState("");
     const profile = useAuthStore((s) => s.profile);
@@ -76,10 +77,10 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
 
     // Sync default amount when balanceDue changes (e.g. parent rerenders or loads)
     useEffect(() => {
-      setAmount(String(balanceDue));
+      setAmount(String(initialAmount ?? balanceDue));
       setMode("Cash");
       setNotes("");
-    }, [balanceDue]);
+    }, [balanceDue, initialAmount]);
 
     const parsedAmount = parseFloat(amount) || 0;
     const isFullPaid = parsedAmount >= balanceDue;
@@ -145,7 +146,7 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
             Record Payment
           </Text>
 
-          {/* ── Customer card ── */}
+          {/* ── Person card ── */}
           <View className="flex-row items-center px-4 py-3 rounded-2xl mb-5 bg-background">
             {/* Avatar */}
             <View

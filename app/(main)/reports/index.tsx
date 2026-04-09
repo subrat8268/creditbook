@@ -119,7 +119,7 @@ function CashFlowChart({ months }: { months: CashFlowMonth[] }) {
   );
 }
 
-// ── Customer/Supplier row ────────────────────────────────
+// ── Person/Party row ────────────────────────────────
 function PersonRow({
   initials,
   name,
@@ -364,10 +364,10 @@ export default function NetPositionScreen() {
           </View>
         )}
 
-        {/* ── Top Customers Owed ── */}
+        {/* ── Top People Owed ── */}
         {report.topCustomers.length > 0 && (
           <View style={s.card}>
-            <Text style={s.sectionLabel}>TOP CUSTOMERS OWED</Text>
+            <Text style={s.sectionLabel}>TOP PEOPLE OWED</Text>
             {report.topCustomers.map((c) => (
               <PersonRow
                 key={c.id}
@@ -380,10 +380,10 @@ export default function NetPositionScreen() {
           </View>
         )}
 
-        {/* ── Top Suppliers Owed ── */}
+        {/* ── Top Parties Owed ── */}
         {report.topSuppliers.length > 0 && (
           <View style={s.card}>
-            <Text style={s.sectionLabel}>TOP SUPPLIERS OWED</Text>
+            <Text style={s.sectionLabel}>TOP PARTIES OWED</Text>
             {report.topSuppliers.map((sup) => (
               <PersonRow
                 key={sup.id}
@@ -408,7 +408,7 @@ export default function NetPositionScreen() {
                   strokeWidth={2}
                 />
                 <Text style={[s.insightText, { color: colors.danger }]}>
-                  High collection risk: {report.overdueCount} customer
+                  High collection risk: {report.overdueCount} person
                   {report.overdueCount !== 1 ? "s" : ""}
                 </Text>
               </View>

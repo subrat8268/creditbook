@@ -51,9 +51,9 @@ export default function SupplierList({
   if (error) {
     return (
       <View className="flex-1 items-center justify-center p-5">
-        <Text className="text-[15px] text-danger text-center">
-          Failed to load suppliers.
-        </Text>
+          <Text className="text-[15px] text-danger text-center">
+            Failed to load parties.
+          </Text>
       </View>
     );
   }
@@ -85,11 +85,11 @@ export default function SupplierList({
       }
       ListEmptyComponent={
         <EmptyState
-          title="No suppliers found"
-          description="You have no payable balances."
+          title="No parties found"
+          description="Add your first party to track payables."
           icon={SupplierEmptyIcon}
           iconBgColor={colors.warningBg}
-          cta="Add Supplier"
+          cta="Add Party"
           onCta={onAddSupplier}
         />
       }

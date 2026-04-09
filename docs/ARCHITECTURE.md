@@ -1,8 +1,8 @@
 # KredBook — Project Architecture
 
-> **Last Updated**: April 7, 2026
-> **App Version**: 4.1
-> **Status**: Offline-first architecture complete — MMKV-based mutation queuing + React Query cache persistence; auto-sync on reconnect; optimistic updates for payments/orders; all core ledger features + offline support implemented
+> **Last Updated**: April 9, 2026
+> **App Version**: 4.2
+> **Status**: Offline-first architecture complete; atomic order edits via RPC; parties table fully adopted; storage uploads enabled
 
 ---
 

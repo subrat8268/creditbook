@@ -42,7 +42,7 @@ export default function PhoneSetup() {
 
   const proceedToNext = () => {
     if (profile?.onboarding_complete) {
-      router.replace("/(main)/dashboard" as any);
+      router.replace({ pathname: "/(main)/customers", params: { action: "add" } } as any);
     } else {
       router.replace("/(auth)/onboarding/role" as any);
     }
@@ -71,9 +71,9 @@ export default function PhoneSetup() {
             Great news!
           </Text>
           <Text className="text-sm text-textSecondary text-center mb-8">
-            We found {discoveredLedgers.length} vendor
-            {discoveredLedgers.length > 1 ? "s" : ""} who already have your
-            ledger
+             We found {discoveredLedgers.length} business
+             {discoveredLedgers.length > 1 ? "s" : ""} who already have your
+             ledger
           </Text>
 
           {/* Ledgers List */}

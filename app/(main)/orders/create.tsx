@@ -1,4 +1,5 @@
-import { getCustomerPreviousBalance } from "@/src/api/orders";
+import { getCustomerPreviousBalance, recordPayment } from "@/src/api/orders";
+import { fetchPersonDetail } from "@/src/api/customers";
 import Loader from "@/src/components/feedback/Loader";
 import OrderSummary from "@/src/components/orders/OrderBillSummary";
 import OrderItemCard from "@/src/components/orders/OrderItemCard";
@@ -10,6 +11,7 @@ import { useAuthStore } from "@/src/store/authStore";
 import { useOrderStore } from "@/src/store/orderStore";
 import { BillItem, generateBillPdf } from "@/src/utils/generateBillPdf";
 import { colors } from "@/src/utils/theme";
+import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import {
@@ -55,15 +57,18 @@ function getAvatarColor(name: string): string {
 }
 
 export default function CreateOrderScreen() {
-  const { customer: customerParams } = useLocalSearchParams<{
+  const { customer: customerParams, amount: amountParam, next: nextParam } = useLocalSearchParams<{
     customer?: string;
+    amount?: string;
+    next?: string;
   }>();
 
   const { profile, isFetchingProfile } = useAuthStore();
   const vendorId = profile?.id;
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  // Zustand Draft Bills Store
+  // Zustand Draft Entry Store
   const setCustomer = useOrderStore((state) => state.setCustomer);
   const selectedCustomerId = useOrderStore((state) => state.selectedCustomerId);
   const items = useOrderStore((state) => state.items);
@@ -86,15 +91,16 @@ export default function CreateOrderScreen() {
   const [selectedCustomerMeta, setSelectedCustomerMeta] = useState<any>(
     customerParams ? JSON.parse(customerParams) : null,
   );
-  const [isCustomerPickerVisible, setCustomerPickerVisible] = useState(false);
+  // Inline person selection (no bottom sheet for Phase 1 flow).
   const [isProductPickerVisible, setProductPickerVisible] = useState(false);
   const [previousBalance, setPreviousBalance] = useState<number>(0);
   const [isFetchingBalance, setIsFetchingBalance] = useState(false);
 
-  // NEW: Quick entry states
+  // Phase 1: quick entry states (amount-first)
   const [quickAmount, setQuickAmount] = useState<string>("");
   const [note, setNote] = useState<string>("");
   const [isItemsExpanded, setIsItemsExpanded] = useState(false);
+  const [entryType, setEntryType] = useState<"bill" | "payment">("bill");
 
   const fetchPreviousBalance = useCallback(
     async (customerId: string) => {
@@ -120,13 +126,16 @@ export default function CreateOrderScreen() {
       setSelectedCustomerMeta(parsed);
       fetchPreviousBalance(parsed.id);
     }
-  }, [customerParams, setCustomer, fetchPreviousBalance]);
+    if (amountParam && !Number.isNaN(Number(amountParam))) {
+      setEntryType("payment");
+      setQuickAmount(String(amountParam));
+    }
+  }, [customerParams, amountParam, setCustomer, fetchPreviousBalance]);
 
   const handleSelectCustomer = useCallback(
     async (customer: any) => {
       setCustomer(customer?.id || null);
       setSelectedCustomerMeta(customer);
-      setCustomerPickerVisible(false);
       if (customer) {
         fetchPreviousBalance(customer.id);
       }
@@ -140,34 +149,25 @@ export default function CreateOrderScreen() {
   // Calculate effective total (either from items or quick amount)
   const itemsTotal = getSubtotal();
   const hasItems = items.length > 0;
-  const billAmount = hasItems ? getGrandTotal() : parseFloat(quickAmount) || 0;
-  const totalWithBalance = billAmount + previousBalance;
+  const entryAmount = hasItems ? getGrandTotal() : parseFloat(quickAmount) || 0;
+  const totalWithBalance = entryAmount + previousBalance;
 
   const handleSaveAndShare = async () => {
     // Validation
     if (!selectedCustomerId) {
-      return Alert.alert("Error", "Please select a customer");
+      return Alert.alert("Error", "Please select a person");
     }
 
-    // Either quick amount OR items must be provided
+    if (entryType === "payment") {
+      if (!quickAmount.trim() || parseFloat(quickAmount) <= 0) {
+        return Alert.alert("Error", "Please enter a payment amount");
+      }
+      return handleRecordPayment();
+    }
+
+      // Either quick amount OR items must be provided
     if (!hasItems && !quickAmount.trim()) {
       return Alert.alert("Error", "Please enter an amount or add items");
-    }
-
-    // Check bank details (soft warning, not blocking)
-    const hasBankDetails =
-      profile?.bank_name && profile?.account_number && profile?.ifsc_code;
-
-    if (!hasBankDetails) {
-      Alert.alert(
-        "Bank Details Missing",
-        "PDF invoice will not include bank details. You can add them later in Settings.",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Continue Anyway", onPress: () => performSave() },
-        ],
-      );
-      return;
     }
 
     await performSave();
@@ -175,7 +175,7 @@ export default function CreateOrderScreen() {
 
   const performSave = async () => {
     try {
-      // If using quick amount (no items), create a generic bill item
+      // If using quick amount (no items), create a generic entry item
       const orderItems = hasItems
         ? items.map((c) => ({
             product_id: c.product_id,
@@ -186,7 +186,7 @@ export default function CreateOrderScreen() {
         : [
             {
               product_id: null,
-              product_name: note.trim() || "Bill Amount",
+              product_name: note.trim() || "Entry Amount",
               price: parseFloat(quickAmount) || 0,
               quantity: 1,
             },
@@ -212,7 +212,7 @@ export default function CreateOrderScreen() {
           }))
         : [
             {
-              name: note.trim() || "Bill Amount",
+              name: note.trim() || "Entry Amount",
               quantity: 1,
               rate: parseFloat(quickAmount) || 0,
               amount: parseFloat(quickAmount) || 0,
@@ -247,8 +247,8 @@ export default function CreateOrderScreen() {
       const localPdfPath = await generateBillPdf(
         pdfItems,
         businessDetails,
-        billAmount,
-        selectedCustomerMeta?.name || "Customer",
+        entryAmount,
+        selectedCustomerMeta?.name || "Person",
         billMeta,
       );
 
@@ -262,19 +262,75 @@ export default function CreateOrderScreen() {
       setQuickAmount("");
       setNote("");
       showToast({
-        message: `Bill shared with ${selectedCustomerMeta?.name ?? "customer"}`,
+        message: `Entry shared with ${selectedCustomerMeta?.name ?? "person"}`,
         type: "success",
       });
-      router.back();
+      if (nextParam === "share" && selectedCustomerMeta) {
+        router.replace({
+          pathname: "/customers/[customerId]",
+          params: { customerId: selectedCustomerMeta.id, focus: "share" },
+        });
+      } else {
+        router.back();
+      }
     } catch (err: any) {
       console.error("Save & Share failed:", err.message);
-      const errorMessage = err.message || "Failed to save and share bill";
+      const errorMessage = err.message || "Failed to save and share entry";
       showToast({ message: errorMessage, type: "error" });
       Alert.alert("Error", errorMessage);
     }
   };
 
   const invoiceRef = `${profile?.bill_number_prefix || "INV"}-NEW`;
+
+  const handleRecordPayment = async () => {
+    if (!selectedCustomerId || !profile?.id) return;
+
+    const paymentAmount = parseFloat(quickAmount) || 0;
+    try {
+      setIsFetchingBalance(true);
+      const detail = await fetchPersonDetail(selectedCustomerId);
+      if (!detail?.pendingOrderId || (detail.pendingOrderBalance ?? 0) <= 0) {
+        Alert.alert(
+          "Up to date",
+          `${detail?.name ?? selectedCustomerMeta?.name ?? "This person"} has no pending entries to pay.`,
+        );
+        return;
+      }
+      if (paymentAmount > (detail.pendingOrderBalance ?? 0)) {
+        Alert.alert(
+          "Amount too high",
+          `Payment exceeds the pending balance of ₹${(detail.pendingOrderBalance ?? 0).toLocaleString("en-IN")}.`,
+        );
+        return;
+      }
+      await recordPayment(
+        detail.pendingOrderId,
+        profile.id,
+        paymentAmount,
+        "Cash",
+        false,
+        note.trim() || undefined,
+      );
+      // Ensure lists refresh after recording a payment.
+      queryClient.invalidateQueries({ queryKey: ["orders", profile.id] });
+      queryClient.invalidateQueries({ queryKey: ["customers", profile.id] });
+      queryClient.invalidateQueries({ queryKey: ["customerDetail", selectedCustomerId] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", profile.id] });
+      clearOrder();
+      setQuickAmount("");
+      setNote("");
+      showToast({
+        message: `Payment recorded for ${detail.name}`,
+        type: "success",
+      });
+      router.back();
+    } catch (err: any) {
+      Alert.alert("Error", err?.message || "Failed to record payment");
+    } finally {
+      setIsFetchingBalance(false);
+    }
+  };
 
   if (isFetchingProfile || !profile) return <Loader />;
 
@@ -294,12 +350,12 @@ export default function CreateOrderScreen() {
             >
               <ArrowLeft size={22} color={colors.textPrimary} strokeWidth={2.2} />
             </TouchableOpacity>
-            <Text className="flex-1 text-[18px] font-bold text-textPrimary">
-              New Bill
-            </Text>
+        <Text className="flex-1 text-[18px] font-bold text-textPrimary">
+          Add Entry
+        </Text>
             <View className="px-3 py-1 rounded-full border border-primary bg-primaryLight">
               <Text className="text-[13px] font-bold text-primary">
-                {invoiceRef}
+                {entryType === "payment" ? "PAYMENT" : invoiceRef}
               </Text>
             </View>
           </View>
@@ -310,17 +366,43 @@ export default function CreateOrderScreen() {
             contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 12 }}
             showsVerticalScrollIndicator={false}
           >
-            <Text className="text-[11px] font-bold text-textSecondary tracking-widest -mb-1 mt-1">
-              BILL FOR
-            </Text>
+            <View className="flex-row items-center justify-between mt-1">
+              <Text className="text-[11px] font-bold text-textSecondary tracking-widest">
+                ENTRY TYPE
+              </Text>
+              <View className="flex-row items-center rounded-full border border-border overflow-hidden">
+                <TouchableOpacity
+                  onPress={() => {
+                    setEntryType("bill");
+                    // Keep the amount-first input responsive when switching modes.
+                    setIsItemsExpanded(false);
+                  }}
+                  activeOpacity={0.8}
+                  className={`px-4 py-1.5 ${entryType === "bill" ? "bg-primary" : "bg-surface"}`}
+                >
+                  <Text className={`text-[12px] font-bold ${entryType === "bill" ? "text-surface" : "text-textSecondary"}`}>
+                    Entry
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    setEntryType("payment");
+                    // Collapse items for payment entries.
+                    setIsItemsExpanded(false);
+                  }}
+                  activeOpacity={0.8}
+                  className={`px-4 py-1.5 ${entryType === "payment" ? "bg-primary" : "bg-surface"}`}
+                >
+                  <Text className={`text-[12px] font-bold ${entryType === "payment" ? "text-surface" : "text-textSecondary"}`}>
+                    Payment
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
 
-            {/* Customer block */}
-            <TouchableOpacity
-              activeOpacity={0.75}
-              onPress={() => setCustomerPickerVisible(true)}
-              className="rounded-2xl overflow-hidden bg-surface border border-border"
-            >
-              <View className="flex-row items-center px-4 py-4">
+            {/* Person picker (inline, amount-first flow) */}
+            <View className="rounded-2xl overflow-hidden bg-surface border border-border">
+              <View className="flex-row items-center px-4 py-4 border-b border-border">
                 <View
                   className="rounded-full items-center justify-center mr-3 w-[52px] h-[52px]"
                   style={{
@@ -343,11 +425,11 @@ export default function CreateOrderScreen() {
                   >
                     {selectedCustomerMeta
                       ? selectedCustomerMeta.name
-                      : "Select Customer"}
+                      : "Select Person"}
                   </Text>
                   {!selectedCustomerMeta && (
                     <Text className="text-[14px] text-textSecondary mt-0.5">
-                      Tap to select
+                      Choose from your people list below
                     </Text>
                   )}
                 </View>
@@ -365,9 +447,18 @@ export default function CreateOrderScreen() {
                     </Text>
                   </View>
                 )}
-            </TouchableOpacity>
+            </View>
 
-            {/* QUICK AMOUNT INPUT (NEW) */}
+            {/* Inline picker list (always visible) */}
+            <CustomerPicker
+              visible
+              variant="inline"
+              selectedCustomer={selectedCustomerMeta}
+              setSelectedCustomer={handleSelectCustomer}
+              vendorId={vendorId!}
+            />
+
+            {/* QUICK AMOUNT INPUT (amount-first) */}
             <View className="mt-2">
               <Text className="text-[11px] font-bold text-textSecondary tracking-widest mb-2">
                 AMOUNT
@@ -388,11 +479,11 @@ export default function CreateOrderScreen() {
                     keyboardType="numeric"
                     className="flex-1 text-[32px] font-extrabold"
                     style={{ color: colors.textPrimary }}
-                    editable={!hasItems} // Disable if using items
+                    editable={!hasItems || entryType === "payment"} // Disable if using items
                     autoFocus={!selectedCustomerMeta} // Focus if no customer preselected
                   />
                 </View>
-                {hasItems && (
+                {hasItems && entryType === "bill" && (
                   <Text className="text-[11px] text-textSecondary mt-2">
                     Amount calculated from items below
                   </Text>
@@ -409,7 +500,7 @@ export default function CreateOrderScreen() {
                 <TextInput
                   value={note}
                   onChangeText={setNote}
-                  placeholder="e.g., Rice purchase, Monthly bill..."
+                  placeholder={entryType === "payment" ? "e.g., UPI payment" : "e.g., Rice purchase, Monthly bill..."}
                   placeholderTextColor={colors.textSecondary}
                   className="text-[15px]"
                   style={{ color: colors.textPrimary }}
@@ -419,31 +510,33 @@ export default function CreateOrderScreen() {
             </View>
 
             {/* COLLAPSIBLE ITEMS SECTION */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => setIsItemsExpanded(!isItemsExpanded)}
-              className="rounded-2xl bg-surface border border-border px-4 py-3.5 flex-row items-center justify-between mt-2"
-            >
-              <View className="flex-row items-center gap-2">
-                {isItemsExpanded ? (
-                  <ChevronUp size={20} color={colors.textSecondary} />
-                ) : (
-                  <ChevronDown size={20} color={colors.textSecondary} />
+            {entryType === "bill" && (
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setIsItemsExpanded(!isItemsExpanded)}
+                className="rounded-2xl bg-surface border border-border px-4 py-3.5 flex-row items-center justify-between mt-2"
+              >
+                <View className="flex-row items-center gap-2">
+                  {isItemsExpanded ? (
+                    <ChevronUp size={20} color={colors.textSecondary} />
+                  ) : (
+                    <ChevronDown size={20} color={colors.textSecondary} />
+                  )}
+                  <Text className="text-[15px] font-bold text-textPrimary">
+                      Add Items (optional)
+                  </Text>
+                </View>
+                {hasItems && (
+                  <Text className="text-[13px] font-bold text-primary">
+                    {items.length} item{items.length > 1 ? "s" : ""} · ₹
+                    {itemsTotal.toFixed(0)}
+                  </Text>
                 )}
-                <Text className="text-[15px] font-bold text-textPrimary">
-                  Add Items (optional)
-                </Text>
-              </View>
-              {hasItems && (
-                <Text className="text-[13px] font-bold text-primary">
-                  {items.length} item{items.length > 1 ? "s" : ""} · ₹
-                  {itemsTotal.toFixed(0)}
-                </Text>
-              )}
-            </TouchableOpacity>
+              </TouchableOpacity>
+            )}
 
             {/* EXPANDED ITEMS SECTION */}
-            {isItemsExpanded && (
+            {entryType === "bill" && isItemsExpanded && (
               <View className="rounded-2xl bg-surface border border-border overflow-hidden">
                 {items.length > 0 && (
                   <>
@@ -483,7 +576,7 @@ export default function CreateOrderScreen() {
                       strokeWidth={2.5}
                     />
                     <Text className="ml-2 text-[15px] font-extrabold text-primary">
-                      Add Product
+                      Add Item
                     </Text>
                   </TouchableOpacity>
 
@@ -507,14 +600,14 @@ export default function CreateOrderScreen() {
             )}
 
             {/* SUMMARY (Always visible) */}
-            {(quickAmount || hasItems) && (
+            {entryType === "bill" && (quickAmount || hasItems) && (
               <View className="rounded-2xl bg-surface border border-border p-4 mt-2">
                 <View className="flex-row justify-between items-center mb-2">
                   <Text className="text-[14px] text-textSecondary">
-                    Bill Amount
+                    Entry Amount
                   </Text>
                   <Text className="text-[16px] font-bold text-textPrimary">
-                    ₹{billAmount.toFixed(2)}
+                    ₹{entryAmount.toFixed(2)}
                   </Text>
                 </View>
 
@@ -554,17 +647,25 @@ export default function CreateOrderScreen() {
             <BillFooter
               isLoading={createOrderMutation.isPending}
               onSaveAndShare={handleSaveAndShare}
+              shareLabel={entryType === "payment" ? "Record Payment" : "Save & Share"}
+              totalAmount={entryType === "payment" ? parseFloat(quickAmount) || 0 : totalWithBalance}
+              totalLabel={entryType === "payment" ? "Payment Amount" : "Grand Total"}
+              showIcon={entryType !== "payment"}
+              disabled={
+                entryType === "payment"
+                  ? !quickAmount.trim() || createOrderMutation.isPending
+                  : undefined
+              }
             />
           </View>
 
-          {/* Pickers */}
-          <CustomerPicker
-            visible={isCustomerPickerVisible}
-            onClose={() => setCustomerPickerVisible(false)}
-            selectedCustomer={selectedCustomerMeta}
-            setSelectedCustomer={handleSelectCustomer}
-            vendorId={vendorId!}
-          />
+            {/* Pickers */}
+            <CustomerPicker
+              visible={false}
+              selectedCustomer={selectedCustomerMeta}
+              setSelectedCustomer={handleSelectCustomer}
+              vendorId={vendorId!}
+            />
 
           <ProductPicker
             visible={isProductPickerVisible}

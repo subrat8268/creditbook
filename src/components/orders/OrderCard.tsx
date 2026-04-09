@@ -86,7 +86,7 @@ export default function OrderCard({ order, onPress }: Props) {
       ? (order.status as StatusKey)
       : "Pending";
   const chip = STATUS_CONFIG[statusKey];
-  const customerName = order.customer?.name ?? "Unknown Customer";
+  const customerName = order.customer?.name ?? "Unknown Person";
   const avatarColor = getAvatarColor(customerName);
 
   return (
@@ -112,7 +112,7 @@ export default function OrderCard({ order, onPress }: Props) {
           </Text>
         </View>
 
-        {/* Center: customer name + bill number */}
+      {/* Center: person name + entry number */}
         <View className="flex-1 justify-center">
           <Text
             className="text-textPrimary text-[15px] font-bold"

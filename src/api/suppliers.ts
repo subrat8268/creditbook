@@ -74,6 +74,7 @@ export async function fetchSuppliers(
   return suppliers
     .map((s) => ({
       ...s,
+      upi: (s as any).upi_id ?? (s as any).upi ?? undefined,
       balanceOwed: Math.max(0, (totals[s.id] ?? 0) - (paid[s.id] ?? 0)),
       lastDeliveryAt: lastDelivery[s.id] ?? undefined,
     }))
@@ -93,6 +94,7 @@ export async function addSupplier(
           {
             ...values,
             vendor_id: vendorId,
+            upi_id: (values as any).upi_id ?? (values as any).upi ?? undefined,
             is_supplier: true,
             is_customer: false,
           },
@@ -213,6 +215,7 @@ export async function fetchSupplierDetail(
 
   return {
     ...(supplier as Supplier),
+    upi: (supplier as any).upi_id ?? (supplier as any).upi ?? undefined,
     balanceOwed: totalOwed,
     totalOwed,
     deliveries: mappedDeliveries,

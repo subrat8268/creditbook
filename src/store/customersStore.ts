@@ -1,10 +1,10 @@
 import { create } from "zustand";
-import { Customer } from "../types/customer";
+import { Person } from "../types/customer";
 
 type CustomersState = {
-  customers: Customer[];
-  setCustomers: (customers: Customer[]) => void;
-  addCustomer: (customer: Customer) => void;
+  customers: Person[];
+  setCustomers: (customers: Person[]) => void;
+  addCustomer: (customer: Person) => void;
   resetCustomers: () => void;
 };
 

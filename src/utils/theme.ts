@@ -140,7 +140,7 @@ export const colors = {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const gradients = {
-  // Customer balance card — red gradient
+  // Person balance card — red gradient
   customerHero: {
     start: "#DC2626", // Red-600
     end: "#B91C1C", // Red-800

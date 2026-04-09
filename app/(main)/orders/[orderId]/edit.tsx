@@ -1,5 +1,5 @@
 /**
- * Edit Order Screen - Edit existing bills/invoices
+ * Edit Entry Screen - Edit existing entries
  * 
  * Reuses most of the create order logic but pre-populates with existing data.
  * Tracks edits with edited_at and edit_count fields.
@@ -70,7 +70,7 @@ export default function EditOrderScreen() {
   // Fetch existing order
   const { data: order, isLoading: orderLoading } = useOrderDetail(orderId);
 
-  // Zustand Draft Bills Store
+  // Zustand Draft Entry Store
   const setCustomer = useOrderStore((state) => state.setCustomer);
   const setItems = useOrderStore((state) => state.setItems);
   const items = useOrderStore((state) => state.items);
@@ -158,7 +158,7 @@ export default function EditOrderScreen() {
     if (order.amount_paid > finalTotal) {
       Alert.alert(
         "Amount too low",
-        "Total cannot be less than the amount already paid for this bill.",
+        "Total cannot be less than the amount already paid for this entry.",
       );
       return;
     }
@@ -201,7 +201,7 @@ export default function EditOrderScreen() {
           gstin: profile?.gstin ?? "",
         },
         updatedOrder.total_amount,
-        updatedOrder.customer?.name ?? "Customer",
+        updatedOrder.customer?.name ?? "Person",
         {
           invoiceNumber: updatedOrder.bill_number,
           date: new Date(updatedOrder.created_at).toLocaleDateString("en-IN"),
@@ -221,7 +221,7 @@ export default function EditOrderScreen() {
 
       await Sharing.shareAsync(pdfUri, {
         mimeType: "application/pdf",
-        dialogTitle: `Bill ${updatedOrder.bill_number}`,
+        dialogTitle: `Entry ${updatedOrder.bill_number}`,
         UTI: "com.adobe.pdf",
       });
     };
@@ -243,15 +243,15 @@ export default function EditOrderScreen() {
             await shareUpdatedBill(updatedOrder);
           } catch (shareError) {
             console.error("Share failed:", shareError);
-            showToast({ message: "Updated bill saved. Sharing failed.", type: "error" });
+            showToast({ message: "Updated entry saved. Sharing failed.", type: "error" });
           }
         }
 
-        showToast({ message: "Bill updated", type: "success" });
+        showToast({ message: "Entry updated", type: "success" });
         router.back();
       } catch (error: any) {
         console.error("Error updating order:", error);
-        Alert.alert("Error", error.message || "Failed to update bill");
+        Alert.alert("Error", error.message || "Failed to update entry");
       } finally {
         setSubmitting(false);
       }
@@ -259,8 +259,8 @@ export default function EditOrderScreen() {
 
     // Warn about editing
     Alert.alert(
-      "Edit Bill",
-      "Are you sure you want to edit this bill? Changes will be reflected in the customer's ledger.",
+      "Edit Entry",
+      "Are you sure you want to edit this entry? Changes will be reflected in the person's ledger.",
       [
         { text: "Cancel", style: "cancel" },
         { text: "Save Only", style: "default", onPress: () => performSave(false) },
@@ -273,7 +273,7 @@ export default function EditOrderScreen() {
     return <Loader />;
   }
 
-  const customerName = order.customer?.name || "Unknown Customer";
+  const customerName = order.customer?.name || "Unknown Person";
   const customerInitials = getInitials(customerName);
   const avatarColor = getAvatarColor(customerName);
 
@@ -299,7 +299,7 @@ export default function EditOrderScreen() {
         </TouchableOpacity>
         <View style={{ flex: 1, marginLeft: 16 }}>
           <Text style={{ fontSize: 18, fontWeight: "600", color: colors.textPrimary }}>
-            Edit Bill {order.bill_number}
+            Edit Entry {order.bill_number}
           </Text>
           {(order.edit_count ?? 0) > 0 && (
             <Text style={{ fontSize: 12, color: colors.textSecondary }}>
@@ -322,16 +322,16 @@ export default function EditOrderScreen() {
         }}
       >
         <AlertCircle size={20} color={colors.warning} />
-        <Text
-          style={{
-            flex: 1,
-            marginLeft: 8,
-            fontSize: 13,
-            color: colors.textPrimary,
-          }}
-        >
-          Editing will update the customer's ledger and payment history
-        </Text>
+          <Text
+            style={{
+              flex: 1,
+              marginLeft: 8,
+              fontSize: 13,
+              color: colors.textPrimary,
+            }}
+          >
+            Editing will update the person's ledger and payment history
+          </Text>
       </View>
 
       <KeyboardAvoidingView
@@ -343,7 +343,7 @@ export default function EditOrderScreen() {
           contentContainerStyle={{ paddingBottom: 120 }}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Customer Info (Read-only) */}
+          {/* Person Info (Read-only) */}
           <View
             style={{
               backgroundColor: colors.surface,
@@ -358,7 +358,7 @@ export default function EditOrderScreen() {
                 marginBottom: 8,
               }}
             >
-              Customer (cannot be changed)
+              Person (cannot be changed)
             </Text>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <View
@@ -491,9 +491,9 @@ export default function EditOrderScreen() {
                    }}
                  >
                    <CirclePlus size={18} color={colors.primary} strokeWidth={2.5} />
-                   <Text style={{ marginLeft: 8, fontSize: 15, fontWeight: "700", color: colors.primary }}>
-                     Add Product
-                   </Text>
+                    <Text style={{ marginLeft: 8, fontSize: 15, fontWeight: "700", color: colors.primary }}>
+                      Add Item
+                    </Text>
                  </TouchableOpacity>
 
                   <ProductPicker
@@ -531,7 +531,7 @@ export default function EditOrderScreen() {
              )}
            </View>
 
-           {/* Bill Summary */}
+            {/* Entry Summary */}
            <View
              style={{
                backgroundColor: colors.surface,

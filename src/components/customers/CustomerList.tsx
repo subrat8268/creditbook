@@ -1,15 +1,15 @@
-import { Customer } from "@/src/types/customer";
+import { Person } from "@/src/types/customer";
 import { BookOpen, Plus, UserPlus } from "lucide-react-native";
-import { useCallback, useState } from "react";
-import { FlatList, RefreshControl, View, TouchableOpacity, Text } from "react-native";
+import { useCallback } from "react";
+import { FlatList, RefreshControl, View } from "react-native";
 import { colors } from "../../utils/theme";
 import EmptyState from "../feedback/EmptyState";
 import ErrorState from "../feedback/ErrorState";
 import Loader from "../feedback/Loader";
 import CustomerCard from "./CustomerCard";
 
-// ── Customer-specific empty state icon: open book + green plus badge ──────────
-const CustomerEmptyIcon = (
+// ── People-specific empty state icon: open book + green plus badge ──────────
+const PeopleEmptyIcon = (
   <View className="w-16 h-16">
     <BookOpen size={64} color={colors.primary} strokeWidth={1.5} />
     <View className="absolute -top-1 -right-1.5 w-[22px] h-[22px] rounded-full bg-primary items-center justify-center border-2 border-surface">
@@ -18,97 +18,60 @@ const CustomerEmptyIcon = (
   </View>
 );
 
-const CustomerEmptyCtaIcon = (
+const PeopleEmptyCtaIcon = (
   <UserPlus size={18} color={colors.surface} strokeWidth={2} />
 );
 
-export type CustomerFilter = "All" | "Overdue" | "Paid" | "Pending";
-
-const FILTER_TABS: CustomerFilter[] = ["All", "Overdue", "Paid", "Pending"];
-
-function getStatus(c: Customer): CustomerFilter {
-  const bal = c.outstandingBalance ?? 0;
-  if (bal > 0 && c.isOverdue) return "Overdue";
-  if (bal > 0 && !c.isOverdue) return "Pending";
-  return "Paid";
-}
-
 export default function CustomerList({
-  customers,
-  onPressCustomer,
+  people,
+  onPressPerson,
+  onLongPressPerson,
   isLoading,
   error,
   onRefresh,
   refreshing,
   onEndReached,
   isFetchingNextPage,
-  onAddCustomer,
+  onAddPerson,
 }: {
-  customers: Customer[];
-  onPressCustomer: (customerId: string) => void;
+  people: Person[];
+  onPressPerson: (personId: string) => void;
+  onLongPressPerson?: (personId: string) => void;
   isLoading: boolean;
   error?: Error | null;
   onRefresh: () => void;
   refreshing: boolean;
   onEndReached: () => void;
   isFetchingNextPage: boolean;
-  onAddCustomer?: () => void;
+  onAddPerson?: () => void;
 }) {
-  const [activeFilter, setActiveFilter] = useState<CustomerFilter>("All");
-  
   const renderItem = useCallback(
-    ({ item }: { item: Customer }) => (
+    ({ item }: { item: Person }) => (
       <CustomerCard
         name={item.name}
         phone={item.phone}
         isOverdue={item.isOverdue}
         outstandingBalance={item.outstandingBalance}
         lastActiveAt={item.lastActiveAt}
-        onPress={() => onPressCustomer(item.id)}
+        onPress={() => onPressPerson(item.id)}
+        onLongPress={onLongPressPerson ? () => onLongPressPerson(item.id) : undefined}
       />
     ),
-    [onPressCustomer]
+    [onPressPerson, onLongPressPerson]
   );
 
-  if (isLoading && customers.length === 0) {
-    return <Loader message="Fetching customers" />;
+  if (isLoading && people.length === 0) {
+    return <Loader message="Loading people" />;
   }
   
-  if (error && customers.length === 0) {
-    return <ErrorState message="Failed to fetch customers" />;
+  if (error && people.length === 0) {
+    return <ErrorState message="Failed to fetch people" />;
   }
-
-  const filtered =
-    activeFilter === "All"
-      ? customers
-      : customers.filter((c) => getStatus(c) === activeFilter);
 
   return (
     <View className="flex-1">
-      {/* 4 Filter Tabs */}
-      <View className="flex-row border-b border-border mb-2 mx-5">
-        {FILTER_TABS.map((tab) => {
-          const isActive = activeFilter === tab;
-          return (
-            <TouchableOpacity
-              key={tab}
-              onPress={() => setActiveFilter(tab)}
-              activeOpacity={0.75}
-              className={`flex-1 items-center pb-2.5 pt-1.5 border-b-2 ${
-                isActive ? "border-primary" : "border-transparent"
-              }`}
-              style={{ marginBottom: isActive ? -1 : 0 }}
-            >
-              <Text className={`text-[13px] font-semibold ${isActive ? "text-primary" : "text-textSecondary"}`}>
-                {tab}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
       <FlatList
-        data={filtered}
+        data={people}
         keyExtractor={(item) => item.id}
         className="flex-1"
         renderItem={renderItem}
@@ -118,14 +81,14 @@ export default function CustomerList({
         ListEmptyComponent={
           <View className="mt-8">
             <EmptyState
-              title={activeFilter === "All" ? "Your customer list is empty" : `No ${activeFilter.toLowerCase()} customers`}
-              description={activeFilter === "All" ? "Add your first customer to start tracking credit" : "Try selecting a different filter"}
-              icon={CustomerEmptyIcon}
+              title="Your people list is empty"
+              description="Add your first person to start tracking entries"
+              icon={PeopleEmptyIcon}
               iconBgColor={colors.successBg}
               iconSize={112}
-              cta={onAddCustomer && activeFilter === "All" ? "Add Customer" : undefined}
-              onCta={onAddCustomer}
-              ctaIcon={onAddCustomer && activeFilter === "All" ? CustomerEmptyCtaIcon : undefined}
+              cta={onAddPerson ? "Add Person" : undefined}
+              onCta={onAddPerson}
+              ctaIcon={onAddPerson ? PeopleEmptyCtaIcon : undefined}
             />
           </View>
         }

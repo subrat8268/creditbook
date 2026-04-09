@@ -2,7 +2,7 @@ import RecordCustomerPaymentModal from "@/src/components/customers/RecordCustome
 import EmptyState from "@/src/components/feedback/EmptyState";
 import Loader from "@/src/components/feedback/Loader";
 import { useToast } from "@/src/components/feedback/Toast";
-import { useCustomerDetail } from "@/src/hooks/useCustomer";
+import { usePersonDetail } from "@/src/hooks/useCustomer";
 import { useWhatsAppShare } from "@/src/hooks/useWhatsAppShare";
 import { useAuthStore } from "@/src/store/authStore";
 import { usePreferencesStore } from "@/src/store/preferencesStore";
@@ -13,32 +13,31 @@ import * as Print from "expo-print";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import {
-    AlertTriangle,
-    ArrowDown,
-    ArrowLeft,
-    ArrowUp,
-    Banknote,
-    BellRing,
-    Download,
-    FileText,
-    MessageCircle,
-    Phone,
-    Plus,
-    Receipt,
-    Share2,
+  AlertTriangle,
+  ArrowDown,
+  ArrowLeft,
+  ArrowUp,
+  BellRing,
+  Download,
+  FileText,
+  MessageCircle,
+  Phone,
+  Plus,
+  Receipt,
+  Share2,
 } from "lucide-react-native";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-    Linking,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  Linking,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-type TxFilter = "All" | "Bills Given" | "Payments";
+type TxFilter = "All" | "Entries" | "Payments";
 
 /** Format rupee amount — shows decimals only when non-zero paise */
 function formatINR(n: number) {
@@ -76,7 +75,7 @@ function getDateLabel(iso: string): string {
   });
 }
 
-function formatLastBillDate(iso: string | null | undefined): string {
+function formatLastEntryDate(iso: string | null | undefined): string {
   if (!iso) return "";
   return new Date(iso).toLocaleDateString("en-IN", {
     day: "numeric",
@@ -108,7 +107,7 @@ function buildStatementHtml(
       const color = tx.type === "payment" ? colors.primary : colors.danger;
       const label =
         tx.type === "bill"
-          ? `Invoice ${tx.billNumber ?? ""}`
+          ? `Entry ${tx.billNumber ?? ""}`
           : `Payment (${tx.paymentMode ?? ""})`;
       return `<tr>
         <td>${new Date(tx.created_at).toLocaleDateString("en-IN")}</td>
@@ -128,8 +127,8 @@ function buildStatementHtml(
   td{padding:10px 8px;border-bottom:1px solid #E5E5EA;}
   .balance{font-size:18px;font-weight:700;color:${colors.danger};}
 </style></head><body>
-<h1>${businessName} — Customer Statement</h1>
-<p><b>Customer:</b> ${name}<br/><b>Phone:</b> ${phone}</p>
+ <h1>${businessName} — Person Statement</h1>
+ <p><b>Person:</b> ${name}<br/><b>Phone:</b> ${phone}</p>
 <p class="balance">Outstanding Balance: ${formatINR(balance)}</p>
 <table><thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Balance</th></tr></thead>
 <tbody>${rows}</tbody></table>
@@ -153,14 +152,16 @@ function TransactionRow({ tx }: { tx: Transaction }) {
   const iconColor = isPayment ? colors.primary : colors.danger;
   const amountColor = isPayment ? colors.primary : colors.danger;
   const title = isPayment
-    ? "Payment Received"
-    : `Bill${tx.billNumber ? ` #${tx.billNumber}` : ""}`;
+    ? "Payment"
+    : `Entry${tx.billNumber ? ` #${tx.billNumber}` : ""}`;
   const modeLabel = tx.paymentMode
     ? (MODE_LABEL[tx.paymentMode.toLowerCase()] ?? tx.paymentMode)
     : "";
-  // Payment subtitle: "Cash \u00b7 INV-042"  | Bill subtitle: "7 items"
+  // Payment subtitle: "Cash \u00b7 #042"  | Entry subtitle: "7 items"
   const subtitle = isPayment
-    ? [modeLabel, tx.orderBillNumber].filter(Boolean).join(" \u00b7 ")
+    ? [modeLabel, tx.orderBillNumber ? `#${tx.orderBillNumber}` : ""]
+        .filter(Boolean)
+        .join(" · ")
     : tx.itemCount
       ? `${tx.itemCount} item${tx.itemCount !== 1 ? "s" : ""}`
       : (tx.status ?? "");
@@ -221,13 +222,13 @@ type ListItem =
 
 export default function CustomerDetailScreen() {
   const router = useRouter();
-  const { customerId } = useLocalSearchParams<{ customerId: string }>();
+  const { customerId, focus } = useLocalSearchParams<{ customerId: string; focus?: string }>();
   const {
     data: customer,
     isLoading,
     isError,
     refetch,
-  } = useCustomerDetail(customerId);
+  } = usePersonDetail(customerId);
   const profile = useAuthStore((s) => s.profile);
 
   const { show: showToast } = useToast();
@@ -245,6 +246,8 @@ export default function CustomerDetailScreen() {
   const [exporting, setExporting] = useState(false);
   const [historyExpanded, setHistoryExpanded] = useState(false);
   const paymentModalRef = useRef<any>(null);
+  const [quickPaymentAmount, setQuickPaymentAmount] = useState<string>("");
+  const [shareQueued, setShareQueued] = useState(false);
 
   const INITIAL_TX_COUNT = 10;
 
@@ -252,7 +255,7 @@ export default function CustomerDetailScreen() {
     if (!customer) return;
     const snoozedUntil = reminderSnoozes[customer.id] ?? 0;
     if (snoozedUntil > Date.now()) {
-      showToast({ message: "Reminder is snoozed for this customer", type: "error" });
+      showToast({ message: "Reminder is snoozed for this person", type: "error" });
       return;
     }
     const biz = profile?.business_name || "our store";
@@ -270,7 +273,7 @@ export default function CustomerDetailScreen() {
         showToast({ message: `Reminder sent to ${customer.name}`, type: "success" });
       })
       .catch(() =>
-        showToast({ message: "Cannot open WhatsApp", type: "error" }),
+      showToast({ message: "Cannot open WhatsApp", type: "error" }),
       );
   };
 
@@ -308,7 +311,7 @@ export default function CustomerDetailScreen() {
     }
   };
 
-  const handleShareLedger = async () => {
+  const handleShareLedger = useCallback(async () => {
     if (!customer || !profile) return;
     
     await shareLedger(
@@ -318,12 +321,43 @@ export default function CustomerDetailScreen() {
       customer.phone,
       profile.business_name || profile.name || 'KredBook'
     );
+  }, [customer, profile, shareLedger]);
+
+  useEffect(() => {
+    if (focus === "share") {
+      setShareQueued(true);
+    }
+  }, [focus]);
+
+  useEffect(() => {
+    if (shareQueued && customer && profile) {
+      handleShareLedger().finally(() => setShareQueued(false));
+    }
+  }, [shareQueued, customer, profile, handleShareLedger]);
+
+  const openPaymentFlow = (amountSeed?: number) => {
+    if (!hasPendingPayment) {
+      showToast({
+        message: "No outstanding balance for this person.",
+        type: "error",
+      });
+      return;
+    }
+    if (amountSeed && amountSeed > 0) {
+      router.push({
+        pathname: "/orders/create",
+        params: { customer: JSON.stringify(customer), amount: String(amountSeed) },
+      });
+      return;
+    }
+    setQuickPaymentAmount("");
+    paymentModalRef.current?.present();
   };
 
   const listItems = useMemo<ListItem[]>(() => {
     if (!customer) return [];
     const filtered = customer.transactions.filter((tx) => {
-      if (txFilter === "Bills Given") return tx.type === "bill";
+      if (txFilter === "Entries") return tx.type === "bill";
       if (txFilter === "Payments") return tx.type === "payment";
       return true;
     });
@@ -343,7 +377,7 @@ export default function CustomerDetailScreen() {
   }, [customer, txFilter]);
 
   if (isLoading) return <Loader />;
-  if (isError || !customer) return <EmptyState message="Customer not found" />;
+  if (isError || !customer) return <EmptyState message="Person not found" />;
 
   const hasPendingPayment =
     !!customer.pendingOrderId && (customer.pendingOrderBalance ?? 0) > 0;
@@ -465,19 +499,19 @@ export default function CustomerDetailScreen() {
               </View>
               {customer.lastActiveAt ? (
                 <Text className="text-[12px] text-white/65">
-                  Last bill: {formatLastBillDate(customer.lastActiveAt)}
+                  Last entry: {formatLastEntryDate(customer.lastActiveAt)}
                 </Text>
               ) : null}
             </View>
           ) : customer.lastActiveAt ? (
             <Text className="text-[12px] text-white/65">
-              Last bill: {formatLastBillDate(customer.lastActiveAt)}
+              Last entry: {formatLastEntryDate(customer.lastActiveAt)}
             </Text>
           ) : null}
         </LinearGradient>
 
         {/* ── Action Buttons (2x2 Grid) ── */}
-        <View className="mx-4 mt-4 gap-3">
+          <View className="mx-4 mt-4 gap-3">
           {/* First Row */}
            <View className="flex-row flex-wrap gap-3">
              <TouchableOpacity
@@ -517,39 +551,7 @@ export default function CustomerDetailScreen() {
                 />
               </View>
               <Text className="text-[13px] font-semibold text-textDark">
-                New Bill
-              </Text>
-            </TouchableOpacity>
-
-             <TouchableOpacity
-               className="flex-1 min-w-[48%] bg-surface rounded-2xl py-[18px] items-center gap-2"
-              style={{
-                shadowColor: colors.textPrimary,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.05,
-                shadowRadius: 6,
-                elevation: 2,
-              }}
-              activeOpacity={0.8}
-              onPress={() => {
-                if (!hasPendingPayment) {
-                  showToast({
-                    message: "No outstanding balance for this customer.",
-                    type: "error",
-                  });
-                  return;
-                }
-                paymentModalRef.current?.present();
-              }}
-            >
-              <View
-                className="w-11 h-11 rounded-full items-center justify-center"
-                style={{ backgroundColor: colors.successBg }}
-              >
-                <Banknote size={22} color={colors.primary} strokeWidth={2} />
-              </View>
-              <Text className="text-[13px] font-semibold text-textDark">
-                Received
+                 Add Entry
               </Text>
             </TouchableOpacity>
           </View>
@@ -647,7 +649,7 @@ export default function CustomerDetailScreen() {
             className="flex-row border-b"
             style={{ borderBottomColor: colors.border }}
           >
-            {(["All", "Bills Given", "Payments"] as TxFilter[]).map((f) => {
+            {(["All", "Entries", "Payments"] as TxFilter[]).map((f) => {
               const active = txFilter === f;
               return (
                 <TouchableOpacity
@@ -693,39 +695,24 @@ export default function CustomerDetailScreen() {
                 No transactions yet
               </Text>
               <Text className="text-[13px] text-textSecondary text-center leading-5">
-                Create a bill or record a payment to get started
+                Add an entry to start this ledger.
               </Text>
-              {/* Two CTAs */}
-              <View className="flex-row gap-3 mt-2 w-full">
-                <TouchableOpacity
-                  className="flex-1 items-center justify-center py-3 rounded-full border"
-                  style={{ borderColor: colors.primary }}
-                  activeOpacity={0.8}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/orders/create",
-                      params: { customer: JSON.stringify(customer) },
-                    })
-                  }
-                >
-                  <Text
-                    className="text-[14px] font-bold"
-                    style={{ color: colors.primary }}
-                  >
-                    New Bill
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className="flex-1 items-center justify-center py-3 rounded-full"
-                  style={{ backgroundColor: colors.primary }}
-                  activeOpacity={0.8}
-                  onPress={() => paymentModalRef.current?.present()}
-                >
-                  <Text className="text-[14px] font-bold" style={{ color: colors.surface }}>
-                    Record Payment
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              {/* Single CTA */}
+              <TouchableOpacity
+                className="w-full items-center justify-center py-3 rounded-full"
+                style={{ backgroundColor: colors.primary }}
+                activeOpacity={0.8}
+                onPress={() =>
+                  router.push({
+                    pathname: "/orders/create",
+                    params: { customer: JSON.stringify(customer) },
+                  })
+                }
+              >
+                <Text className="text-[14px] font-bold" style={{ color: colors.surface }}>
+                  Add Entry
+                </Text>
+              </TouchableOpacity>
             </View>
           ) : (
             <View className="px-4 pt-4">
@@ -843,6 +830,7 @@ export default function CustomerDetailScreen() {
           balanceDue={customer.pendingOrderBalance ?? 0}
           customerId={customer.id}
           customerName={customer.name}
+          initialAmount={quickPaymentAmount ? Number(quickPaymentAmount) : undefined}
         />
       )}
     </SafeAreaView>

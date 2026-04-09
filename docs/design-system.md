@@ -1,9 +1,9 @@
 # KredBook Design System
 
-> **Version**: 1.6
-> **Last Updated**: April 6, 2026
+> **Version**: 1.7
+> **Last Updated**: April 9, 2026
 > **Maintained by**: KredBook Product & Design Team
-> **Sync Status**: Aligned with App Version 4.0
+> **Sync Status**: Aligned with App Version 4.2
 
 ---
 

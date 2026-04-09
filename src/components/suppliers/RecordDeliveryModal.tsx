@@ -208,7 +208,7 @@ export default function RecordDeliveryModal({
           </Pressable>
         </View>
 
-        {/* ── Supplier name pill ── */}
+        {/* ── Party name pill ── */}
         {supplierName ? (
           <View
             className="flex-row items-center self-start gap-1.5 px-3 py-1.5 rounded-full mb-4"

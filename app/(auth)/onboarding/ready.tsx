@@ -36,7 +36,7 @@ export default function OnboardingReady() {
     }
   };
 
-  const handleAddCustomer = async () => {
+  const handleAddPerson = async () => {
     const ok = await completeOnboarding();
     if (ok) {
       router.replace({
@@ -110,13 +110,13 @@ export default function OnboardingReady() {
 
       <View className="px-6 pb-10">
         <TouchableOpacity
-          onPress={handleAddCustomer}
+          onPress={handleAddPerson}
           disabled={isLoading}
           activeOpacity={0.85}
           className={`rounded-full py-[17px] items-center ${isLoading ? "bg-neutral-300" : "bg-primary"}`}
         >
           <Text className="text-base font-bold text-white">
-            {isLoading ? "Loading…" : "Add Your First Customer"}
+            {isLoading ? "Loading…" : "Add Your First Person"}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity

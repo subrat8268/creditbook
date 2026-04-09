@@ -28,7 +28,7 @@ export interface NewSupplierValues {
   bank_name?: string;
   account_number?: string;
   ifsc_code?: string;
-  upi?: string;
+  upi_id?: string;
 }
 
 interface Props {
@@ -80,7 +80,7 @@ export default function NewSupplierModal({
     bank_name: "",
     account_number: "",
     ifsc_code: "",
-    upi: "",
+    upi_id: "",
   };
 
   return (
@@ -112,7 +112,7 @@ export default function NewSupplierModal({
         {/* Header */}
         <View className="flex-row items-center justify-between py-3 mb-4">
           <Text className="text-[20px] font-black text-textPrimary tracking-tight">
-            Add Supplier
+            Add Party
           </Text>
           <TouchableOpacity onPress={onClose} disabled={loading} hitSlop={10} className="w-8 h-8 items-end justify-center">
             <X size={22} className="text-textSecondary" strokeWidth={2.5} />
@@ -131,7 +131,7 @@ export default function NewSupplierModal({
                 bank_name: values.bank_name?.trim() || undefined,
                 account_number: values.account_number?.trim() || undefined,
                 ifsc_code: values.ifsc_code?.trim() || undefined,
-                upi: values.upi?.trim() || undefined,
+                upi_id: values.upi_id?.trim() || undefined,
               });
               resetForm();
               setBankExpanded(false);
@@ -149,10 +149,10 @@ export default function NewSupplierModal({
             touched,
           }) => (
             <View className="gap-5">
-              {/* ── Supplier Name ── */}
+              {/* ── Party Name ── */}
               <View>
                 <Text className="text-[11px] font-bold text-textSecondary uppercase tracking-widest mb-2">
-                  Supplier Name *
+                  Party Name *
                 </Text>
                 <View className={`flex-row items-center border rounded-[16px] overflow-hidden bg-surface ${touched.name && errors.name ? 'border-danger' : 'border-border'}`}>
                   <TextInput
@@ -312,7 +312,7 @@ export default function NewSupplierModal({
                 >
                   <UserPlus size={20} className="text-surface" strokeWidth={2.5} />
                   <Text className="text-[18px] font-black text-surface tracking-tight">
-                    Add Supplier
+                    Add Party
                   </Text>
                 </TouchableOpacity>
               </View>

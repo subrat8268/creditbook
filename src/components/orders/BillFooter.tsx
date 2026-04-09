@@ -10,6 +10,9 @@ interface BillFooterProps {
   onSaveAndShare: () => void;
   shareLabel?: string;
   disabled?: boolean;
+  totalAmount?: number;
+  totalLabel?: string;
+  showIcon?: boolean;
 }
 
 export default function BillFooter({
@@ -17,19 +20,22 @@ export default function BillFooter({
   onSaveAndShare,
   shareLabel = "Save & Share",
   disabled,
+  totalAmount,
+  totalLabel = "Grand Total",
+  showIcon = true,
 }: BillFooterProps) {
   const getGrandTotal = useOrderStore((state) => state.getGrandTotal);
   const items = useOrderStore((state) => state.items);
 
   // Math recalculates instantly via Zustand
-  const grandTotal = getGrandTotal();
+  const grandTotal = totalAmount ?? getGrandTotal();
   const isDisabled = disabled ?? (items.length === 0 || isLoading);
 
   return (
     <View className="bg-surface border-t border-border pt-4 px-5 pb-8">
       <View className="flex-row justify-between items-center mb-5">
         <Text className="text-[14px] font-bold text-textSecondary uppercase tracking-widest">
-          Grand Total
+          {totalLabel}
         </Text>
         <Text className="text-[28px] font-extrabold text-success">
           {formatINR(grandTotal)}
@@ -48,7 +54,9 @@ export default function BillFooter({
           <ActivityIndicator color={colors.surface} />
         ) : (
           <>
-            <Share2 size={20} color={colors.surface} strokeWidth={2.5} />
+            {showIcon ? (
+              <Share2 size={20} color={colors.surface} strokeWidth={2.5} />
+            ) : null}
             <Text className="ml-2 text-[17px] font-bold text-surface">
               {shareLabel}
             </Text>

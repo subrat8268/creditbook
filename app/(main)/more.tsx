@@ -38,8 +38,8 @@ const BUSINESS_DETAILS: MenuItem[] = [
   },
   {
     id: "products",
-    title: "Inventory Management",
-    description: "Stock tracking & product ledgers",
+    title: "Item Management",
+    description: "Catalog & item tracking",
     icon: BookOpen,
     iconBg: colors.partial.bg,
     iconColor: colors.partial.text,
@@ -47,7 +47,7 @@ const BUSINESS_DETAILS: MenuItem[] = [
   },
   {
     id: "suppliers",
-    title: "Suppliers & Wholesale",
+    title: "Parties & Wholesale",
     description: "Bulk purchase history & credit",
     icon: Store,
     iconBg: colors.warningBadgeBg,
@@ -59,7 +59,7 @@ const BUSINESS_DETAILS: MenuItem[] = [
 const ANALYSIS_TOOLS: MenuItem[] = [
   {
     id: "reports",
-    title: "Advanced Reports",
+    title: "Reports",
     description: "Weekly insights & performance",
     icon: BarChart3,
     iconBg: colors.reports.bg,
@@ -68,7 +68,7 @@ const ANALYSIS_TOOLS: MenuItem[] = [
   },
   {
     id: "export",
-    title: "Data Export",
+    title: "Export",
     description: "Download PDF, Excel or CSV files",
     icon: Download,
     iconBg: colors.export.bg,

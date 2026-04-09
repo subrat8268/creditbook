@@ -44,7 +44,7 @@ export default function ProductDetailsScreen() {
   if (!product) {
     return (
       <SafeAreaView className="flex-1 bg-background items-center justify-center">
-        <Text className="text-[16px] font-semibold text-textSecondary">Product not found.</Text>
+        <Text className="text-[16px] font-semibold text-textSecondary">Item not found.</Text>
       </SafeAreaView>
     );
   }
@@ -55,14 +55,14 @@ export default function ProductDetailsScreen() {
   const isPerKg = product.name.toLowerCase().includes("kg") || selectedVariant?.variant_name.toLowerCase().includes("kg");
   const fallbackUnit = isPerKg ? "kg" : "unit";
 
-  const handleAddToBill = () => {
+  const handleAddToEntry = () => {
     Alert.alert(
-      "Add to Bill",
+      "Add to Entry",
       `${quantity}x ${product!.name}${selectedVariant ? ` (${selectedVariant.variant_name})` : ""} — ₹${(displayPrice * quantity).toLocaleString("en-IN")}`,
       [
         { text: "Cancel", style: "cancel" },
         {
-          text: "Open New Bill",
+          text: "Add Entry",
           onPress: () => router.push("/(main)/orders/create" as any),
         },
       ],
@@ -84,11 +84,11 @@ export default function ProductDetailsScreen() {
           <ArrowLeft size={24} color={colors.textPrimary} strokeWidth={2} />
         </TouchableOpacity>
         <Text className="text-[18px] font-extrabold text-textPrimary">
-          Product Details
+          Item Details
         </Text>
         <TouchableOpacity
           hitSlop={10}
-          onPress={() => Alert.alert("Edit", "Product editing coming soon.")}
+          onPress={() => Alert.alert("Edit", "Item editing coming soon.")}
           className="w-10 h-10 items-end justify-center"
         >
           <Pencil size={20} color={colors.textSecondary} strokeWidth={2} />
@@ -216,7 +216,7 @@ export default function ProductDetailsScreen() {
         </View>
       </ScrollView>
 
-      {/* ── Fixed Add to Bill CTA ── */}
+      {/* ── Fixed Add to Entry CTA ── */}
       <View 
         className="absolute bottom-0 left-0 right-0 bg-surface px-5 pt-3 border-t border-border"
         style={{ paddingBottom: Math.max(insets.bottom, 16) }}
@@ -225,13 +225,13 @@ export default function ProductDetailsScreen() {
           ADD TO BILL FOR SELECTED CUSTOMER
         </Text>
         <TouchableOpacity
-          onPress={handleAddToBill}
+          onPress={handleAddToEntry}
           activeOpacity={0.85}
           className="flex-row items-center justify-center bg-success rounded-[20px] py-4 gap-2 mb-2"
         >
           <ShoppingCart size={22} color={colors.surface} strokeWidth={2} />
           <Text className="text-[18px] font-black text-surface tracking-tight">
-            Add to Bill
+            Add to Entry
           </Text>
         </TouchableOpacity>
       </View>

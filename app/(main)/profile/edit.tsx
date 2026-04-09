@@ -307,7 +307,7 @@ export default function ProfileEditScreen() {
                   maxLength={15}
                 />
 
-                <Text style={styles.label}>Bill Number Prefix</Text>
+                <Text style={styles.label}>Entry Number Prefix</Text>
                 <TextInput
                   style={styles.input}
                   value={billPrefix}
@@ -324,7 +324,7 @@ export default function ProfileEditScreen() {
                     marginTop: spacing.xs,
                   }}
                 >
-                  Bills will be numbered as {billPrefix || "INV"}-001, {billPrefix || "INV"}-002, etc.
+                  Entries will be numbered as {billPrefix || "INV"}-001, {billPrefix || "INV"}-002, etc.
                 </Text>
               </View>
             )}

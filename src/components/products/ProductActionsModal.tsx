@@ -20,7 +20,7 @@ export default function ProductActionsModal({
       <View className="flex-1 justify-center items-center bg-black/50">
         <View className="relative bg-surface border border-border w-80 p-6 rounded-2xl">
           <Text className="text-2xl text-center font-inter-semibold mb-4">
-            Product Actions
+            Item Actions
           </Text>
           <TouchableOpacity
             onPress={onClose}
@@ -35,7 +35,7 @@ export default function ProductActionsModal({
           >
             <Pencil size={20} color={colors.surface} strokeWidth={2} />
             <Text className="text-center font-inter-medium text-lg text-surface">
-              Edit Product
+              Edit Item
             </Text>
           </TouchableOpacity>
 
@@ -45,7 +45,7 @@ export default function ProductActionsModal({
           >
             <Trash2 size={20} color={colors.surface} strokeWidth={2} />
             <Text className="text-center font-inter-medium text-lg text-surface">
-              Delete Product
+              Delete Item
             </Text>
           </TouchableOpacity>
 

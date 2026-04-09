@@ -36,6 +36,8 @@ interface NewCustomerModalProps {
     phone?: string;
     address?: string;
     openingBalance?: number;
+    entryAmount?: number;
+    entryNote?: string;
   }) => Promise<void>;
   loading?: boolean;
   errorMessage?: string;
@@ -44,7 +46,10 @@ interface NewCustomerModalProps {
     phone?: string;
     address?: string;
     openingBalance?: number;
+    entryAmount?: number;
+    entryNote?: string;
   };
+  entryFlow?: boolean;
 }
 
 export default function NewCustomerModal({
@@ -54,6 +59,7 @@ export default function NewCustomerModal({
   loading = false,
   errorMessage,
   initialValues,
+  entryFlow = false,
 }: NewCustomerModalProps) {
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["90%"], []);
@@ -83,6 +89,8 @@ export default function NewCustomerModal({
     phone: initialValues?.phone ?? "",
     address: initialValues?.address ?? "",
     openingBalance: initialValues?.openingBalance ?? ("" as unknown as number),
+    entryAmount: initialValues?.entryAmount ?? ("" as unknown as number),
+    entryNote: initialValues?.entryNote ?? "",
   };
 
   return (
@@ -111,7 +119,7 @@ export default function NewCustomerModal({
         {/* Header */}
         <View className="flex-row items-center justify-between py-3 mb-2">
           <Text className="text-xl font-semibold text-textDark">
-            Add Customer
+            Add Person
           </Text>
           <Pressable onPress={onClose} disabled={loading}>
             <X size={22} color={colors.textPrimary} strokeWidth={2} />
@@ -178,13 +186,13 @@ export default function NewCustomerModal({
                   </Text>
                 </View>
 
-                {/* ── Customer Name ── */}
+                {/* ── Person Name ── */}
                 <View>
                   <Text
                     className="text-sm font-semibold mb-1.5"
                     style={{ color: colors.textSecondary }}
                   >
-                    Customer Name *
+                    Person Name *
                   </Text>
                   <TextInput
                     placeholder="e.g. Mohit Sharma"
@@ -262,6 +270,56 @@ export default function NewCustomerModal({
                   )}
                 </View>
 
+                {/* ── Optional quick entry (only in inline flow) ── */}
+                {entryFlow && (
+                  <View>
+                    <Text
+                      className="text-sm font-semibold mb-1.5"
+                      style={{ color: colors.textSecondary }}
+                    >
+                      Opening Entry Amount (optional)
+                    </Text>
+                    <View
+                      className="flex-row items-center border rounded-xl px-4"
+                      style={{ borderColor: colors.border }}
+                    >
+                      <Text
+                        className="text-base mr-2"
+                        style={{ color: colors.textPrimary }}
+                      >
+                        ₹
+                      </Text>
+                      <TextInput
+                        placeholder="0"
+                        placeholderTextColor={colors.textSecondary}
+                        value={
+                          values.entryAmount === ("" as unknown as number)
+                            ? ""
+                            : String(values.entryAmount)
+                        }
+                        onChangeText={(text) => {
+                          const cleaned = text.replace(/[^0-9.]/g, "");
+                          setFieldValue(
+                            "entryAmount",
+                            cleaned === ""
+                              ? ("" as unknown as number)
+                              : parseFloat(cleaned) || 0,
+                          );
+                        }}
+                        keyboardType="decimal-pad"
+                        className="flex-1 text-base text-right"
+                        style={{ color: colors.textPrimary }}
+                      />
+                    </View>
+                    <Text
+                      className="text-xs mt-2"
+                      style={{ color: colors.textSecondary }}
+                    >
+                      Add an entry now to start the ledger instantly.
+                    </Text>
+                  </View>
+                )}
+
                 {/* ── Address (optional) ── */}
                 <View>
                   <Text
@@ -302,7 +360,7 @@ export default function NewCustomerModal({
                       className="text-xs flex-1"
                       style={{ color: colors.primaryDark }}
                     >
-                      Most users set this to ₹0 for new customers
+                      Most users set this to ₹0 for new people
                     </Text>
                   </View>
                   <View
@@ -357,7 +415,7 @@ export default function NewCustomerModal({
 
                 {/* ── Submit ── */}
                 <Button
-                  title="Add Customer"
+                  title={entryFlow ? "Add Person & Entry" : "Add Person"}
                   onPress={handleSubmit}
                   className="mt-2"
                   loading={loading}

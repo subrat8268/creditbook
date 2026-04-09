@@ -80,7 +80,7 @@ interface Props {
   onEndReached: () => void;
   isFetchingNextPage: boolean;
   onPressOrder: (orderId: string) => void;
-  onCreateBill: () => void;
+  onCreateEntry: () => void;
 }
 
 export default function OrderList({
@@ -92,7 +92,7 @@ export default function OrderList({
   onEndReached,
   isFetchingNextPage,
   onPressOrder,
-  onCreateBill,
+  onCreateEntry,
 }: Props) {
   const { updatingOrderIds } = useOrderStore();
 
@@ -106,7 +106,7 @@ export default function OrderList({
         item.status === "Pending" && daysSince(item.created_at) > 30;
       const statusKey = isOverdue ? "Overdue" : item.status;
       const chipStyle = STATUS_STYLES[statusKey] ?? STATUS_STYLES["Pending"];
-      const customerName = item.customer?.name ?? "Unknown Customer";
+      const customerName = item.customer?.name ?? "Unknown Person";
 
       return (
         <TouchableOpacity
@@ -125,7 +125,7 @@ export default function OrderList({
             shadowRadius: 4,
           }}
         >
-          {/* ── Main row: avatar + name/bill + amount/chip ────── */}
+          {/* ── Main row: avatar + name/entry + amount/chip ───── */}
           <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
             {/* Avatar */}
             <View
@@ -151,7 +151,7 @@ export default function OrderList({
               </Text>
             </View>
 
-            {/* Centre: customer name + bill number */}
+            {/* Centre: person name + entry number */}
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Text
@@ -293,7 +293,7 @@ export default function OrderList({
                 textAlign: "center",
               }}
             >
-              No orders yet
+              No entries yet
             </Text>
             <Text
               style={{
@@ -304,10 +304,10 @@ export default function OrderList({
                 marginBottom: 28,
               }}
             >
-              Create your first bill to get started
+              Create your first entry to get started
             </Text>
             <TouchableOpacity
-              onPress={onCreateBill}
+              onPress={onCreateEntry}
               activeOpacity={0.85}
               style={{
                 backgroundColor: colors.primary,
@@ -323,7 +323,7 @@ export default function OrderList({
                   fontWeight: "600",
                 }}
               >
-                Create Bill
+                Create Entry
               </Text>
             </TouchableOpacity>
           </View>

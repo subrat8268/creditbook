@@ -176,9 +176,9 @@ export default function OnboardingBusiness() {
                 You can add this later from Profile → Settings
               </Text>
 
-              {/* Bill Prefix */}
+              {/* Entry Prefix */}
               <Text className="text-sm font-semibold text-neutral-800 mt-5 mb-2">
-                Bill Prefix
+                Entry Prefix
               </Text>
               <TextInput
                 placeholder="INV"
@@ -189,7 +189,7 @@ export default function OnboardingBusiness() {
                 className="border-[1.5px] border-border rounded-xl px-3.5 py-3 text-[15px] text-textDark bg-white"
               />
               <Text className="text-xs text-textMuted mt-1.5">
-                Your bills will be numbered {billPrefix || "INV"}-001,{" "}
+                Your entries will be numbered {billPrefix || "INV"}-001,{" "}
                 {billPrefix || "INV"}-002...
               </Text>
             </>

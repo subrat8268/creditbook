@@ -2,7 +2,6 @@ import { Package, Search, X, Plus } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
   FlatList,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -20,7 +19,6 @@ import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import {
   useAddProduct,
   useDeleteProduct,
-  useProductCategories,
   useProducts,
   useUpdateProduct,
 } from "@/src/hooks/useProducts";
@@ -34,7 +32,6 @@ export default function ProductsScreen() {
   const router = useRouter();
 
   const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState("");
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -52,14 +49,8 @@ export default function ProductsScreen() {
     isFetchingNextPage,
   } = useProducts(vendorId, search);
 
-  const { data: categoryList = [] } = useProductCategories(vendorId);
 
-  const filteredProducts = useMemo(() => {
-    if (!activeCategory) return products ?? [];
-    return (products ?? []).filter(
-      (p) => (p.category ?? "").toLowerCase() === activeCategory.toLowerCase(),
-    );
-  }, [products, activeCategory]);
+  const filteredProducts = useMemo(() => products ?? [], [products]);
 
   const totalCount = useMemo(() => filteredProducts.length, [filteredProducts]);
 
@@ -148,9 +139,7 @@ export default function ProductsScreen() {
     setIsBottomSheetOpen(true);
   };
 
-  const handleSelectCategory = (value: string) => {
-    setActiveCategory(value);
-  };
+  // Category selection removed for simplified flow.
 
   const renderProductItem = useCallback(
     ({ item }: { item: any }) => (
@@ -178,7 +167,7 @@ export default function ProductsScreen() {
       {/* ── Header ── */}
       <View className="flex-row items-center px-5 pb-3">
         <View className="flex-1 flex-row items-center gap-3">
-          <Text className="text-[28px] font-black text-textPrimary tracking-tight">Products</Text>
+          <Text className="text-[28px] font-black text-textPrimary tracking-tight">Items</Text>
           {totalCount > 0 && (
             <View className="bg-successLight rounded-full px-3 py-1">
               <Text className="text-[13px] font-extrabold text-success">{totalCount}</Text>
@@ -197,7 +186,7 @@ export default function ProductsScreen() {
           <TextInput
             value={search}
             onChangeText={setSearch}
-            placeholder="Search products to add in bill..."
+            placeholder="Search items to add in entry..."
             placeholderTextColor={colors.textSecondary}
             className="flex-1 text-[15px] font-semibold text-textPrimary"
             style={{ padding: 0 }}
@@ -210,39 +199,7 @@ export default function ProductsScreen() {
         </View>
       </View>
 
-      {/* ── Category chips ── */}
-      <View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 16, gap: 10 }}
-        >
-          {[
-            { label: "All", value: "" },
-            ...categoryList.map((c) => ({ label: c, value: c })),
-          ].map((cat) => {
-            const isActive = activeCategory === cat.value;
-            return (
-              <TouchableOpacity
-                key={cat.value || "__all__"}
-                onPress={() => handleSelectCategory(cat.value)}
-                activeOpacity={0.8}
-                className={`px-4 py-2 rounded-full border ${
-                  isActive ? "bg-primary border-primary" : "bg-surface border-border"
-                } shadow-sm`}
-              >
-                <Text
-                  className={`text-[14px] ${
-                    isActive ? "font-extrabold text-surface" : "font-semibold text-textSecondary"
-                  }`}
-                >
-                  {cat.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
+      {/* ── Category chips removed for simplified flow ── */}
 
       {/* ── List ── */}
       <FlatList
@@ -263,12 +220,12 @@ export default function ProductsScreen() {
               <View className="w-20 h-20 rounded-full bg-background items-center justify-center mb-4 border border-border">
                 <Package size={40} className="text-textSecondary opacity-50" strokeWidth={1.5} />
               </View>
-              <Text className="text-[18px] font-black text-textPrimary mb-1">
-                No products found
-              </Text>
-              <Text className="text-[14px] font-semibold text-textSecondary text-center px-4">
-                Add products to your catalog to instantly search and invoice them in your bills.
-              </Text>
+                <Text className="text-[18px] font-black text-textPrimary mb-1">
+                  No items found
+                </Text>
+                <Text className="text-[14px] font-semibold text-textSecondary text-center px-4">
+                  Add items to your catalog to quickly add them to entries.
+                </Text>
             </View>
           ) : null
         }
@@ -325,8 +282,8 @@ export default function ProductsScreen() {
 
       <ConfirmModal
         visible={showDeleteConfirm}
-        title="Delete Product?"
-        message="Are you sure you want to delete this product? This action cannot be undone."
+        title="Delete Item?"
+        message="Are you sure you want to delete this item? This action cannot be undone."
         confirmLabel="Delete"
         onConfirm={handleDeleteProduct}
         onCancel={() => {

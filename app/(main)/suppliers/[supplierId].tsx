@@ -195,7 +195,7 @@ export default function SupplierDetailScreen() {
   );
 
   if (isLoading) return <Loader />;
-  if (isError || !supplier) return <EmptyState message="Supplier not found" />;
+  if (isError || !supplier) return <EmptyState message="Party not found" />;
 
   const timeline = supplier.timeline ?? [];
 
@@ -372,7 +372,7 @@ export default function SupplierDetailScreen() {
             className="text-[13px] font-bold"
             style={{ color: colors.textSecondary }}
           >
-            Pay Supplier
+            Pay Party
           </Text>
         </TouchableOpacity>
       </View>

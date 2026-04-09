@@ -2,7 +2,7 @@
  * useCustomer - Backward compatibility wrapper for useParties
  * 
  * This hook wraps the new useParties hook and adapts the Party type
- * to the old Customer type, allowing existing UI components to work
+ * to the old Customer type (now aliased to Person), allowing existing UI components to work
  * without changes during the migration period.
  * 
  * MIGRATION NOTE: This is a temporary compatibility layer.
@@ -18,18 +18,18 @@ import {
 import { useEffect } from "react";
 import { Alert } from "react-native";
 import {
-  fetchCustomerDetail,
+  fetchPersonDetail,
   PAGE_SIZE,
 } from "../api/customers";
 import { ApiError } from "../lib/supabaseQuery";
 import { useCustomersStore } from "../store/customersStore";
-import { Customer, CustomerDetail } from "../types/customer";
+import { Person, PersonDetail } from "../types/customer";
 import { useDebounce } from "./useDebounce";
 import { supabase } from "../services/supabase";
 import type { Party } from "../types/party";
 
-// Helper: Convert Party to Customer type
-function partyToCustomer(party: Party): Customer {
+// Helper: Convert Party to Person type
+function partyToCustomer(party: Party): Person {
   return {
     id: party.id,
     name: party.name,
@@ -56,7 +56,7 @@ async function fetchCustomersFromParties(
   pageParam: number,
   vendorId: string,
   search?: string
-): Promise<Customer[]> {
+): Promise<Person[]> {
   let query = supabase
     .from('parties')
     .select('*')
@@ -104,7 +104,7 @@ export const useCustomers = (vendorId?: string, search?: string) => {
   const debouncedSearch = useDebounce(search ?? "", 300);
   const { setCustomers } = useCustomersStore();
 
-  const query = useInfiniteQuery<Customer[], ApiError>({
+  const query = useInfiniteQuery<Person[], ApiError>({
     queryKey: vendorId
       ? customerKeys.list(vendorId, debouncedSearch)
       : ["customers-disabled"],
@@ -130,14 +130,17 @@ export const useCustomers = (vendorId?: string, search?: string) => {
   };
 };
 
+// Preferred alias (new naming)
+export const usePeople = useCustomers;
+
 export const useAddCustomer = (vendorId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation<
-    Customer,
+    Person,
     ApiError,
     Omit<
-      Customer,
+      Person,
       | "id"
       | "vendor_id"
       | "created_at"
@@ -172,7 +175,7 @@ export const useAddCustomer = (vendorId: string) => {
 
       const previousQueries = queryClient.getQueriesData({ queryKey });
 
-      const optimisticCustomer: Customer = {
+      const optimisticCustomer: Person = {
         id: `temp-${Date.now()}`,
         vendor_id: vendorId,
         name: newCustomer.name,
@@ -212,17 +215,21 @@ export const useAddCustomer = (vendorId: string) => {
       });
     },
     onSuccess: (realCustomer) => {
-      Alert.alert("Success", "Customer added successfully");
+      Alert.alert("Success", "Person added successfully");
     },
   });
 };
 
 export function useCustomerDetail(customerId?: string) {
-  return useQuery<CustomerDetail | null>({
+  return useQuery<PersonDetail | null>({
     queryKey: ["customerDetail", customerId],
     queryFn: () =>
-      customerId ? fetchCustomerDetail(customerId) : Promise.resolve(null),
+      customerId ? fetchPersonDetail(customerId) : Promise.resolve(null),
     enabled: !!customerId,
     staleTime: 30_000,
   });
 }
+
+// Preferred alias (new naming)
+export const useAddPerson = useAddCustomer;
+export const usePersonDetail = useCustomerDetail;

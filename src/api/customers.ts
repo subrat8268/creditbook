@@ -1,11 +1,11 @@
 import { toApiError } from "../lib/supabaseQuery";
 import { supabase, executeWithOfflineQueue } from "../services/supabase";
-import { Customer, CustomerDetail } from "../types/customer";
-export type { Customer };
+import { Person, PersonDetail } from "../types/customer";
+export type { Person };
 
 export const PAGE_SIZE = 10;
 
-export async function fetchCustomers(
+export async function fetchPeople(
   pageParam: number,
   vendorId: string,
   search?: string,
@@ -24,7 +24,7 @@ export async function fetchCustomers(
 
   const { data, error } = await query;
   if (error) throw toApiError(error);
-  const customers = (data ?? []) as Customer[];
+  const customers = (data ?? []) as Person[];
 
   // Determine overdue: balance_due > 0 AND last order > 30 days ago
   const thirtyDaysAgo = new Date();
@@ -70,9 +70,9 @@ export async function fetchCustomers(
   }));
 }
 
-export async function addCustomer(
+export async function addPerson(
   vendorId: string,
-  values: Omit<Customer, "id" | "vendor_id" | "created_at">,
+  values: Omit<Person, "id" | "vendor_id" | "created_at">,
 ) {
   // Wrap mutation with offline queue fallback
   return executeWithOfflineQueue(
@@ -96,12 +96,12 @@ export async function addCustomer(
       if (error) {
         if (error.code === "23505") {
           throw new Error(
-            "A customer with this phone number already exists in your account.",
+            "A person with this phone number already exists in your account.",
           );
         }
         throw error;
       }
-      return data as Customer;
+      return data as Person;
     },
     {
       entity: 'customer',
@@ -114,9 +114,14 @@ export async function addCustomer(
   );
 }
 
-export async function fetchCustomerDetail(
+// Backward-compatible aliases (deprecated)
+export const fetchCustomers = fetchPeople;
+export const addCustomer = addPerson;
+export const fetchCustomerDetail = fetchPersonDetail;
+
+export async function fetchPersonDetail(
   customerId: string,
-): Promise<CustomerDetail | null> {
+): Promise<PersonDetail | null> {
   // Fetch customer profile from parties table
   const { data: customer, error: custErr } = await supabase
     .from("parties")

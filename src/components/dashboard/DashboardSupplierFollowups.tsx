@@ -29,7 +29,7 @@ export default function DashboardSupplierFollowups({
     <View className="mb-8">
       <View className="flex-row items-center justify-between mb-4">
         <Text className="text-[18px] font-extrabold text-textPrimary">
-          Supplier Follow-ups
+          Payables Follow-ups
         </Text>
         {onSeeAll && (
           <TouchableOpacity onPress={onSeeAll}>

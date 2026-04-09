@@ -1,8 +1,8 @@
 # KredBook – Product Requirements Document
 
-> **Version**: 2.0
-> **Last Updated**: April 7, 2026
-> **Status**: v1.0 Scope Finalized — Ready for Design Completion Sprint
+> **Version**: 2.1
+> **Last Updated**: April 9, 2026
+> **Status**: Phase 3 shipped — see docs/STATUS.md for current implementation state
 > **Owner**: KredBook Product Team
 
 ---
