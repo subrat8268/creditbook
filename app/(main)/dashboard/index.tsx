@@ -55,7 +55,8 @@ export default function DashboardScreen() {
   const { profile } = useAuthStore();
   const {
     toReceive,
-    overdueCustomers,
+    // Alias for backward compatibility with the existing dashboard hook.
+    overdueCustomers: overduePeople,
     overdueTotalCount,
     isLoading,
   } = useDashboard(profile?.id);
@@ -71,7 +72,7 @@ export default function DashboardScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
+    <SafeAreaView testID="dashboard-root" className="flex-1 bg-background" edges={["top"]}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent={false} />
 
       <ScrollView
@@ -85,7 +86,7 @@ export default function DashboardScreen() {
         />
 
         <View className="px-5">
-          <View className="rounded-[24px] bg-surface border border-border p-6 mb-5">
+          <View testID="dashboard-stats-card" className="rounded-[24px] bg-surface border border-border p-6 mb-5">
             <Text className="text-[12px] font-semibold text-textSecondary uppercase tracking-[2px]">
               Total Outstanding
             </Text>
@@ -107,7 +108,7 @@ export default function DashboardScreen() {
           {/* Primary CTA — keep the home flow focused */}
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => router.push("/(main)/orders/create" as never)}
+            onPress={() => router.push("/(main)/new-bill" as never)}
             className="flex-row items-center justify-center bg-primary rounded-2xl p-4 mb-6"
           >
             <Plus size={18} color={colors.surface} strokeWidth={2.5} />
@@ -116,11 +117,11 @@ export default function DashboardScreen() {
             </Text>
           </TouchableOpacity>
 
-          {overdueCustomers.length > 0 ? (
-            <View className="mb-6">
+          {overduePeople.length > 0 ? (
+            <View testID="dashboard-entries-list" className="mb-6">
               <View className="flex-row items-center justify-between mb-3">
                 <Text className="text-[16px] font-extrabold text-textPrimary">
-                  Top overdue
+                  Top overdue people
                 </Text>
                 <TouchableOpacity
                   onPress={() => router.push("/(main)/customers" as never)}
@@ -129,7 +130,7 @@ export default function DashboardScreen() {
                 </TouchableOpacity>
               </View>
 
-  {overdueCustomers.map((person: OverduePerson) => {
+  {overduePeople.map((person: OverduePerson) => {
                 const initials = getInitials(person.name);
                 const avatarBg = getAvatarBg(person.name);
                 return (
