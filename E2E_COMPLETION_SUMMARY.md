@@ -20,22 +20,37 @@ detox test --configuration ios.sim.debug           # iOS simulator
 ---
 
 ### 2. Comprehensive E2E Test Suite
-- **File**: `e2e/smoke.e2e.js`
-- **Coverage**: 12 test cases across 4 test suites
+- **Files**: `e2e/smoke.e2e.js` + `e2e/auth.e2e.js`
+- **Coverage**: 24 test cases across authentication and main flows
 
-#### Happy Path Tests (3 tests)
+#### Authentication Tests (auth.e2e.js) - 12 tests
+1. ✅ Complete signup flow (full name → email → password → onboarding)
+2. ✅ Invalid email validation
+3. ✅ Password mismatch error
+4. ✅ Weak password validation
+5. ✅ Empty full name validation
+6. ✅ Duplicate email error
+7. ✅ Valid login with dashboard
+8. ✅ Invalid credentials error
+9. ✅ Non-existent email error
+10. ✅ Email format validation on login
+11. ✅ Persistent login after app restart
+12. ✅ Logout and re-login requirement
+
+#### Main Flow Tests (smoke.e2e.js) - 12 tests
+Happy Path (3 tests):
 1. ✅ Login successfully
 2. ✅ Display dashboard with valid data
 3. ✅ Create quick amount entry
 
-#### Edge Case Tests (5 tests)
+Edge Cases (5 tests):
 4. ✅ Offline entry creation + sync queue
 5. ✅ Session recovery after timeout
 6. ✅ Phone validation (invalid + valid formats)
 7. ✅ Entries appear after creation
 8. ✅ Customer detail + ledger updates
 
-#### Validation Tests (2 tests)
+Validation Tests (4 tests):
 9. ✅ Prevent empty customer selection
 10. ✅ Prevent empty amount input
 11. ✅ Network simulation (offline/online toggle)
@@ -45,7 +60,8 @@ detox test --configuration ios.sim.debug           # iOS simulator
 - Uses `device.simulateNetworkState()` for offline testing
 - Implements `waitFor()` patterns for async operations
 - Tests both validation paths and UI feedback
-- Includes optional (manual) test cases
+- Tests full signup-to-entry creation workflow
+- Includes account creation, password strength, and duplicate account checks
 
 ---
 
@@ -68,6 +84,8 @@ detox test --configuration ios.sim.debug           # iOS simulator
 
 ### 4. testID Coverage for Automated Selection
 - **Components Updated**:
+  - ✅ `signup.tsx`: Added `auth-signup-fullname`, `auth-signup-email`, `auth-signup-password`, `auth-signup-confirm-password`, `auth-signup-submit`
+  - ✅ `login.tsx`: Already has `auth-login-email`, `auth-login-password`, `auth-login-submit`
   - ✅ `dashboard/index.tsx`: Added `dashboard-root`, `dashboard-stats-card`, `dashboard-entries-list`
   - ✅ `orders/create.tsx`: Added `entry-person-search`, `entry-person-row-*`, `entry-amount-input`, `entry-save-share`
   - ✅ `BillFooter.tsx`: Accepts `testID` prop
@@ -75,22 +93,28 @@ detox test --configuration ios.sim.debug           # iOS simulator
 
 **testID Coverage**:
 ```
-auth-login-email             ← Login screen email input
-auth-login-password          ← Login screen password input
-auth-login-submit            ← Login button
+auth-signup-fullname             ← Signup screen full name input
+auth-signup-email                ← Signup screen email input
+auth-signup-password             ← Signup screen password input
+auth-signup-confirm-password     ← Signup screen confirm password input
+auth-signup-submit               ← Signup create account button
 
-dashboard-root               ← Dashboard container
-dashboard-stats-card         ← Stats/totals card
-dashboard-entries-list       ← Overdue people list
+auth-login-email                 ← Login screen email input
+auth-login-password              ← Login screen password input
+auth-login-submit                ← Login button
 
-tab-add-entry                ← Add Entry tab button
-tab-entries                  ← Entries tab button
-tab-settings                 ← Settings tab button
+dashboard-root                   ← Dashboard container
+dashboard-stats-card             ← Stats/totals card
+dashboard-entries-list           ← Overdue people list
 
-entry-person-search          ← Customer search field
-entry-person-row-0           ← First customer result (dynamic index)
-entry-amount-input           ← Amount input field
-entry-save-share             ← Save & Share button
+tab-add-entry                    ← Add Entry tab button
+tab-entries                      ← Entries tab button
+tab-settings                     ← Settings tab button
+
+entry-person-search              ← Customer search field
+entry-person-row-0               ← First customer result (dynamic index)
+entry-amount-input               ← Amount input field
+entry-save-share                 ← Save & Share button
 ```
 
 ---
@@ -199,13 +223,15 @@ Passed: 8/12 (optional tests may be skipped)
 | File | Purpose | Status |
 |------|---------|--------|
 | `detox.config.js` | Detox configuration (devices + apps) | ✅ Complete |
-| `e2e/smoke.e2e.js` | 12 comprehensive test cases | ✅ Complete |
+| `e2e/auth.e2e.js` | 12 authentication test cases (signup, login, auth state) | ✅ Complete |
+| `e2e/smoke.e2e.js` | 12 main flow test cases (dashboard, entries, offline) | ✅ Complete |
 | `e2e/jest.config.js` | Jest runner config | ✅ Complete |
 | `e2e/init.js` | Detox lifecycle setup | ✅ Complete |
 | `QA_LOG.md` | Manual QA test template | ✅ Complete |
-| `E2E_SETUP.md` | Complete setup guide | ✅ Complete |
+| `E2E_SETUP.md` | Complete setup guide (updated with auth tests) | ✅ Complete |
 | `TEST_FLOWS.md` | High-level test plan | ✅ Updated |
 | `package.json` | npm scripts | ✅ Updated |
+| `app/(auth)/signup.tsx` | Signup screen with testIDs | ✅ Added |
 | Dashboard testIDs | UI component identifiers | ✅ Added |
 | Entry form testIDs | E2E selection targets | ✅ Added |
 
@@ -249,20 +275,21 @@ Passed: 8/12 (optional tests may be skipped)
 
 | Category | Count | Status |
 |----------|-------|--------|
-| Happy Path Tests | 3 | ✅ Ready |
-| Edge Case Tests | 5 | ✅ Ready |
-| Validation Tests | 2 | ✅ Ready |
-| Optional Tests | 2 | ✅ Ready |
-| **Total** | **12** | ✅ Complete |
+| Authentication Tests | 12 | ✅ Ready |
+| Main Flow Tests | 12 | ✅ Ready |
+| **Total E2E Tests** | **24** | ✅ Complete |
 
 **Coverage Areas**:
-- ✅ Authentication (login)
+- ✅ Authentication (signup, login, validation)
+- ✅ Account state (persistence, logout, re-login)
 - ✅ Dashboard display
 - ✅ Entry creation (happy path)
 - ✅ Offline + sync queue
 - ✅ Session recovery
-- ✅ Input validation (phone, amount, customer)
+- ✅ Input validation (email, password, amount, customer, phone)
 - ✅ Network state transitions
+- ✅ Password strength validation
+- ✅ Duplicate account prevention
 
 ---
 

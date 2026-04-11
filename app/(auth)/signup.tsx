@@ -85,6 +85,7 @@ export default function SignUpPage() {
                       onChangeText={handleChange("fullName")}
                       error={touched.fullName ? errors.fullName : undefined}
                       variant="white"
+                      testID="auth-signup-fullname"
                     />
 
                     <Text className="text-[13px] font-semibold text-textPrimary mb-2 mt-4">
@@ -97,6 +98,7 @@ export default function SignUpPage() {
                       error={touched.email ? errors.email : undefined}
                       keyboardType="email-address"
                       variant="white"
+                      testID="auth-signup-email"
                     />
 
                     <Text className="text-[13px] font-semibold text-textPrimary mb-2 mt-4">
@@ -109,6 +111,7 @@ export default function SignUpPage() {
                       secureTextEntry={!showPassword}
                       error={touched.password ? errors.password : undefined}
                       variant="white"
+                      testID="auth-signup-password"
                       icon={
                         <TouchableOpacity
                           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -147,6 +150,7 @@ export default function SignUpPage() {
                           : undefined
                       }
                       variant="white"
+                      testID="auth-signup-confirm-password"
                       icon={
                         <TouchableOpacity
                           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -176,6 +180,7 @@ export default function SignUpPage() {
                       onPress={handleSubmit}
                       loading={signUpMutation.isPending}
                       className="mt-5"
+                      testID="auth-signup-submit"
                     />
 
                     <AuthDivider />

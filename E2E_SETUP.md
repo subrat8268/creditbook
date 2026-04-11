@@ -227,10 +227,13 @@ npm run build:e2e:emulator
 ### Execute Tests on Physical Device
 
 ```bash
-# Run all E2E tests
+# Run all E2E tests (both auth and main flow)
 npm run test:e2e:android-device
 
-# Run specific test file
+# Run only authentication tests (signup, login, auth state)
+detox test e2e/auth.e2e.js --configuration android.device.debug
+
+# Run only main flow tests (dashboard, entry creation, etc.)
 detox test e2e/smoke.e2e.js --configuration android.device.debug
 
 # Run with verbose logging
@@ -256,7 +259,70 @@ npm run test:e2e:ios
 
 ## E2E Test Cases Included
 
-### Happy Path
+### Authentication Tests (auth.e2e.js)
+
+#### Signup Flow Tests (8 tests)
+
+1. **Complete Signup Flow** (`should complete full signup flow with new account`)
+   - Navigate to signup
+   - Enter full name, email, password
+   - Confirm password
+   - Tap create account
+   - Verify onboarding or dashboard loads
+
+2. **Invalid Email Validation** (`should show validation error for invalid email`)
+   - Enter invalid email format
+   - Verify error message displayed
+
+3. **Password Mismatch** (`should show validation error for password mismatch`)
+   - Enter mismatched passwords
+   - Verify error message
+
+4. **Weak Password** (`should show validation error for weak password`)
+   - Enter password < 6 characters
+   - Verify strength error
+
+5. **Empty Full Name** (`should show validation error for empty full name`)
+   - Skip full name field
+   - Verify required field error
+
+6. **Duplicate Email** (`should show error for duplicate email`)
+   - Try signup with existing email
+   - Verify "already exists" error
+
+#### Login Flow Tests (4 tests)
+
+7. **Valid Login** (`should log in with valid credentials`)
+   - Enter valid email and password
+   - Verify dashboard loads
+
+8. **Invalid Credentials** (`should show error for invalid credentials`)
+   - Enter wrong password
+   - Verify error message
+
+9. **Non-existent Email** (`should show error for non-existent email`)
+   - Enter non-existent email
+   - Verify not found error
+
+10. **Email Format Validation** (`should validate email format on login`)
+    - Enter invalid email format
+    - Verify disabled button or error
+
+#### Auth State Tests (2 tests)
+
+11. **Persist Login After Restart** (`should persist login state after app restart`)
+    - Login
+    - Restart app
+    - Verify still logged in
+
+12. **Logout Flow** (`should require login after logout`)
+    - Login
+    - Navigate to settings and logout
+    - Verify back on login screen
+
+### Main Flow Tests (smoke.e2e.js)
+
+#### Happy Path (3 tests)
 
 1. **Login** (`logs in and reaches dashboard`)
    - Enter credentials

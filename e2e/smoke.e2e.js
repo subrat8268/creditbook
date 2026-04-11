@@ -1,9 +1,11 @@
 /**
- * KredBook E2E Tests (Detox)
+ * KredBook E2E Tests - Main Flow (Detox)
  * 
  * Test Coverage:
  * 1. Happy Path: Login → Dashboard → Create Entry
  * 2. Edge Cases: Offline creation, token expiry, validation
+ * 
+ * IMPORTANT: See auth.e2e.js for comprehensive signup/authentication tests
  * 
  * Requires test data:
  * - tester@kredbook.io account
