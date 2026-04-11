@@ -88,65 +88,37 @@ Used for **both single device and two device testing**.
 
 **How to Create:**
 
-#### Option A: Supabase Dashboard (Manual)
-1. Go to Supabase → Authentication → Users
-2. Click "Add User"
-3. Enter email & password (above)
-4. ✅ Check "Auto confirm user"
-5. Click "Create User"
+⚠️ **IMPORTANT**: Account MUST be created via the **app's signup flow**, not via Supabase Dashboard or MCP.
 
-#### Option B: Via Script (Recommended)
+#### Via App Signup (REQUIRED)
 
-Create `scripts/setup-qa-account.ts`:
+1. Install and launch KredBook app on device
+2. Go to **Signup** screen
+3. Fill in the form:
+   - **Full Name**: Test User
+   - **Email**: tester@kredbook.io
+   - **Password**: Test@1234
+   - **Confirm Password**: Test@1234
+4. Click **Create Account**
+5. Complete onboarding flow:
+   - Enter **Business Name**: Test Store
+   - Enter **Bill Prefix**: TEST
+   - Enter **Phone**: 8268017431
+   - Upload/skip logo
+6. ✅ Account created and logged in
 
-```typescript
-import { createClient } from '@supabase/supabase-js';
+**Why app signup only?**
+- Tests the signup flow end-to-end
+- Verifies email validation works
+- Ensures all onboarding steps complete
+- Validates password strength rules
+- Tests profile creation through app
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: { persistSession: false }
-});
-
-async function setupQAAccount() {
-  // 1. Create auth user
-  const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-    email: 'tester@kredbook.io',
-    password: 'Test@1234',
-    email_confirm: true,
-  });
-
-  if (authError) {
-    console.error('Failed to create auth user:', authError);
-    return;
-  }
-
-  console.log('✅ Auth user created:', authUser.user.id);
-
-  // 2. Create profile
-  const { error: profileError } = await supabase
-    .from('profiles')
-    .insert({
-      id: authUser.user.id,
-      email: 'tester@kredbook.io',
-      business_name: 'Test Store',
-      bill_number_prefix: 'TEST',
-      phone: '8268017431',
-    });
-
-  if (profileError) {
-    console.error('Failed to create profile:', profileError);
-    return;
-  }
-
-  console.log('✅ Profile created');
-}
-
-setupQAAccount().catch(console.error);
-```
-
-Run: `npx ts-node scripts/setup-qa-account.ts`
+**DO NOT:**
+- ❌ Create account via Supabase Dashboard
+- ❌ Use MCP service to create account
+- ❌ Use scripts/SQL to bypass signup
+- ❌ Pre-create accounts before testing
 
 ---
 
@@ -161,26 +133,33 @@ Run: `npx ts-node scripts/setup-qa-account.ts`
 
 ### How to Add Test Customers
 
-#### Via App (In-App Flow):
+⚠️ **IMPORTANT**: Customers MUST be added via the app, not via Supabase Dashboard or SQL.
+
+#### Via App (In-App Flow) - REQUIRED
 
 1. Login to app with `tester@kredbook.io` / `Test@1234`
 2. Complete onboarding
 3. Go to **Customers** tab
-4. Click **Add Customer**
+4. Click **Add Customer** or **+** button
 5. Enter:
    - Name: "Test Customer 1"
    - Phone: "8268017431"
-6. Save
-7. Repeat for "Test Customer 2" with phone "7021344154"
+6. Click **Save**
+7. Repeat for second customer:
+   - Name: "Test Customer 2"
+   - Phone: "7021344154"
+8. ✅ Both customers appear in Customers list
 
-#### Via Supabase SQL:
+**Why app flow only?**
+- Tests customer creation validation (phone format, name length, etc.)
+- Verifies phone number uniqueness checks
+- Ensures Supabase sync works correctly
+- Tests offline queue for customer creation
 
-```sql
-INSERT INTO customers (name, phone, vendor_id, created_at)
-VALUES 
-  ('Test Customer 1', '8268017431', '[TESTER_USER_ID]', NOW()),
-  ('Test Customer 2', '7021344154', '[TESTER_USER_ID]', NOW());
-```
+**DO NOT:**
+- ❌ Insert directly into database via Supabase
+- ❌ Use SQL queries to create customers
+- ❌ Pre-populate via scripts or MCP
 
 ### Test Products
 
@@ -189,11 +168,28 @@ VALUES
 | Test Item 1 | ₹100 | Consumable |
 | Test Item 2 | ₹500 | Service |
 
-**Add via App:**
+**Add via App (REQUIRED):**
 1. Go to **Products** tab
-2. Click **Add Product**
-3. Enter name & price
-4. Save
+2. Click **Add Product** or **+** button
+3. Enter:
+   - Product Name: "Test Item 1"
+   - Price: 100
+4. Click **Save**
+5. Repeat for second product:
+   - Product Name: "Test Item 2"
+   - Price: 500
+6. ✅ Both products appear in Products list
+
+**Why app flow only?**
+- Tests product creation validation (name, price validation)
+- Verifies price format handling (rupees)
+- Ensures Supabase sync works
+- Tests product listing display
+
+**DO NOT:**
+- ❌ Insert directly into database
+- ❌ Use SQL to pre-populate products
+- ❌ Use scripts or MCP for setup
 
 ---
 
