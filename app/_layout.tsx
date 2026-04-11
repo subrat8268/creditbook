@@ -123,7 +123,7 @@ function RootLayout() {
       // NEW: Enforce phone collection after login
       router.replace("/(auth)/phone-setup" as any);
     } else if (!profile.onboarding_complete) {
-      router.replace("/(auth)/onboarding/role" as any);
+      router.replace("/(auth)/onboarding/business" as any);
     } else {
       router.replace("/(main)/dashboard" as any);
     }

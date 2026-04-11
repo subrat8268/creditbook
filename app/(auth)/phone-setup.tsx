@@ -41,9 +41,8 @@ export default function PhoneSetup() {
   };
 
   const proceedToNext = () => {
-    // After phone setup, always go to role selection to set dashboard_mode
-    // This ensures the dashboard mode is configured before accessing main app
-    router.replace("/(auth)/onboarding/role" as any);
+    // After phone setup, go directly to business setup (bypassing role selection)
+    router.replace("/(auth)/onboarding/business" as any);
   };
 
   // If showing ledgers, render the ledgers view
