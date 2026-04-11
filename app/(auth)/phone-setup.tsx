@@ -41,11 +41,9 @@ export default function PhoneSetup() {
   };
 
   const proceedToNext = () => {
-    if (profile?.onboarding_complete) {
-      router.replace({ pathname: "/(main)/customers", params: { action: "add" } } as any);
-    } else {
-      router.replace("/(auth)/onboarding/role" as any);
-    }
+    // After phone setup, always go to role selection to set dashboard_mode
+    // This ensures the dashboard mode is configured before accessing main app
+    router.replace("/(auth)/onboarding/role" as any);
   };
 
   // If showing ledgers, render the ledgers view
