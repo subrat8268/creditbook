@@ -16,6 +16,7 @@ import { View, Text, Animated, TouchableOpacity, StyleSheet, ActivityIndicator }
 import { CloudOff, CloudUpload, CloudCheck } from 'lucide-react-native';
 import { colors, spacing, typography } from '@/src/utils/theme';
 import { useNetworkSync, type SyncStatus } from '@/src/hooks/useNetworkSync';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -55,12 +56,13 @@ const STATE_CONFIGS = {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export function SyncStatusBanner() {
-  const { syncStatus, queueLength, isConnected } = useNetworkSync();
+  const { syncStatus, queueLength, isConnected, hasSyncError, triggerSync } = useNetworkSync();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const autoDismissTimer = useRef<NodeJS.Timeout | null>(null);
+  const insets = useSafeAreaInsets();
 
   // Determine if banner should be visible
-  const shouldShow = !isConnected || syncStatus === 'syncing' || syncStatus === 'synced';
+  const shouldShow = !isConnected || syncStatus === 'syncing' || syncStatus === 'synced' || hasSyncError;
 
   /**
    * Effect: Animate banner in/out based on sync status.
@@ -128,20 +130,26 @@ export function SyncStatusBanner() {
   const currentState: SyncStatus = !isConnected ? 'offline' : syncStatus;
   const config = STATE_CONFIGS[currentState];
   const Icon = config.Icon;
-  const text = config.getText(queueLength);
+  const text = hasSyncError
+    ? 'Sync failed • Tap to retry'
+    : config.getText(queueLength);
+
+  const hiddenOffset = -(BANNER_HEIGHT + insets.top);
 
   return (
     <Animated.View
       style={[
         styles.container,
-        { 
+        {
           backgroundColor: config.backgroundColor,
+          paddingTop: insets.top,
+          height: BANNER_HEIGHT + insets.top,
           opacity: fadeAnim,
           transform: [
             {
               translateY: fadeAnim.interpolate({
                 inputRange: [0, 1],
-                outputRange: [-BANNER_HEIGHT, 0],
+                outputRange: [hiddenOffset, 0],
               }),
             },
           ],
@@ -150,7 +158,7 @@ export function SyncStatusBanner() {
     >
       <TouchableOpacity
         style={styles.content}
-        onPress={handleDismiss}
+        onPress={hasSyncError ? triggerSync : handleDismiss}
         activeOpacity={0.8}
       >
         {/* Icon (with spinner for "syncing" state) */}

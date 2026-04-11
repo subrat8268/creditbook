@@ -63,7 +63,7 @@ export default function ProductDetailsScreen() {
         { text: "Cancel", style: "cancel" },
         {
           text: "Add Entry",
-          onPress: () => router.push("/(main)/orders/create" as any),
+          onPress: () => router.push("/(main)/new-bill" as any),
         },
       ],
     );

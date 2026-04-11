@@ -18,6 +18,7 @@ import NetInfo, { type NetInfoState } from '@react-native-community/netinfo';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import * as syncQueue from '@/src/lib/syncQueue';
+import { getOrCreateSyncQueueKey } from '@/src/lib/syncQueueStorage';
 import type { QueuedMutation } from '@/src/lib/syncQueue';
 import { createOrder } from '@/src/api/orders';
 import { recordPayment } from '@/src/api/orders';
@@ -38,6 +39,8 @@ interface UseNetworkSyncReturn {
   queueLength: number;
   /** Whether device is connected to internet */
   isConnected: boolean;
+  /** Whether last sync had failures */
+  hasSyncError: boolean;
   /** Manually trigger sync (for "Retry" button) */
   triggerSync: () => Promise<void>;
 }
@@ -212,6 +215,19 @@ export function useNetworkSync(): UseNetworkSyncReturn {
   const [queueLength, setQueueLength] = useState(syncQueue.size());
   const [isConnected, setIsConnected] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [hasSyncError, setHasSyncError] = useState(false);
+
+  useEffect(() => {
+    const ensureQueueReady = async () => {
+      if (syncQueue.isInitialized()) return;
+      const key = await getOrCreateSyncQueueKey();
+      syncQueue.initializeSyncQueue(key);
+    };
+
+    ensureQueueReady().catch((error) => {
+      console.error('[NetworkSync] Failed to initialize sync queue:', error);
+    });
+  }, []);
 
   /**
    * Process the entire mutation queue (FIFO).
@@ -220,6 +236,11 @@ export function useNetworkSync(): UseNetworkSyncReturn {
   const processQueue = useCallback(async () => {
     if (isSyncing) {
       console.log('[NetworkSync] Sync already in progress, skipping...');
+      return;
+    }
+
+    if (!syncQueue.isInitialized()) {
+      console.warn('[NetworkSync] Sync queue not initialized yet');
       return;
     }
 
@@ -265,6 +286,7 @@ export function useNetworkSync(): UseNetworkSyncReturn {
     }
 
     console.log(`[NetworkSync] Sync complete. Success: ${successCount}, Failed: ${failureCount}`);
+    setHasSyncError(failureCount > 0);
 
     // Update final status
     const remainingQueue = syncQueue.list();
@@ -336,6 +358,7 @@ export function useNetworkSync(): UseNetworkSyncReturn {
     syncStatus,
     queueLength,
     isConnected,
+    hasSyncError,
     triggerSync,
   };
 }

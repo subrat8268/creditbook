@@ -12,6 +12,7 @@ type Props = {
   disabled?: boolean;
   icon?: React.ReactNode;
   iconPosition?: "left" | "right";
+  testID?: string;
 };
 
 export default function Button({
@@ -23,6 +24,7 @@ export default function Button({
   disabled,
   icon,
   iconPosition = "left",
+  testID,
 }: Props) {
   const baseStyle =
     "w-full py-3 rounded-xl items-center justify-center h-14 flex-row";
@@ -45,6 +47,7 @@ export default function Button({
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.8}
+      testID={testID}
       style={[
         variant === "primary" && !disabled
           ? {

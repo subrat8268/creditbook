@@ -395,7 +395,7 @@ export async function updateOrder(
         : [
             {
               product_id: null,
-              product_name: "Bill Amount",
+              product_name: "Entry Amount",
               variant_id: null,
               variant_name: null,
               price: Number(quickAmount || 0),

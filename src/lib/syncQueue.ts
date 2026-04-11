@@ -40,10 +40,26 @@ export interface QueuedMutation {
 // MMKV STORAGE
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const storage = createMMKV({
-  id: 'kredbook-sync-queue',
-  encryptionKey: 'kredbook-offline-queue-v1', // Basic encryption for queue data
-});
+let storage: MMKV | null = null;
+let activeEncryptionKey: string | null = null;
+
+/**
+ * Initialize the sync queue storage with a per-install encryption key.
+ * Must be called before any queue operations.
+ */
+export function initializeSyncQueue(encryptionKey: string): void {
+  if (!encryptionKey) {
+    throw new Error('[SyncQueue] Encryption key is required');
+  }
+
+  if (storage && activeEncryptionKey === encryptionKey) return;
+
+  activeEncryptionKey = encryptionKey;
+  storage = createMMKV({
+    id: 'kredbook-sync-queue',
+    encryptionKey,
+  });
+}
 
 const QUEUE_KEY = 'mutation_queue';
 const MAX_QUEUE_SIZE = 100; // Prevent unbounded growth
@@ -56,9 +72,16 @@ const MAX_QUEUE_SIZE = 100; // Prevent unbounded growth
  * Read the current queue from MMKV storage.
  * Returns empty array if queue doesn't exist.
  */
+function getStorage(): MMKV {
+  if (!storage) {
+    throw new Error('[SyncQueue] Not initialized. Call initializeSyncQueue() first.');
+  }
+  return storage;
+}
+
 function readQueue(): QueuedMutation[] {
   try {
-    const raw = storage.getString(QUEUE_KEY);
+    const raw = getStorage().getString(QUEUE_KEY);
     if (!raw) return [];
     return JSON.parse(raw) as QueuedMutation[];
   } catch (error) {
@@ -73,7 +96,7 @@ function readQueue(): QueuedMutation[] {
  */
 function writeQueue(queue: QueuedMutation[]): void {
   try {
-    storage.set(QUEUE_KEY, JSON.stringify(queue));
+    getStorage().set(QUEUE_KEY, JSON.stringify(queue));
   } catch (error) {
     console.error('[SyncQueue] Failed to write queue:', error);
   }
@@ -208,6 +231,13 @@ export function list(): QueuedMutation[] {
 }
 
 /**
+ * Check if the sync queue has been initialized.
+ */
+export function isInitialized(): boolean {
+  return Boolean(storage);
+}
+
+/**
  * Get the current queue size.
  * 
  * @returns Number of mutations in the queue
@@ -221,7 +251,7 @@ export function size(): number {
  * Called on user logout or manual "Clear Queue" action.
  */
 export function clear(): void {
-  storage.remove(QUEUE_KEY);
+  getStorage().remove(QUEUE_KEY);
   console.log('[SyncQueue] Queue cleared');
 }
 
@@ -267,5 +297,7 @@ export function getStats() {
 export const __DEV_ONLY__ = {
   readQueue,
   writeQueue,
-  storage,
+  get storage() {
+    return storage;
+  },
 };

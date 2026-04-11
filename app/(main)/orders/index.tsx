@@ -3,6 +3,7 @@ import { Order } from "@/src/api/orders";
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useOrders } from "@/src/hooks/useOrders";
+import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 import { useAuthStore } from "@/src/store/authStore";
 import { colors, spacing, typography } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
@@ -37,6 +38,8 @@ export default function OrdersScreen() {
     isFetchingNextPage,
   } = useOrders(profile?.id, search, undefined, "newest"); // minimal filters only
 
+  const { isConnected } = useNetworkSync();
+
   const orders = useMemo(() => rawOrders ?? [], [rawOrders]);
 
   const onRefresh = useCallback(async () => {
@@ -61,7 +64,7 @@ export default function OrdersScreen() {
   );
 
   const handleCreateEntry = useCallback(
-    () => router.push("/orders/create"),
+    () => router.push("/new-bill"),
     [router],
   );
 
@@ -160,20 +163,24 @@ export default function OrdersScreen() {
                 <Text style={{ fontSize: 36 }}>📋</Text>
               </View>
               <Text className="text-textPrimary text-[18px] font-bold mb-2 text-center">
-                No entries yet
+                {isConnected ? "No entries yet" : "You’re offline"}
               </Text>
               <Text className="text-textSecondary text-[14px] text-center leading-6">
-                Add your first entry to start tracking.
+                {isConnected
+                  ? "Add your first entry to start tracking."
+                  : "Connect to the internet to load entries."}
               </Text>
-              <TouchableOpacity
-                onPress={handleCreateEntry}
-                activeOpacity={0.85}
-                className="mt-5 rounded-full bg-primary px-8 py-3"
-              >
-                <Text className="text-[14px] font-bold text-surface">
-                  Add Entry
-                </Text>
-              </TouchableOpacity>
+              {isConnected ? (
+                <TouchableOpacity
+                  onPress={handleCreateEntry}
+                  activeOpacity={0.85}
+                  className="mt-5 rounded-full bg-primary px-8 py-3"
+                >
+                  <Text className="text-[14px] font-bold text-surface">
+                    Add Entry
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
             </View>
           }
         />

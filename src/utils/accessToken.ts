@@ -2,7 +2,7 @@
  * Token Generation Utility for Shared Ledger System
  * 
  * Provides functions to:
- * - Generate or retrieve access tokens for customer ledger sharing
+ * - Generate or retrieve access tokens for person ledger sharing
  * - Create WhatsApp shareable links
  * - Track token usage
  */
@@ -33,11 +33,11 @@ export interface LedgerInfo {
 }
 
 /**
- * Get or create an access token for a customer ledger
+ * Get or create an access token for a person ledger
  * Uses the database RPC function to ensure uniqueness
  * 
  * @param vendorId - Profile ID of the vendor (business owner)
- * @param customerId - Customer ID whose ledger will be shared
+ * @param customerId - Person ID whose ledger will be shared
  * @returns The shareable token string (e.g., "a8f3k2m9p1")
  */
 export async function getOrCreateAccessToken(
@@ -67,11 +67,11 @@ export async function getOrCreateAccessToken(
 }
 
 /**
- * Generate a shareable WhatsApp link for a customer ledger
+ * Generate a shareable WhatsApp link for a person ledger
  * 
  * @param vendorId - Profile ID of the vendor
- * @param customerId - Customer ID
- * @param customerPhone - Customer's phone number (with country code)
+ * @param customerId - Person ID
+ * @param customerPhone - Person's phone number (with country code)
  * @param businessName - Vendor's business name
  * @returns WhatsApp deep link with pre-filled message
  */
@@ -108,10 +108,10 @@ export async function generateWhatsAppLedgerLink(
 }
 
 /**
- * Get the public ledger URL for a customer
+ * Get the public ledger URL for a person
  * 
  * @param vendorId - Profile ID of the vendor
- * @param customerId - Customer ID
+ * @param customerId - Person ID
  * @returns Public ledger URL (e.g., "https://kredbook.app/l/a8f3k2m9p1")
  */
 export async function getLedgerUrl(
@@ -123,13 +123,17 @@ export async function getLedgerUrl(
 }
 
 /**
- * Find all ledgers for a phone number (used when customer adds phone)
+ * Find all ledgers for a phone number (used when a person adds phone)
  * 
  * @param phone - Phone number to search for
  * @returns Array of ledger information across all vendors
  */
 export async function findLedgersByPhone(phone: string): Promise<LedgerInfo[]> {
   try {
+    if (!phone?.trim()) {
+      throw new Error('Phone number is required');
+    }
+
     const { data, error } = await supabase.rpc('find_ledgers_by_phone', {
       p_phone: phone,
     });
@@ -147,10 +151,10 @@ export async function findLedgersByPhone(phone: string): Promise<LedgerInfo[]> {
 }
 
 /**
- * Auto-link a customer to all existing ledgers when they provide their phone
+ * Auto-link a person to all existing ledgers when they provide their phone
  * Creates access tokens for all vendor relationships with this phone number
  * 
- * @param customerId - Customer ID to link
+ * @param customerId - Person ID to link
  * @param phone - Phone number to search for
  * @returns Number of ledgers linked
  */
@@ -159,6 +163,10 @@ export async function autoLinkCustomerLedgers(
   phone: string
 ): Promise<number> {
   try {
+    if (!phone?.trim()) {
+      throw new Error('Phone number is required');
+    }
+
     const { data, error } = await supabase.rpc('auto_link_customer_ledgers', {
       p_customer_id: customerId,
       p_phone: phone,
@@ -199,7 +207,7 @@ export async function revokeAccessToken(token: string): Promise<void> {
 }
 
 /**
- * Get all access tokens for a vendor's customers
+ * Get all access tokens for a vendor's people (customers)
  * 
  * @param vendorId - Profile ID of the vendor
  * @returns Array of access tokens

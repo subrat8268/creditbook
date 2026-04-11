@@ -7,12 +7,18 @@
  * 3. Auth validation: Email, password, confirmation errors
  * 
  * Note: Uses unique test emails to avoid conflicts
+ * 
+ * Test Phone Numbers:
+ * - 8268017431 (Test Customer 1)
+ * - 7021344154 (Test Customer 2)
  */
 
 const generateTestEmail = () => `test-${Date.now()}@kredbook-qa.io`;
 const TEST_PASSWORD = 'Test@1234';
 const TEST_FULLNAME = 'Test User';
 const EXISTING_EMAIL = 'tester@kredbook.io';
+const TEST_PHONE_1 = '8268017431'; // Test Customer 1
+const TEST_PHONE_2 = '7021344154'; // Test Customer 2
 
 describe('KredBook Authentication E2E Tests', () => {
   beforeEach(async () => {

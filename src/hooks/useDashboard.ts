@@ -36,13 +36,14 @@ export function useDashboard(vendorId?: string) {
   useEffect(() => {
     if (!vendorId) return;
     pruneReminderSnoozes();
-    const overdue = query.data?.overdueCustomersList ?? [];
+    // Backend contract still returns overdueCustomersList; treat as people list.
+    const overduePeople = query.data?.overdueCustomersList ?? [];
     syncOverdueReminders(
-      overdue.map((customer: any) => ({
-        customerId: customer.id,
-        customerName: customer.name,
-        balance: customer.balance,
-        daysSince: customer.daysSince,
+      overduePeople.map((person: any) => ({
+        customerId: person.id,
+        customerName: person.name,
+        balance: person.balance,
+        daysSince: person.daysSince,
       })),
       {
         enabled: remindersEnabled,

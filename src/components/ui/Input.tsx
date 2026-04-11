@@ -15,6 +15,7 @@ type Props = {
   variant?: "neutral" | "white";
   height?: number;
   keyboardType?: "default" | "decimal-pad" | "numeric" | "email-address";
+  testID?: string;
 };
 
 export default function Input({
@@ -29,6 +30,7 @@ export default function Input({
   variant = "neutral",
   height = 48,
   keyboardType = "default",
+  testID,
 }: Props) {
   const containerStyle = clsx(
     "flex-row items-center border rounded-xl px-4",
@@ -56,6 +58,7 @@ export default function Input({
             secureTextEntry={secureTextEntry}
             keyboardType={keyboardType}
             placeholderTextColor={colors.textSecondary}
+            testID={testID}
             style={{
               flex: 1,
               color: colors.textPrimary,

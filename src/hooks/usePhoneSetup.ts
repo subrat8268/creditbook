@@ -127,7 +127,11 @@ export function usePhoneSetup() {
       return { success: true, ledgers };
     } catch (err: any) {
       console.error("Failed to save phone:", err);
-      setError(err.message || "Failed to save phone number");
+      if (err?.message === 'phone_not_verified') {
+        setError('Phone verification required. Please verify your phone number.');
+      } else {
+        setError(err.message || "Failed to save phone number");
+      }
       return { success: false };
     } finally {
       setLoading(false);

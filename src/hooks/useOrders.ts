@@ -106,7 +106,7 @@ export function useUpdateOrder(vendorId: string) {
         : [
             {
               product_id: null,
-              product_name: "Bill Amount",
+              product_name: "Entry Amount",
               variant_id: null,
               variant_name: null,
               price: Math.max(0, variables.quickAmount || 0),
@@ -178,7 +178,7 @@ export function useUpdateOrder(vendorId: string) {
   });
 }
 
-// ✅ Create order mutation with optimistic updates
+// ✅ Create entry (order) mutation with optimistic updates
 export function useCreateOrder(vendorId: string) {
   const queryClient = useQueryClient();
 
@@ -276,7 +276,7 @@ export function useCreateOrder(vendorId: string) {
         return [updatedFirstPage, ...old.slice(1)];
       });
 
-      // Optimistically update customer outstanding balance
+      // Optimistically update person outstanding balance (customer detail cache)
       queryClient.setQueryData(["customerDetail", variables.customerId], (old: any) => {
         if (!old) return old;
         return {
@@ -297,7 +297,7 @@ export function useCreateOrder(vendorId: string) {
       // searched, filtered, and sorted list variants so no stale view appears.
       queryClient.invalidateQueries({ queryKey: orderKeys.all(vendorId) });
 
-      // 3. Invalidate downstream customer caches.
+      // 3. Invalidate downstream people caches.
       queryClient.invalidateQueries({ queryKey: ["customers", vendorId] });
       queryClient.invalidateQueries({
         queryKey: ["customerDetail", variables.customerId],

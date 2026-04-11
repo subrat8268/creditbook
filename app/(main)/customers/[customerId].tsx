@@ -345,7 +345,7 @@ export default function CustomerDetailScreen() {
     }
     if (amountSeed && amountSeed > 0) {
       router.push({
-        pathname: "/orders/create",
+          pathname: "/new-bill",
         params: { customer: JSON.stringify(customer), amount: String(amountSeed) },
       });
       return;
@@ -526,7 +526,7 @@ export default function CustomerDetailScreen() {
               activeOpacity={0.8}
               onPress={() =>
                 router.push({
-                  pathname: "/orders/create",
+                  pathname: "/new-bill",
                   params: { customer: JSON.stringify(customer) },
                 })
               }
@@ -704,7 +704,7 @@ export default function CustomerDetailScreen() {
                 activeOpacity={0.8}
                 onPress={() =>
                   router.push({
-                    pathname: "/orders/create",
+                    pathname: "/new-bill",
                     params: { customer: JSON.stringify(customer) },
                   })
                 }

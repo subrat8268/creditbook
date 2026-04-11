@@ -5,13 +5,13 @@ import { Text, View } from "react-native";
 // ─── Types ────────────────────────────────────────────────────────────────────
 // seller      → 2 cards: Active Buyers | Overdue
 // distributor → 2 cards: Active Suppliers | Overdue Payments
-// both        → 2×2 grid: Active Buyers | Active Suppliers | Overdue Customers | Overdue Suppliers
+// both        → 2×2 grid: Active Buyers | Active Suppliers | Overdue People | Overdue Suppliers
 type Mode = "seller" | "distributor" | "both";
 
 type Props = {
   mode?: Mode;
   primaryCount: number; // activeBuyers (seller/both) or activeSuppliers (distributor)
-  overdueCount: number; // overdueCustomers (seller/both) or overduePayments (distributor)
+  overdueCount: number; // overduePeople (seller/both) or overduePayments (distributor)
   // Both-mode extras
   activeSuppliers?: number;
   overdueSuppliers?: number;
@@ -110,7 +110,7 @@ export default function DashboardStatCards({
     <StatCard
       label="ACTIVE BUYERS"
       value={primaryCount}
-      descriptor="customers"
+      descriptor="people"
       icon={<Users size={20} color={colors.primary} strokeWidth={1.8} />}
       iconBg={colors.paid.bg}
     />
@@ -126,9 +126,9 @@ export default function DashboardStatCards({
     />
   );
 
-  const overdueCustomerCard = (
+  const overduePeopleCard = (
     <StatCard
-      label={isBoth ? "OVERDUE CUSTOMERS" : "OVERDUE"}
+      label={isBoth ? "OVERDUE PEOPLE" : "OVERDUE"}
       value={overdueCount}
       descriptor="need follow-up"
       valueColor={colors.danger}
@@ -157,7 +157,7 @@ export default function DashboardStatCards({
           {supplierCard}
         </View>
         <View className="flex-row" style={{ gap: spacing.md }}>
-          {overdueCustomerCard}
+          {overduePeopleCard}
           {overdueSupplierCard}
         </View>
       </View>
@@ -174,7 +174,7 @@ export default function DashboardStatCards({
       }}
     >
       {isDistributor ? supplierCard : buyerCard}
-      {isDistributor ? overdueSupplierCard : overdueCustomerCard}
+      {isDistributor ? overdueSupplierCard : overduePeopleCard}
     </View>
   );
 }

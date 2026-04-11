@@ -18,6 +18,9 @@ import * as SecureStore from "expo-secure-store";
 
 // iOS Keychain limit is 2 048 bytes; stay comfortably under it.
 const CHUNK_SIZE = 1800;
+const SECURE_STORE_OPTIONS: SecureStore.SecureStoreOptions = {
+  keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+};
 
 /** Split a long string into CHUNK_SIZE pieces. */
 function toChunks(value: string): string[] {
@@ -67,12 +70,12 @@ export const secureStorage = {
       // Store each chunk under its own key.
       await Promise.all(
         chunks.map((chunk, i) =>
-          SecureStore.setItemAsync(`${key}.chunk.${i}`, chunk),
+          SecureStore.setItemAsync(`${key}.chunk.${i}`, chunk, SECURE_STORE_OPTIONS),
         ),
       );
 
       // Store the count under the primary key so getItem knows how many to read.
-      await SecureStore.setItemAsync(key, String(chunks.length));
+      await SecureStore.setItemAsync(key, String(chunks.length), SECURE_STORE_OPTIONS);
     } catch (err) {
       console.error("[secureStorage] setItem failed:", err);
     }

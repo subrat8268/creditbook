@@ -9,8 +9,9 @@ function NewBillButton() {
   const router = useRouter();
   return (
     <TouchableOpacity
-      onPress={() => router.push("/orders/create")}
+      onPress={() => router.push("/new-bill")}
       activeOpacity={0.85}
+      testID="tab-add-entry"
       style={styles.fabWrapper}
     >
       <View style={styles.fabContainer}>
@@ -62,8 +63,12 @@ export default function TabLayout() {
         name="dashboard"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, size }) => (
-            <HomeIcon width={size} height={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <HomeIcon
+              width={focused ? size + 2 : size}
+              height={focused ? size + 2 : size}
+              color={color}
+            />
           ),
         }}
       />
@@ -73,30 +78,38 @@ export default function TabLayout() {
         name="customers"
         options={{
           title: "People",
-          tabBarIcon: ({ color, size }) => (
-            <CustomerIcon width={size} height={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <CustomerIcon
+              width={focused ? size + 2 : size}
+              height={focused ? size + 2 : size}
+              color={color}
+            />
           ),
         }}
       />
 
       {/* Tab 3 — Add Entry (center FAB, phantom tab) */}
-      <Tabs.Screen
-        name="new-bill"
-        options={{
-          title: "Add",
-          tabBarIcon: () => null,
-          tabBarLabel: () => null,
-          tabBarButton: () => <NewBillButton />,
-        }}
-      />
+       <Tabs.Screen
+         name="new-bill"
+         options={{
+           title: "Add",
+           tabBarIcon: () => null,
+           tabBarLabel: () => null,
+           tabBarButton: () => <NewBillButton />,
+         }}
+       />
 
       {/* Tab 4 — Entries list */}
       <Tabs.Screen
         name="orders"
         options={{
           title: "Entries",
-          tabBarIcon: ({ color, size }) => (
-            <Receipt size={size} color={color} strokeWidth={1.8} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Receipt
+              size={focused ? size + 2 : size}
+              color={color}
+              strokeWidth={focused ? 2.3 : 1.8}
+            />
           ),
         }}
       />
@@ -106,8 +119,12 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color, size }) => (
-            <UserRound size={size} color={color} strokeWidth={1.8} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <UserRound
+              size={focused ? size + 2 : size}
+              color={color}
+              strokeWidth={focused ? 2.3 : 1.8}
+            />
           ),
         }}
       />

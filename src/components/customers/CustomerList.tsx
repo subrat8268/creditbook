@@ -7,6 +7,7 @@ import EmptyState from "../feedback/EmptyState";
 import ErrorState from "../feedback/ErrorState";
 import Loader from "../feedback/Loader";
 import CustomerCard from "./CustomerCard";
+import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 
 // ── People-specific empty state icon: open book + green plus badge ──────────
 const PeopleEmptyIcon = (
@@ -60,6 +61,8 @@ export default function CustomerList({
     [onPressPerson, onLongPressPerson]
   );
 
+  const { isConnected } = useNetworkSync();
+
   if (isLoading && people.length === 0) {
     return <Loader message="Loading people" />;
   }
@@ -81,14 +84,18 @@ export default function CustomerList({
         ListEmptyComponent={
           <View className="mt-8">
             <EmptyState
-              title="Your people list is empty"
-              description="Add your first person to start tracking entries"
+              title={isConnected ? "Your people list is empty" : "You’re offline"}
+              description={
+                isConnected
+                  ? "Add your first person to start tracking entries"
+                  : "Connect to the internet to load your people"
+              }
               icon={PeopleEmptyIcon}
               iconBgColor={colors.successBg}
               iconSize={112}
-              cta={onAddPerson ? "Add Person" : undefined}
-              onCta={onAddPerson}
-              ctaIcon={onAddPerson ? PeopleEmptyCtaIcon : undefined}
+              cta={isConnected && onAddPerson ? "Add Person" : undefined}
+              onCta={isConnected ? onAddPerson : undefined}
+              ctaIcon={isConnected && onAddPerson ? PeopleEmptyCtaIcon : undefined}
             />
           </View>
         }

@@ -1,5 +1,6 @@
 import Loader from "@/src/components/feedback/Loader";
 import { ToastProvider } from "@/src/components/feedback/Toast";
+import OfflineToastListener from "@/src/components/feedback/OfflineToastListener";
 import { SyncStatusBanner } from "@/src/components/ui/SyncStatusBanner";
 import { useAuth } from "@/src/hooks/useAuth";
 import { useFontsLoader } from "@/src/hooks/useFontsLoader";
@@ -8,6 +9,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createMMKVPersister } from "@/src/lib/mmkvPersister";
+import { getOrCreateSyncQueueKey } from "@/src/lib/syncQueueStorage";
+import { initializeSyncQueue } from "@/src/lib/syncQueue";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as WebBrowser from "expo-web-browser";
@@ -67,9 +70,13 @@ function RootLayout() {
   useEffect(() => {
     const init = async () => {
       try {
+        const syncKeyPromise = getOrCreateSyncQueueKey().then((key) => {
+          initializeSyncQueue(key);
+        });
         const [seen] = await Promise.all([
           AsyncStorage.getItem("hasSeenWelcome"),
           loadLanguage(), // restore persisted language before first render
+          syncKeyPromise,
         ]);
         setShowWelcome(!seen);
       } catch (error) {
@@ -151,6 +158,7 @@ function RootLayout() {
           <GestureHandlerRootView style={{ flex: 1 }}>
             <BottomSheetModalProvider>
               <ToastProvider>
+                <OfflineToastListener />
                 {/* Global Sync Status Banner */}
                 <SyncStatusBanner />
                 

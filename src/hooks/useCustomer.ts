@@ -1,10 +1,10 @@
 /**
  * useCustomer - Backward compatibility wrapper for useParties
- * 
+ *
  * This hook wraps the new useParties hook and adapts the Party type
- * to the old Customer type (now aliased to Person), allowing existing UI components to work
- * without changes during the migration period.
- * 
+ * to the legacy Customer type (now aliased to Person), allowing existing UI
+ * components to work without changes during the migration period.
+ *
  * MIGRATION NOTE: This is a temporary compatibility layer.
  * New code should use useParties directly from '@/src/hooks/useParties'
  */
@@ -29,7 +29,7 @@ import { supabase } from "../services/supabase";
 import type { Party } from "../types/party";
 
 // Helper: Convert Party to Person type
-function partyToCustomer(party: Party): Person {
+function partyToPerson(party: Party): Person {
   return {
     id: party.id,
     name: party.name,
@@ -49,8 +49,11 @@ export const customerKeys = {
     [...customerKeys.all(vendorId), { search }] as const,
 };
 
+// Preferred alias (new naming)
+export const peopleKeys = customerKeys;
+
 /**
- * Fetch customers using new parties table
+ * Fetch people (customers) using new parties table
  */
 async function fetchCustomersFromParties(
   pageParam: number,
@@ -74,8 +77,8 @@ async function fetchCustomersFromParties(
 
   const parties = (data ?? []) as Party[];
   
-  // Convert parties to customers
-  const people = parties.map(partyToCustomer);
+  // Convert parties to people
+  const people = parties.map(partyToPerson);
 
   // Determine overdue status (same logic as before)
   const thirtyDaysAgo = new Date();
@@ -92,7 +95,7 @@ async function fetchCustomersFromParties(
     (overdueOrders ?? []).map((o: any) => o.customer_id),
   );
 
-  // Mark overdue customers
+  // Mark overdue people
   people.forEach((p) => {
     p.isOverdue = overdueIds.has(p.id);
   });
@@ -119,19 +122,22 @@ export const useCustomers = (vendorId?: string, search?: string) => {
 
   useEffect(() => {
     if (query.data) {
-      const allCustomers = query.data.pages.flat();
-      setCustomers(allCustomers);
+      const allPeople = query.data.pages.flat();
+      setCustomers(allPeople);
     }
   }, [query.data, setCustomers]);
 
   return {
     ...query,
-    customers: query.data?.pages.flat() ?? [],
+    people: query.data?.pages.flat() ?? [],
   };
 };
 
 // Preferred alias (new naming)
 export const usePeople = useCustomers;
+
+// Backward-compatible alias (deprecated)
+export const useCustomer = useCustomers;
 
 export const useAddCustomer = (vendorId: string) => {
   const queryClient = useQueryClient();
@@ -151,7 +157,7 @@ export const useAddCustomer = (vendorId: string) => {
     { previousQueries: [import("@tanstack/react-query").QueryKey, unknown][] }
   >({
     mutationFn: async (values) => {
-      // Insert into parties table instead of customers
+      // Insert into parties table instead of legacy customers table
       const { data, error } = await supabase
         .from('parties')
         .insert({
@@ -167,7 +173,7 @@ export const useAddCustomer = (vendorId: string) => {
         .single();
 
       if (error) throw error;
-      return partyToCustomer(data as Party);
+      return partyToPerson(data as Party);
     },
     onMutate: async (newCustomer) => {
       const queryKey = customerKeys.all(vendorId);
@@ -175,7 +181,7 @@ export const useAddCustomer = (vendorId: string) => {
 
       const previousQueries = queryClient.getQueriesData({ queryKey });
 
-      const optimisticCustomer: Person = {
+      const optimisticPerson: Person = {
         id: `temp-${Date.now()}`,
         vendor_id: vendorId,
         name: newCustomer.name,
@@ -190,7 +196,7 @@ export const useAddCustomer = (vendorId: string) => {
       queryClient.setQueriesData<any>({ queryKey }, (oldData: any) => {
         if (!oldData || !oldData.pages) return oldData;
         const newPages = [...oldData.pages];
-        newPages[0] = [optimisticCustomer, ...newPages[0]];
+        newPages[0] = [optimisticPerson, ...newPages[0]];
         return {
           ...oldData,
           pages: newPages,
@@ -214,7 +220,7 @@ export const useAddCustomer = (vendorId: string) => {
         exact: false,
       });
     },
-    onSuccess: (realCustomer) => {
+    onSuccess: () => {
       Alert.alert("Success", "Person added successfully");
     },
   });

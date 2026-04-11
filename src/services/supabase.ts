@@ -2,6 +2,7 @@ import { secureStorage } from "@/src/lib/secureStorage";
 import { createClient } from "@supabase/supabase-js";
 import * as syncQueue from '@/src/lib/syncQueue';
 import type { QueuedMutation } from '@/src/lib/syncQueue';
+import { emitOfflineQueued } from '@/src/lib/offlineEvents';
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL as string;
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY as string;
@@ -91,6 +92,10 @@ export async function executeWithOfflineQueue<T>(
     if (isNetworkError(error)) {
       console.log(`[OfflineQueue] Network error detected, queueing ${queuePayload.operation} ${queuePayload.entity}`);
       syncQueue.enqueue(queuePayload);
+      emitOfflineQueued({
+        entity: queuePayload.entity,
+        operation: queuePayload.operation,
+      });
       
       // Return optimistic success (mutation will replay when online)
       // Cast to T to satisfy TypeScript (caller expects result type)

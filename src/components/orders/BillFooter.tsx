@@ -13,6 +13,8 @@ interface BillFooterProps {
   totalAmount?: number;
   totalLabel?: string;
   showIcon?: boolean;
+  offlineQueueCount?: number;
+  testID?: string;
 }
 
 export default function BillFooter({
@@ -23,13 +25,14 @@ export default function BillFooter({
   totalAmount,
   totalLabel = "Grand Total",
   showIcon = true,
+  offlineQueueCount,
+  testID,
 }: BillFooterProps) {
   const getGrandTotal = useOrderStore((state) => state.getGrandTotal);
-  const items = useOrderStore((state) => state.items);
 
   // Math recalculates instantly via Zustand
   const grandTotal = totalAmount ?? getGrandTotal();
-  const isDisabled = disabled ?? (items.length === 0 || isLoading);
+  const isDisabled = disabled ?? isLoading;
 
   return (
     <View className="bg-surface border-t border-border pt-4 px-5 pb-8">
@@ -42,10 +45,19 @@ export default function BillFooter({
         </Text>
       </View>
 
+      {typeof offlineQueueCount === "number" && offlineQueueCount > 0 ? (
+        <View className="flex-row items-center mb-3">
+          <Text className="text-[12px] text-textSecondary">
+            Offline queue: {offlineQueueCount} pending
+          </Text>
+        </View>
+      ) : null}
+
       <TouchableOpacity
         onPress={onSaveAndShare}
         disabled={isDisabled}
         activeOpacity={0.8}
+        testID={testID}
         className={`flex-row items-center justify-center py-4 rounded-full ${
           isDisabled ? "bg-border opacity-50" : "bg-primary"
         }`}

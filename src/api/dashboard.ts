@@ -3,8 +3,8 @@ import { supabase } from "@/src/services/supabase";
 
 export interface RecentActivityItem {
   id: string;
-  /** payment = money received from customer
-   *  bill     = outstanding customer invoice
+  /** payment = money received from a person
+   *  bill     = outstanding entry (invoice)
    *  delivery = supplier goods received (both/distributor modes) */
   type: "payment" | "bill" | "delivery";
   title: string;
@@ -20,7 +20,7 @@ export interface DashboardData {
   unpaidOrders: number;
   partialOrders: number;
   overdueCustomers: number;
-  /** Top 5 overdue customers sorted by total outstanding balance */
+  /** Top 5 overdue people sorted by total outstanding balance */
   overdueCustomersList: {
     id: string;
     name: string;
@@ -107,7 +107,7 @@ export async function getDashboardData(
     .filter((o) => unpaidStatuses.includes((o.status ?? "").toLowerCase()))
     .reduce((sum, o) => sum + Number(o.balance_due ?? 0), 0);
 
-  // Active buyers = unique customers with at least one order
+  // Active buyers = unique people with at least one order
   const activeBuyers = new Set(orders.map((o: any) => o.customer_id)).size;
 
   // Overdue
@@ -125,8 +125,8 @@ export async function getDashboardData(
     (overdueOrdersWithCustomers ?? []).map((o: any) => o.customer_id),
   ).size;
 
-  // Build overdueCustomersList — group by customer, sum balance, find oldest order date
-  const customerOverdueMap = new Map<
+  // Build overdueCustomersList — group by person, sum balance, find oldest order date
+  const personOverdueMap = new Map<
     string,
     {
       id: string;
@@ -138,26 +138,26 @@ export async function getDashboardData(
   >();
   for (const order of overdueOrdersWithCustomers ?? []) {
     const cid: string = (order as any).customer_id;
-    const customer = Array.isArray((order as any).parties)
+    const person = Array.isArray((order as any).parties)
       ? (order as any).parties[0]
       : (order as any).parties;
     const orderDate = new Date((order as any).created_at);
-    const existing = customerOverdueMap.get(cid);
+    const existing = personOverdueMap.get(cid);
     if (existing) {
       existing.balance += Number((order as any).balance_due);
       if (orderDate < existing.oldestDate) existing.oldestDate = orderDate;
     } else {
-      customerOverdueMap.set(cid, {
+      personOverdueMap.set(cid, {
         id: cid,
-        name: customer?.name ?? "Unknown",
-        phone: customer?.phone ?? "",
+        name: person?.name ?? "Unknown",
+        phone: person?.phone ?? "",
         balance: Number((order as any).balance_due),
         oldestDate: orderDate,
       });
     }
   }
   const now = new Date();
-  const overdueCustomersList = Array.from(customerOverdueMap.values())
+  const overdueCustomersList = Array.from(personOverdueMap.values())
     .sort((a, b) => b.balance - a.balance)
     .slice(0, 5)
     .map((c) => ({
@@ -170,8 +170,8 @@ export async function getDashboardData(
       ),
     }));
 
-  // Net Position — customers owe me
-  const customersOweMe = orders
+  // Net Position — people owe me
+  const peopleOweMe = orders
     .filter((o) => Number(o.balance_due ?? 0) > 0)
     .reduce((sum, o) => sum + Number(o.balance_due ?? 0), 0);
 
@@ -193,7 +193,7 @@ export async function getDashboardData(
     0,
   );
   const iOweSuppliers = Math.max(0, totalDeliveries - totalPaidToSuppliers);
-  const netPosition = customersOweMe - iOweSuppliers;
+  const netPosition = peopleOweMe - iOweSuppliers;
 
   // Distributor stats — distinct active suppliers + overdue supplier deliveries
   const activeSuppliers = new Set(
@@ -241,7 +241,7 @@ export async function getDashboardData(
     .slice(0, 5);
   const overduePayments = overdueSuppliersList.length;
 
-  // Recent activity — last 8 customer orders + last 4 supplier deliveries, merged by date
+  // Recent activity — last 8 person orders + last 4 supplier deliveries, merged by date
   const [{ data: recentOrders }, { data: recentDeliveries }] =
     await Promise.all([
       supabase
@@ -262,7 +262,7 @@ export async function getDashboardData(
 
   const orderItems: RecentActivityItem[] = (recentOrders ?? []).map(
     (o: any) => {
-      const customerName: string = o.parties?.name ?? "Unknown";
+      const personName: string = o.parties?.name ?? "Unknown";
       const isPaid =
         (o.status ?? "").toLowerCase() === "paid" ||
         Number(o.balance_due) === 0;
@@ -285,12 +285,12 @@ export async function getDashboardData(
       return {
         id: o.id,
         type: isPaid ? "payment" : "bill",
-        name: customerName,
+        name: personName,
         title: isPaid
-          ? `Payment from ${customerName}`
+          ? `Payment from ${personName}`
           : o.bill_number
             ? `Bill #${o.bill_number}`
-            : `Bill for ${customerName}`,
+            : `Bill for ${personName}`,
         date: o.created_at,
         amount: isPaid ? Number(o.amount_paid) : Number(o.total_amount),
         status: resolvedStatus,
@@ -362,7 +362,7 @@ export async function getDashboardData(
     partialOrders,
     overdueCustomers,
     overdueCustomersList,
-    customersOweMe,
+    customersOweMe: peopleOweMe,
     iOweSuppliers,
     netPosition,
     weekDelta,
@@ -457,7 +457,7 @@ export async function getNetPositionReport(
       .gte("created_at", rangeStart.toISOString()),
   ]);
 
-  // Total receivables (customers owe me)
+  // Total receivables (people owe me)
   const totalReceivables = (orders ?? []).reduce(
     (s, o) => s + Number(o.balance_due),
     0,
@@ -475,21 +475,21 @@ export async function getNetPositionReport(
   const totalPayables = Math.max(0, totalDeliveries - totalPaid);
   const netBalance = totalReceivables - totalPayables;
 
-  // Top 5 customers by balance owed
-  const customerMap = new Map<string, { name: string; balance: number }>();
+  // Top 5 people by balance owed
+  const personMap = new Map<string, { name: string; balance: number }>();
   for (const order of orders ?? []) {
     const cid: string = (order as any).customer_id;
     const name: string = Array.isArray((order as any).parties)
       ? (order as any).parties[0]?.name ?? "Unknown"
       : (order as any).parties?.name ?? "Unknown";
-    const existing = customerMap.get(cid);
+    const existing = personMap.get(cid);
     if (existing) {
       existing.balance += Number(order.balance_due);
     } else {
-      customerMap.set(cid, { name, balance: Number(order.balance_due) });
+      personMap.set(cid, { name, balance: Number(order.balance_due) });
     }
   }
-  const topCustomers: NetPositionCustomer[] = Array.from(customerMap.entries())
+  const topCustomers: NetPositionCustomer[] = Array.from(personMap.entries())
     .sort((a, b) => b[1].balance - a[1].balance)
     .slice(0, 5)
     .map(([id, { name, balance }]) => ({

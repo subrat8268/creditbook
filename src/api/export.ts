@@ -86,14 +86,14 @@ export async function fetchOrdersForExport(
     const tax = Number(o.tax_percent ?? 0);
     const subtotal =
       total - prev - loading - (total - prev - loading) * (tax / (100 + tax));
-    const customer = Array.isArray(o.parties)
+    const person = Array.isArray(o.parties)
       ? (o.parties[0] ?? {})
       : (o.parties ?? {});
     return {
       bill_number: o.bill_number ?? "",
       date: o.created_at ? o.created_at.substring(0, 10) : "",
-      customer_name: customer.name ?? "",
-      customer_phone: customer.phone ?? "",
+      customer_name: person.name ?? "",
+      customer_phone: person.phone ?? "",
       items_count: (o.order_items ?? []).length,
       subtotal: Math.round(subtotal * 100) / 100,
       tax_percent: tax,
@@ -135,14 +135,14 @@ export async function fetchPaymentsForExport(
     const order = Array.isArray(p.orders)
       ? (p.orders[0] ?? {})
       : (p.orders ?? {});
-    const customer = Array.isArray(order.parties)
+    const person = Array.isArray(order.parties)
       ? (order.parties[0] ?? {})
       : (order.parties ?? {});
     return {
       date: p.payment_date ? p.payment_date.substring(0, 10) : "",
       bill_number: order.bill_number ?? "",
-      customer_name: customer.name ?? "",
-      customer_phone: customer.phone ?? "",
+      customer_name: person.name ?? "",
+      customer_phone: person.phone ?? "",
       amount: Number(p.amount ?? 0),
       payment_mode: p.payment_mode ?? "",
     };
@@ -154,7 +154,7 @@ export async function fetchPaymentsForExport(
 export async function fetchPeopleForExport(
   vendorId: string,
 ): Promise<ExportPerson[]> {
-  const { data: customers, error } = await supabase
+  const { data: people, error } = await supabase
     .from("parties")
     .select("id, name, phone, address")
     .eq("vendor_id", vendorId)
@@ -162,13 +162,13 @@ export async function fetchPeopleForExport(
     .order("name", { ascending: true });
   if (error) throw toApiError(error);
 
-  if (!customers || customers.length === 0) return [];
+  if (!people || people.length === 0) return [];
 
-  // Get outstanding balance per customer from orders
+  // Get outstanding balance per person from orders
    const { data: orders, error: oErr } = await supabase
-     .from("orders")
-     .select("customer_id, balance_due")
-     .eq("vendor_id", vendorId);
+      .from("orders")
+      .select("customer_id, balance_due")
+      .eq("vendor_id", vendorId);
   if (oErr) throw toApiError(oErr);
 
   const balanceMap: Record<string, number> = {};
@@ -177,11 +177,11 @@ export async function fetchPeopleForExport(
      balanceMap[o.customer_id] = (balanceMap[o.customer_id] ?? 0) + b;
    }
 
-  return customers.map((c: any) => ({
-    name: c.name ?? "",
-    phone: c.phone ?? "",
-    address: c.address ?? "",
-    outstanding_balance: Math.round((balanceMap[c.id] ?? 0) * 100) / 100,
+  return people.map((person: any) => ({
+    name: person.name ?? "",
+    phone: person.phone ?? "",
+    address: person.address ?? "",
+    outstanding_balance: Math.round((balanceMap[person.id] ?? 0) * 100) / 100,
   }));
 }
 

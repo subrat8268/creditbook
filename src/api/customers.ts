@@ -24,7 +24,7 @@ export async function fetchPeople(
 
   const { data, error } = await query;
   if (error) throw toApiError(error);
-  const customers = (data ?? []) as Person[];
+  const people = (data ?? []) as Person[];
 
   // Determine overdue: balance_due > 0 AND last order > 30 days ago
   const thirtyDaysAgo = new Date();
@@ -41,14 +41,14 @@ export async function fetchPeople(
     (overdueOrders ?? []).map((o: any) => o.customer_id),
   );
 
-  // Fetch sum of balance_due per customer
+  // Fetch sum of balance_due per person
   const { data: balanceRows } = await supabase
     .from("orders")
     .select("customer_id, balance_due, created_at")
     .eq("vendor_id", vendorId)
     .in(
       "customer_id",
-      customers.map((c) => c.id),
+      people.map((person) => person.id),
     );
 
   const balanceByPerson: Record<string, number> = {};
@@ -62,11 +62,11 @@ export async function fetchPeople(
     }
   }
 
-  return customers.map((c) => ({
-    ...c,
-    isOverdue: overdueIds.has(c.id),
-    outstandingBalance: balanceByPerson[c.id] ?? 0,
-    lastActiveAt: lastActiveByPerson[c.id] ?? c.created_at,
+  return people.map((person) => ({
+    ...person,
+    isOverdue: overdueIds.has(person.id),
+    outstandingBalance: balanceByPerson[person.id] ?? 0,
+    lastActiveAt: lastActiveByPerson[person.id] ?? person.created_at,
   }));
 }
 
@@ -122,8 +122,8 @@ export const fetchCustomerDetail = fetchPersonDetail;
 export async function fetchPersonDetail(
   customerId: string,
 ): Promise<PersonDetail | null> {
-  // Fetch customer profile from parties table
-  const { data: customer, error: custErr } = await supabase
+  // Fetch person profile from parties table
+  const { data: person, error: custErr } = await supabase
     .from("parties")
     .select("id, name, phone, address")
     .eq("id", customerId.trim())
@@ -131,10 +131,10 @@ export async function fetchPersonDetail(
     .maybeSingle();
 
   if (custErr) {
-    console.error("Error fetching customer:", custErr.message);
+    console.error("Error fetching person:", custErr.message);
     return null;
   }
-  if (!customer) return null;
+  if (!person) return null;
 
   // Fetch orders and statements in parallel
   const [ordersResult, statementsResult] = await Promise.all([
@@ -173,7 +173,7 @@ export async function fetchPersonDetail(
     : 0;
   const isOverdue = outstandingBalance > 0 && daysSinceLastOrder > 30;
 
-  // Map RPC statements to unified transaction list
+  // Map RPC statements to unified entry list
   const allEvents = (statementsResult.data ?? []).map((s: any) => ({
     id: s.id,
     type: s.type as "bill" | "payment",
@@ -193,7 +193,7 @@ export async function fetchPersonDetail(
   );
 
   return {
-    ...customer,
+    ...person,
     outstandingBalance,
     isOverdue,
     daysSinceLastOrder,

@@ -81,7 +81,7 @@ export function useRecordPayment(
         return [newPayment, ...(old || [])];
       });
 
-      // Optimistically update customer balance if available
+      // Optimistically update person balance if available
       if (customerId) {
         queryClient.setQueryData(["customerDetail", customerId], (old: any) => {
           if (!old) return old;

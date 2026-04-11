@@ -4,6 +4,7 @@ import { FlatList, Keyboard, Text, TouchableOpacity, View } from "react-native";
 import BottomSheetPicker from "./BottomSheetPicker";
 import SearchBar from "../ui/SearchBar";
 import Loader from "../feedback/Loader";
+import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 
 interface CustomerPickerProps {
   visible: boolean;
@@ -12,6 +13,7 @@ interface CustomerPickerProps {
   vendorId: string;
   onClose?: () => void;
   variant?: "sheet" | "inline";
+  testIDPrefix?: string;
 }
 
 export default function CustomerPicker({
@@ -21,8 +23,10 @@ export default function CustomerPicker({
   vendorId,
   onClose,
   variant = "sheet",
+  testIDPrefix,
 }: CustomerPickerProps) {
   const [search, setSearch] = useState("");
+  const { isConnected } = useNetworkSync();
 
   const {
     data: peopleData,
@@ -71,31 +75,38 @@ export default function CustomerPicker({
 
    if (variant === "inline") {
     const inlinePeople = people ?? [];
-    return (
-      <View className="rounded-2xl bg-surface border border-border overflow-hidden">
-        <View className="px-4 py-3 border-b border-border">
-          <Text className="text-[12px] font-bold text-textSecondary tracking-widest">
-            SELECT PERSON
-          </Text>
-          <View className="mt-2">
+     return (
+       <View className="rounded-2xl bg-surface border border-border overflow-hidden">
+         <View className="px-4 py-3 border-b border-border">
+           <Text className="text-[12px] font-bold text-textSecondary tracking-widest">
+             SELECT PERSON
+           </Text>
+           <View className="mt-2">
             <SearchBar
               value={search}
               onChangeText={setSearch}
               placeholder="Search people..."
+              testID={testIDPrefix ? `${testIDPrefix}-search` : undefined}
             />
-          </View>
-        </View>
-        <FlatList
-          data={inlinePeople}
-          keyExtractor={keyExtractor}
-          renderItem={({ item }: { item: any }) => (
-            <TouchableOpacity
-              className={`px-4 py-3 border-b border-border ${
-                selectedPerson?.id === item.id ? "bg-primaryLight" : "bg-surface"
-              }`}
-              onPress={() => handleSelect(item)}
-              activeOpacity={0.8}
-            >
+           </View>
+           {!isConnected && (
+             <Text className="text-[12px] text-textSecondary mt-2">
+               You’re offline. People will load when back online.
+             </Text>
+           )}
+         </View>
+          <FlatList
+            data={inlinePeople}
+            keyExtractor={keyExtractor}
+            renderItem={({ item, index }: { item: any; index: number }) => (
+              <TouchableOpacity
+                className={`px-4 py-3 border-b border-border ${
+                  selectedPerson?.id === item.id ? "bg-primaryLight" : "bg-surface"
+                }`}
+                onPress={() => handleSelect(item)}
+                activeOpacity={0.8}
+                testID={testIDPrefix ? `${testIDPrefix}-row-${index}` : undefined}
+              >
               <Text className="text-[15px] font-semibold text-textPrimary">
                 {item.name}
               </Text>
@@ -123,7 +134,11 @@ export default function CustomerPicker({
           ListEmptyComponent={
             <View className="py-6 items-center">
               <Text className="text-textSecondary">
-                {isLoading ? "Loading people..." : "No people found"}
+                {isLoading
+                  ? "Loading people..."
+                  : !isConnected
+                  ? "Offline — connect to load people"
+                  : "No people found"}
               </Text>
             </View>
           }

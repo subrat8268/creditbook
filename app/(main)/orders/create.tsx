@@ -7,6 +7,7 @@ import CustomerPicker from "@/src/components/picker/CustomerPicker";
 import ProductPicker from "@/src/components/picker/ProductPicker";
 import { useCreateOrder } from "@/src/hooks/useOrders";
 import { useToast } from "@/src/components/feedback/Toast";
+import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 import { useAuthStore } from "@/src/store/authStore";
 import { useOrderStore } from "@/src/store/orderStore";
 import { BillItem, generateBillPdf } from "@/src/utils/generateBillPdf";
@@ -145,6 +146,7 @@ export default function CreateOrderScreen() {
 
   const { show: showToast } = useToast();
   const createOrderMutation = useCreateOrder(vendorId!);
+  const { queueLength } = useNetworkSync();
 
   // Calculate effective total (either from items or quick amount)
   const itemsTotal = getSubtotal();
@@ -456,6 +458,7 @@ export default function CreateOrderScreen() {
               selectedPerson={selectedCustomerMeta}
               setSelectedPerson={handleSelectPerson}
               vendorId={vendorId!}
+              testIDPrefix="entry-person"
             />
 
             {/* QUICK AMOUNT INPUT (amount-first) */}
@@ -481,6 +484,7 @@ export default function CreateOrderScreen() {
                     style={{ color: colors.textPrimary }}
                     editable={!hasItems || entryType === "payment"} // Disable if using items
                     autoFocus={!selectedCustomerMeta} // Focus if no customer preselected
+                    testID="entry-amount-input"
                   />
                 </View>
                 {hasItems && entryType === "bill" && (
@@ -651,11 +655,13 @@ export default function CreateOrderScreen() {
               totalAmount={entryType === "payment" ? parseFloat(quickAmount) || 0 : totalWithBalance}
               totalLabel={entryType === "payment" ? "Payment Amount" : "Grand Total"}
               showIcon={entryType !== "payment"}
+              offlineQueueCount={queueLength}
               disabled={
                 entryType === "payment"
-                  ? !quickAmount.trim() || createOrderMutation.isPending
-                  : undefined
+                  ? !selectedCustomerId || !quickAmount.trim() || createOrderMutation.isPending
+                  : !selectedCustomerId || (!quickAmount.trim() && !hasItems) || createOrderMutation.isPending
               }
+              testID="entry-save-share"
             />
           </View>
 

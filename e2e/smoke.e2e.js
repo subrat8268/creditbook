@@ -9,12 +9,18 @@
  * 
  * Requires test data:
  * - tester@kredbook.io account
- * - "Test Customer" with phone "9876543210"
- * - "Test Item" product with price "100"
+ * - Test Customer 1: "Test Customer 1" with phone "8268017431"
+ * - Test Customer 2: "Test Customer 2" with phone "7021344154"
+ * - "Test Item 1" product with price "100"
+ * - "Test Item 2" product with price "500"
  */
 
 const TESTER_EMAIL = 'tester@kredbook.io';
 const TESTER_PASSWORD = 'Test@1234';
+const TEST_CUSTOMER_1 = 'Test Customer 1';
+const TEST_PHONE_1 = '8268017431';
+const TEST_CUSTOMER_2 = 'Test Customer 2';
+const TEST_PHONE_2 = '7021344154';
 
 describe('KredBook E2E Tests', () => {
   beforeEach(async () => {

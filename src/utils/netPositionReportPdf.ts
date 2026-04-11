@@ -30,7 +30,7 @@ export function buildNetPositionReportHtml(
   </table>
   ${
     report.topCustomers.length > 0
-        ? `<h2>Top People Owed</h2><table><tr><th>Person</th><th style="text-align:right">Balance Due</th></tr>${rows(
+      ? `<h2>Top People Owed</h2><table><tr><th>Person</th><th style="text-align:right">Balance Due</th></tr>${rows(
           report.topCustomers.map((c: NetPositionCustomer) => ({
             name: c.name,
             amount: c.balance,

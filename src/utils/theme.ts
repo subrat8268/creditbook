@@ -36,9 +36,9 @@ export const colors = {
   border: "#E2E8F0",    // Dividers, input borders, subtle separators
   borderLight: "#F1F5F9", // Slate-100 — innercard borders, sub-box dividers
 
-  // ─ Semantic Blues (FAB + action bar "New Bill")
-  primaryBlue: "#3B82F6",    // Blue-500 — New Bill icon color
-  primaryBlueBg: "#EFF6FF",  // Blue-50  — New Bill icon circle bg
+  // ─ Semantic Blues (FAB + action bar "New Entry")
+  primaryBlue: "#3B82F6",    // Blue-500 — New Entry icon color
+  primaryBlueBg: "#EFF6FF",  // Blue-50  — New Entry icon circle bg
 
   // ─ Semantic backgrounds (tinted panels)
   successBg: "#F0FDF4",  // Green-50: YOU RECEIVE panel
@@ -145,6 +145,11 @@ export const gradients = {
     start: "#DC2626", // Red-600
     end: "#B91C1C", // Red-800
   },
+  // Preferred alias (person naming)
+  peopleHero: {
+    start: "#DC2626", // Red-600
+    end: "#B91C1C", // Red-800
+  },
 
   // Supplier payable card — pink gradient
   supplierHero: {
@@ -161,7 +166,7 @@ export const gradients = {
   // Net position card — solid dark navy
   netPosition: "#1C2333", // Dark slate
 
-  // When customer balance is zero (paid up) — green gradient
+  // When person balance is zero (paid up) — green gradient
   zeroBalance: {
     start: "#22C55E", // Primary green
     end: "#16A34A", // Primary dark
@@ -215,7 +220,7 @@ export const spacing = {
 
   // ─ Avatar sizes
   avatarSm: 36, // Compact rows, list indicators
-  avatarMd: 44, // List cards (customer, supplier)
+  avatarMd: 44, // List cards (person, supplier)
   avatarLg: 64, // Full-screen profile section
 
   // ─ FAB

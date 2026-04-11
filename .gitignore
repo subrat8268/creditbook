@@ -61,6 +61,8 @@ GEMINI.md
 .agents
 .windsurf/*
 .windsurf
+.opencode/*
+.opencode
 
 #scripts
 scripts/*
