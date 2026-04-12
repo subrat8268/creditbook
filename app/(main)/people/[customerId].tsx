@@ -1,5 +1,6 @@
 import EmptyState from "@/src/components/feedback/EmptyState";
 import Loader from "@/src/components/feedback/Loader";
+import { SyncStatusIndicator } from "@/src/components/feedback/SyncStatusIndicator";
 import { useToast } from "@/src/components/feedback/Toast";
 import RecordCustomerPaymentModal from "@/src/components/people/RecordCustomerPaymentModal";
 import { usePersonDetail } from "@/src/hooks/usePeople";
@@ -206,9 +207,12 @@ function TransactionRow({ tx }: { tx: Transaction }) {
         <Text className="text-xs text-textMuted">
           {formatTime(tx.created_at)}
         </Text>
-        <Text className="text-xs text-textPrimary font-semibold">
-          Bal: {formatINR(tx.runningBalance)}
-        </Text>
+        <View className="flex-row items-center gap-1.5">
+          <SyncStatusIndicator compact={true} />
+          <Text className="text-xs text-textPrimary font-semibold">
+            Bal: {formatINR(tx.runningBalance)}
+          </Text>
+        </View>
       </View>
     </View>
   );
