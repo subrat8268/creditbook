@@ -130,11 +130,10 @@ export default function TabLayout() {
 
       {/* Hidden routes — accessible via router.push but not shown in the tab bar */}
       <Tabs.Screen name="more" options={{ href: null }} />
-      <Tabs.Screen name="suppliers" options={{ href: null }} />
-      <Tabs.Screen name="net-position" options={{ href: null }} />
-      <Tabs.Screen name="products" options={{ href: null }} />
       <Tabs.Screen name="export" options={{ href: null }} />
-      <Tabs.Screen name="reports" options={{ href: null }} />
+      <Tabs.Screen name="settings" options={{ href: null }} />
+      <Tabs.Screen name="orders/[orderId]" options={{ href: null }} />
+      <Tabs.Screen name="orders/create" options={{ href: null }} />
       <Tabs.Screen name="notifications/index" options={{ href: null }} />
     </Tabs>
   );
