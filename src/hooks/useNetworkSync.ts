@@ -16,11 +16,6 @@
 
 import { createOrder, recordPayment } from "@/src/api/entries";
 import { addPerson } from "@/src/api/people";
-import {
-  addSupplier,
-  recordDelivery,
-  recordPaymentMade,
-} from "@/src/api/suppliers";
 import type { QueuedMutation } from "@/src/lib/syncQueue";
 import * as syncQueue from "@/src/lib/syncQueue";
 import { getOrCreateSyncQueueKey } from "@/src/lib/syncQueueStorage";
@@ -130,55 +125,7 @@ async function replayMutation(
       return true;
     }
 
-    // ── Supplier Mutations ───────────────────────────────────────────────
-    if (entity === "supplier" && operation === "CREATE") {
-      const vendorId = payload.vendorId || payload.vendor_id;
-      if (!vendorId) throw new Error("Missing vendorId in supplier payload");
 
-      const { vendorId: _, vendor_id: __, ...supplierData } = payload;
-      await addSupplier(vendorId, supplierData as any);
-      queryClient.invalidateQueries({ queryKey: ["suppliers"] });
-      return true;
-    }
-
-    // ── Delivery Mutations ───────────────────────────────────────────────
-    if (entity === "delivery" && operation === "CREATE") {
-      const vendorId = payload.vendorId || payload.vendor_id;
-      const supplierId = payload.supplierId || payload.supplier_id;
-      if (!vendorId || !supplierId)
-        throw new Error("Missing vendorId/supplierId in delivery payload");
-
-      const {
-        vendorId: _,
-        vendor_id: __,
-        supplierId: ___,
-        supplier_id: ____,
-        ...deliveryData
-      } = payload;
-      await recordDelivery(vendorId, supplierId, deliveryData as any);
-      queryClient.invalidateQueries({ queryKey: ["suppliers"] });
-      queryClient.invalidateQueries({ queryKey: ["supplier", supplierId] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      return true;
-    }
-
-    // ── Payment Made Mutations ───────────────────────────────────────────
-    if (entity === "payment_made" && operation === "CREATE") {
-      const vendorId = payload.vendorId || payload.vendor_id;
-      const supplierId = payload.supplierId || payload.supplier_id;
-      const amount = payload.amount;
-      const paymentMode = payload.paymentMode || payload.payment_mode;
-      const notes = payload.notes;
-
-      if (!vendorId || !supplierId)
-        throw new Error("Missing vendorId/supplierId in payment_made payload");
-
-      await recordPaymentMade(vendorId, supplierId, amount, paymentMode, notes);
-      queryClient.invalidateQueries({ queryKey: ["suppliers"] });
-      queryClient.invalidateQueries({ queryKey: ["supplier", supplierId] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      return true;
-    }
 
     // ── Unsupported Mutation ─────────────────────────────────────────────
     console.warn(`[NetworkSync] Unknown mutation type: ${operation} ${entity}`);
