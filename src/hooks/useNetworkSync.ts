@@ -14,7 +14,7 @@
  *   5. Repeat until queue empty → set status "synced"
  */
 
-import { createOrder, recordPayment } from "@/src/api/orders";
+import { createOrder, recordPayment } from "@/src/api/entries";
 import { addPerson } from "@/src/api/people";
 import { addProduct, deleteProduct, updateProduct } from "@/src/api/products";
 import {
