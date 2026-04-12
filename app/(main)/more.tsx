@@ -10,6 +10,7 @@ import {
   HelpCircle,
   LogOut,
   LucideIcon,
+  Settings,
   Store,
   UserRound,
 } from "lucide-react-native";
@@ -74,6 +75,15 @@ const ANALYSIS_TOOLS: MenuItem[] = [
     iconBg: colors.export.bg,
     iconColor: colors.export.text,
     route: "/(main)/export",
+  },
+  {
+    id: "settings",
+    title: "Settings",
+    description: "Feature toggles & preferences",
+    icon: Settings,
+    iconBg: colors.primaryLight,
+    iconColor: colors.primary,
+    route: "/(main)/settings",
   },
 ];
 

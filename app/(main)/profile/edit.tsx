@@ -1,6 +1,6 @@
 /**
  * Profile Edit Screen - Manage business details after onboarding
- * 
+ *
  * Allows users to update:
  * - Business info (name, address, GSTIN, bill prefix)
  * - Bank details (bank name, account number, IFSC)
@@ -9,14 +9,20 @@
  * - Business Type (Retailer vs Distributor)
  */
 
+import { uploadBusinessLogo } from "@/src/api/upload";
+import { useToast } from "@/src/components/feedback/Toast";
+import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { usePreferencesStore } from "@/src/store/preferencesStore";
-import { colors, spacing, typography } from "@/src/utils/theme";
+import { pickImageFromLibrary } from "@/src/utils/imagePicker";
+import { colors, spacing } from "@/src/utils/theme";
 import { Stack, useRouter } from "expo-router";
-import { ArrowLeft, Building2, Wallet, Upload, Check } from "lucide-react-native";
+import { ArrowLeft, Building2, Upload, Wallet } from "lucide-react-native";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -24,38 +30,43 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  ActivityIndicator,
-  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "@/src/services/supabase";
-import { useToast } from "@/src/components/feedback/Toast";
-import { pickImageFromLibrary } from "@/src/utils/imagePicker";
-import { uploadBusinessLogo } from "@/src/api/upload";
 
 export default function ProfileEditScreen() {
   const router = useRouter();
   const { profile, setProfile } = useAuthStore();
-  const { businessType: prefBusinessType, setBusinessType } = usePreferencesStore();
+  const { businessType: prefBusinessType, setBusinessType } =
+    usePreferencesStore();
   const { show: showToast } = useToast();
 
   // Form state
-  const [businessType, setLocalBusinessType] = useState<"seller" | "distributor">(
-    prefBusinessType || "seller"
+  const [businessType, setLocalBusinessType] = useState<
+    "seller" | "distributor"
+  >(prefBusinessType || "seller");
+  const [businessName, setBusinessName] = useState(
+    profile?.business_name || "",
   );
-  const [businessName, setBusinessName] = useState(profile?.business_name || "");
-  const [billingAddress, setBillingAddress] = useState(profile?.business_address || "");
+  const [billingAddress, setBillingAddress] = useState(
+    profile?.business_address || "",
+  );
   const [gstin, setGstin] = useState(profile?.gstin || "");
-  const [billPrefix, setBillPrefix] = useState(profile?.bill_number_prefix || "INV");
+  const [billPrefix, setBillPrefix] = useState(
+    profile?.bill_number_prefix || "INV",
+  );
   const [bankName, setBankName] = useState(profile?.bank_name || "");
-  const [accountNumber, setAccountNumber] = useState(profile?.account_number || "");
+  const [accountNumber, setAccountNumber] = useState(
+    profile?.account_number || "",
+  );
   const [ifscCode, setIfscCode] = useState(profile?.ifsc_code || "");
   const [upiId, setUpiId] = useState(profile?.upi_id || "");
   const [logoUrl, setLogoUrl] = useState(profile?.business_logo_url || "");
   const [logoUploading, setLogoUploading] = useState(false);
-  
+
   const [isSaving, setIsSaving] = useState(false);
-  const [expandedSection, setExpandedSection] = useState<string | null>("business");
+  const [expandedSection, setExpandedSection] = useState<string | null>(
+    "business",
+  );
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
@@ -298,7 +309,9 @@ export default function ProfileEditScreen() {
                   marginBottom: spacing.sm,
                   borderRadius: 8,
                   backgroundColor:
-                    businessType === "seller" ? colors.primaryLight : colors.border + "20",
+                    businessType === "seller"
+                      ? colors.primaryLight
+                      : colors.border + "20",
                 }}
               >
                 <View
@@ -307,7 +320,10 @@ export default function ProfileEditScreen() {
                     height: 20,
                     borderRadius: 10,
                     borderWidth: 2,
-                    borderColor: businessType === "seller" ? colors.primary : colors.border,
+                    borderColor:
+                      businessType === "seller"
+                        ? colors.primary
+                        : colors.border,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
@@ -355,7 +371,9 @@ export default function ProfileEditScreen() {
                   paddingHorizontal: spacing.sm,
                   borderRadius: 8,
                   backgroundColor:
-                    businessType === "distributor" ? colors.primaryLight : colors.border + "20",
+                    businessType === "distributor"
+                      ? colors.primaryLight
+                      : colors.border + "20",
                 }}
               >
                 <View
@@ -364,7 +382,10 @@ export default function ProfileEditScreen() {
                     height: 20,
                     borderRadius: 10,
                     borderWidth: 2,
-                    borderColor: businessType === "distributor" ? colors.primary : colors.border,
+                    borderColor:
+                      businessType === "distributor"
+                        ? colors.primary
+                        : colors.border,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
@@ -489,7 +510,8 @@ export default function ProfileEditScreen() {
                     marginTop: spacing.xs,
                   }}
                 >
-                  Entries will be numbered as {billPrefix || "INV"}-001, {billPrefix || "INV"}-002, etc.
+                  Entries will be numbered as {billPrefix || "INV"}-001,{" "}
+                  {billPrefix || "INV"}-002, etc.
                 </Text>
               </View>
             )}
@@ -586,89 +608,89 @@ export default function ProfileEditScreen() {
             )}
           </View>
 
-           {/* Business Logo */}
-           <View
-             style={{
-               backgroundColor: colors.surface,
-               marginBottom: spacing.sm,
-               padding: spacing.md,
-             }}
-           >
-             <Text
-               style={{
-                 fontSize: 12,
-                 fontWeight: "600",
-                 color: colors.textSecondary,
-                 marginBottom: spacing.sm,
-               }}
-             >
-               Business Logo
-             </Text>
-             <View style={{ flexDirection: "row", alignItems: "center" }}>
-               <View
-                 style={{
-                   width: 64,
-                   height: 64,
-                   borderRadius: 12,
-                   backgroundColor: colors.background,
-                   borderWidth: 1,
-                   borderColor: colors.border,
-                   alignItems: "center",
-                   justifyContent: "center",
-                   overflow: "hidden",
-                 }}
-               >
-                 {logoUrl ? (
-                   <Image
-                     source={{ uri: logoUrl }}
-                     style={{ width: 64, height: 64 }}
-                     resizeMode="cover"
-                   />
-                 ) : (
-                   <Upload size={24} color={colors.textSecondary} />
-                 )}
-               </View>
+          {/* Business Logo */}
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              marginBottom: spacing.sm,
+              padding: spacing.md,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: "600",
+                color: colors.textSecondary,
+                marginBottom: spacing.sm,
+              }}
+            >
+              Business Logo
+            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 12,
+                  backgroundColor: colors.background,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                }}
+              >
+                {logoUrl ? (
+                  <Image
+                    source={{ uri: logoUrl }}
+                    style={{ width: 64, height: 64 }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Upload size={24} color={colors.textSecondary} />
+                )}
+              </View>
 
-               <View style={{ flex: 1, marginLeft: spacing.md }}>
-                 <Text
-                   style={{
-                     fontSize: 13,
-                     color: colors.textSecondary,
-                     marginBottom: spacing.xs,
-                   }}
-                 >
-                   Square image works best
-                 </Text>
-                 <TouchableOpacity
-                   onPress={handleLogoUpload}
-                   disabled={logoUploading}
-                   style={{
-                     alignSelf: "flex-start",
-                     paddingHorizontal: spacing.md,
-                     paddingVertical: spacing.xs,
-                     borderRadius: 8,
-                     backgroundColor: logoUploading
-                       ? colors.border
-                       : colors.primary,
-                   }}
-                 >
-                   {logoUploading ? (
-                     <ActivityIndicator color={colors.surface} />
-                   ) : (
-                     <Text
-                       style={{
-                         color: colors.surface,
-                         fontSize: 13,
-                         fontWeight: "600",
-                       }}
-                     >
-                       Upload Logo
-                     </Text>
-                   )}
-                 </TouchableOpacity>
-               </View>
-             </View>
-           </View>
+              <View style={{ flex: 1, marginLeft: spacing.md }}>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: colors.textSecondary,
+                    marginBottom: spacing.xs,
+                  }}
+                >
+                  Square image works best
+                </Text>
+                <TouchableOpacity
+                  onPress={handleLogoUpload}
+                  disabled={logoUploading}
+                  style={{
+                    alignSelf: "flex-start",
+                    paddingHorizontal: spacing.md,
+                    paddingVertical: spacing.xs,
+                    borderRadius: 8,
+                    backgroundColor: logoUploading
+                      ? colors.border
+                      : colors.primary,
+                  }}
+                >
+                  {logoUploading ? (
+                    <ActivityIndicator color={colors.surface} />
+                  ) : (
+                    <Text
+                      style={{
+                        color: colors.surface,
+                        fontSize: 13,
+                        fontWeight: "600",
+                      }}
+                    >
+                      Upload Logo
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
         </ScrollView>
 
         {/* Save Button */}
