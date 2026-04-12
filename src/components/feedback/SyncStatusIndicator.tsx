@@ -12,8 +12,11 @@ interface SyncStatusIndicatorProps {
  * Compact sync status indicator for transaction lists
  * Shows icon + optional text. Compact mode: icon only (12px)
  */
-export function SyncStatusIndicator({ compact = true }: SyncStatusIndicatorProps) {
-  const { syncStatus, isConnected, hasSyncError, triggerSync } = useSyncStatus();
+export function SyncStatusIndicator({
+  compact = true,
+}: SyncStatusIndicatorProps) {
+  const { syncStatus, isConnected, hasSyncError, triggerSync } =
+    useSyncStatus();
 
   const getStatusUI = () => {
     if (hasSyncError) {
@@ -26,7 +29,9 @@ export function SyncStatusIndicator({ compact = true }: SyncStatusIndicatorProps
 
     if (!isConnected) {
       return {
-        icon: <WifiOff size={compact ? 12 : 14} color={colors.sync.offlineText} />,
+        icon: (
+          <WifiOff size={compact ? 12 : 14} color={colors.sync.offlineText} />
+        ),
         text: "Offline",
         textColor: colors.sync.offlineText,
       };
@@ -35,14 +40,21 @@ export function SyncStatusIndicator({ compact = true }: SyncStatusIndicatorProps
     switch (syncStatus) {
       case "syncing":
         return {
-          icon: <RefreshCw size={compact ? 12 : 14} color={colors.sync.syncingText} />,
+          icon: (
+            <RefreshCw
+              size={compact ? 12 : 14}
+              color={colors.sync.syncingText}
+            />
+          ),
           text: "Syncing",
           textColor: colors.sync.syncingText,
         };
 
       case "offline":
         return {
-          icon: <Check size={compact ? 12 : 14} color={colors.sync.offlineText} />,
+          icon: (
+            <Check size={compact ? 12 : 14} color={colors.sync.offlineText} />
+          ),
           text: "Offline",
           textColor: colors.sync.offlineText,
         };
@@ -50,7 +62,9 @@ export function SyncStatusIndicator({ compact = true }: SyncStatusIndicatorProps
       case "synced":
       default:
         return {
-          icon: <Check size={compact ? 12 : 14} color={colors.sync.syncedText} />,
+          icon: (
+            <Check size={compact ? 12 : 14} color={colors.sync.syncedText} />
+          ),
           text: "Synced",
           textColor: colors.sync.syncedText,
         };
