@@ -1,4 +1,4 @@
-import { getCustomerPreviousBalance, recordPayment } from "@/src/api/orders";
+import { getCustomerPreviousBalance, recordPayment } from "@/src/api/entries";
 import { fetchPersonDetail } from "@/src/api/people";
 import Loader from "@/src/components/feedback/Loader";
 import { useToast } from "@/src/components/feedback/Toast";
