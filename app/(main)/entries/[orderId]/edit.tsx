@@ -10,7 +10,6 @@ import { useToast } from "@/src/components/feedback/Toast";
 import BillFooter from "@/src/components/orders/BillFooter";
 import OrderSummary from "@/src/components/orders/OrderBillSummary";
 import OrderItemCard from "@/src/components/orders/OrderItemCard";
-import ProductPicker from "@/src/components/picker/ProductPicker";
 import { useOrderDetail, useUpdateOrder } from "@/src/hooks/useEntries";
 import { useAuthStore } from "@/src/store/authStore";
 import { useOrderStore } from "@/src/store/orderStore";
@@ -23,7 +22,6 @@ import {
   ArrowLeft,
   ChevronDown,
   ChevronUp,
-  CirclePlus,
   Pencil,
 } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
@@ -88,7 +86,6 @@ export default function EditOrderScreen() {
   // Quick entry mode (amount-first)
   const [quickAmount, setQuickAmount] = useState("");
   const [itemsExpanded, setItemsExpanded] = useState(false);
-  const [isProductPickerVisible, setProductPickerVisible] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -521,63 +518,6 @@ export default function EditOrderScreen() {
                     />
                   </View>
                 ))}
-
-                <TouchableOpacity
-                  onPress={() => setProductPickerVisible(true)}
-                  activeOpacity={0.7}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    paddingVertical: 12,
-                    marginTop: 8,
-                    borderRadius: 12,
-                    borderWidth: 1.5,
-                    borderStyle: "dashed",
-                    borderColor: colors.primary,
-                    backgroundColor: colors.primaryLight,
-                  }}
-                >
-                  <CirclePlus
-                    size={18}
-                    color={colors.primary}
-                    strokeWidth={2.5}
-                  />
-                  <Text
-                    style={{
-                      marginLeft: 8,
-                      fontSize: 15,
-                      fontWeight: "700",
-                      color: colors.primary,
-                    }}
-                  >
-                    Add Item
-                  </Text>
-                </TouchableOpacity>
-
-                <ProductPicker
-                  visible={isProductPickerVisible}
-                  onClose={() => setProductPickerVisible(false)}
-                  vendorId={vendorId!}
-                  addToCart={(
-                    productId,
-                    name,
-                    rate,
-                    variantId,
-                    variantName,
-                  ) => {
-                    addItem({
-                      product_id: productId,
-                      product_name: name,
-                      variant_id: variantId ?? null,
-                      variant_name: variantName ?? null,
-                      price: rate,
-                      quantity: 1,
-                    });
-                    if (quickAmount) setQuickAmount("");
-                    setProductPickerVisible(false);
-                  }}
-                />
 
                 {/* Loading Charge & GST */}
                 <View style={{ marginTop: 16 }}>

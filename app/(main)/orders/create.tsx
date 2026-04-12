@@ -557,21 +557,6 @@ export default function CreateOrderScreen() {
                 )}
 
                 <View className="px-4 pb-4">
-                  <TouchableOpacity
-                    onPress={() => setProductPickerVisible(true)}
-                    activeOpacity={0.7}
-                    className="flex-row items-center justify-center py-3.5 mt-2 rounded-xl border-[1.5px] border-dashed border-primary bg-primaryLight"
-                  >
-                    <CirclePlus
-                      size={18}
-                      color={colors.primary}
-                      strokeWidth={2.5}
-                    />
-                    <Text className="ml-2 text-[15px] font-extrabold text-primary">
-                      Add Item
-                    </Text>
-                  </TouchableOpacity>
-
                   {hasItems && (
                     <View className="mt-4">
                       <OrderSummary
@@ -670,22 +655,6 @@ export default function CreateOrderScreen() {
             selectedPerson={selectedCustomerMeta}
             setSelectedPerson={handleSelectPerson}
             vendorId={vendorId!}
-          />
-
-          <ProductPicker
-            visible={isProductPickerVisible}
-            onClose={() => setProductPickerVisible(false)}
-            vendorId={vendorId!}
-            addToCart={(productId, name, rate) => {
-              addItem({
-                product_id: productId,
-                product_name: name,
-                price: rate,
-                quantity: 1,
-              });
-              // Clear quick amount when items are added
-              setQuickAmount(itemsTotal.toString());
-            }}
           />
         </KeyboardAvoidingView>
       </SafeAreaView>

@@ -10,16 +10,9 @@
 import { useFeatureFlags } from "@/src/hooks/useFeatureFlags";
 import { usePreferencesStore } from "@/src/store/preferencesStore";
 import { colors, spacing } from "@/src/utils/theme";
-import { Stack, useRouter } from "expo-router";
-import { ArrowLeft, ToggleLeft, ToggleRight, Info } from "lucide-react-native";
-import { useState } from "react";
-import {
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-  Alert,
-} from "react-native";
+import { useRouter } from "expo-router";
+import { ArrowLeft, Info, ToggleLeft, ToggleRight } from "lucide-react-native";
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SettingsScreen() {
@@ -49,7 +42,7 @@ export default function SettingsScreen() {
             Alert.alert("Done", "Offline queue cleared");
           },
         },
-      ]
+      ],
     );
   };
 
@@ -131,7 +124,9 @@ export default function SettingsScreen() {
       }}
     >
       <Text style={{ fontSize: 13, color: colors.textSecondary }}>{label}</Text>
-      <Text style={{ fontSize: 13, fontWeight: "500", color: colors.textPrimary }}>
+      <Text
+        style={{ fontSize: 13, fontWeight: "500", color: colors.textPrimary }}
+      >
         {value}
       </Text>
     </View>
@@ -151,7 +146,10 @@ export default function SettingsScreen() {
           borderBottomColor: colors.border,
         }}
       >
-        <TouchableOpacity onPress={() => router.back()} style={{ marginRight: spacing.md }}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{ marginRight: spacing.md }}
+        >
           <ArrowLeft size={24} color={colors.textPrimary} strokeWidth={2} />
         </TouchableOpacity>
         <Text
@@ -172,7 +170,9 @@ export default function SettingsScreen() {
       >
         {/* Feature Toggles */}
         <SectionHeader title="Features" />
-        <View style={{ backgroundColor: colors.surface, marginBottom: spacing.md }}>
+        <View
+          style={{ backgroundColor: colors.surface, marginBottom: spacing.md }}
+        >
           <FeatureToggleRow
             title="Quick Items"
             description="Enable fast item entry form variants"
@@ -189,7 +189,9 @@ export default function SettingsScreen() {
 
         {/* Business Information */}
         <SectionHeader title="Business" />
-        <View style={{ backgroundColor: colors.surface, marginBottom: spacing.md }}>
+        <View
+          style={{ backgroundColor: colors.surface, marginBottom: spacing.md }}
+        >
           <InfoRow
             label="Business Type"
             value={businessType === "distributor" ? "Distributor" : "Retailer"}
@@ -208,7 +210,13 @@ export default function SettingsScreen() {
                 marginVertical: spacing.xs,
               }}
             >
-              <Text style={{ fontSize: 13, color: colors.primary, fontWeight: "500" }}>
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: colors.primary,
+                  fontWeight: "500",
+                }}
+              >
                 → Change in Profile Settings
               </Text>
             </TouchableOpacity>
@@ -217,7 +225,9 @@ export default function SettingsScreen() {
 
         {/* Sync & Data */}
         <SectionHeader title="Sync & Data" />
-        <View style={{ backgroundColor: colors.surface, marginBottom: spacing.md }}>
+        <View
+          style={{ backgroundColor: colors.surface, marginBottom: spacing.md }}
+        >
           <TouchableOpacity
             onPress={handleClearOfflineQueue}
             style={{
@@ -228,8 +238,20 @@ export default function SettingsScreen() {
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Info size={18} color={colors.warning} strokeWidth={1.5} style={{ marginRight: spacing.sm }} />
-              <Text style={{ flex: 1, fontSize: 15, fontWeight: "500", color: colors.warning }}>
+              <Info
+                size={18}
+                color={colors.warning}
+                strokeWidth={1.5}
+                style={{ marginRight: spacing.sm }}
+              />
+              <Text
+                style={{
+                  flex: 1,
+                  fontSize: 15,
+                  fontWeight: "500",
+                  color: colors.warning,
+                }}
+              >
                 Clear Offline Queue
               </Text>
             </View>
@@ -248,11 +270,21 @@ export default function SettingsScreen() {
 
         {/* About */}
         <SectionHeader title="About" />
-        <View style={{ backgroundColor: colors.surface, paddingBottom: spacing.md }}>
+        <View
+          style={{ backgroundColor: colors.surface, paddingBottom: spacing.md }}
+        >
           <InfoRow label="App Version" value="1.0.0" />
           <InfoRow label="Build" value="Offline-First Optimized" />
-          <View style={{ paddingHorizontal: spacing.md, paddingTop: spacing.sm }}>
-            <Text style={{ fontSize: 11, color: colors.textSecondary, fontStyle: "italic" }}>
+          <View
+            style={{ paddingHorizontal: spacing.md, paddingTop: spacing.sm }}
+          >
+            <Text
+              style={{
+                fontSize: 11,
+                color: colors.textSecondary,
+                fontStyle: "italic",
+              }}
+            >
               Fast, simple, always on — online or offline.
             </Text>
           </View>
