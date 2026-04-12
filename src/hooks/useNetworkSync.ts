@@ -16,7 +16,6 @@
 
 import { createOrder, recordPayment } from "@/src/api/entries";
 import { addPerson } from "@/src/api/people";
-import { addProduct, deleteProduct, updateProduct } from "@/src/api/products";
 import {
   addSupplier,
   recordDelivery,
@@ -129,34 +128,6 @@ async function replayMutation(
       await addPerson(vendorId, customerData as any);
       queryClient.invalidateQueries({ queryKey: ["customers"] });
       return true;
-    }
-
-    // ── Product Mutations ────────────────────────────────────────────────
-    if (entity === "product") {
-      const vendorId = payload.vendorId || payload.vendor_id;
-      const productId = payload.productId || payload.id;
-
-      if (operation === "CREATE") {
-        if (!vendorId) throw new Error("Missing vendorId in product payload");
-        const { vendorId: _, vendor_id: __, ...productData } = payload;
-        await addProduct(vendorId, productData as any);
-        queryClient.invalidateQueries({ queryKey: ["products"] });
-        return true;
-      }
-
-      if (operation === "UPDATE") {
-        if (!productId) throw new Error("Missing productId in product payload");
-        await updateProduct(productId, payload as any);
-        queryClient.invalidateQueries({ queryKey: ["products"] });
-        return true;
-      }
-
-      if (operation === "DELETE") {
-        if (!productId) throw new Error("Missing productId in product payload");
-        await deleteProduct(productId);
-        queryClient.invalidateQueries({ queryKey: ["products"] });
-        return true;
-      }
     }
 
     // ── Supplier Mutations ───────────────────────────────────────────────
