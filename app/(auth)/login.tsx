@@ -71,7 +71,6 @@ export default function LoginPage() {
                       error={touched.email ? errors.email : undefined}
                       keyboardType="email-address"
                       variant="white"
-                      testID="auth-login-email"
                     />
 
                     <Text className="text-[13px] font-semibold text-textPrimary mb-2 mt-4">
@@ -84,7 +83,6 @@ export default function LoginPage() {
                       secureTextEntry={!showPassword}
                       error={touched.password ? errors.password : undefined}
                       variant="white"
-                      testID="auth-login-password"
                       icon={
                         <TouchableOpacity
                           onPress={() => setShowPassword((p) => !p)}
@@ -123,7 +121,6 @@ export default function LoginPage() {
                       title="Sign In"
                       onPress={handleSubmit}
                       loading={loginMutation.isPending}
-                      testID="auth-login-submit"
                     />
 
                     <AuthDivider />

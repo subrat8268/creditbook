@@ -11,7 +11,6 @@ function NewBillButton() {
     <TouchableOpacity
       onPress={() => router.push("/(main)/new-entry")}
       activeOpacity={0.85}
-      testID="tab-add-entry"
       style={styles.fabWrapper}
     >
       <View style={styles.fabContainer}>
@@ -104,7 +103,6 @@ export default function TabLayout() {
         name="entries"
         options={{
           title: "Entries",
-          tabBarTestID: "tab-entries",
           tabBarIcon: ({ color, size, focused }) => (
             <Receipt
               size={focused ? size + 2 : size}

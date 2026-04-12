@@ -356,7 +356,6 @@ export default function ProfileScreen() {
             onPress={handleSignOut}
             activeOpacity={0.8}
             className="flex-row items-center justify-center py-4 gap-2"
-            testID="settings-logout"
           >
             <LogOut size={20} color={colors.danger} strokeWidth={2.5} />
             <Text className="text-[16px] font-extrabold text-danger">Sign Out</Text>

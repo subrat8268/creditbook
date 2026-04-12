@@ -14,7 +14,6 @@ interface BillFooterProps {
   totalLabel?: string;
   showIcon?: boolean;
   offlineQueueCount?: number;
-  testID?: string;
 }
 
 export default function BillFooter({
@@ -26,7 +25,6 @@ export default function BillFooter({
   totalLabel = "Grand Total",
   showIcon = true,
   offlineQueueCount,
-  testID,
 }: BillFooterProps) {
   const getGrandTotal = useOrderStore((state) => state.getGrandTotal);
 
@@ -57,7 +55,6 @@ export default function BillFooter({
         onPress={onSaveAndShare}
         disabled={isDisabled}
         activeOpacity={0.8}
-        testID={testID}
         className={`flex-row items-center justify-center py-4 rounded-full ${
           isDisabled ? "bg-border opacity-50" : "bg-primary"
         }`}

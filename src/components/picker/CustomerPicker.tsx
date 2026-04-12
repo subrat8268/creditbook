@@ -13,7 +13,6 @@ interface CustomerPickerProps {
   vendorId: string;
   onClose?: () => void;
   variant?: "sheet" | "inline";
-  testIDPrefix?: string;
 }
 
 export default function CustomerPicker({
@@ -23,7 +22,6 @@ export default function CustomerPicker({
   vendorId,
   onClose,
   variant = "sheet",
-  testIDPrefix,
 }: CustomerPickerProps) {
   const [search, setSearch] = useState("");
   const { isConnected } = useNetworkSync();
@@ -86,7 +84,6 @@ export default function CustomerPicker({
               value={search}
               onChangeText={setSearch}
               placeholder="Search people..."
-              testID={testIDPrefix ? `${testIDPrefix}-search` : undefined}
             />
           </View>
           {!isConnected && (
@@ -107,7 +104,6 @@ export default function CustomerPicker({
               }`}
               onPress={() => handleSelect(item)}
               activeOpacity={0.8}
-              testID={testIDPrefix ? `${testIDPrefix}-row-${index}` : undefined}
             >
               <Text className="text-[15px] font-semibold text-textPrimary">
                 {item.name}

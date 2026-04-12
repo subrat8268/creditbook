@@ -77,7 +77,6 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView
-      testID="dashboard-root"
       className="flex-1 bg-background"
       edges={["top"]}
     >
@@ -101,7 +100,6 @@ export default function DashboardScreen() {
 
         <View className="px-5">
           <View
-            testID="dashboard-stats-card"
             className="rounded-[24px] bg-surface border border-border p-6 mb-5"
           >
             <Text className="text-[12px] font-semibold text-textSecondary uppercase tracking-[2px]">
@@ -138,7 +136,7 @@ export default function DashboardScreen() {
           </TouchableOpacity>
 
           {overduePeople.length > 0 ? (
-            <View testID="dashboard-entries-list" className="mb-6">
+            <View className="mb-6">
               <View className="flex-row items-center justify-between mb-3">
                 <Text className="text-[16px] font-extrabold text-textPrimary">
                   Top overdue people

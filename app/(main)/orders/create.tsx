@@ -472,7 +472,6 @@ export default function CreateOrderScreen() {
               selectedPerson={selectedCustomerMeta}
               setSelectedPerson={handleSelectPerson}
               vendorId={vendorId!}
-              testIDPrefix="entry-person"
             />
 
             {/* QUICK AMOUNT INPUT (amount-first) */}
@@ -498,7 +497,6 @@ export default function CreateOrderScreen() {
                     style={{ color: colors.textPrimary }}
                     editable={!hasItems || entryType === "payment"} // Disable if using items
                     autoFocus={!selectedCustomerMeta} // Focus if no customer preselected
-                    testID="entry-amount-input"
                   />
                 </View>
                 {hasItems && entryType === "bill" && (
@@ -691,7 +689,6 @@ export default function CreateOrderScreen() {
                     (!quickAmount.trim() && !hasItems) ||
                     createOrderMutation.isPending
               }
-              testID="entry-save-share"
             />
           </View>
 
