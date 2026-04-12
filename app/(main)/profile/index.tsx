@@ -1,25 +1,18 @@
 import { Stack, useRouter } from "expo-router";
 import {
   ArrowLeft,
-  BarChart2,
   Building2,
-  ChevronDown,
-  ChevronRight,
   CreditCard,
-  Download,
   Hash,
   HelpCircle,
   Info,
   Languages,
   LogOut,
-  Package,
   Receipt,
-  Settings,
   Smartphone,
   Store,
-  Truck,
 } from "lucide-react-native";
-import { ComponentType, ReactNode, useState } from "react";
+import { ComponentType, ReactNode } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -161,7 +154,6 @@ export default function ProfileScreen() {
   const { user, profile, logout } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
   const router = useRouter();
-  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   if (!profile) {
     return (
@@ -255,65 +247,6 @@ export default function ProfileScreen() {
             last
           />
         </SectionCard>
-
-        {/* ── Advanced (hidden accordion) ── */}
-        <View className="bg-surface rounded-2xl px-5 pt-4 pb-2 mb-4 shadow-sm border border-border">
-          <TouchableOpacity
-            onPress={() => setAdvancedOpen((prev) => !prev)}
-            activeOpacity={0.75}
-            className="flex-row items-center justify-between mb-2"
-          >
-            <Text className="text-[11px] font-bold text-textSecondary uppercase tracking-widest">
-              ADVANCED
-            </Text>
-            <ChevronDown
-              size={18}
-              color={colors.textSecondary}
-              strokeWidth={2}
-              style={{
-                transform: [{ rotate: advancedOpen ? "180deg" : "0deg" }],
-              }}
-            />
-          </TouchableOpacity>
-
-          {advancedOpen && (
-            <View>
-              <DetailRow
-                Icon={Download}
-                label="DATA"
-                value="Export Business Data"
-                onPress={() => router.push("/(main)/export" as never)}
-              />
-              <DetailRow
-                Icon={BarChart2}
-                label="ANALYTICS"
-                value="Reports & Trends"
-                onPress={() => router.push("/(main)/reports" as never)}
-              />
-              <DetailRow
-                Icon={Package}
-                label="CATALOG"
-                value="Products & Items"
-                onPress={() => router.push("/(main)/products" as never)}
-              />
-              <DetailRow
-                Icon={Truck}
-                label="PARTNERS"
-                value="Suppliers & Vendors"
-                onPress={() => router.push("/(main)/suppliers" as never)}
-              />
-              <DetailRow
-                Icon={Settings}
-                label="ACCOUNT"
-                value="General Settings"
-                last
-                onPress={() =>
-                  Alert.alert("Settings", "Advanced settings coming soon.")
-                }
-              />
-            </View>
-          )}
-        </View>
 
         {/* ── Bank Account ── */}
         <SectionCard title="BANK ACCOUNT">
