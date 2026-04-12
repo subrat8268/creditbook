@@ -2,17 +2,16 @@
  * Settings Screen - Configure app preferences & feature toggles
  *
  * Provides user control over:
- * - Feature visibility (Quick Items, Advanced Export)
- * - Sync preferences
- * - Debug information
+ * - Feature visibility (Quick Items, Export)
+ * - Business type information
  */
 
 import { useFeatureFlags } from "@/src/hooks/useFeatureFlags";
 import { usePreferencesStore } from "@/src/store/preferencesStore";
 import { colors, spacing } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Info, ToggleLeft, ToggleRight } from "lucide-react-native";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ArrowLeft, ToggleLeft, ToggleRight } from "lucide-react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SettingsScreen() {
@@ -26,24 +25,6 @@ export default function SettingsScreen() {
 
   const handleToggleExport = () => {
     setFeatureFlags({ hideExport: !featureFlags.hideExport });
-  };
-
-  const handleClearOfflineQueue = () => {
-    Alert.alert(
-      "Clear Offline Queue",
-      "This will clear any pending entry syncs. Use only if syncing is stuck.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Clear",
-          style: "destructive",
-          onPress: () => {
-            // TODO: Implement clear offline queue action
-            Alert.alert("Done", "Offline queue cleared");
-          },
-        },
-      ],
-    );
   };
 
   const FeatureToggleRow = ({
@@ -221,51 +202,6 @@ export default function SettingsScreen() {
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
-
-        {/* Sync & Data */}
-        <SectionHeader title="Sync & Data" />
-        <View
-          style={{ backgroundColor: colors.surface, marginBottom: spacing.md }}
-        >
-          <TouchableOpacity
-            onPress={handleClearOfflineQueue}
-            style={{
-              paddingVertical: spacing.md,
-              paddingHorizontal: spacing.md,
-              borderBottomWidth: 1,
-              borderBottomColor: colors.border,
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Info
-                size={18}
-                color={colors.warning}
-                strokeWidth={1.5}
-                style={{ marginRight: spacing.sm }}
-              />
-              <Text
-                style={{
-                  flex: 1,
-                  fontSize: 15,
-                  fontWeight: "500",
-                  color: colors.warning,
-                }}
-              >
-                Clear Offline Queue
-              </Text>
-            </View>
-            <Text
-              style={{
-                fontSize: 13,
-                color: colors.textSecondary,
-                marginTop: spacing.xs,
-                marginLeft: 26,
-              }}
-            >
-              Clear stuck pending syncs (use if necessary)
-            </Text>
-          </TouchableOpacity>
         </View>
 
         {/* About */}
