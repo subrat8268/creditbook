@@ -1,4 +1,4 @@
-import { Order } from "@/src/api/orders";
+import { Order } from "@/src/api/entries";
 import { daysSince } from "@/src/utils/helper";
 import { colors, spacing } from "@/src/utils/theme";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -112,7 +112,7 @@ export default function OrderCard({ order, onPress }: Props) {
           </Text>
         </View>
 
-      {/* Center: person name + entry number */}
+        {/* Center: person name + entry number */}
         <View className="flex-1 justify-center">
           <Text
             className="text-textPrimary text-[15px] font-bold"

@@ -16,7 +16,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { Alert } from "react-native";
-import { fetchPersonDetail, PAGE_SIZE } from "../api/customers";
+import { fetchPersonDetail, PAGE_SIZE } from "../api/people";
 import { ApiError } from "../lib/supabaseQuery";
 import { supabase } from "../services/supabase";
 import { Person, PersonDetail } from "../types/customer";

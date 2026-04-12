@@ -1,8 +1,7 @@
 import OrderCard from "@/src/components/orders/OrderCard";
-import { Order } from "@/src/api/orders";
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
+import { useOrders } from "@/src/hooks/useEntries";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
-import { useOrders } from "@/src/hooks/useOrders";
 import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 import { useAuthStore } from "@/src/store/authStore";
 import { colors, spacing, typography } from "@/src/utils/theme";
@@ -59,7 +58,7 @@ export default function OrdersScreen() {
 
   const handlePressOrder = useCallback(
     (orderId: string) =>
-      router.push({ pathname: "/orders/[orderId]", params: { orderId } }),
+      router.push({ pathname: "/entries/[orderId]", params: { orderId } }),
     [router],
   );
 
@@ -112,16 +111,16 @@ export default function OrdersScreen() {
       {isLoading && orders.length === 0 ? (
         <View className="flex-1 items-center justify-center">
           <Text className="text-textSecondary text-[14px]">
-              Loading entries…
-            </Text>
-          </View>
-        ) : error ? (
-          <View className="flex-1 items-center justify-center px-8">
-            <Text className="text-danger text-[14px] text-center">
-              Could not load entries. Pull down to retry.
-            </Text>
-          </View>
-        ) : (
+            Loading entries…
+          </Text>
+        </View>
+      ) : error ? (
+        <View className="flex-1 items-center justify-center px-8">
+          <Text className="text-danger text-[14px] text-center">
+            Could not load entries. Pull down to retry.
+          </Text>
+        </View>
+      ) : (
         <FlatList
           data={orders}
           keyExtractor={(item) => item.id}
@@ -187,7 +186,11 @@ export default function OrdersScreen() {
       )}
 
       {/* ── FAB ───────────────────────────────────────────────────────── */}
-      <FloatingActionButton onPress={handleCreateEntry} bottom={spacing.fabBottom} right={spacing.fabMargin} />
+      <FloatingActionButton
+        onPress={handleCreateEntry}
+        bottom={spacing.fabBottom}
+        right={spacing.fabMargin}
+      />
 
       {/* ── Sort bottom sheet removed for Phase 1 ──────────────────────── */}
     </SafeAreaView>

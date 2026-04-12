@@ -1,8 +1,8 @@
-import RecordCustomerPaymentModal from "@/src/components/customers/RecordCustomerPaymentModal";
 import EmptyState from "@/src/components/feedback/EmptyState";
 import Loader from "@/src/components/feedback/Loader";
 import { useToast } from "@/src/components/feedback/Toast";
-import { usePersonDetail } from "@/src/hooks/useCustomer";
+import RecordCustomerPaymentModal from "@/src/components/people/RecordCustomerPaymentModal";
+import { usePersonDetail } from "@/src/hooks/usePeople";
 import { useWhatsAppShare } from "@/src/hooks/useWhatsAppShare";
 import { useAuthStore } from "@/src/store/authStore";
 import { usePreferencesStore } from "@/src/store/preferencesStore";
@@ -222,7 +222,10 @@ type ListItem =
 
 export default function CustomerDetailScreen() {
   const router = useRouter();
-  const { customerId, focus } = useLocalSearchParams<{ customerId: string; focus?: string }>();
+  const { customerId, focus } = useLocalSearchParams<{
+    customerId: string;
+    focus?: string;
+  }>();
   const {
     data: customer,
     isLoading,
@@ -233,9 +236,7 @@ export default function CustomerDetailScreen() {
 
   const { show: showToast } = useToast();
   const { shareLedger, isSharing } = useWhatsAppShare();
-  const reminderSnoozes = usePreferencesStore(
-    (s) => s.overdueReminderSnoozes,
-  );
+  const reminderSnoozes = usePreferencesStore((s) => s.overdueReminderSnoozes);
   const snoozeReminder = usePreferencesStore((s) => s.snoozeOverdueReminder);
   const clearReminderSnooze = usePreferencesStore(
     (s) => s.clearOverdueReminderSnooze,
@@ -255,7 +256,10 @@ export default function CustomerDetailScreen() {
     if (!customer) return;
     const snoozedUntil = reminderSnoozes[customer.id] ?? 0;
     if (snoozedUntil > Date.now()) {
-      showToast({ message: "Reminder is snoozed for this person", type: "error" });
+      showToast({
+        message: "Reminder is snoozed for this person",
+        type: "error",
+      });
       return;
     }
     const biz = profile?.business_name || "our store";
@@ -270,10 +274,13 @@ export default function CustomerDetailScreen() {
           amount: customer.outstandingBalance,
           channel: "whatsapp",
         });
-        showToast({ message: `Reminder sent to ${customer.name}`, type: "success" });
+        showToast({
+          message: `Reminder sent to ${customer.name}`,
+          type: "success",
+        });
       })
       .catch(() =>
-      showToast({ message: "Cannot open WhatsApp", type: "error" }),
+        showToast({ message: "Cannot open WhatsApp", type: "error" }),
       );
   };
 
@@ -313,13 +320,13 @@ export default function CustomerDetailScreen() {
 
   const handleShareLedger = useCallback(async () => {
     if (!customer || !profile) return;
-    
+
     await shareLedger(
       profile.id,
       customer.id,
       customer.name,
       customer.phone,
-      profile.business_name || profile.name || 'KredBook'
+      profile.business_name || profile.name || "KredBook",
     );
   }, [customer, profile, shareLedger]);
 
@@ -345,8 +352,11 @@ export default function CustomerDetailScreen() {
     }
     if (amountSeed && amountSeed > 0) {
       router.push({
-          pathname: "/new-bill",
-        params: { customer: JSON.stringify(customer), amount: String(amountSeed) },
+        pathname: "/new-bill",
+        params: {
+          customer: JSON.stringify(customer),
+          amount: String(amountSeed),
+        },
       });
       return;
     }
@@ -511,11 +521,11 @@ export default function CustomerDetailScreen() {
         </LinearGradient>
 
         {/* ── Action Buttons (2x2 Grid) ── */}
-          <View className="mx-4 mt-4 gap-3">
+        <View className="mx-4 mt-4 gap-3">
           {/* First Row */}
-           <View className="flex-row flex-wrap gap-3">
-             <TouchableOpacity
-               className="flex-1 min-w-[48%] bg-surface rounded-2xl py-[18px] items-center gap-2"
+          <View className="flex-row flex-wrap gap-3">
+            <TouchableOpacity
+              className="flex-1 min-w-[48%] bg-surface rounded-2xl py-[18px] items-center gap-2"
               style={{
                 shadowColor: colors.textPrimary,
                 shadowOffset: { width: 0, height: 2 },
@@ -551,7 +561,7 @@ export default function CustomerDetailScreen() {
                 />
               </View>
               <Text className="text-[13px] font-semibold text-textDark">
-                 Add Entry
+                Add Entry
               </Text>
             </TouchableOpacity>
           </View>
@@ -598,7 +608,11 @@ export default function CustomerDetailScreen() {
                 className="w-11 h-11 rounded-full items-center justify-center"
                 style={{ backgroundColor: colors.pending.bg }}
               >
-                <MessageCircle size={22} color={colors.warning} strokeWidth={2} />
+                <MessageCircle
+                  size={22}
+                  color={colors.warning}
+                  strokeWidth={2}
+                />
               </View>
               <Text className="text-[13px] font-semibold text-textDark">
                 Reminder
@@ -620,10 +634,16 @@ export default function CustomerDetailScreen() {
                 const snoozedUntil = reminderSnoozes[customer.id] ?? 0;
                 if (snoozedUntil > Date.now()) {
                   clearReminderSnooze(customer.id);
-                  showToast({ message: "Reminder snooze removed", type: "success" });
+                  showToast({
+                    message: "Reminder snooze removed",
+                    type: "success",
+                  });
                 } else {
                   snoozeReminder(customer.id, 7);
-                  showToast({ message: "Reminder snoozed for 7 days", type: "success" });
+                  showToast({
+                    message: "Reminder snoozed for 7 days",
+                    type: "success",
+                  });
                 }
               }}
             >
@@ -631,15 +651,19 @@ export default function CustomerDetailScreen() {
                 className="w-11 h-11 rounded-full items-center justify-center"
                 style={{ backgroundColor: colors.background }}
               >
-                <BellRing size={22} color={colors.textSecondary} strokeWidth={2} />
+                <BellRing
+                  size={22}
+                  color={colors.textSecondary}
+                  strokeWidth={2}
+                />
               </View>
               <Text className="text-[13px] font-semibold text-textDark">
-                {((reminderSnoozes[customer?.id ?? ""] ?? 0) > Date.now())
+                {(reminderSnoozes[customer?.id ?? ""] ?? 0) > Date.now()
                   ? "Undo Snooze"
                   : "Snooze 7d"}
               </Text>
             </TouchableOpacity>
-      </View>
+          </View>
         </View>
 
         {/* ── Transactions ── */}
@@ -709,7 +733,10 @@ export default function CustomerDetailScreen() {
                   })
                 }
               >
-                <Text className="text-[14px] font-bold" style={{ color: colors.surface }}>
+                <Text
+                  className="text-[14px] font-bold"
+                  style={{ color: colors.surface }}
+                >
                   Add Entry
                 </Text>
               </TouchableOpacity>
@@ -824,13 +851,18 @@ export default function CustomerDetailScreen() {
           onSuccess={() => {
             paymentModalRef.current?.dismiss();
             refetch();
-            showToast({ message: `Payment recorded for ${customer.name}`, type: "success" });
+            showToast({
+              message: `Payment recorded for ${customer.name}`,
+              type: "success",
+            });
           }}
           orderId={customer.pendingOrderId!}
           balanceDue={customer.pendingOrderBalance ?? 0}
           customerId={customer.id}
           customerName={customer.name}
-          initialAmount={quickPaymentAmount ? Number(quickPaymentAmount) : undefined}
+          initialAmount={
+            quickPaymentAmount ? Number(quickPaymentAmount) : undefined
+          }
         />
       )}
     </SafeAreaView>

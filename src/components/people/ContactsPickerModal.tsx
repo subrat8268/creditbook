@@ -37,7 +37,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { usePeople } from "../../hooks/useCustomer";
+import { usePeople } from "../../hooks/usePeople";
 import { useAuthStore } from "../../store/authStore";
 import { normalizePhone } from "../../utils/phone";
 import { colors } from "../../utils/theme";

@@ -23,8 +23,8 @@ const en = {
   // Navigation tabs
   nav: {
     dashboard: "Dashboard",
-    customers: "Customers",
-    orders: "Orders",
+    customers: "People",
+    orders: "Entries",
     products: "Products",
     suppliers: "Suppliers",
     profile: "Profile",
@@ -42,17 +42,17 @@ const en = {
     newBill: "New Bill",
     addCustomer: "Add Person",
     viewAll: "View All",
-    noOrders: "No orders yet",
-    recentOrders: "Recent Orders",
+    noOrders: "No entries yet",
+    recentOrders: "Recent Entries",
   },
 
-  // Customers
+  // People
   customers: {
-    title: "Customers",
-    search: "Search customers by name or phone",
+    title: "People",
+    search: "Search people by name or phone",
     addCustomer: "Add Person",
     editCustomer: "Edit Person",
-    noCustomers: "No customers yet",
+    noCustomers: "No people yet",
     name: "Name",
     phone: "Phone",
     address: "Address",
@@ -66,7 +66,7 @@ const en = {
     newBill: "New Bill",
     whatsappReminder: "WhatsApp Reminder",
     deleteCustomer: "Delete Person",
-    confirmDelete: "Are you sure you want to delete this customer?",
+    confirmDelete: "Are you sure you want to delete this person?",
     importContacts: "Import from Contacts",
     importContactsDesc: "Add customers from your phone contacts",
     selectContacts: "Select contacts to import",
@@ -81,9 +81,9 @@ const en = {
     importSummary: "{{imported}} customer(s) added, {{skipped}} skipped.",
   },
 
-  // Orders
+  // Entries
   orders: {
-    title: "Orders",
+    title: "Entries",
     newBill: "New Bill",
     noOrders: "No orders yet",
     status: {

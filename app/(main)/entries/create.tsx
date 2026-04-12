@@ -1,4 +1,4 @@
-import { getCustomerPreviousBalance, recordPayment } from "@/src/api/orders";
+import { getCustomerPreviousBalance, recordPayment } from "@/src/api/entries";
 import { fetchPersonDetail } from "@/src/api/people";
 import Loader from "@/src/components/feedback/Loader";
 import { useToast } from "@/src/components/feedback/Toast";
@@ -7,8 +7,8 @@ import OrderSummary from "@/src/components/orders/OrderBillSummary";
 import OrderItemCard from "@/src/components/orders/OrderItemCard";
 import CustomerPicker from "@/src/components/picker/CustomerPicker";
 import ProductPicker from "@/src/components/picker/ProductPicker";
+import { useCreateOrder } from "@/src/hooks/useEntries";
 import { useNetworkSync } from "@/src/hooks/useNetworkSync";
-import { useCreateOrder } from "@/src/hooks/useOrders";
 import { useAuthStore } from "@/src/store/authStore";
 import { useOrderStore } from "@/src/store/orderStore";
 import { BillItem, generateBillPdf } from "@/src/utils/generateBillPdf";
@@ -273,7 +273,7 @@ export default function CreateOrderScreen() {
       });
       if (nextParam === "share" && selectedCustomerMeta) {
         router.replace({
-          pathname: "/customers/[customerId]",
+          pathname: "/people/[customerId]",
           params: { customerId: selectedCustomerMeta.id, focus: "share" },
         });
       } else {

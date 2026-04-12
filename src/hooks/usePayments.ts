@@ -1,8 +1,8 @@
-import { Payment, fetchPayments, recordPayment } from "@/src/api/orders";
+import { Payment, fetchPayments, recordPayment } from "@/src/api/entries";
 import { ApiError } from "@/src/lib/supabaseQuery";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useOrderStore } from "../store/orderStore";
-import { orderKeys } from "./useOrders";
+import { orderKeys } from "./useEntries";
 
 // markFull is resolved by the caller before invoking the mutation;
 // the backend always receives the pre-computed amount so markFull is omitted.
@@ -16,7 +16,7 @@ interface RecordPaymentInput {
  * Standalone mutation-only hook for recording a payment.
  * Used directly by RecordCustomerPaymentModal so the modal
  * does not need its own queryClient or cache invalidation code.
- * 
+ *
  * Includes optimistic updates for offline-first architecture.
  */
 export function useRecordPayment(
@@ -41,13 +41,15 @@ export function useRecordPayment(
       await queryClient.cancelQueries({ queryKey: orderKeys.detail(orderId) });
       await queryClient.cancelQueries({ queryKey: ["payments", orderId] });
       if (customerId) {
-        await queryClient.cancelQueries({ queryKey: ["customerDetail", customerId] });
+        await queryClient.cancelQueries({
+          queryKey: ["customerDetail", customerId],
+        });
       }
 
       // Snapshot the previous values for rollback
       const previousOrder = queryClient.getQueryData(orderKeys.detail(orderId));
       const previousPayments = queryClient.getQueryData(["payments", orderId]);
-      const previousCustomer = customerId 
+      const previousCustomer = customerId
         ? queryClient.getQueryData(["customerDetail", customerId])
         : undefined;
 
@@ -56,8 +58,13 @@ export function useRecordPayment(
         if (!old) return old;
         const newAmountPaid = (old.amount_paid || 0) + amount;
         const newBalanceDue = (old.total_amount || 0) - newAmountPaid;
-        const newStatus = newBalanceDue <= 0 ? 'Paid' : newBalanceDue < old.total_amount ? 'Partially Paid' : 'Pending';
-        
+        const newStatus =
+          newBalanceDue <= 0
+            ? "Paid"
+            : newBalanceDue < old.total_amount
+              ? "Partially Paid"
+              : "Pending";
+
         return {
           ...old,
           amount_paid: newAmountPaid,
@@ -71,7 +78,7 @@ export function useRecordPayment(
         const newPayment = {
           id: `temp-${Date.now()}`, // Temporary ID
           order_id: orderId,
-          vendor_id: vendorId || '',
+          vendor_id: vendorId || "",
           amount,
           payment_mode: mode,
           payment_date: new Date().toISOString(),
@@ -87,7 +94,10 @@ export function useRecordPayment(
           if (!old) return old;
           return {
             ...old,
-            outstandingBalance: Math.max(0, (old.outstandingBalance || 0) - amount),
+            outstandingBalance: Math.max(
+              0,
+              (old.outstandingBalance || 0) - amount,
+            ),
           };
         });
       }
@@ -114,15 +124,24 @@ export function useRecordPayment(
     onError: (err: ApiError, _variables, context: any) => {
       // Rollback optimistic updates on error
       if (context?.previousOrder) {
-        queryClient.setQueryData(orderKeys.detail(orderId), context.previousOrder);
+        queryClient.setQueryData(
+          orderKeys.detail(orderId),
+          context.previousOrder,
+        );
       }
       if (context?.previousPayments) {
-        queryClient.setQueryData(["payments", orderId], context.previousPayments);
+        queryClient.setQueryData(
+          ["payments", orderId],
+          context.previousPayments,
+        );
       }
       if (context?.previousCustomer && customerId) {
-        queryClient.setQueryData(["customerDetail", customerId], context.previousCustomer);
+        queryClient.setQueryData(
+          ["customerDetail", customerId],
+          context.previousCustomer,
+        );
       }
-      
+
       console.error("Failed to record payment:", err.code, err.message);
     },
 

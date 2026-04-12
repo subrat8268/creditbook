@@ -1,10 +1,10 @@
-import { usePeople } from "@/src/hooks/useCustomer";
+import { useNetworkSync } from "@/src/hooks/useNetworkSync";
+import { usePeople } from "@/src/hooks/usePeople";
 import { useCallback, useMemo, useState } from "react";
 import { FlatList, Keyboard, Text, TouchableOpacity, View } from "react-native";
-import BottomSheetPicker from "./BottomSheetPicker";
-import SearchBar from "../ui/SearchBar";
 import Loader from "../feedback/Loader";
-import { useNetworkSync } from "@/src/hooks/useNetworkSync";
+import SearchBar from "../ui/SearchBar";
+import BottomSheetPicker from "./BottomSheetPicker";
 
 interface CustomerPickerProps {
   visible: boolean;
@@ -39,7 +39,7 @@ export default function CustomerPicker({
   // ✅ Flatten paginated data
   const people = useMemo(
     () => peopleData?.pages.flatMap((page) => page) ?? [],
-    [peopleData]
+    [peopleData],
   );
 
   // ✅ Infinite scroll loader
@@ -53,7 +53,7 @@ export default function CustomerPicker({
       setSelectedPerson(item);
       onClose?.();
     },
-    [setSelectedPerson, onClose]
+    [setSelectedPerson, onClose],
   );
 
   // ✅ Render each customer
@@ -73,40 +73,42 @@ export default function CustomerPicker({
   // ✅ Unique key
   const keyExtractor = (item: any) => item.id.toString();
 
-   if (variant === "inline") {
+  if (variant === "inline") {
     const inlinePeople = people ?? [];
-     return (
-       <View className="rounded-2xl bg-surface border border-border overflow-hidden">
-         <View className="px-4 py-3 border-b border-border">
-           <Text className="text-[12px] font-bold text-textSecondary tracking-widest">
-             SELECT PERSON
-           </Text>
-           <View className="mt-2">
+    return (
+      <View className="rounded-2xl bg-surface border border-border overflow-hidden">
+        <View className="px-4 py-3 border-b border-border">
+          <Text className="text-[12px] font-bold text-textSecondary tracking-widest">
+            SELECT PERSON
+          </Text>
+          <View className="mt-2">
             <SearchBar
               value={search}
               onChangeText={setSearch}
               placeholder="Search people..."
               testID={testIDPrefix ? `${testIDPrefix}-search` : undefined}
             />
-           </View>
-           {!isConnected && (
-             <Text className="text-[12px] text-textSecondary mt-2">
-               You’re offline. People will load when back online.
-             </Text>
-           )}
-         </View>
-          <FlatList
-            data={inlinePeople}
-            keyExtractor={keyExtractor}
-            renderItem={({ item, index }: { item: any; index: number }) => (
-              <TouchableOpacity
-                className={`px-4 py-3 border-b border-border ${
-                  selectedPerson?.id === item.id ? "bg-primaryLight" : "bg-surface"
-                }`}
-                onPress={() => handleSelect(item)}
-                activeOpacity={0.8}
-                testID={testIDPrefix ? `${testIDPrefix}-row-${index}` : undefined}
-              >
+          </View>
+          {!isConnected && (
+            <Text className="text-[12px] text-textSecondary mt-2">
+              You’re offline. People will load when back online.
+            </Text>
+          )}
+        </View>
+        <FlatList
+          data={inlinePeople}
+          keyExtractor={keyExtractor}
+          renderItem={({ item, index }: { item: any; index: number }) => (
+            <TouchableOpacity
+              className={`px-4 py-3 border-b border-border ${
+                selectedPerson?.id === item.id
+                  ? "bg-primaryLight"
+                  : "bg-surface"
+              }`}
+              onPress={() => handleSelect(item)}
+              activeOpacity={0.8}
+              testID={testIDPrefix ? `${testIDPrefix}-row-${index}` : undefined}
+            >
               <Text className="text-[15px] font-semibold text-textPrimary">
                 {item.name}
               </Text>
@@ -137,8 +139,8 @@ export default function CustomerPicker({
                 {isLoading
                   ? "Loading people..."
                   : !isConnected
-                  ? "Offline — connect to load people"
-                  : "No people found"}
+                    ? "Offline — connect to load people"
+                    : "No people found"}
               </Text>
             </View>
           }
@@ -148,11 +150,11 @@ export default function CustomerPicker({
   }
 
   return (
-      <BottomSheetPicker
-        visible={visible}
-        onClose={onClose ?? (() => {})}
-        title="Person"
-        items={people}
+    <BottomSheetPicker
+      visible={visible}
+      onClose={onClose ?? (() => {})}
+      title="Person"
+      items={people}
       isLoading={isLoading}
       isFetchingNextPage={isFetchingNextPage}
       onEndReached={handleEndReached}

@@ -1,13 +1,19 @@
-import { useMemo } from "react";
-import { ScrollView, View, Text, TouchableOpacity, StatusBar } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Plus } from "lucide-react-native";
-import { colors } from "@/src/utils/theme";
+import DashboardHeader from "@/src/components/dashboard/DashboardHeader";
+import Loader from "@/src/components/feedback/Loader";
 import { useDashboard } from "@/src/hooks/useDashboard";
 import { useAuthStore } from "@/src/store/authStore";
+import { colors } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
-import Loader from "@/src/components/feedback/Loader";
-import DashboardHeader from "@/src/components/dashboard/DashboardHeader";
+import { Plus } from "lucide-react-native";
+import { useMemo } from "react";
+import {
+  ScrollView,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const currencyFormatter = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 0,
@@ -40,8 +46,6 @@ const getAvatarBg = (name: string) => {
   return palette[Math.abs(hash) % palette.length];
 };
 
-
-
 type OverduePerson = {
   id: string;
   name: string;
@@ -72,8 +76,16 @@ export default function DashboardScreen() {
   }
 
   return (
-    <SafeAreaView testID="dashboard-root" className="flex-1 bg-background" edges={["top"]}>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent={false} />
+    <SafeAreaView
+      testID="dashboard-root"
+      className="flex-1 bg-background"
+      edges={["top"]}
+    >
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent={false}
+      />
 
       <ScrollView
         contentContainerStyle={{ paddingBottom: 120 }}
@@ -81,12 +93,17 @@ export default function DashboardScreen() {
       >
         <DashboardHeader
           overdueCount={overdueTotalCount}
-          onPressNotifications={() => router.push("/(main)/notifications" as never)}
+          onPressNotifications={() =>
+            router.push("/(main)/notifications" as never)
+          }
           onPressSettings={() => router.push("/(main)/profile" as never)}
         />
 
         <View className="px-5">
-          <View testID="dashboard-stats-card" className="rounded-[24px] bg-surface border border-border p-6 mb-5">
+          <View
+            testID="dashboard-stats-card"
+            className="rounded-[24px] bg-surface border border-border p-6 mb-5"
+          >
             <Text className="text-[12px] font-semibold text-textSecondary uppercase tracking-[2px]">
               Total Outstanding
             </Text>
@@ -98,7 +115,10 @@ export default function DashboardScreen() {
                 className="px-3 py-1.5 rounded-full"
                 style={{ backgroundColor: colors.overdue.bg }}
               >
-                <Text className="text-[12px] font-bold" style={{ color: colors.overdue.text }}>
+                <Text
+                  className="text-[12px] font-bold"
+                  style={{ color: colors.overdue.text }}
+                >
                   {overdueTotalCount} overdue
                 </Text>
               </View>
@@ -124,13 +144,15 @@ export default function DashboardScreen() {
                   Top overdue people
                 </Text>
                 <TouchableOpacity
-                  onPress={() => router.push("/(main)/customers" as never)}
+                  onPress={() => router.push("/(main)/people" as never)}
                 >
-                  <Text className="text-[13px] font-semibold text-primary">See all people</Text>
+                  <Text className="text-[13px] font-semibold text-primary">
+                    See all people
+                  </Text>
                 </TouchableOpacity>
               </View>
 
-  {overduePeople.map((person: OverduePerson) => {
+              {overduePeople.map((person: OverduePerson) => {
                 const initials = getInitials(person.name);
                 const avatarBg = getAvatarBg(person.name);
                 return (
@@ -139,21 +161,30 @@ export default function DashboardScreen() {
                     className="flex-row items-center p-4 mb-3 bg-surface rounded-2xl border border-border"
                     activeOpacity={0.8}
                     onPress={() =>
-                      router.push({ pathname: "/(main)/customers/[customerId]", params: { customerId: person.id } } as never)
+                      router.push({
+                        pathname: "/(main)/people/[customerId]",
+                        params: { customerId: person.id },
+                      } as never)
                     }
                   >
                     <View
                       className="w-12 h-12 rounded-full items-center justify-center mr-3"
                       style={{ backgroundColor: avatarBg }}
                     >
-                      <Text className="text-[13px] font-bold text-surface">{initials}</Text>
+                      <Text className="text-[13px] font-bold text-surface">
+                        {initials}
+                      </Text>
                     </View>
                     <View className="flex-1">
-                      <Text className="text-[15px] font-bold text-textPrimary" numberOfLines={1}>
+                      <Text
+                        className="text-[15px] font-bold text-textPrimary"
+                        numberOfLines={1}
+                      >
                         {person.name}
                       </Text>
                       <Text className="text-[12px] font-semibold text-danger mt-0.5">
-                        {formatCurrency(person.balance)} • {person.daysSince} days overdue
+                        {formatCurrency(person.balance)} • {person.daysSince}{" "}
+                        days overdue
                       </Text>
                     </View>
                   </TouchableOpacity>

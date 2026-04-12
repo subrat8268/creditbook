@@ -1,4 +1,4 @@
-import { Payment } from "@/src/api/orders";
+import { Payment } from "@/src/api/entries";
 import EmptyState from "@/src/components/feedback/EmptyState";
 import { formatDate } from "@/src/utils/helper";
 import { colors } from "@/src/utils/theme";

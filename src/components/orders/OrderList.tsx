@@ -1,4 +1,4 @@
-import { Order } from "@/src/api/orders";
+import { Order } from "@/src/api/entries";
 import { useOrderStore } from "@/src/store/orderStore";
 import { daysSince } from "@/src/utils/helper";
 import { colors } from "@/src/utils/theme";

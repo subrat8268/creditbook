@@ -1,12 +1,12 @@
-import CustomerList from "@/src/components/customers/CustomerList";
-import NewCustomerModal from "@/src/components/customers/NewCustomerModal";
 import { useToast } from "@/src/components/feedback/Toast";
+import CustomerList from "@/src/components/people/CustomerList";
+import NewCustomerModal from "@/src/components/people/NewCustomerModal";
 import Button from "@/src/components/ui/Button";
 import Input from "@/src/components/ui/Input";
 import SearchBar from "@/src/components/ui/SearchBar";
-import { useAddPerson, usePeople } from "@/src/hooks/useCustomer";
+import { useCreateOrder } from "@/src/hooks/useEntries";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
-import { useCreateOrder } from "@/src/hooks/useOrders";
+import { useAddPerson, usePeople } from "@/src/hooks/usePeople";
 import { useAuthStore } from "@/src/store/authStore";
 import { colors } from "@/src/utils/theme";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -97,7 +97,7 @@ export default function CustomersScreen() {
           type: "success",
         });
         router.push({
-          pathname: "/customers/[customerId]",
+          pathname: "/people/[customerId]",
           params: { customerId: createdPerson.id },
         });
       }
@@ -148,7 +148,7 @@ export default function CustomersScreen() {
   const handleOpenLedger = useCallback(
     (customerId: string) => {
       router.push({
-        pathname: "/customers/[customerId]",
+        pathname: "/people/[customerId]",
         params: { customerId },
       });
     },

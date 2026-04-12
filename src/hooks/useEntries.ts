@@ -1,20 +1,20 @@
 import {
-    useInfiniteQuery,
-    useMutation,
-    useQuery,
-    useQueryClient,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
 } from "@tanstack/react-query";
 import {
   createOrder,
   fetchOrderDetail,
   fetchOrders,
-  updateOrder,
   Order,
   OrderDetail,
   OrderItemInput,
   PAGE_SIZE,
   PaymentMode,
-} from "../api/orders";
+  updateOrder,
+} from "../api/entries";
 import { ApiError } from "../lib/supabaseQuery";
 import { useDebounce } from "./useDebounce";
 
@@ -84,9 +84,18 @@ export function useUpdateOrder(vendorId: string) {
     { previousOrder?: OrderDetail | null }
   >({
     mutationFn: ({ orderId, items, loadingCharge, taxPercent, quickAmount }) =>
-      updateOrder(orderId, vendorId, items, loadingCharge, taxPercent, quickAmount),
+      updateOrder(
+        orderId,
+        vendorId,
+        items,
+        loadingCharge,
+        taxPercent,
+        quickAmount,
+      ),
     onMutate: async (variables) => {
-      await queryClient.cancelQueries({ queryKey: orderKeys.detail(variables.orderId) });
+      await queryClient.cancelQueries({
+        queryKey: orderKeys.detail(variables.orderId),
+      });
       await queryClient.cancelQueries({ queryKey: orderKeys.all(vendorId) });
       if (variables.customerId) {
         await queryClient.cancelQueries({
@@ -121,48 +130,60 @@ export function useUpdateOrder(vendorId: string) {
       const safeTax = Math.min(100, Math.max(0, variables.taxPercent || 0));
       const safeLoading = Math.max(0, variables.loadingCharge || 0);
       const totalAmount = hasItems
-        ? Number((itemsSubtotal + (itemsSubtotal * safeTax) / 100 + safeLoading).toFixed(2))
+        ? Number(
+            (
+              itemsSubtotal +
+              (itemsSubtotal * safeTax) / 100 +
+              safeLoading
+            ).toFixed(2),
+          )
         : Math.max(0, variables.quickAmount || 0);
 
-      queryClient.setQueryData(orderKeys.detail(variables.orderId), (old: any) => {
-        if (!old) return old;
-        const amountPaid = Number(old.amount_paid || 0);
-        const balanceDue = totalAmount - amountPaid;
-        const status =
-          balanceDue <= 0
-            ? "Paid"
-            : amountPaid > 0
-            ? "Partially Paid"
-            : "Pending";
+      queryClient.setQueryData(
+        orderKeys.detail(variables.orderId),
+        (old: any) => {
+          if (!old) return old;
+          const amountPaid = Number(old.amount_paid || 0);
+          const balanceDue = totalAmount - amountPaid;
+          const status =
+            balanceDue <= 0
+              ? "Paid"
+              : amountPaid > 0
+                ? "Partially Paid"
+                : "Pending";
 
-        return {
-          ...old,
-          total_amount: totalAmount,
-          loading_charge: hasItems ? safeLoading : 0,
-          tax_percent: hasItems ? safeTax : 0,
-          balance_due: balanceDue,
-          status,
-          items: normalizedItems.map((item, idx) => ({
-            id: old.items?.[idx]?.id ?? `temp-${idx}`,
-            order_id: old.id,
-            vendor_id: old.vendor_id,
-            product_id: item.product_id,
-            variant_id: item.variant_id ?? null,
-            product_name: item.product_name,
-            variant_name: item.variant_name ?? null,
-            price: item.price,
-            quantity: item.quantity,
-            subtotal: item.price * item.quantity,
-            created_at: old.created_at,
-          })),
-        };
-      });
+          return {
+            ...old,
+            total_amount: totalAmount,
+            loading_charge: hasItems ? safeLoading : 0,
+            tax_percent: hasItems ? safeTax : 0,
+            balance_due: balanceDue,
+            status,
+            items: normalizedItems.map((item, idx) => ({
+              id: old.items?.[idx]?.id ?? `temp-${idx}`,
+              order_id: old.id,
+              vendor_id: old.vendor_id,
+              product_id: item.product_id,
+              variant_id: item.variant_id ?? null,
+              product_name: item.product_name,
+              variant_name: item.variant_name ?? null,
+              price: item.price,
+              quantity: item.quantity,
+              subtotal: item.price * item.quantity,
+              created_at: old.created_at,
+            })),
+          };
+        },
+      );
 
       return { previousOrder };
     },
     onError: (_err, variables, context) => {
       if (context?.previousOrder) {
-        queryClient.setQueryData(orderKeys.detail(variables.orderId), context.previousOrder);
+        queryClient.setQueryData(
+          orderKeys.detail(variables.orderId),
+          context.previousOrder,
+        );
       }
     },
     onSuccess: (updatedOrder, variables) => {
@@ -220,20 +241,36 @@ export function useCreateOrder(vendorId: string) {
       // Cancel any outgoing refetches to avoid overwriting optimistic update
       await queryClient.cancelQueries({ queryKey: orderKeys.all(vendorId) });
       await queryClient.cancelQueries({ queryKey: ["customers", vendorId] });
-      await queryClient.cancelQueries({ queryKey: ["customerDetail", variables.customerId] });
+      await queryClient.cancelQueries({
+        queryKey: ["customerDetail", variables.customerId],
+      });
 
       // Snapshot previous values for rollback
       const previousOrders = queryClient.getQueryData(orderKeys.list(vendorId));
-      const previousCustomers = queryClient.getQueryData(["customers", vendorId]);
-      const previousCustomer = queryClient.getQueryData(["customerDetail", variables.customerId]);
+      const previousCustomers = queryClient.getQueryData([
+        "customers",
+        vendorId,
+      ]);
+      const previousCustomer = queryClient.getQueryData([
+        "customerDetail",
+        variables.customerId,
+      ]);
 
       // Calculate order totals
-      const itemsSubtotal = variables.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const itemsSubtotal = variables.items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      );
       const taxAmount = itemsSubtotal * ((variables.taxPercent || 0) / 100);
-      const totalAmount = itemsSubtotal + (variables.loadingCharge || 0) + taxAmount;
+      const totalAmount =
+        itemsSubtotal + (variables.loadingCharge || 0) + taxAmount;
       const balanceDue = totalAmount - variables.amountPaid;
-      const status: "Paid" | "Partially Paid" | "Pending" = 
-        balanceDue === 0 ? "Paid" : variables.amountPaid > 0 ? "Partially Paid" : "Pending";
+      const status: "Paid" | "Partially Paid" | "Pending" =
+        balanceDue === 0
+          ? "Paid"
+          : variables.amountPaid > 0
+            ? "Partially Paid"
+            : "Pending";
 
       // Create optimistic order
       const optimisticOrder: OrderDetail = {
@@ -277,13 +314,16 @@ export function useCreateOrder(vendorId: string) {
       });
 
       // Optimistically update person outstanding balance (customer detail cache)
-      queryClient.setQueryData(["customerDetail", variables.customerId], (old: any) => {
-        if (!old) return old;
-        return {
-          ...old,
-          outstandingBalance: (old.outstandingBalance || 0) + balanceDue,
-        };
-      });
+      queryClient.setQueryData(
+        ["customerDetail", variables.customerId],
+        (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            outstandingBalance: (old.outstandingBalance || 0) + balanceDue,
+          };
+        },
+      );
 
       // Return context for rollback
       return { previousOrders, previousCustomers, previousCustomer };
@@ -310,13 +350,22 @@ export function useCreateOrder(vendorId: string) {
     onError: (error, _variables, context: any) => {
       // Rollback optimistic updates on error
       if (context?.previousOrders) {
-        queryClient.setQueryData(orderKeys.list(vendorId), context.previousOrders);
+        queryClient.setQueryData(
+          orderKeys.list(vendorId),
+          context.previousOrders,
+        );
       }
       if (context?.previousCustomers) {
-        queryClient.setQueryData(["customers", vendorId], context.previousCustomers);
+        queryClient.setQueryData(
+          ["customers", vendorId],
+          context.previousCustomers,
+        );
       }
       if (context?.previousCustomer) {
-        queryClient.setQueryData(["customerDetail", _variables.customerId], context.previousCustomer);
+        queryClient.setQueryData(
+          ["customerDetail", _variables.customerId],
+          context.previousCustomer,
+        );
       }
 
       console.error("Order creation failed at mutation layer:", error.message);

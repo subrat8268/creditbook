@@ -9,7 +9,7 @@ function NewBillButton() {
   const router = useRouter();
   return (
     <TouchableOpacity
-      onPress={() => router.push("/new-bill")}
+      onPress={() => router.push("/(main)/new-entry")}
       activeOpacity={0.85}
       testID="tab-add-entry"
       style={styles.fabWrapper}
@@ -75,7 +75,7 @@ export default function TabLayout() {
 
       {/* Tab 2 — People */}
       <Tabs.Screen
-        name="customers"
+        name="people"
         options={{
           title: "People",
           tabBarIcon: ({ color, size, focused }) => (
@@ -89,19 +89,19 @@ export default function TabLayout() {
       />
 
       {/* Tab 3 — Add Entry (center FAB, phantom tab) */}
-       <Tabs.Screen
-         name="new-bill"
-         options={{
-           title: "Add",
-           tabBarIcon: () => null,
-           tabBarLabel: () => null,
-           tabBarButton: () => <NewBillButton />,
-         }}
-       />
+      <Tabs.Screen
+        name="new-entry"
+        options={{
+          title: "Add",
+          tabBarIcon: () => null,
+          tabBarLabel: () => null,
+          tabBarButton: () => <NewBillButton />,
+        }}
+      />
 
       {/* Tab 4 — Entries list */}
       <Tabs.Screen
-        name="orders"
+        name="entries"
         options={{
           title: "Entries",
           tabBarTestID: "tab-entries",

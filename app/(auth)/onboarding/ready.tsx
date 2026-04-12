@@ -1,11 +1,11 @@
 import { useToast } from "@/src/components/feedback/Toast";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
+import { useRouter } from "expo-router";
 import { CalendarDays, CheckCircle2 } from "lucide-react-native";
 import { useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 
 export default function OnboardingReady() {
   const { show } = useToast();
@@ -40,7 +40,7 @@ export default function OnboardingReady() {
     const ok = await completeOnboarding();
     if (ok) {
       router.replace({
-        pathname: "/(main)/customers",
+        pathname: "/(main)/people",
         params: { action: "add" },
       });
     }

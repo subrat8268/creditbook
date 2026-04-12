@@ -2,7 +2,7 @@ import EmptyState from "@/src/components/feedback/EmptyState";
 import Loader from "@/src/components/feedback/Loader";
 import { useToast } from "@/src/components/feedback/Toast";
 import RecordCustomerPaymentModal from "@/src/components/people/RecordCustomerPaymentModal";
-import { orderKeys, useOrderDetail } from "@/src/hooks/useOrders";
+import { orderKeys, useOrderDetail } from "@/src/hooks/useEntries";
 
 import { usePayments } from "@/src/hooks/usePayments";
 import { useAuthStore } from "@/src/store/authStore";
@@ -340,7 +340,7 @@ export default function OrderDetailScreen() {
           {!isPaid && (
             <TouchableOpacity
               onPress={() =>
-                router.push(`/(main)/orders/${order.id}/edit` as never)
+                router.push(`/(main)/entries/${order.id}/edit` as never)
               }
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
