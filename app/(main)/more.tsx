@@ -3,15 +3,15 @@ import { colors } from "@/src/utils/theme";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Href, useFocusEffect, useRouter } from "expo-router";
 import {
-    BarChart3,
-    BookOpen,
-    ChevronRight,
-    Download,
-    HelpCircle,
-    LogOut,
-    LucideIcon,
-    Store,
-    UserRound,
+  BarChart3,
+  BookOpen,
+  ChevronRight,
+  Download,
+  HelpCircle,
+  LogOut,
+  LucideIcon,
+  Store,
+  UserRound,
 } from "lucide-react-native";
 import { useCallback, useRef } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -106,8 +106,14 @@ function MenuItemRow({
 export default function MoreScreen() {
   const router = useRouter();
   const { logout } = useAuthStore();
+  const { canSeeSuppliers } = useFeatureFlags();
   const sheetRef = useRef<BottomSheet>(null);
   const isNavigatingRef = useRef(false);
+
+  // Filter menu items based on feature flags
+  const visibleBusinessDetails = BUSINESS_DETAILS.filter(
+    (item) => item.id !== "suppliers" || canSeeSuppliers,
+  );
 
   // Re-expand the sheet every time the tab gains focus (handles second-open)
   useFocusEffect(
@@ -164,13 +170,13 @@ export default function MoreScreen() {
           {/* Business Details */}
           <Text style={styles.sectionLabel}>BUSINESS DETAILS</Text>
           <View style={styles.section}>
-            {BUSINESS_DETAILS.map((item, index) => (
+            {visibleBusinessDetails.map((item, index) => (
               <View key={item.id}>
                 <MenuItemRow
                   item={item}
                   onPress={() => handleNavAndClose(item.route)}
                 />
-                {index < BUSINESS_DETAILS.length - 1 && (
+                {index < visibleBusinessDetails.length - 1 && (
                   <View style={styles.divider} />
                 )}
               </View>
@@ -202,8 +208,17 @@ export default function MoreScreen() {
               onPress={() => handleNavAndClose("/(main)/help" as Href)}
               activeOpacity={0.7}
             >
-              <View style={[styles.bottomIconBox, { backgroundColor: colors.primaryBlueBg }]}>
-                <HelpCircle size={22} color={colors.primaryBlue} strokeWidth={2} />
+              <View
+                style={[
+                  styles.bottomIconBox,
+                  { backgroundColor: colors.primaryBlueBg },
+                ]}
+              >
+                <HelpCircle
+                  size={22}
+                  color={colors.primaryBlue}
+                  strokeWidth={2}
+                />
               </View>
               <Text style={styles.bottomBtnText}>Help Center</Text>
             </TouchableOpacity>
@@ -213,7 +228,12 @@ export default function MoreScreen() {
               onPress={handleSignOut}
               activeOpacity={0.7}
             >
-              <View style={[styles.bottomIconBox, { backgroundColor: colors.dangerBg }]}>
+              <View
+                style={[
+                  styles.bottomIconBox,
+                  { backgroundColor: colors.dangerBg },
+                ]}
+              >
                 <LogOut size={22} color={colors.danger} strokeWidth={2} />
               </View>
               <Text style={[styles.bottomBtnText, { color: colors.danger }]}>
