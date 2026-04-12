@@ -13,7 +13,7 @@ import { colors } from "@/src/utils/theme";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
-import { ArrowLeft, Pencil } from "lucide-react-native";
+import { ArrowLeft, ChevronDown, ChevronUp, Pencil } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
@@ -80,6 +80,19 @@ export default function CreateOrderScreen() {
   const [quickAmount, setQuickAmount] = useState<string>("");
   const [note, setNote] = useState<string>("");
   const [entryType, setEntryType] = useState<"bill" | "payment">("bill");
+
+  // Stub state for product picker feature (removed in Phase 1A)
+  // These are no longer used but retained to prevent rendering errors until UI is cleaned
+  const [isItemsExpanded, setIsItemsExpanded] = useState(false);
+  const items: any[] = []; // Always empty (product picker removed)
+  const itemsTotal = 0; // Always 0
+  const hasItems = false; // Always false
+  const loadingCharge = 0; // Always 0
+  const taxPercent = 0; // Always 0
+  const getSubtotal = () => 0; // Always 0
+  const getTaxAmount = () => 0; // Always 0
+  const removeItem = () => {}; // No-op
+  const updateItemQuantity = () => {}; // No-op
 
   const fetchPreviousBalance = useCallback(
     async (customerId: string) => {
@@ -518,7 +531,7 @@ export default function CreateOrderScreen() {
                     Add Items (optional)
                   </Text>
                 </View>
-                {hasItems && (
+                {hasItems && items.length > 0 && (
                   <Text className="text-[13px] font-bold text-primary">
                     {items.length} item{items.length > 1 ? "s" : ""} · ₹
                     {itemsTotal.toFixed(0)}
