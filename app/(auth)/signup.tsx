@@ -6,12 +6,12 @@ import { Formik } from "formik";
 import { AlertCircle, ArrowLeft, Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AuthCard from "../../src/components/ui/AuthCard";
@@ -29,10 +29,7 @@ export default function SignUpPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
-    <SafeAreaView
-      className="flex-1 bg-background"
-      edges={["top"]}
-    >
+    <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
@@ -191,9 +188,13 @@ export default function SignUpPage() {
             </AuthCard>
 
             {(signUpMutation.isError || googleSignIn.isError) && (
-              <View 
+              <View
                 className="flex-row items-center self-center gap-2 rounded-full px-4 py-3 mt-4"
-                style={{ backgroundColor: colors.dangerBg, borderWidth: 1, borderColor: colors.danger + '44' }}
+                style={{
+                  backgroundColor: colors.dangerBg,
+                  borderWidth: 1,
+                  borderColor: colors.danger + "44",
+                }}
               >
                 <AlertCircle
                   size={16}

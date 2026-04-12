@@ -1,9 +1,8 @@
-import React from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
-import { Share2 } from "lucide-react-native";
-import { formatINR } from "@/src/utils/dashboardUi";
 import { useOrderStore } from "@/src/store/orderStore";
+import { formatINR } from "@/src/utils/dashboardUi";
 import { colors } from "@/src/utils/theme";
+import { Share2 } from "lucide-react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
 interface BillFooterProps {
   isLoading: boolean;

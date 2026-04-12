@@ -55,7 +55,7 @@ export default function Button({
               elevation: 8,
             }
           : undefined,
-        disabled && { backgroundColor: "#E2E8F0" }
+        disabled && { backgroundColor: "#E2E8F0" },
       ]}
     >
       {loading ? (
@@ -68,7 +68,12 @@ export default function Button({
             <View className="mr-2">{icon}</View>
           )}
 
-          <Text className={textStyle} style={disabled ? { color: colors.textMuted } : undefined}>{title}</Text>
+          <Text
+            className={textStyle}
+            style={disabled ? { color: colors.textMuted } : undefined}
+          >
+            {title}
+          </Text>
 
           {icon && iconPosition === "right" && (
             <View className="ml-2">{icon}</View>

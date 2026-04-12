@@ -1,4 +1,4 @@
-import CreateOrderScreen from "./orders/create";
+import CreateOrderScreen from "./entries/create";
 
 /**
  * Route for the center FAB tab in the main tab bar.

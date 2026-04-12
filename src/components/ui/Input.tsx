@@ -43,7 +43,10 @@ export default function Input({
         </Text>
       )}
 
-      <View className={containerStyle} style={{ height, borderColor: error ? colors.danger : colors.border }}>
+      <View
+        className={containerStyle}
+        style={{ height, borderColor: error ? colors.danger : colors.border }}
+      >
         {icon && iconPosition === "left" && (
           <View className="mr-2">{icon}</View>
         )}

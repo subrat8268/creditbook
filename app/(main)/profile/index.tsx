@@ -30,10 +30,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { colors } from "@/src/utils/theme";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { useLanguageStore } from "@/src/store/languageStore";
+import { colors } from "@/src/utils/theme";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -87,14 +87,20 @@ function DetailRow({ Icon, label, value, last, onPress }: DetailRowProps) {
         !last ? "border-b border-border" : "mb-2"
       }`}
     >
-      <View className="w-10 h-10 rounded-xl items-center justify-center" style={{ backgroundColor: colors.primaryLight }}>
+      <View
+        className="w-10 h-10 rounded-xl items-center justify-center"
+        style={{ backgroundColor: colors.primaryLight }}
+      >
         <Icon size={20} color={colors.primary} strokeWidth={2} />
       </View>
       <View className="flex-1 ml-3">
         <Text className="text-[10px] font-bold text-textSecondary uppercase tracking-wide mb-0.5">
           {label}
         </Text>
-        <Text className="text-[14px] font-bold text-textPrimary" numberOfLines={1}>
+        <Text
+          className="text-[14px] font-bold text-textPrimary"
+          numberOfLines={1}
+        >
           {value || "—"}
         </Text>
       </View>
@@ -216,14 +222,20 @@ export default function ProfileScreen() {
           <Text className="text-[20px] font-black text-textPrimary">
             {profile.business_name || "Your Business"}
           </Text>
-          {!!email && <Text className="text-[14px] font-semibold text-textSecondary mt-1">{email}</Text>}
-          
+          {!!email && (
+            <Text className="text-[14px] font-semibold text-textSecondary mt-1">
+              {email}
+            </Text>
+          )}
+
           <TouchableOpacity
             onPress={() => router.push("/(main)/profile/edit" as never)}
             activeOpacity={0.8}
             className="mt-4 py-2 px-8 rounded-full border-2 border-primary"
           >
-            <Text className="text-[14px] font-bold text-primary">Edit Profile</Text>
+            <Text className="text-[14px] font-bold text-primary">
+              Edit Profile
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -231,8 +243,17 @@ export default function ProfileScreen() {
         <SectionCard title="BUSINESS DETAILS">
           <DetailRow Icon={Store} label="NAME" value={profile.business_name} />
           <DetailRow Icon={Receipt} label="GSTIN" value={profile.gstin} />
-          <DetailRow Icon={Hash} label="PREFIX" value={profile.bill_number_prefix ?? "INV"} />
-          <DetailRow Icon={Smartphone} label="UPI ID" value={profile.upi_id} last />
+          <DetailRow
+            Icon={Hash}
+            label="PREFIX"
+            value={profile.bill_number_prefix ?? "INV"}
+          />
+          <DetailRow
+            Icon={Smartphone}
+            label="UPI ID"
+            value={profile.upi_id}
+            last
+          />
         </SectionCard>
 
         {/* ── Advanced (hidden accordion) ── */}
@@ -249,7 +270,9 @@ export default function ProfileScreen() {
               size={18}
               color={colors.textSecondary}
               strokeWidth={2}
-              style={{ transform: [{ rotate: advancedOpen ? "180deg" : "0deg" }] }}
+              style={{
+                transform: [{ rotate: advancedOpen ? "180deg" : "0deg" }],
+              }}
             />
           </TouchableOpacity>
 
@@ -284,7 +307,9 @@ export default function ProfileScreen() {
                 label="ACCOUNT"
                 value="General Settings"
                 last
-                onPress={() => Alert.alert("Settings", "Advanced settings coming soon.")}
+                onPress={() =>
+                  Alert.alert("Settings", "Advanced settings coming soon.")
+                }
               />
             </View>
           )}
@@ -292,8 +317,16 @@ export default function ProfileScreen() {
 
         {/* ── Bank Account ── */}
         <SectionCard title="BANK ACCOUNT">
-          <DetailRow Icon={Building2} label="BANK NAME" value={profile.bank_name} />
-          <DetailRow Icon={CreditCard} label="ACC NO" value={maskAccount(profile.account_number)} />
+          <DetailRow
+            Icon={Building2}
+            label="BANK NAME"
+            value={profile.bank_name}
+          />
+          <DetailRow
+            Icon={CreditCard}
+            label="ACC NO"
+            value={maskAccount(profile.account_number)}
+          />
           <DetailRow Icon={Info} label="IFSC" value={profile.ifsc_code} last />
         </SectionCard>
 
@@ -301,20 +334,29 @@ export default function ProfileScreen() {
         <SectionCard title="APP PREFERENCES">
           <View className="flex-row items-center justify-between py-2 mb-2">
             <View className="flex-row items-center gap-3">
-              <View className="w-10 h-10 rounded-xl items-center justify-center" style={{ backgroundColor: colors.primaryLight }}>
+              <View
+                className="w-10 h-10 rounded-xl items-center justify-center"
+                style={{ backgroundColor: colors.primaryLight }}
+              >
                 <Languages size={20} color={colors.primary} strokeWidth={2} />
               </View>
-              <Text className="text-[15px] font-bold text-textPrimary">Language</Text>
+              <Text className="text-[15px] font-bold text-textPrimary">
+                Language
+              </Text>
             </View>
             <View className="flex-row gap-2">
               <TouchableOpacity
                 onPress={() => setLanguage("en")}
                 activeOpacity={0.8}
                 className={`py-2 px-4 rounded-xl border ${
-                  language === "en" ? "bg-primary border-primary" : "bg-background border-border"
+                  language === "en"
+                    ? "bg-primary border-primary"
+                    : "bg-background border-border"
                 }`}
               >
-                <Text className={`text-[13px] font-extrabold ${language === "en" ? "text-surface" : "text-textSecondary"}`}>
+                <Text
+                  className={`text-[13px] font-extrabold ${language === "en" ? "text-surface" : "text-textSecondary"}`}
+                >
                   EN
                 </Text>
               </TouchableOpacity>
@@ -322,10 +364,14 @@ export default function ProfileScreen() {
                 onPress={() => setLanguage("hi")}
                 activeOpacity={0.8}
                 className={`py-2 px-3 rounded-xl border ${
-                  language === "hi" ? "bg-primary border-primary" : "bg-background border-border"
+                  language === "hi"
+                    ? "bg-primary border-primary"
+                    : "bg-background border-border"
                 }`}
               >
-                <Text className={`text-[13px] font-extrabold ${language === "hi" ? "text-surface" : "text-textSecondary"}`}>
+                <Text
+                  className={`text-[13px] font-extrabold ${language === "hi" ? "text-surface" : "text-textSecondary"}`}
+                >
                   🇮🇳
                 </Text>
               </TouchableOpacity>
@@ -335,18 +381,25 @@ export default function ProfileScreen() {
 
         {/* ── Support ── */}
         <SectionCard title="SUPPORT">
-          <DetailRow 
-            Icon={HelpCircle} 
-            label="HELP" 
-            value="Contact Support" 
-            onPress={() => Alert.alert("Help & Support", "Contact us at support@kredbook.in")} 
+          <DetailRow
+            Icon={HelpCircle}
+            label="HELP"
+            value="Contact Support"
+            onPress={() =>
+              Alert.alert("Help & Support", "Contact us at support@kredbook.in")
+            }
           />
-          <DetailRow 
-            Icon={Info} 
-            label="ABOUT" 
-            value="KredBook v1.0.0" 
-            last 
-            onPress={() => Alert.alert("About KredBook", "KredBook v1.0.0\nBuilt for Indian kirana stores and small businesses.")} 
+          <DetailRow
+            Icon={Info}
+            label="ABOUT"
+            value="KredBook v1.0.0"
+            last
+            onPress={() =>
+              Alert.alert(
+                "About KredBook",
+                "KredBook v1.0.0\nBuilt for Indian kirana stores and small businesses.",
+              )
+            }
           />
         </SectionCard>
 
@@ -358,7 +411,9 @@ export default function ProfileScreen() {
             className="flex-row items-center justify-center py-4 gap-2"
           >
             <LogOut size={20} color={colors.danger} strokeWidth={2.5} />
-            <Text className="text-[16px] font-extrabold text-danger">Sign Out</Text>
+            <Text className="text-[16px] font-extrabold text-danger">
+              Sign Out
+            </Text>
           </TouchableOpacity>
         </View>
 

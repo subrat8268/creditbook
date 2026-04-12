@@ -3,10 +3,7 @@ import { fetchPersonDetail } from "@/src/api/people";
 import Loader from "@/src/components/feedback/Loader";
 import { useToast } from "@/src/components/feedback/Toast";
 import BillFooter from "@/src/components/orders/BillFooter";
-import OrderSummary from "@/src/components/orders/OrderBillSummary";
-import OrderItemCard from "@/src/components/orders/OrderItemCard";
 import CustomerPicker from "@/src/components/picker/CustomerPicker";
-import ProductPicker from "@/src/components/picker/ProductPicker";
 import { useCreateOrder } from "@/src/hooks/useEntries";
 import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 import { useAuthStore } from "@/src/store/authStore";
@@ -18,9 +15,6 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import {
   ArrowLeft,
-  ChevronDown,
-  ChevronUp,
-  CirclePlus,
   Pencil,
 } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
@@ -76,35 +70,18 @@ export default function CreateOrderScreen() {
   // Zustand Draft Entry Store
   const setCustomer = useOrderStore((state) => state.setCustomer);
   const selectedCustomerId = useOrderStore((state) => state.selectedCustomerId);
-  const items = useOrderStore((state) => state.items);
-  const loadingCharge = useOrderStore((state) => state.loadingCharge);
-  const taxPercent = useOrderStore((state) => state.gstPercent);
-
-  const addItem = useOrderStore((state) => state.addItem);
-  const removeItem = useOrderStore((state) => state.removeItem);
-  const updateItemQuantity = useOrderStore((state) => state.updateItemQuantity);
-  const updateItemRate = useOrderStore((state) => state.updateItemRate);
-  const setLoadingCharge = useOrderStore((state) => state.setLoadingCharge);
-  const setGst = useOrderStore((state) => state.setGst);
   const clearOrder = useOrderStore((state) => state.clearOrder);
-
-  const getSubtotal = useOrderStore((state) => state.getSubtotal);
-  const getTaxAmount = useOrderStore((state) => state.getTaxAmount);
-  const getGrandTotal = useOrderStore((state) => state.getGrandTotal);
 
   // Local ephemeral layout/picker states
   const [selectedCustomerMeta, setSelectedCustomerMeta] = useState<any>(
     customerParams ? JSON.parse(customerParams) : null,
   );
-  // Inline person selection (no bottom sheet for Phase 1 flow).
-  const [isProductPickerVisible, setProductPickerVisible] = useState(false);
   const [previousBalance, setPreviousBalance] = useState<number>(0);
   const [isFetchingBalance, setIsFetchingBalance] = useState(false);
 
   // Phase 1: quick entry states (amount-first)
   const [quickAmount, setQuickAmount] = useState<string>("");
   const [note, setNote] = useState<string>("");
-  const [isItemsExpanded, setIsItemsExpanded] = useState(false);
   const [entryType, setEntryType] = useState<"bill" | "payment">("bill");
 
   const fetchPreviousBalance = useCallback(
@@ -152,10 +129,8 @@ export default function CreateOrderScreen() {
   const createOrderMutation = useCreateOrder(vendorId!);
   const { queueLength } = useNetworkSync();
 
-  // Calculate effective total (either from items or quick amount)
-  const itemsTotal = getSubtotal();
-  const hasItems = items.length > 0;
-  const entryAmount = hasItems ? getGrandTotal() : parseFloat(quickAmount) || 0;
+  // Calculate effective total (amount-first flow only)
+  const entryAmount = parseFloat(quickAmount) || 0;
   const totalWithBalance = entryAmount + previousBalance;
 
   const handleSaveAndShare = async () => {
@@ -171,9 +146,9 @@ export default function CreateOrderScreen() {
       return handleRecordPayment();
     }
 
-    // Either quick amount OR items must be provided
-    if (!hasItems && !quickAmount.trim()) {
-      return Alert.alert("Error", "Please enter an amount or add items");
+    // Quick amount must be provided
+    if (!quickAmount.trim()) {
+      return Alert.alert("Error", "Please enter an amount");
     }
 
     await performSave();
@@ -181,49 +156,35 @@ export default function CreateOrderScreen() {
 
   const performSave = async () => {
     try {
-      // If using quick amount (no items), create a generic entry item
-      const orderItems = hasItems
-        ? items.map((c) => ({
-            product_id: c.product_id,
-            product_name: c.product_name,
-            price: c.price,
-            quantity: c.quantity,
-          }))
-        : [
-            {
-              product_id: null,
-              product_name: note.trim() || "Entry Amount",
-              price: parseFloat(quickAmount) || 0,
-              quantity: 1,
-            },
-          ];
+      // Create a generic entry item from quick amount
+      const orderItems = [
+        {
+          product_id: null,
+          product_name: note.trim() || "Entry Amount",
+          price: parseFloat(quickAmount) || 0,
+          quantity: 1,
+        },
+      ];
 
       const savedOrder = await createOrderMutation.mutateAsync({
         customerId: selectedCustomerId!,
         vendorId: vendorId!,
         items: orderItems,
         amountPaid: 0,
-        loadingCharge: hasItems ? loadingCharge : 0,
-        taxPercent: hasItems ? taxPercent : 0,
+        loadingCharge: 0,
+        taxPercent: 0,
         billNumberPrefix: profile?.bill_number_prefix || "INV",
       });
 
       // Generate Native Shareable PDF
-      const pdfItems: BillItem[] = hasItems
-        ? items.map((c) => ({
-            name: c.product_name,
-            quantity: c.quantity,
-            rate: c.price,
-            amount: c.price * c.quantity,
-          }))
-        : [
-            {
-              name: note.trim() || "Entry Amount",
-              quantity: 1,
-              rate: parseFloat(quickAmount) || 0,
-              amount: parseFloat(quickAmount) || 0,
-            },
-          ];
+      const pdfItems: BillItem[] = [
+        {
+          name: note.trim() || "Entry Amount",
+          quantity: 1,
+          rate: parseFloat(quickAmount) || 0,
+          amount: parseFloat(quickAmount) || 0,
+        },
+      ];
 
       const businessDetails = {
         name: profile?.business_name || "Your Store",
@@ -237,9 +198,9 @@ export default function CreateOrderScreen() {
         date: new Date(savedOrder.created_at ?? Date.now()).toLocaleDateString(
           "en-IN",
         ),
-        subtotal: hasItems ? getSubtotal() : parseFloat(quickAmount) || 0,
-        taxAmount: hasItems ? getTaxAmount() : 0,
-        loadingCharge: hasItems ? loadingCharge : 0,
+        subtotal: parseFloat(quickAmount) || 0,
+        taxAmount: 0,
+        loadingCharge: 0,
         bankDetails:
           profile?.bank_name && profile?.account_number && profile?.ifsc_code
             ? {
@@ -529,95 +490,7 @@ export default function CreateOrderScreen() {
               </View>
             </View>
 
-            {/* COLLAPSIBLE ITEMS SECTION */}
-            {entryType === "bill" && (
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => setIsItemsExpanded(!isItemsExpanded)}
-                className="rounded-2xl bg-surface border border-border px-4 py-3.5 flex-row items-center justify-between mt-2"
-              >
-                <View className="flex-row items-center gap-2">
-                  {isItemsExpanded ? (
-                    <ChevronUp size={20} color={colors.textSecondary} />
-                  ) : (
-                    <ChevronDown size={20} color={colors.textSecondary} />
-                  )}
-                  <Text className="text-[15px] font-bold text-textPrimary">
-                    Add Items (optional)
-                  </Text>
-                </View>
-                {hasItems && (
-                  <Text className="text-[13px] font-bold text-primary">
-                    {items.length} item{items.length > 1 ? "s" : ""} · ₹
-                    {itemsTotal.toFixed(0)}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            )}
 
-            {/* EXPANDED ITEMS SECTION */}
-            {entryType === "bill" && isItemsExpanded && (
-              <View className="rounded-2xl bg-surface border border-border overflow-hidden">
-                {items.length > 0 && (
-                  <>
-                    <Text className="text-[15px] font-bold text-textPrimary px-4 pt-4 pb-2">
-                      Items
-                    </Text>
-                    <View className="px-4 pb-2">
-                      {items.map((item, idx) => (
-                        <View key={item.id}>
-                          {idx > 0 && <View className="h-px bg-border my-2" />}
-                          <OrderItemCard
-                            id={item.product_id || item.id}
-                            name={item.product_name}
-                            rate={item.price}
-                            quantity={item.quantity}
-                            onRemove={() => removeItem(item.id)}
-                            onUpdateQuantity={(qty) =>
-                              updateItemQuantity(item.id, qty)
-                            }
-                            onUpdateRate={(r) => updateItemRate(item.id, r)}
-                          />
-                        </View>
-                      ))}
-                    </View>
-                  </>
-                )}
-
-                <View className="px-4 pb-4">
-                  <TouchableOpacity
-                    onPress={() => setProductPickerVisible(true)}
-                    activeOpacity={0.7}
-                    className="flex-row items-center justify-center py-3.5 mt-2 rounded-xl border-[1.5px] border-dashed border-primary bg-primaryLight"
-                  >
-                    <CirclePlus
-                      size={18}
-                      color={colors.primary}
-                      strokeWidth={2.5}
-                    />
-                    <Text className="ml-2 text-[15px] font-extrabold text-primary">
-                      Add Item
-                    </Text>
-                  </TouchableOpacity>
-
-                  {hasItems && (
-                    <View className="mt-4">
-                      <OrderSummary
-                        itemsTotal={getSubtotal()}
-                        loadingCharge={loadingCharge}
-                        taxPercent={taxPercent}
-                        taxAmount={getTaxAmount()}
-                        previousBalance={0} // Don't show in collapsed section
-                        grandTotal={getGrandTotal()}
-                        onLoadingChargeChange={setLoadingCharge}
-                        onTaxChange={setGst}
-                        isFetchingBalance={false}
-                      />
-                    </View>
-                  )}
-                </View>
-              </View>
-            )}
 
             {/* SUMMARY (Always visible) */}
             {entryType === "bill" && (quickAmount || hasItems) && (
@@ -700,21 +573,7 @@ export default function CreateOrderScreen() {
             vendorId={vendorId!}
           />
 
-          <ProductPicker
-            visible={isProductPickerVisible}
-            onClose={() => setProductPickerVisible(false)}
-            vendorId={vendorId!}
-            addToCart={(productId, name, rate) => {
-              addItem({
-                product_id: productId,
-                product_name: name,
-                price: rate,
-                quantity: 1,
-              });
-              // Clear quick amount when items are added
-              setQuickAmount(itemsTotal.toString());
-            }}
-          />
+
         </KeyboardAvoidingView>
       </SafeAreaView>
     </>

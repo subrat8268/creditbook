@@ -3,10 +3,7 @@ import { fetchPersonDetail } from "@/src/api/people";
 import Loader from "@/src/components/feedback/Loader";
 import { useToast } from "@/src/components/feedback/Toast";
 import BillFooter from "@/src/components/orders/BillFooter";
-import OrderSummary from "@/src/components/orders/OrderBillSummary";
-import OrderItemCard from "@/src/components/orders/OrderItemCard";
 import CustomerPicker from "@/src/components/picker/CustomerPicker";
-import ProductPicker from "@/src/components/picker/ProductPicker";
 import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 import { useCreateOrder } from "@/src/hooks/useOrders";
 import { useAuthStore } from "@/src/store/authStore";
@@ -18,9 +15,6 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import {
   ArrowLeft,
-  ChevronDown,
-  ChevronUp,
-  CirclePlus,
   Pencil,
 } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
@@ -76,35 +70,18 @@ export default function CreateOrderScreen() {
   // Zustand Draft Entry Store
   const setCustomer = useOrderStore((state) => state.setCustomer);
   const selectedCustomerId = useOrderStore((state) => state.selectedCustomerId);
-  const items = useOrderStore((state) => state.items);
-  const loadingCharge = useOrderStore((state) => state.loadingCharge);
-  const taxPercent = useOrderStore((state) => state.gstPercent);
-
-  const addItem = useOrderStore((state) => state.addItem);
-  const removeItem = useOrderStore((state) => state.removeItem);
-  const updateItemQuantity = useOrderStore((state) => state.updateItemQuantity);
-  const updateItemRate = useOrderStore((state) => state.updateItemRate);
-  const setLoadingCharge = useOrderStore((state) => state.setLoadingCharge);
-  const setGst = useOrderStore((state) => state.setGst);
   const clearOrder = useOrderStore((state) => state.clearOrder);
-
-  const getSubtotal = useOrderStore((state) => state.getSubtotal);
-  const getTaxAmount = useOrderStore((state) => state.getTaxAmount);
-  const getGrandTotal = useOrderStore((state) => state.getGrandTotal);
 
   // Local ephemeral layout/picker states
   const [selectedCustomerMeta, setSelectedCustomerMeta] = useState<any>(
     customerParams ? JSON.parse(customerParams) : null,
   );
-  // Inline person selection (no bottom sheet for Phase 1 flow).
-  const [isProductPickerVisible, setProductPickerVisible] = useState(false);
   const [previousBalance, setPreviousBalance] = useState<number>(0);
   const [isFetchingBalance, setIsFetchingBalance] = useState(false);
 
   // Phase 1: quick entry states (amount-first)
   const [quickAmount, setQuickAmount] = useState<string>("");
   const [note, setNote] = useState<string>("");
-  const [isItemsExpanded, setIsItemsExpanded] = useState(false);
   const [entryType, setEntryType] = useState<"bill" | "payment">("bill");
 
   const fetchPreviousBalance = useCallback(
@@ -152,10 +129,8 @@ export default function CreateOrderScreen() {
   const createOrderMutation = useCreateOrder(vendorId!);
   const { queueLength } = useNetworkSync();
 
-  // Calculate effective total (either from items or quick amount)
-  const itemsTotal = getSubtotal();
-  const hasItems = items.length > 0;
-  const entryAmount = hasItems ? getGrandTotal() : parseFloat(quickAmount) || 0;
+  // Calculate effective total (amount-first flow only)
+  const entryAmount = parseFloat(quickAmount) || 0;
   const totalWithBalance = entryAmount + previousBalance;
 
   const handleSaveAndShare = async () => {

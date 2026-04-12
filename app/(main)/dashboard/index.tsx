@@ -76,10 +76,7 @@ export default function DashboardScreen() {
   }
 
   return (
-    <SafeAreaView
-      className="flex-1 bg-background"
-      edges={["top"]}
-    >
+    <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
       <StatusBar
         barStyle="dark-content"
         backgroundColor="transparent"
@@ -99,9 +96,7 @@ export default function DashboardScreen() {
         />
 
         <View className="px-5">
-          <View
-            className="rounded-[24px] bg-surface border border-border p-6 mb-5"
-          >
+          <View className="rounded-[24px] bg-surface border border-border p-6 mb-5">
             <Text className="text-[12px] font-semibold text-textSecondary uppercase tracking-[2px]">
               Total Outstanding
             </Text>
