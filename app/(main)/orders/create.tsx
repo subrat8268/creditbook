@@ -5,7 +5,7 @@ import { useToast } from "@/src/components/feedback/Toast";
 import BillFooter from "@/src/components/orders/BillFooter";
 import CustomerPicker from "@/src/components/picker/CustomerPicker";
 import { useNetworkSync } from "@/src/hooks/useNetworkSync";
-import { useCreateOrder } from "@/src/hooks/useOrders";
+import { useCreateOrder } from "@/src/hooks/useEntries";
 import { useAuthStore } from "@/src/store/authStore";
 import { useOrderStore } from "@/src/store/orderStore";
 import { BillItem, generateBillPdf } from "@/src/utils/generateBillPdf";
