@@ -15,7 +15,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, ChevronDown, ChevronUp } from "lucide-native";
+import { ArrowLeft, ChevronDown, ChevronUp } from "lucide-react-native";
 
 export default function OnboardingBusiness() {
   const router = useRouter();

@@ -104,6 +104,7 @@ export default function TabLayout() {
         name="orders"
         options={{
           title: "Entries",
+          tabBarTestID: "tab-entries",
           tabBarIcon: ({ color, size, focused }) => (
             <Receipt
               size={focused ? size + 2 : size}

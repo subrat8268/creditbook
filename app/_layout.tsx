@@ -11,7 +11,7 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { createMMKVPersister } from "@/src/lib/mmkvPersister";
 import { getOrCreateSyncQueueKey } from "@/src/lib/syncQueueStorage";
 import { initializeSyncQueue } from "@/src/lib/syncQueue";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
@@ -66,6 +66,7 @@ function RootLayout() {
 
   const fontsLoaded = useFontsLoader();
   const router = useRouter();
+  const segments = useSegments();
 
   useEffect(() => {
     const init = async () => {
@@ -123,7 +124,11 @@ function RootLayout() {
       // NEW: Enforce phone collection after login
       router.replace("/(auth)/phone-setup" as any);
     } else if (!profile.onboarding_complete) {
-      router.replace("/(auth)/onboarding/business" as any);
+      // Only redirect if NOT already in onboarding folder
+      const inOnboarding = segments[0] === "(auth)" && segments[1] === "onboarding";
+      if (!inOnboarding) {
+        router.replace("/(auth)/onboarding/business" as any);
+      }
     } else {
       router.replace("/(main)/dashboard" as any);
     }
