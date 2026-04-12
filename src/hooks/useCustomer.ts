@@ -15,25 +15,20 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { Alert } from "react-native";
-import {
-  fetchPersonDetail,
-  PAGE_SIZE,
-} from "../api/customers";
+import { fetchPersonDetail, PAGE_SIZE } from "../api/customers";
 import { ApiError } from "../lib/supabaseQuery";
-import { useCustomersStore } from "../store/customersStore";
-import { Person, PersonDetail } from "../types/customer";
-import { useDebounce } from "./useDebounce";
 import { supabase } from "../services/supabase";
+import { Person, PersonDetail } from "../types/customer";
 import type { Party } from "../types/party";
+import { useDebounce } from "./useDebounce";
 
 // Helper: Convert Party to Person type
 function partyToPerson(party: Party): Person {
   return {
     id: party.id,
     name: party.name,
-    phone: party.phone || '',
+    phone: party.phone || "",
     vendor_id: party.vendor_id,
     address: party.address || undefined,
     created_at: party.created_at,
@@ -58,14 +53,14 @@ export const peopleKeys = customerKeys;
 async function fetchCustomersFromParties(
   pageParam: number,
   vendorId: string,
-  search?: string
+  search?: string,
 ): Promise<Person[]> {
   let query = supabase
-    .from('parties')
-    .select('*')
-    .eq('vendor_id', vendorId)
-    .eq('is_customer', true)
-    .order('created_at', { ascending: false })
+    .from("parties")
+    .select("*")
+    .eq("vendor_id", vendorId)
+    .eq("is_customer", true)
+    .order("created_at", { ascending: false })
     .range(pageParam * PAGE_SIZE, pageParam * PAGE_SIZE + PAGE_SIZE - 1);
 
   if (search) {
@@ -76,7 +71,7 @@ async function fetchCustomersFromParties(
   if (error) throw error;
 
   const parties = (data ?? []) as Party[];
-  
+
   // Convert parties to people
   const people = parties.map(partyToPerson);
 
@@ -105,27 +100,23 @@ async function fetchCustomersFromParties(
 
 export const useCustomers = (vendorId?: string, search?: string) => {
   const debouncedSearch = useDebounce(search ?? "", 300);
-  const { setCustomers } = useCustomersStore();
 
   const query = useInfiniteQuery<Person[], ApiError>({
     queryKey: vendorId
       ? customerKeys.list(vendorId, debouncedSearch)
       : ["customers-disabled"],
     queryFn: ({ pageParam }) =>
-      fetchCustomersFromParties(pageParam as number, vendorId!, debouncedSearch),
+      fetchCustomersFromParties(
+        pageParam as number,
+        vendorId!,
+        debouncedSearch,
+      ),
     getNextPageParam: (lastPage, allPages) =>
       lastPage.length === PAGE_SIZE ? allPages.length : undefined,
     initialPageParam: 0,
     enabled: !!vendorId,
     staleTime: 30_000,
   });
-
-  useEffect(() => {
-    if (query.data) {
-      const allPeople = query.data.pages.flat();
-      setCustomers(allPeople);
-    }
-  }, [query.data, setCustomers]);
 
   return {
     ...query,
@@ -159,7 +150,7 @@ export const useAddCustomer = (vendorId: string) => {
     mutationFn: async (values) => {
       // Insert into parties table instead of legacy customers table
       const { data, error } = await supabase
-        .from('parties')
+        .from("parties")
         .insert({
           vendor_id: vendorId,
           name: values.name,

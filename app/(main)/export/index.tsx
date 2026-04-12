@@ -1,299 +1,57 @@
 import { Stack, useRouter } from "expo-router";
+import { ArrowLeft, Download, Info } from "lucide-react-native";
+import { useState } from "react";
 import {
-    ArrowLeft,
-    CalendarDays,
-    FileText,
-    Info,
-    Receipt,
-    Truck,
-    Users,
-} from "lucide-react-native";
-import { ComponentType, useState } from "react";
-import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import {
-    fetchPeopleForExport,
-    fetchOrdersForExport,
-    fetchPaymentsForExport,
-    fetchSupplierPurchasesForExport,
-} from "@/src/api/export";
+import { fetchOrdersForExport } from "@/src/api/export";
 import { useAuthStore } from "@/src/store/authStore";
 import { shareCsv, toCsv } from "@/src/utils/exportCsv";
 import { colors, spacing, typography } from "@/src/utils/theme";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ExportType = "orders" | "payments" | "people" | "suppliers";
-type DatePreset = "all" | "month";
-
-// ─── ExportRow sub-component ──────────────────────────────────────────────────
-
-interface ExportRowProps {
-  Icon: ComponentType<{ size: number; color: string; strokeWidth?: number }>;
-  label: string;
-  desc: string;
-  pillColor: string;
-  pillBg: string;
-  iconColor: string;
-  iconBg: string;
-  loading: boolean;
-  disabled: boolean;
-  onPress: () => void;
-}
-
-function ExportRow({
-  Icon,
-  label,
-  desc,
-  pillColor,
-  pillBg,
-  iconColor,
-  iconBg,
-  loading,
-  disabled,
-  onPress,
-}: ExportRowProps) {
-  return (
-    <View style={styles.exportRow}>
-      <View style={[styles.exportRowIcon, { backgroundColor: iconBg }]}>
-        <Icon size={20} color={iconColor} strokeWidth={1.8} />
-      </View>
-
-      <View style={styles.exportRowText}>
-        <Text style={styles.exportRowLabel}>{label}</Text>
-        <Text style={styles.exportRowDesc} numberOfLines={1}>
-          {desc}
-        </Text>
-      </View>
-
-      <TouchableOpacity
-        onPress={onPress}
-        disabled={disabled}
-        activeOpacity={0.75}
-        style={[styles.exportPill, { backgroundColor: pillBg }]}
-      >
-        {loading ? (
-          <ActivityIndicator size="small" color={pillColor} />
-        ) : (
-          <Text style={[styles.exportPillText, { color: pillColor }]}>
-            Export CSV
-          </Text>
-        )}
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-// ─── DateInput sub-component ──────────────────────────────────────────────────
-
-interface DateInputProps {
-  label: string;
-  value: string;
-  placeholder: string;
-  onChangeText: (v: string) => void;
-}
-
-function DateInput({
-  label,
-  value,
-  placeholder,
-  onChangeText,
-}: DateInputProps) {
-  return (
-    <View style={styles.dateInputWrapper}>
-      <Text style={styles.dateLabel}>{label}</Text>
-      <View style={styles.dateInputRow}>
-        <TextInput
-          style={styles.dateInput}
-          placeholder={placeholder}
-          placeholderTextColor={colors.textSecondary}
-          value={value}
-          onChangeText={onChangeText}
-          keyboardType="numeric"
-          maxLength={10}
-        />
-        <CalendarDays
-          size={16}
-          color={colors.textSecondary}
-          strokeWidth={1.6}
-          style={styles.calendarIcon}
-        />
-      </View>
-    </View>
-  );
-}
+type DatePreset = "all";
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function ExportScreen() {
   const { profile } = useAuthStore();
   const router = useRouter();
-
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
-  const [datePreset, setDatePreset] = useState<DatePreset>("all");
-  const [loadingKey, setLoadingKey] = useState<ExportType | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const vendorId = profile?.id ?? "";
 
-  // ── Preset helpers ──────────────────────────────────────────────────────────
-
-  const applyPreset = (preset: DatePreset) => {
-    setDatePreset(preset);
-    if (preset === "all") {
-      setFromDate("");
-      setToDate("");
-    } else {
-      const now = new Date();
-      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-      const pad = (n: number) => String(n).padStart(2, "0");
-      const fmt = (d: Date) =>
-        `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-      setFromDate(fmt(firstDay));
-      setToDate(fmt(now));
-    }
-  };
-
-  const handleFromChange = (v: string) => {
-    setFromDate(v);
-    setDatePreset("all");
-  };
-
-  const handleToChange = (v: string) => {
-    setToDate(v);
-    setDatePreset("all");
-  };
-
   // ── Export handler ──────────────────────────────────────────────────────────
 
-  const isValidDate = (d: string) => !d || /^\d{4}-\d{2}-\d{2}$/.test(d);
-
-  const handleExport = async (type: ExportType) => {
-    if (!isValidDate(fromDate) || !isValidDate(toDate)) {
-      Alert.alert("Invalid date", "Use YYYY-MM-DD format (e.g. 2024-01-15).");
-      return;
-    }
-
-    setLoadingKey(type);
+  const handleBackup = async () => {
+    setLoading(true);
     try {
-      const from = fromDate || undefined;
-      const to = toDate || undefined;
-      const today = new Date().toISOString().substring(0, 10);
-      let csv = "";
-      let filename = "";
-
-      switch (type) {
-        case "orders": {
-          const rows = await fetchOrdersForExport(vendorId, from, to);
-          csv = toCsv(rows as unknown as Record<string, unknown>[]);
-          filename = `kredbook_orders_${today}.csv`;
-          break;
-        }
-        case "payments": {
-          const rows = await fetchPaymentsForExport(vendorId, from, to);
-          csv = toCsv(rows as unknown as Record<string, unknown>[]);
-          filename = `kredbook_payments_${today}.csv`;
-          break;
-        }
-        case "people": {
-          const rows = await fetchPeopleForExport(vendorId);
-          csv = toCsv(rows as unknown as Record<string, unknown>[]);
-          filename = `kredbook_people_balances_${today}.csv`;
-          break;
-        }
-        case "suppliers": {
-          const rows = await fetchSupplierPurchasesForExport(
-            vendorId,
-            from,
-            to,
-          );
-          csv = toCsv(rows as unknown as Record<string, unknown>[]);
-          filename = `kredbook_supplier_purchases_${today}.csv`;
-          break;
-        }
-      }
+      const rows = await fetchOrdersForExport(vendorId);
+      const csv = toCsv(rows as unknown as Record<string, unknown>[]);
 
       if (!csv) {
-        Alert.alert(
-          "No data",
-          "There is no data to export for the selected range.",
-        );
+        Alert.alert("No data", "You have no entries to export.");
         return;
       }
 
+      const today = new Date().toISOString().substring(0, 10);
+      const filename = `creditbook_backup_${today}.csv`;
       await shareCsv(csv, filename);
     } catch (err: any) {
       Alert.alert("Export failed", err?.message ?? "Something went wrong.");
     } finally {
-      setLoadingKey(null);
+      setLoading(false);
     }
   };
-
-  // ── Export row config ───────────────────────────────────────────────────────
-
-  const exportRows: {
-    type: ExportType;
-    label: string;
-    desc: string;
-    Icon: ComponentType<{ size: number; color: string; strokeWidth?: number }>;
-    pillColor: string;
-    pillBg: string;
-    iconColor: string;
-    iconBg: string;
-  }[] = [
-    {
-      type: "orders",
-      label: "Entries",
-      desc: "Entry history with items",
-      Icon: Receipt,
-    pillColor: colors.surface,
-      pillBg: colors.primary,
-      iconColor: colors.primaryDark,
-    iconBg: colors.paid.bg,
-    },
-    {
-      type: "payments",
-      label: "Payments",
-      desc: "All payments received",
-      Icon: FileText,
-    pillColor: colors.surface,
-      pillBg: colors.primary,
-      iconColor: colors.primaryDark,
-    iconBg: colors.paid.bg,
-    },
-    {
-      type: "people",
-      label: "People Balances",
-      desc: "Outstanding balances per person",
-      Icon: Users,
-      pillColor: colors.surface,
-      pillBg: colors.primary,
-      iconColor: colors.fab,
-      iconBg: colors.primaryBlueBg,
-    },
-    {
-      type: "suppliers",
-      label: "Party Purchases",
-      desc: "Deliveries and payments made",
-      Icon: Truck,
-    pillColor: colors.surface,
-      pillBg: colors.primary,
-      iconColor: colors.pending.text,
-      iconBg: colors.warningBg,
-    },
-  ];
-
-  const anyLoading = loadingKey !== null;
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -311,12 +69,9 @@ export default function ExportScreen() {
           <ArrowLeft size={22} color={colors.textPrimary} strokeWidth={1.75} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Export Data</Text>
-          <Text style={styles.headerSubtitle}>
-            Download your business data as CSV files
-          </Text>
+          <Text style={styles.headerTitle}>Backup &amp; Download</Text>
+          <Text style={styles.headerSubtitle}>Export all your entries</Text>
         </View>
-        {/* spacer to balance back button */}
         <View style={styles.backBtn} />
       </View>
 
@@ -324,94 +79,32 @@ export default function ExportScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
       >
-        {/* ── Date Filter Card ── */}
+        {/* ── Backup Card ── */}
         <View style={styles.card}>
-          <Text style={styles.sectionLabel}>FILTER BY DATE — OPTIONAL</Text>
+          <Text style={styles.sectionLabel}>DOWNLOAD</Text>
 
-          <View style={styles.dateRow}>
-            <DateInput
-              label="From"
-              placeholder="Start date"
-              value={fromDate}
-              onChangeText={handleFromChange}
-            />
-            <View style={styles.dateSeparator} />
-            <DateInput
-              label="To"
-              placeholder="End date"
-              value={toDate}
-              onChangeText={handleToChange}
-            />
-          </View>
+          <TouchableOpacity
+            onPress={handleBackup}
+            disabled={loading}
+            activeOpacity={0.75}
+            style={[
+              styles.backupButton,
+              loading && styles.backupButtonDisabled,
+            ]}
+          >
+            <Download size={20} color={colors.surface} strokeWidth={1.8} />
+            {loading ? (
+              <ActivityIndicator size="small" color={colors.surface} />
+            ) : (
+              <Text style={styles.backupButtonText}>Download CSV Backup</Text>
+            )}
+          </TouchableOpacity>
 
-          <View style={styles.chipRow}>
-            <TouchableOpacity
-              onPress={() => applyPreset("all")}
-              activeOpacity={0.75}
-              style={[
-                styles.chip,
-                datePreset === "all" ? styles.chipActive : styles.chipInactive,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.chipText,
-                  datePreset === "all"
-                    ? styles.chipTextActive
-                    : styles.chipTextInactive,
-                ]}
-              >
-                All time
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => applyPreset("month")}
-              activeOpacity={0.75}
-              style={[
-                styles.chip,
-                datePreset === "month"
-                  ? styles.chipActive
-                  : styles.chipInactive,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.chipText,
-                  datePreset === "month"
-                    ? styles.chipTextActive
-                    : styles.chipTextInactive,
-                ]}
-              >
-                This month
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* ── Export Type Card ── */}
-        <View style={styles.card}>
-          <Text style={styles.sectionLabel}>CHOOSE EXPORT TYPE</Text>
-
-          {exportRows.map((row, index) => (
-            <View key={row.type}>
-              {index > 0 && <View style={styles.divider} />}
-              <ExportRow
-                Icon={row.Icon}
-                label={row.label}
-                desc={row.desc}
-                pillColor={row.pillColor}
-                pillBg={row.pillBg}
-                iconColor={row.iconColor}
-                iconBg={row.iconBg}
-                loading={loadingKey === row.type}
-                disabled={anyLoading}
-                onPress={() => handleExport(row.type)}
-              />
-            </View>
-          ))}
+          <Text style={styles.helpText}>
+            Exports all your entries (bills, customers, payments). Open in Excel
+            or Google Sheets.
+          </Text>
         </View>
 
         {/* ── Info Banner ── */}
@@ -423,13 +116,9 @@ export default function ExportScreen() {
             style={styles.infoIcon}
           />
           <Text style={styles.infoText}>
-            Files are saved to your device and can be opened in Excel or Google
-            Sheets
+            Your data is never shared. Files are saved only to your device.
           </Text>
         </View>
-
-        {/* ── Footer ── */}
-        <Text style={styles.footer}>KredBook Export</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -515,97 +204,31 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     fontWeight: "500",
   },
-  dateInputRow: {
+
+  // Backup button
+  backupButton: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: spacing.sm,
-    backgroundColor: colors.background,
-    paddingHorizontal: 12,
-    height: spacing.searchBarHeight,
-  },
-  dateInput: {
-    flex: 1,
-    fontSize: 14,
-    color: colors.textPrimary,
-  },
-  calendarIcon: { marginLeft: 4 },
-  dateSeparator: { width: 1 },
-
-  // Chips
-  chipRow: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  chip: {
-    paddingVertical: 7,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    borderWidth: 1.5,
-  },
-  chipActive: {
-    backgroundColor: colors.paid.bg,
-    borderColor: colors.primary,
-  },
-  chipInactive: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  chipTextActive: {
-    color: colors.primaryDark,
-  },
-  chipTextInactive: {
-    color: colors.textSecondary,
-  },
-
-  // Export rows
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: 4,
-  },
-  exportRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    gap: 12,
-  },
-  exportRowIcon: {
-    width: 42,
-    height: 42,
+    justifyContent: "center",
+    gap: 10,
+    backgroundColor: colors.primary,
     borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 20,
   },
-  exportRowText: {
-    flex: 1,
+  backupButtonDisabled: {
+    opacity: 0.6,
   },
-  exportRowLabel: {
-    fontSize: 14,
+  backupButtonText: {
+    fontSize: 16,
     fontWeight: "700",
-    color: colors.textPrimary,
+    color: colors.surface,
   },
-  exportRowDesc: {
-    fontSize: 12,
+  helpText: {
+    fontSize: 13,
     color: colors.textSecondary,
-    marginTop: 2,
-  },
-  exportPill: {
-    paddingVertical: 7,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    minWidth: 90,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  exportPillText: {
-    fontSize: 12,
-    fontWeight: "700",
+    marginTop: 12,
+    lineHeight: 18,
   },
 
   // Info banner
@@ -625,13 +248,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.fab,
     lineHeight: 18,
-  },
-
-  // Footer
-  footer: {
-    textAlign: "center",
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 4,
   },
 });

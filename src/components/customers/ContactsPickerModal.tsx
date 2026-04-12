@@ -37,7 +37,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useCustomersStore } from "../../store/customersStore";
+import { usePeople } from "../../hooks/useCustomer";
+import { useAuthStore } from "../../store/authStore";
 import { normalizePhone } from "../../utils/phone";
 import { colors } from "../../utils/theme";
 
@@ -141,7 +142,9 @@ function ContactRow({
           marginRight: 14,
         }}
       >
-        {isSelected && <Check size={13} color={colors.surface} strokeWidth={3.5} />}
+        {isSelected && (
+          <Check size={13} color={colors.surface} strokeWidth={3.5} />
+        )}
       </View>
 
       {/* ── Avatar ── */}
@@ -170,7 +173,13 @@ function ContactRow({
       {/* ── Name + phone ── */}
       <View style={{ flex: 1 }}>
         <View
-          style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 2 }}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 6,
+            marginBottom: 2,
+          }}
         >
           <Text
             numberOfLines={1}
@@ -218,8 +227,10 @@ export default function ContactsPickerModal({
   onClose,
   onImport,
 }: Props) {
+  const { profile } = useAuthStore();
+
   // ── Existing-customer phone lookup ───────────────────────────────────────────
-  const existingCustomers = useCustomersStore((s) => s.customers);
+  const { people: existingCustomers } = usePeople(profile?.id);
   const existingPhones = useMemo(() => {
     const set = new Set<string>();
     for (const c of existingCustomers) {
@@ -546,7 +557,9 @@ export default function ContactsPickerModal({
                 gap: 8,
               }}
             >
-              <Text style={{ fontSize: 16, color: colors.textSecondary }}>🔍</Text>
+              <Text style={{ fontSize: 16, color: colors.textSecondary }}>
+                🔍
+              </Text>
               <BottomSheetTextInput
                 placeholder="Search contacts..."
                 placeholderTextColor={colors.textSecondary}
@@ -586,9 +599,7 @@ export default function ContactsPickerModal({
                   {allSelected ? "Deselect All" : "Select All"}
                 </Text>
               </TouchableOpacity>
-              <Text
-                style={{ fontSize: 13, color: colors.textSecondary }}
-              >
+              <Text style={{ fontSize: 13, color: colors.textSecondary }}>
                 {filtered.length} contact{filtered.length === 1 ? "" : "s"}
               </Text>
             </View>
@@ -596,7 +607,11 @@ export default function ContactsPickerModal({
 
           {/* ── Divider ── */}
           <View
-            style={{ height: 1, backgroundColor: colors.border, marginBottom: 0 }}
+            style={{
+              height: 1,
+              backgroundColor: colors.border,
+              marginBottom: 0,
+            }}
           />
 
           {/* ── LOADING ── */}
@@ -701,7 +716,9 @@ export default function ContactsPickerModal({
                       fontSize: 17,
                       fontWeight: "800",
                       letterSpacing: -0.2,
-                      color: ctaDisabled ? colors.textSecondary : colors.surface,
+                      color: ctaDisabled
+                        ? colors.textSecondary
+                        : colors.surface,
                     }}
                   >
                     {importLabel}

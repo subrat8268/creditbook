@@ -1,24 +1,23 @@
 import CustomerList from "@/src/components/customers/CustomerList";
 import NewCustomerModal from "@/src/components/customers/NewCustomerModal";
-import SearchBar from "@/src/components/ui/SearchBar";
-import Input from "@/src/components/ui/Input";
+import { useToast } from "@/src/components/feedback/Toast";
 import Button from "@/src/components/ui/Button";
+import Input from "@/src/components/ui/Input";
+import SearchBar from "@/src/components/ui/SearchBar";
 import { useAddPerson, usePeople } from "@/src/hooks/useCustomer";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useCreateOrder } from "@/src/hooks/useOrders";
-import { useToast } from "@/src/components/feedback/Toast";
 import { useAuthStore } from "@/src/store/authStore";
-import { useCustomersStore } from "@/src/store/customersStore";
 import { colors } from "@/src/utils/theme";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { UserPlus } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -33,7 +32,6 @@ export default function CustomersScreen() {
   const [redirectAfterAdd, setRedirectAfterAdd] = useState(false);
   const [inlineName, setInlineName] = useState("");
   const [inlinePhone, setInlinePhone] = useState("");
-  const customers = useCustomersStore((s) => s.customers);
 
   const {
     refetch,
@@ -42,6 +40,7 @@ export default function CustomersScreen() {
     isFetchingNextPage,
     isLoading,
     error,
+    people,
   } = usePeople(profile?.id, search);
 
   const addPersonMutation = useAddPerson(profile?.id ?? "");
@@ -58,9 +57,9 @@ export default function CustomersScreen() {
 
   // ── Sorted people (sorted before passing to list) ───────────────────────────
   const sortedPeople = useMemo(() => {
-    const list = [...customers];
+    const list = [...people];
     return list.sort((a, b) => a.name.localeCompare(b.name));
-  }, [customers]);
+  }, [people]);
 
   const handleAddPerson = async (values: {
     name: string;
@@ -93,7 +92,10 @@ export default function CustomersScreen() {
           taxPercent: 0,
           billNumberPrefix: profile?.bill_number_prefix || "INV",
         });
-        showToast({ message: `Entry added for ${createdPerson.name}`, type: "success" });
+        showToast({
+          message: `Entry added for ${createdPerson.name}`,
+          type: "success",
+        });
         router.push({
           pathname: "/customers/[customerId]",
           params: { customerId: createdPerson.id },
@@ -104,7 +106,7 @@ export default function CustomersScreen() {
         const shouldRedirect = values.redirectToEntry ?? redirectAfterAdd;
         if (shouldRedirect) {
           router.push({
-          pathname: "/new-bill",
+            pathname: "/new-bill",
             params: {
               customer: JSON.stringify(createdPerson),
               next: shouldRedirect ? "share" : undefined,
@@ -117,7 +119,6 @@ export default function CustomersScreen() {
       console.error("Failed to add customer:", err);
     }
   };
-
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -135,7 +136,7 @@ export default function CustomersScreen() {
   ]);
 
   const handlePressCustomer = (customerId: string) => {
-    const selected = customers.find((c) => c.id === customerId);
+    const selected = people.find((c) => c.id === customerId);
     if (!selected) return;
     // Tap person → amount-first entry flow.
     router.push({
@@ -154,17 +155,19 @@ export default function CustomersScreen() {
     [router],
   );
 
-
   return (
-    <SafeAreaView
-      className="flex-1 bg-background"
-      edges={["top"]}
-    >
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent={false} />
+    <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent={false}
+      />
 
       {/* ── Screen header ── */}
       <View className="px-5 py-4 flex-row justify-between items-center">
-        <Text style={{ fontSize: 24, fontWeight: "800", color: colors.textPrimary }}>
+        <Text
+          style={{ fontSize: 24, fontWeight: "800", color: colors.textPrimary }}
+        >
           People
         </Text>
         <TouchableOpacity
@@ -222,26 +225,26 @@ export default function CustomersScreen() {
                 setInlineName("");
                 setInlinePhone("");
               }}
-               loading={addPersonMutation.isPending}
+              loading={addPersonMutation.isPending}
               disabled={!inlineName.trim()}
             />
           </View>
         </View>
       </View>
 
-       {/* ── People list (full-width) ── */}
-        <CustomerList
-          people={sortedPeople}
-          isLoading={isLoading}
-          error={error}
-          onRefresh={onRefresh}
-          refreshing={refreshing}
-          onEndReached={handleEndReached}
-          isFetchingNextPage={isFetchingNextPage}
-          onPressPerson={handlePressCustomer}
-          onLongPressPerson={handleOpenLedger}
-          onAddPerson={() => setIsModalOpen(true)}
-        />
+      {/* ── People list (full-width) ── */}
+      <CustomerList
+        people={sortedPeople}
+        isLoading={isLoading}
+        error={error}
+        onRefresh={onRefresh}
+        refreshing={refreshing}
+        onEndReached={handleEndReached}
+        isFetchingNextPage={isFetchingNextPage}
+        onPressPerson={handlePressCustomer}
+        onLongPressPerson={handleOpenLedger}
+        onAddPerson={() => setIsModalOpen(true)}
+      />
 
       <NewCustomerModal
         visible={isModalOpen}

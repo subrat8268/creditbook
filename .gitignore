@@ -63,6 +63,8 @@ GEMINI.md
 .windsurf
 .opencode/*
 .opencode
+.github/*
+.github
 
 #scripts
 scripts/*
