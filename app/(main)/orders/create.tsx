@@ -13,10 +13,7 @@ import { colors } from "@/src/utils/theme";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
-import {
-  ArrowLeft,
-  Pencil,
-} from "lucide-react-native";
+import { ArrowLeft, Pencil } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
   Alert,

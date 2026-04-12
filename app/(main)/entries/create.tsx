@@ -13,10 +13,7 @@ import { colors } from "@/src/utils/theme";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
-import {
-  ArrowLeft,
-  Pencil,
-} from "lucide-react-native";
+import { ArrowLeft, Pencil } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
@@ -490,8 +487,6 @@ export default function CreateOrderScreen() {
               </View>
             </View>
 
-
-
             {/* SUMMARY (Always visible) */}
             {entryType === "bill" && (quickAmount || hasItems) && (
               <View className="rounded-2xl bg-surface border border-border p-4 mt-2">
@@ -572,8 +567,6 @@ export default function CreateOrderScreen() {
             setSelectedPerson={handleSelectPerson}
             vendorId={vendorId!}
           />
-
-
         </KeyboardAvoidingView>
       </SafeAreaView>
     </>

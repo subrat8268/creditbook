@@ -17,7 +17,6 @@ import {
   ArrowDown,
   ArrowLeft,
   ArrowUp,
-  BellRing,
   Download,
   FileText,
   MessageCircle,
@@ -236,11 +235,6 @@ export default function CustomerDetailScreen() {
 
   const { show: showToast } = useToast();
   const { shareLedger, isSharing } = useWhatsAppShare();
-  const reminderSnoozes = usePreferencesStore((s) => s.overdueReminderSnoozes);
-  const snoozeReminder = usePreferencesStore((s) => s.snoozeOverdueReminder);
-  const clearReminderSnooze = usePreferencesStore(
-    (s) => s.clearOverdueReminderSnooze,
-  );
   const logReminderSent = usePreferencesStore((s) => s.logReminderSent);
 
   const [txFilter, setTxFilter] = useState<TxFilter>("All");
@@ -254,14 +248,6 @@ export default function CustomerDetailScreen() {
 
   const sendWhatsAppReminder = () => {
     if (!customer) return;
-    const snoozedUntil = reminderSnoozes[customer.id] ?? 0;
-    if (snoozedUntil > Date.now()) {
-      showToast({
-        message: "Reminder is snoozed for this person",
-        type: "error",
-      });
-      return;
-    }
     const biz = profile?.business_name || "our store";
     const bal = customer.outstandingBalance.toLocaleString("en-IN");
     const msg = `Dear ${customer.name}, your outstanding balance with ${biz} is ₹${bal}. Please arrange payment. Thank you.`;
@@ -619,50 +605,7 @@ export default function CustomerDetailScreen() {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
-              style={{
-                shadowColor: colors.textPrimary,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.05,
-                shadowRadius: 6,
-                elevation: 2,
-              }}
-              activeOpacity={0.8}
-              onPress={() => {
-                if (!customer) return;
-                const snoozedUntil = reminderSnoozes[customer.id] ?? 0;
-                if (snoozedUntil > Date.now()) {
-                  clearReminderSnooze(customer.id);
-                  showToast({
-                    message: "Reminder snooze removed",
-                    type: "success",
-                  });
-                } else {
-                  snoozeReminder(customer.id, 7);
-                  showToast({
-                    message: "Reminder snoozed for 7 days",
-                    type: "success",
-                  });
-                }
-              }}
-            >
-              <View
-                className="w-11 h-11 rounded-full items-center justify-center"
-                style={{ backgroundColor: colors.background }}
-              >
-                <BellRing
-                  size={22}
-                  color={colors.textSecondary}
-                  strokeWidth={2}
-                />
-              </View>
-              <Text className="text-[13px] font-semibold text-textDark">
-                {(reminderSnoozes[customer?.id ?? ""] ?? 0) > Date.now()
-                  ? "Undo Snooze"
-                  : "Snooze 7d"}
-              </Text>
-            </TouchableOpacity>
+            {/* Spacer for potentially future button */}
           </View>
         </View>
 
