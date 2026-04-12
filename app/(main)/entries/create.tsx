@@ -1,6 +1,7 @@
 import { getCustomerPreviousBalance, recordPayment } from "@/src/api/entries";
 import { fetchPersonDetail } from "@/src/api/people";
 import Loader from "@/src/components/feedback/Loader";
+import { SyncStatus } from "@/src/components/feedback/SyncStatus";
 import { useToast } from "@/src/components/feedback/Toast";
 import BillFooter from "@/src/components/orders/BillFooter";
 import CustomerPicker from "@/src/components/picker/CustomerPicker";
@@ -323,6 +324,9 @@ export default function CreateOrderScreen() {
             <Text className="flex-1 text-[18px] font-bold text-textPrimary">
               Add Entry
             </Text>
+            <View className="mr-2">
+              <SyncStatus />
+            </View>
             <View className="px-3 py-1 rounded-full border border-primary bg-primaryLight">
               <Text className="text-[13px] font-bold text-primary">
                 {entryType === "payment" ? "PAYMENT" : invoiceRef}
