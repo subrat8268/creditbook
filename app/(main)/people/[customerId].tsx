@@ -8,7 +8,7 @@ import { useWhatsAppShare } from "@/src/hooks/useWhatsAppShare";
 import { useAuthStore } from "@/src/store/authStore";
 import { usePreferencesStore } from "@/src/store/preferencesStore";
 import { Transaction } from "@/src/types/customer";
-import { colors, gradients } from "@/src/utils/theme";
+import { colors } from "@/src/utils/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Print from "expo-print";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -18,13 +18,10 @@ import {
   ArrowDown,
   ArrowLeft,
   ArrowUp,
-  Download,
   FileText,
-  MessageCircle,
   Phone,
   Plus,
   Receipt,
-  Share2,
 } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -342,7 +339,7 @@ export default function CustomerDetailScreen() {
     }
     if (amountSeed && amountSeed > 0) {
       router.push({
-        pathname: "/new-bill",
+        pathname: "/(main)/entries/create",
         params: {
           customer: JSON.stringify(customer),
           amount: String(amountSeed),
@@ -510,106 +507,76 @@ export default function CustomerDetailScreen() {
           ) : null}
         </LinearGradient>
 
-        {/* ── Action Buttons (2x2 Grid) ── */}
+        {/* ── Primary Action Buttons ── */}
         <View className="mx-4 mt-4 gap-3">
-          {/* First Row */}
-          <View className="flex-row flex-wrap gap-3">
+          {/* Row 1: Two main CTAs */}
+          <View className="flex-row gap-3">
+            {/* Add Entry - Primary Green */}
             <TouchableOpacity
-              className="flex-1 min-w-[48%] bg-surface rounded-2xl py-[18px] items-center gap-2"
-              style={{
-                shadowColor: colors.textPrimary,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.05,
-                shadowRadius: 6,
-                elevation: 2,
-              }}
+              className="flex-1 bg-primary rounded-2xl py-4 items-center gap-2"
               activeOpacity={0.8}
               onPress={() =>
                 router.push({
-                  pathname: "/new-bill",
+                  pathname: "/(main)/entries/create",
                   params: { customer: JSON.stringify(customer) },
                 })
               }
             >
-              <View
-                className="w-11 h-11 rounded-full items-center justify-center"
-                style={{
-                  backgroundColor:
-                    customer.outstandingBalance === 0
-                      ? colors.successBg
-                      : colors.dangerBg,
-                }}
-              >
-                <Plus
-                  size={22}
-                  color={
-                    customer.outstandingBalance === 0
-                      ? colors.primary
-                      : colors.danger
-                  }
-                  strokeWidth={2.5}
-                />
-              </View>
-              <Text className="text-[13px] font-semibold text-textDark">
+              <Plus size={22} color={colors.surface} strokeWidth={2.5} />
+              <Text className="text-[14px] font-bold text-surface">
                 Add Entry
+              </Text>
+            </TouchableOpacity>
+
+            {/* Record Payment - Red when due, muted when settled */}
+            <TouchableOpacity
+              className={`flex-1 rounded-2xl py-4 items-center gap-2 ${
+                hasPendingPayment ? "bg-danger" : "bg-border"
+              }`}
+              activeOpacity={hasPendingPayment ? 0.8 : 1}
+              onPress={() => openPaymentFlow()}
+              disabled={!hasPendingPayment}
+            >
+              <ArrowDown
+                size={22}
+                color={hasPendingPayment ? colors.surface : colors.textSecondary}
+                strokeWidth={2.5}
+              />
+              <Text
+                className={`text-[14px] font-bold ${
+                  hasPendingPayment ? "text-surface" : "text-textSecondary"
+                }`}
+              >
+                Record Payment
               </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Second Row */}
+          {/* Row 2: Quick actions */}
           <View className="flex-row gap-3">
             <TouchableOpacity
-              className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
-              style={{
-                shadowColor: colors.textPrimary,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.05,
-                shadowRadius: 6,
-                elevation: 2,
-              }}
+              className="flex-1 bg-surface rounded-2xl py-3 items-center gap-2 border border-border"
               activeOpacity={0.8}
               onPress={handleShareLedger}
               disabled={isSharing}
             >
-              <View
-                className="w-11 h-11 rounded-full items-center justify-center"
-                style={{ backgroundColor: colors.primaryLight }}
-              >
-                <Share2 size={22} color={colors.primary} strokeWidth={2} />
-              </View>
-              <Text className="text-[13px] font-semibold text-textDark">
-                Share Ledger
+              <Share2 size={18} color={colors.primary} strokeWidth={2} />
+              <Text className="text-[13px] font-semibold text-textPrimary">
+                Share
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="flex-1 bg-surface rounded-2xl py-[18px] items-center gap-2"
-              style={{
-                shadowColor: colors.textPrimary,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.05,
-                shadowRadius: 6,
-                elevation: 2,
-              }}
+              className="flex-1 bg-surface rounded-2xl py-3 items-center gap-2 border border-border"
               activeOpacity={0.8}
-              onPress={sendWhatsAppReminder}
+              onPress={() => openPaymentFlow(customer.pendingOrderBalance ?? 0)}
+              disabled={!hasPendingPayment}
             >
-              <View
-                className="w-11 h-11 rounded-full items-center justify-center"
-                style={{ backgroundColor: colors.pending.bg }}
-              >
-                <MessageCircle
-                  size={22}
-                  color={colors.warning}
-                  strokeWidth={2}
-                />
-              </View>
-              <Text className="text-[13px] font-semibold text-textDark">
-                Reminder
+              <ArrowDown size={18} color={colors.danger} strokeWidth={2} />
+              <Text className="text-[13px] font-semibold text-textPrimary">
+                Pay ₹{((customer.pendingOrderBalance ?? 0) / 1000).toFixed(1)}k
               </Text>
             </TouchableOpacity>
-
-            {/* Spacer for potentially future button */}
           </View>
         </View>
 
@@ -675,7 +642,7 @@ export default function CustomerDetailScreen() {
                 activeOpacity={0.8}
                 onPress={() =>
                   router.push({
-                    pathname: "/new-bill",
+                    pathname: "/(main)/entries/create",
                     params: { customer: JSON.stringify(customer) },
                   })
                 }

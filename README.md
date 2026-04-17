@@ -1,204 +1,163 @@
-# Creditbook
+# KredBook
 
 <div align="center">
 
-**A comprehensive React Native business management platform for small enterprises in India**
+**A simple digital khata** — Credit tracking app for Indian small businesses
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![React Native](https://img.shields.io/badge/React_Native-0.73+-61DAFB.svg)](https://reactnative.dev/)
 [![Expo](https://img.shields.io/badge/Expo-Latest-000020.svg)](https://expo.dev/)
 [![Supabase](https://img.shields.io/badge/Supabase-Latest-3ECF8E.svg)](https://supabase.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
-[Quick Start](#quick-start) • [Architecture](#architecture) • [Development](#development) • [Documentation](#documentation)
 
 </div>
 
 ---
 
-## Overview
+## What is KredBook?
 
-Creditbook is a mobile-first business management application designed to help small enterprises and traders in India efficiently manage:
+**KredBook is a simple digital khata** — replaces physical notebook for small businesses.
 
-- **Customers & Suppliers** - Complete relationship management
-- **Orders & Invoices** - Create, track, and manage transactions
-- **Product Catalog** - Inventory and SKU management
-- **Payments & Credits** - Track financial transactions
-- **Offline-First** - Works seamlessly without internet connectivity
-- **Real-time Sync** - Automatic data synchronization when online
+### Core Features (v3.0)
 
-### Key Features
+- **People** — Add customers (not suppliers)
+- **Entries** — Record what they owe (not product catalog)
+- **Payments** — Track what they paid
+- **Dashboard** — See total outstanding at a glance
+- **Offline-first** — Works without internet
 
-✅ **Cross-Platform** - iOS, Android, and Web support  
-✅ **Offline-First** - Full functionality without network  
-✅ **Real-time** - Live data synchronization via Supabase  
-✅ **Secure** - Row-level security and encrypted storage  
-✅ **Accessible** - WCAG 2.1 compliance  
-✅ **Fast** - Optimized performance and bundle size  
-✅ **Scalable** - Production-ready architecture  
+### What's NOT in Scope
 
----
-
-## Prerequisites
-
-- **Node.js** 16+ and npm 8+
-- **Expo CLI** - `npm install -g expo-cli`
-- **iOS**: Xcode 14+ (macOS only)
-- **Android**: Android Studio with SDK 31+
-- **Git** - For version control
+- Suppliers (removed)
+- Product catalog (removed)
+- Reports/Dashboards (simplified)
+- GST calculations
+- Multi-user
 
 ---
 
-## Quick Start
+## Tech Stack
 
-### 1. Clone Repository
-
-```bash
-git clone https://github.com/your-org/creditbook.git
-cd creditbook
-```
-
-### 2. Install Dependencies
-
-```bash
-npm install
-```
-
-### 3. Configure Environment
-
-```bash
-# Copy environment template
-cp .env.example .env
-
-# Update with your Supabase credentials
-```
-
-### 4. Start Development
-
-```bash
-npm run dev:web          # Web
-npm run dev:ios          # iOS simulator
-npm run dev:android      # Android emulator
-```
-
-### 5. Run Tests
-
-```bash
-npm test                 # All tests
-npm run test:watch       # Watch mode
-npm run test:coverage    # Coverage report
-```
+| Layer | Technology |
+|-------|-----------|
+| Framework | React Native + Expo |
+| Routing | Expo Router |
+| Styling | TailwindCSS + NativeWind |
+| State | Zustand |
+| Server State | TanStack Query |
+| Database | Supabase (PostgreSQL) |
+| Auth | Supabase Auth |
+| Offline | MMKV |
+| AI System | OpenCode + oh-my-openagent |
 
 ---
 
-## Architecture
+## AI Development System
 
-### System Diagram
+### Skills (12 installed)
+
+Skills are loaded automatically based on task context. See `_agents/skills/README.md` for full list.
+
+#### Frontend Skills
+
+| Skill | Purpose |
+|-------|---------|
+| `ui-designer` | UI components, visual design |
+| `code-reviewer` | Bug detection, quality |
+| `mobile-patterns` | React Native / Expo |
+| `debugger` | Issue fixing |
+| `refactor-engineer` | Code cleanup |
+
+#### Backend/Planning Skills
+
+| Skill | Purpose |
+|-------|---------|
+| `supabase-expert` | Database, migrations |
+| `project-planner` | Task breakdown |
+| `tech-lead` | Architecture decisions |
+| `thinker` | Complex reasoning |
+
+### Workflow
 
 ```
-┌─────────────────────────────────────┐
-│  React Native App (iOS/Android/Web) │
-│  - State: Zustand                   │
-│  - Styling: TailwindCSS + NativeWind│
-│  - Offline: MMKV + Sync Queue       │
-└──────────────┬──────────────────────┘
-               │
-        ┌──────┴──────┐
-        │   Supabase  │
-        ├─────────────┤
-        │ • PostgreSQL│
-        │ • RLS       │
-        │ • Auth      │
-        │ • Realtime  │
-        │ • Storage   │
-        └─────────────┘
+User Request
+    ↓
+Project Planner → break into tasks
+    ↓
+Tech Lead → validate approach
+    ↓
+Implementation → write code
+    ↓
+Code Reviewer → detect issues
+    ↓
+Refactor Engineer → improve structure
+    ↓
+Auditor → check overall quality
 ```
-
-### Tech Stack
-
-| Component | Technology |
-|-----------|------------|
-| **Frontend** | React Native / Expo |
-| **State Management** | Zustand |
-| **Styling** | TailwindCSS + NativeWind |
-| **Database** | PostgreSQL (Supabase) |
-| **Authentication** | Supabase Auth |
-| **Real-time** | Supabase Realtime |
-| **Storage** | Supabase Storage |
-| **Offline** | MMKV + Sync Queue |
-| **Testing** | Jest + RTL + Playwright |
-| **Build** | Expo |
 
 ---
 
 ## Project Structure
 
 ```
-creditbook/
-├── app/                         # Expo Router
-│   ├── (auth)/                 # Auth screens
-│   ├── (main)/                 # Main app
-│   └── _layout.tsx
+kredBook/
+├── app/                    # Expo Router (5 tabs only now)
+│   ├── (auth)/           # Auth screens
+│   │   ├── login.tsx
+│   │   └── signup.tsx
+│   └── (main)/          # Main app
+│       ├── dashboard/    # Home tab
+│       ├── people/      # People/Customers tab
+│       ├── entries/     # Entries tab + create + [id]
+│       ├── profile/     # Profile tab + export + sign out
+│       └── new-entry.tsx
 ├── src/
-│   ├── api/                    # API clients
-│   ├── components/             # Reusable components
-│   ├── hooks/                  # Custom hooks
-│   ├── store/                  # Zustand stores
-│   ├── types/                  # TypeScript types
-│   └── utils/                  # Helpers
-├── assets/                     # Icons & images
-├── designs/                    # Design mockups
-├── docs/                       # Documentation
-├── supabase/                   # Migrations
-└── .github/                    # GitHub config
-    ├── agents/                 # AI agents
-    └── instructions/           # Code patterns
+│   ├── api/            # API clients
+│   ├── components/     # Reusable components
+│   ├── hooks/         # TanStack Query hooks
+│   ├── store/         # Zustand stores
+│   ├── services/     # Supabase client
+│   ├── types/        # TypeScript types
+│   └── utils/        # Theme, helpers
+├── docs/
+│   ├── prd.md           # Product requirements (v3.0)
+│   ├── ARCHITECTURE.md   # System design
+│   ├── design-system.md # UI guidelines
+│   └── STATUS.md       # Current implementation
+├── _agents/
+│   └── skills/        # AI skills
+└── .cursorrules       # AI behavior rules
 ```
 
 ---
 
 ## Development
 
-### Commands
+### Quick Commands
 
 ```bash
-# Development
-npm run dev:web              # Web server
-npm run dev:ios              # iOS simulator
-npm run dev:android          # Android emulator
+# Start
+npm start          # Expo
+npm run dev        # With dev server
 
 # Quality
-npm run lint                 # ESLint
-npm run type-check          # TypeScript check
-npm run format              # Format code
-npm run test                # Run tests
+npm run lint       # ESLint
+npm run type-check # TypeScript
 
 # Build
-npm run build:web           # Web production
-npm run build:ios           # iOS app
-npm run build:android       # Android app
+npx expo export  # Web
 ```
-
-### Workflow
-
-1. **Create branch**: `git checkout -b feature/xyz`
-2. **Write code & tests**: Follow patterns in `.github/instructions/`
-3. **Quality checks**: `npm run lint && npm run type-check && npm run test`
-4. **Commit**: `git commit -m "feat: description"`
-5. **Push & PR**: Submit for review
 
 ### Using AI Assistance
 
-Open Copilot Chat (Ctrl+Shift+Alt+I) and use:
+Simply describe what you need:
 
 ```
-@builder /plan                 # Feature planning
-@mobile-dev help with...       # Implementation
-@qa-and-testing /tdd           # Test strategy
-@code-reviewer /code-review    # Code quality
+"Use reviewer to fix UI bug"
+"Use planner + tech-lead to build feature"
+"Use backend to add new API"
 ```
 
-See `.github/README.md` for complete guide.
+AI will automatically load the appropriate skills.
 
 ---
 
@@ -206,62 +165,51 @@ See `.github/README.md` for complete guide.
 
 | Document | Purpose |
 |----------|---------|
-| [`.github/README.md`](./.github/README.md) | AI agent setup & usage |
-| [`.github/AGENTS.md`](./.github/AGENTS.md) | Agent catalog |
-| [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) | System design |
-| [`docs/design-system.md`](./docs/design-system.md) | UI guidelines |
-| [`docs/prd.md`](./docs/prd.md) | Product specs |
-| [`copilot-instructions.md`](./copilot-instructions.md) | Workspace guidelines |
-
-### Code Patterns
-
-- [React Components](./.github/instructions/react-native-components.instructions.md)
-- [State Management](./.github/instructions/zustand-patterns.instructions.md)
-- [API Integration](./.github/instructions/api-patterns.instructions.md)
+| `docs/prd.md` | What the product is (v3.0 - simplified) |
+| `docs/ARCHITECTURE.md` | System design |
+| `docs/design-system.md` | UI colors, spacing, components |
+| `docs/STATUS.md` | Current implementation status |
+| `_agents/skills/README.md` | AI skill system |
+| `.cursorrules` | AI behavior rules |
 
 ---
 
-## Contributing
+## Code Standards
 
-### Code Standards
-
-- **Language**: TypeScript (strict mode)
-- **Components**: Functional with hooks
-- **State**: Zustand for global state
-- **Testing**: 80%+ coverage target
-- **Naming**: Clear, descriptive names
-- **Comments**: Complex logic only
-
-### Commit Format
-
-```
-feat:     New feature
-fix:      Bug fix
-refactor: Code refactoring
-perf:     Performance improvement
-test:     Test updates
-docs:     Documentation
-```
+- **TypeScript** (strict mode)
+- **Functional components** with hooks only
+- **Zustand** for global state, **TanStack Query** for server state
+- **TailwindCSS** for styling (no hardcoded colors)
+- **lucide-react-native** for icons
+- **Colors from theme.ts** (never hardcoded)
 
 ---
 
-## Support
+## Anti-Patterns
 
-- **Docs**: Check `docs/` and `.github/`
-- **Issues**: Search GitHub
-- **Questions**: Use Discussions
-- **AI Help**: Copilot agents in Chat
+**Never do:**
+- ❌ `as any` type casting
+- ❌ `@ts-ignore` or `@ts-expect-error`
+- ❌ Hardcoded colors (use theme)
+- ❌ Class components
+- ❌ Empty catch blocks
 
 ---
 
-## License
+## Key Changes (v3.0 Simplified)
 
-MIT - See LICENSE file
+| Before | After |
+|--------|-------|
+| 7 tabs | 5 tabs |
+| Suppliers | Removed |
+| Products | Removed |
+| /orders route | /entries only |
+| More sheet | Merged into Profile |
 
 ---
 
 <div align="center">
 
-**Built with ❤️ for Indian small businesses**
+**Simple digital khata — For Indian small businesses**
 
 </div>

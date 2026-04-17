@@ -49,6 +49,11 @@ function getAvatarColor(name: string): string {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
+// Format amount for display
+function formatAmount(amount: number): string {
+  return amount.toLocaleString("en-IN", { maximumFractionDigits: 0 });
+}
+
 export default function CreateOrderScreen() {
   const {
     customer: customerParams,
@@ -353,43 +358,6 @@ export default function CreateOrderScreen() {
             contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 12 }}
             showsVerticalScrollIndicator={false}
           >
-            <View className="flex-row items-center justify-between mt-1">
-              <Text className="text-[11px] font-bold text-textSecondary tracking-widest">
-                ENTRY TYPE
-              </Text>
-              <View className="flex-row items-center rounded-full border border-border overflow-hidden">
-                <TouchableOpacity
-                  onPress={() => {
-                    setEntryType("bill");
-                    // Keep the amount-first input responsive when switching modes.
-                    setIsItemsExpanded(false);
-                  }}
-                  activeOpacity={0.8}
-                  className={`px-4 py-1.5 ${entryType === "bill" ? "bg-primary" : "bg-surface"}`}
-                >
-                  <Text
-                    className={`text-[12px] font-bold ${entryType === "bill" ? "text-surface" : "text-textSecondary"}`}
-                  >
-                    Entry
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setEntryType("payment");
-                    // Collapse items for payment entries.
-                    setIsItemsExpanded(false);
-                  }}
-                  activeOpacity={0.8}
-                  className={`px-4 py-1.5 ${entryType === "payment" ? "bg-primary" : "bg-surface"}`}
-                >
-                  <Text
-                    className={`text-[12px] font-bold ${entryType === "payment" ? "text-surface" : "text-textSecondary"}`}
-                  >
-                    Payment
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
 
             {/* Person picker (inline, amount-first flow) */}
             <View className="rounded-2xl overflow-hidden bg-surface border border-border">
@@ -454,24 +422,31 @@ export default function CreateOrderScreen() {
               <Text className="text-[11px] font-bold text-textSecondary tracking-widest mb-2">
                 AMOUNT
               </Text>
-              <View className="rounded-2xl bg-surface border-2 border-primary px-5 py-4">
+              <View className="rounded-2xl bg-surface border-2 border-primary px-5 py-6">
                 <View className="flex-row items-center">
                   <Text
-                    className="text-[32px] font-extrabold mr-2"
+                    className="text-[40px] font-extrabold mr-1"
                     style={{ color: colors.primary }}
                   >
                     ₹
                   </Text>
                   <TextInput
+                    ref={(input) => {
+                      // Auto-focus amount when no customer is preselected
+                      if (!selectedCustomerMeta && input) {
+                        setTimeout(() => input.focus(), 300);
+                      }
+                    }}
                     value={quickAmount}
                     onChangeText={setQuickAmount}
-                    placeholder="500"
+                    placeholder="0"
                     placeholderTextColor={colors.border}
                     keyboardType="numeric"
-                    className="flex-1 text-[32px] font-extrabold"
+                    className="flex-1 text-[36px] font-extrabold"
                     style={{ color: colors.textPrimary }}
-                    editable={!hasItems || entryType === "payment"} // Disable if using items
-                    autoFocus={!selectedCustomerMeta} // Focus if no customer preselected
+                    autoFocus={!selectedCustomerMeta}
+                    returnKeyType="done"
+                    onSubmitEditing={handleSaveAndShare}
                   />
                 </View>
                 {hasItems && entryType === "bill" && (

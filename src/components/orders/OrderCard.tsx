@@ -50,20 +50,20 @@ function formatOrderDate(iso: string): string {
 // ── Status chip config ────────────────────────────────────────────────────────
 
 const STATUS_CONFIG = {
-  Paid: { bg: colors.paid.bg, text: colors.paid.text, label: "PAID" },
+  Paid: { bg: colors.successBg, text: colors.primary, label: "PAID" },
   "Partially Paid": {
-    bg: colors.partial.bg,
-    text: colors.partial.text,
+    bg: colors.warningBg,
+    text: colors.warning,
     label: "PARTIAL",
   },
   Pending: {
-    bg: colors.pending.bg,
-    text: colors.pending.text,
+    bg: colors.warningBg,
+    text: colors.warning,
     label: "PENDING",
   },
   Overdue: {
-    bg: colors.overdue.bg,
-    text: colors.overdue.text,
+    bg: colors.dangerBg,
+    text: colors.danger,
     label: "OVERDUE",
   },
 } as const;
@@ -89,15 +89,18 @@ export default function OrderCard({ order, onPress }: Props) {
   const customerName = order.customer?.name ?? "Unknown Person";
   const avatarColor = getAvatarColor(customerName);
 
+  // Determine amount color based on status
+  const isPaid = statusKey === "Paid";
+  const amountColor = isPaid ? colors.primary : colors.textPrimary;
+
   return (
     <TouchableOpacity
       onPress={() => onPress(order.id)}
       activeOpacity={0.8}
       style={styles.card}
     >
-      {/* ── Main row ──────────────────────────────────────────────────── */}
-      <View className="flex-row items-start">
-        {/* Initials avatar */}
+      {/* ── Left: Avatar ────────────────────────────────────────── */}
+      <View className="flex-row items-center">
         <View
           className="items-center justify-center rounded-full shrink-0 mr-3"
           style={{
@@ -112,7 +115,7 @@ export default function OrderCard({ order, onPress }: Props) {
           </Text>
         </View>
 
-        {/* Center: person name + entry number */}
+        {/* ── Center: Name + Date ───────────────────────────────────────── */}
         <View className="flex-1 justify-center">
           <Text
             className="text-textPrimary text-[15px] font-bold"
@@ -120,21 +123,27 @@ export default function OrderCard({ order, onPress }: Props) {
           >
             {customerName}
           </Text>
-          <Text
-            className="text-textSecondary text-[13px] mt-0.5"
-            numberOfLines={1}
-          >
-            {order.bill_number}
-          </Text>
+          <View className="flex-row items-center gap-2 mt-1">
+            <Text className="text-textSecondary text-[12px]">
+              {order.bill_number}
+            </Text>
+            <Text className="text-textSecondary text-[12px]">·</Text>
+            <Text className="text-textSecondary text-[12px]">
+              {formatOrderDate(order.created_at)}
+            </Text>
+          </View>
         </View>
 
-        {/* Right: amount + status chip */}
-        <View className="items-end shrink-0 ml-2">
-          <Text className="text-textPrimary text-[17px] font-bold mb-[5px]">
+        {/* ── Right: Amount + Status ────────────────────────────────────── */}
+        <View className="items-end shrink-0">
+          <Text
+            className="text-[18px] font-bold mb-1"
+            style={{ color: amountColor }}
+          >
             ₹{order.total_amount.toLocaleString("en-IN")}
           </Text>
           <View
-            className="rounded-full px-2 py-[3px]"
+            className="rounded-full px-2 py-0.5"
             style={{ backgroundColor: chip.bg }}
           >
             <Text
@@ -146,11 +155,6 @@ export default function OrderCard({ order, onPress }: Props) {
           </View>
         </View>
       </View>
-
-      {/* ── Footer: date ─────────────────────────────────────────────── */}
-      <Text className="text-textSecondary text-[13px] mt-[10px]">
-        {formatOrderDate(order.created_at)}
-      </Text>
     </TouchableOpacity>
   );
 }

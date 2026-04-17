@@ -10,6 +10,7 @@ import { Search } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
   FlatList,
+  ScrollView,
   StatusBar,
   Text,
   TextInput,
@@ -18,13 +19,25 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+// Filter chips
+const FILTER_OPTIONS: { label: StatusFilter; color: string; bg: string }[] = [
+  { label: "All", color: colors.textPrimary, bg: colors.surface },
+  { label: "Paid", color: colors.primary, bg: colors.successBg },
+  { label: "Pending", color: colors.warning, bg: colors.warningBg },
+  { label: "Overdue", color: colors.danger, bg: colors.dangerBg },
+];
+
 // ── Screen ────────────────────────────────────────────────────────────────────
+
+// Filter type
+type StatusFilter = "All" | "Paid" | "Pending" | "Overdue";
 
 export default function OrdersScreen() {
   const { profile } = useAuthStore();
   const router = useRouter();
 
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<StatusFilter>("All");
   const [refreshing, setRefreshing] = useState(false);
 
   const {
@@ -39,7 +52,22 @@ export default function OrdersScreen() {
 
   const { isConnected } = useNetworkSync();
 
-  const orders = useMemo(() => rawOrders ?? [], [rawOrders]);
+  // Filter orders by status (client-side)
+  const orders = useMemo(() => {
+    if (!rawOrders) return [];
+    if (filter === "All") return rawOrders;
+    
+    return rawOrders.filter((order) => {
+      if (filter === "Paid") return order.status === "Paid";
+      if (filter === "Pending") return order.status === "Pending" || order.status === "Partially Paid";
+      if (filter === "Overdue") {
+        // Overdue if pending for 30+ days
+        const days = Math.floor((Date.now() - new Date(order.created_at).getTime()) / (1000 * 60 * 60 * 24));
+        return order.status === "Pending" && days > 30;
+      }
+      return true;
+    });
+  }, [rawOrders, filter]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -63,7 +91,7 @@ export default function OrdersScreen() {
   );
 
   const handleCreateEntry = useCallback(
-    () => router.push("/new-bill"),
+    () => router.push("/(main)/entries/create"),
     [router],
   );
 
@@ -83,6 +111,36 @@ export default function OrdersScreen() {
         <View className="flex-row items-center justify-between mb-3">
           <Text style={typography.screenTitle}>Entries</Text>
         </View>
+
+        {/* Filter chips */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className="mb-3 -mx-2"
+        >
+          {FILTER_OPTIONS.map((f) => {
+            const active = filter === f.label;
+            return (
+              <TouchableOpacity
+                key={f.label}
+                onPress={() => setFilter(f.label as StatusFilter)}
+                className="px-3 py-1.5 rounded-full mr-2"
+                style={{
+                  backgroundColor: active ? f.color : f.bg,
+                  borderWidth: active ? 0 : 1,
+                  borderColor: colors.border,
+                }}
+              >
+                <Text
+                  className="text-[13px] font-bold"
+                  style={{ color: active ? colors.surface : f.color }}
+                >
+                  {f.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
 
         {/* Pill search bar — always visible */}
         <View

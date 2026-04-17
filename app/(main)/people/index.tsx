@@ -106,7 +106,7 @@ export default function CustomersScreen() {
         const shouldRedirect = values.redirectToEntry ?? redirectAfterAdd;
         if (shouldRedirect) {
           router.push({
-            pathname: "/new-bill",
+            pathname: "/(main)/entries/create",
             params: {
               customer: JSON.stringify(createdPerson),
               next: shouldRedirect ? "share" : undefined,
@@ -140,7 +140,7 @@ export default function CustomersScreen() {
     if (!selected) return;
     // Tap person → amount-first entry flow.
     router.push({
-      pathname: "/new-bill",
+      pathname: "/(main)/entries/create",
       params: { customer: JSON.stringify(selected) },
     });
   };

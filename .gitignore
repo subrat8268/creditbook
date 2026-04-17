@@ -42,12 +42,6 @@ app-example
 /ios
 /android
 
-# BRDs
-CreditBook_TRD_v3.md
-CreditBook_PRD_v3.md
-CreditBook_Master_Roadmap_v3.md
-CreditBook_Stitch_UX_Prompts.md
-
 #designs
 designs/*
 
@@ -55,8 +49,11 @@ designs/*
 Audit.md
 design-audit-results.txt
 GEMINI.md
+AGENTS.md
 
 #agents
+_agents/*
+_agents
 .agents/*
 .agents
 .windsurf/*
@@ -65,6 +62,8 @@ GEMINI.md
 .opencode
 .github/*
 .github
+.obra-superpowers/*
+
 
 #scripts
-scripts/*
+scripts/*.obra-superpowers

@@ -285,7 +285,7 @@ export default function OrderDetailScreen() {
     }
     if (amountSeed && amountSeed > 0) {
       router.push({
-        pathname: "/new-bill",
+        pathname: "/(main)/entries/create",
         params: {
           customer: JSON.stringify(order.customer),
           amount: String(amountSeed),

@@ -10,6 +10,7 @@ import {
   ScrollView,
   StatusBar,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -90,38 +91,50 @@ export default function DashboardScreen() {
         <DashboardHeader
           overdueCount={overdueTotalCount}
           onPressNotifications={() =>
-            router.push("/(main)/notifications" as never)
+            router.push("/(main)/profile" as never)
           }
           onPressSettings={() => router.push("/(main)/profile" as never)}
         />
 
         <View className="px-5">
-          <View className="rounded-[24px] bg-surface border border-border p-6 mb-5">
-            <Text className="text-[12px] font-semibold text-textSecondary uppercase tracking-[2px]">
+          {/* Hero Card - Simple */}
+          <View 
+            className="rounded-[24px] p-6 mb-5"
+            style={{
+              backgroundColor: totalOutstanding > 0 ? colors.danger : colors.primary,
+            }}
+          >
+            <Text className="text-[12px] font-semibold text-white/80 uppercase tracking-[2px]">
               Total Outstanding
             </Text>
-            <Text className="text-[36px] font-black text-textPrimary mt-1">
+            <Text className="text-[40px] font-black text-white mt-1">
               {formatCurrency(totalOutstanding)}
             </Text>
-            <View className="flex-row items-center mt-2">
-              <View
-                className="px-3 py-1.5 rounded-full"
-                style={{ backgroundColor: colors.overdue.bg }}
-              >
-                <Text
-                  className="text-[12px] font-bold"
-                  style={{ color: colors.overdue.text }}
+            
+            {totalOutstanding > 0 && (
+              <View className="flex-row items-center mt-3">
+                <View
+                  className="px-3 py-1.5 rounded-full"
+                  style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
                 >
-                  {overdueTotalCount} overdue
-                </Text>
+                  <Text className="text-[12px] font-bold text-white">
+                    {overdueTotalCount} overdue
+                  </Text>
+                </View>
               </View>
-            </View>
+            )}
+            
+            {totalOutstanding === 0 && (
+              <Text className="text-[14px] text-white/80 mt-2">
+                All clear!
+              </Text>
+            )}
           </View>
 
           {/* Primary CTA — keep the home flow focused */}
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => router.push("/(main)/new-bill" as never)}
+            onPress={() => router.push("/(main)/entries/create" as never)}
             className="flex-row items-center justify-center bg-primary rounded-2xl p-4 mb-6"
           >
             <Plus size={18} color={colors.surface} strokeWidth={2.5} />
@@ -130,61 +143,93 @@ export default function DashboardScreen() {
             </Text>
           </TouchableOpacity>
 
-          {overduePeople.length > 0 ? (
+{overduePeople.length > 0 ? (
             <View className="mb-6">
               <View className="flex-row items-center justify-between mb-3">
                 <Text className="text-[16px] font-extrabold text-textPrimary">
-                  Top overdue people
+                  Top Overdue
                 </Text>
                 <TouchableOpacity
                   onPress={() => router.push("/(main)/people" as never)}
                 >
                   <Text className="text-[13px] font-semibold text-primary">
-                    See all people
+                    See all
                   </Text>
                 </TouchableOpacity>
               </View>
 
-              {overduePeople.map((person: OverduePerson) => {
+              {/* Top 3 only - with quick pay */}
+              {overduePeople.slice(0, 3).map((person: OverduePerson) => {
                 const initials = getInitials(person.name);
                 const avatarBg = getAvatarBg(person.name);
                 return (
-                  <TouchableOpacity
+                  <View
                     key={person.id}
-                    className="flex-row items-center p-4 mb-3 bg-surface rounded-2xl border border-border"
-                    activeOpacity={0.8}
-                    onPress={() =>
-                      router.push({
-                        pathname: "/(main)/people/[customerId]",
-                        params: { customerId: person.id },
-                      } as never)
-                    }
+                    className="flex-row items-center p-3 mb-3 bg-surface rounded-2xl border border-border"
                   >
-                    <View
-                      className="w-12 h-12 rounded-full items-center justify-center mr-3"
-                      style={{ backgroundColor: avatarBg }}
+                    <TouchableOpacity
+                      className="flex-row items-center flex-1"
+                      activeOpacity={0.8}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(main)/people/[customerId]",
+                          params: { customerId: person.id },
+                        } as never)
+                      }
                     >
-                      <Text className="text-[13px] font-bold text-surface">
-                        {initials}
-                      </Text>
-                    </View>
-                    <View className="flex-1">
-                      <Text
-                        className="text-[15px] font-bold text-textPrimary"
-                        numberOfLines={1}
+                      <View
+                        className="w-10 h-10 rounded-full items-center justify-center mr-3"
+                        style={{ backgroundColor: avatarBg }}
                       >
-                        {person.name}
+                        <Text className="text-[12px] font-bold text-surface">
+                          {initials}
+                        </Text>
+                      </View>
+                      <View className="flex-1">
+                        <Text
+                          className="text-[14px] font-bold text-textPrimary"
+                          numberOfLines={1}
+                        >
+                          {person.name}
+                        </Text>
+                        <Text className="text-[12px] font-semibold text-danger">
+                          {formatCurrency(person.balance)}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                    
+                    {/* Quick Payment button */}
+                    <TouchableOpacity
+                      className="px-3 py-2 rounded-lg bg-danger"
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(main)/entries/create",
+                          params: {
+                            customer: JSON.stringify({
+                              id: person.id,
+                              name: person.name,
+                              phone: person.phone,
+                            }),
+                          },
+                        } as never)
+                      }
+                    >
+                      <Text className="text-[12px] font-bold text-surface">
+                        Pay
                       </Text>
-                      <Text className="text-[12px] font-semibold text-danger mt-0.5">
-                        {formatCurrency(person.balance)} • {person.daysSince}{" "}
-                        days overdue
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
+                    </TouchableOpacity>
+                  </View>
                 );
               })}
             </View>
-          ) : null}
+          ) : (
+            /* No overdue - show empty state */
+            <View className="bg-surface rounded-2xl p-6 mb-6 items-center">
+              <Text className="text-[15px] text-textSecondary">
+                No overdue balances
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

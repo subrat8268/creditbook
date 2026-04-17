@@ -2,7 +2,9 @@ import { Stack, useRouter } from "expo-router";
 import {
   ArrowLeft,
   Building2,
+  ChevronRight,
   CreditCard,
+  Download,
   Hash,
   HelpCircle,
   Info,
@@ -52,7 +54,7 @@ interface SectionCardProps {
 
 function SectionCard({ title, children }: SectionCardProps) {
   return (
-    <View className="bg-surface rounded-2xl px-5 pt-4 pb-2 mb-4 shadow-sm border border-border">
+    <View className="px-5 pt-4 pb-2 mb-4 border shadow-sm bg-surface rounded-2xl border-border">
       <Text className="text-[11px] font-bold text-textSecondary uppercase tracking-widest mb-3">
         {title}
       </Text>
@@ -81,7 +83,7 @@ function DetailRow({ Icon, label, value, last, onPress }: DetailRowProps) {
       }`}
     >
       <View
-        className="w-10 h-10 rounded-xl items-center justify-center"
+        className="items-center justify-center w-10 h-10 rounded-xl"
         style={{ backgroundColor: colors.primaryLight }}
       >
         <Icon size={20} color={colors.primary} strokeWidth={2} />
@@ -121,7 +123,7 @@ function SegmentControl<T extends string>({
   onChange,
 }: SegmentControlProps<T>) {
   return (
-    <View className="flex-row border border-border rounded-xl overflow-hidden mb-3 mt-1">
+    <View className="flex-row mt-1 mb-3 overflow-hidden border border-border rounded-xl">
       {options.map((opt) => {
         const isActive = value === opt.value;
         return (
@@ -157,7 +159,7 @@ export default function ProfileScreen() {
 
   if (!profile) {
     return (
-      <SafeAreaView className="flex-1 bg-background items-center justify-center">
+      <SafeAreaView className="items-center justify-center flex-1 bg-background">
         <ActivityIndicator size="large" />
       </SafeAreaView>
     );
@@ -185,11 +187,11 @@ export default function ProfileScreen() {
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* ── Header ── */}
-      <View className="flex-row items-center px-4 py-3 bg-surface border-b border-border">
+      <View className="flex-row items-center px-4 py-3 border-b bg-surface border-border">
         <TouchableOpacity
           onPress={() => router.back()}
           hitSlop={8}
-          className="w-10 items-start justify-center"
+          className="items-start justify-center w-10"
         >
           <ArrowLeft size={24} color={colors.textPrimary} strokeWidth={2} />
         </TouchableOpacity>
@@ -206,7 +208,7 @@ export default function ProfileScreen() {
       >
         {/* ── Avatar ── */}
         <View className="items-center py-4 mb-4">
-          <View className="w-20 h-20 rounded-full bg-success items-center justify-center mb-3 border-4 border-successLight shadow-sm">
+          <View className="items-center justify-center w-20 h-20 mb-3 border-4 rounded-full shadow-sm bg-success border-successLight">
             <Text className="text-[28px] font-black text-surface tracking-tight">
               {getInitials(profile.business_name)}
             </Text>
@@ -223,7 +225,7 @@ export default function ProfileScreen() {
           <TouchableOpacity
             onPress={() => router.push("/(main)/profile/edit" as never)}
             activeOpacity={0.8}
-            className="mt-4 py-2 px-8 rounded-full border-2 border-primary"
+            className="px-8 py-2 mt-4 border-2 rounded-full border-primary"
           >
             <Text className="text-[14px] font-bold text-primary">
               Edit Profile
@@ -268,7 +270,7 @@ export default function ProfileScreen() {
           <View className="flex-row items-center justify-between py-2 mb-2">
             <View className="flex-row items-center gap-3">
               <View
-                className="w-10 h-10 rounded-xl items-center justify-center"
+                className="items-center justify-center w-10 h-10 rounded-xl"
                 style={{ backgroundColor: colors.primaryLight }}
               >
                 <Languages size={20} color={colors.primary} strokeWidth={2} />
@@ -336,12 +338,22 @@ export default function ProfileScreen() {
           />
         </SectionCard>
 
+        {/* ── Export Data ── */}
+        <SectionCard title="DATA">
+          <DetailRow
+            Icon={Download}
+            label="Export All Data"
+            value="CSV backup"
+            onPress={() => router.push("/(main)/export")}
+          />
+        </SectionCard>
+
         {/* ── Sign Out ── */}
-        <View className="bg-surface rounded-2xl shadow-sm border border-border mt-2 mb-4">
+        <View className="mt-2 mb-4 border shadow-sm bg-surface rounded-2xl border-border">
           <TouchableOpacity
             onPress={handleSignOut}
             activeOpacity={0.8}
-            className="flex-row items-center justify-center py-4 gap-2"
+            className="flex-row items-center justify-center gap-2 py-4"
           >
             <LogOut size={20} color={colors.danger} strokeWidth={2.5} />
             <Text className="text-[16px] font-extrabold text-danger">

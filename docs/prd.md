@@ -1,9 +1,17 @@
 # KredBook – Product Requirements Document
 
-> **Version**: 2.1
-> **Last Updated**: April 9, 2026
-> **Status**: Phase 3 shipped — see docs/STATUS.md for current implementation state
+> **Version**: 3.0
+> **Last Updated**: April 17, 2026
+> **Status**: Simplified for focus — credit tracking only
 > **Owner**: KredBook Product Team
+
+---
+
+## Product Identity
+
+> **KredBook is a simple digital khata** — a mobile-first credit ledger for small businesses in India.
+> 
+> **Core philosophy**: Replace the physical notebook with a simple app. No complexity, no learning curve, no internet required.
 
 ---
 
@@ -12,23 +20,18 @@
 1. [Product Overview](#1-product-overview)
 2. [Target Users](#2-target-users)
 3. [Key Features](#3-key-features)
-   - 3.1 Customer Credit Ledger
-   - 3.2 Payment Recording
-   - 3.3 Bill Creation
-   - 3.4 Supplier Management
-   - 3.5 Net Position Dashboard
-   - 3.6 Transaction History
-   - 3.7 Payment Reminders
-   - **3.8 Offline-First Architecture** _(new)_
-   - **3.9 Localization** _(new)_
+   - 3.1 People & Credit Ledger
+   - 3.2 Entry Recording
+   - 3.3 Payment Tracking
+   - 3.4 Financial Overview
+   - 3.5 Offline-First Architecture
+   - 3.6 Localization (EN/HI)
 4. [Core Screens](#4-core-screens)
 5. [UX Principles](#5-ux-principles)
-6. [Design System Summary](#6-design-system-summary)
+6. [What's NOT in Scope](#6-whats-not-in-scope)
 7. [Technology Stack](#7-technology-stack)
-8. [Performance Requirements](#8-performance-requirements)
-9. [Product Roadmap](#9-product-roadmap) _(v1.0 → v1.1 → v1.2 → v2.0)_
-10. [Success Metrics](#10-success-metrics)
-11. [Vision](#11-vision)
+8. [Product Roadmap](#8-product-roadmap)
+9. [Success Metrics](#9-success-metrics)
 
 ---
 
@@ -38,7 +41,7 @@
 
 Hundreds of millions of small business owners across India still track customer credit using **physical khata books** — handwritten ledgers that are fragile, error-prone, and invisible to any digital workflow.
 
-This creates compounding problems at scale:
+This creates compounding problems:
 
 | Problem                           | Impact                                |
 | :-------------------------------- | :------------------------------------ |
@@ -46,462 +49,203 @@ This creates compounding problems at scale:
 | **Manual calculation errors**     | Incorrect balances, trust breakdown   |
 | **No visibility into total dues** | Owners cannot prioritize collection   |
 | **No payment confirmation trail** | Disputes with no audit evidence       |
-| **Delayed payment collection**    | Cash flow deterioration               |
 
 ### The Solution
 
-KredBook provides a **simple digital ledger with real-time balance visibility, payment tracking, and one-tap bill generation.**
+KredBook is a **simple digital khata** — a mobile app that replaces the physical notebook.
 
-It replaces the khata book with a mobile experience that requires no accounting knowledge, no training, and no internet dependency for core recording operations.
+- Add a person (customer)
+- Record what they owe (entry)
+- Record payments they make
+- See who owes what — instantly
+
+**That's it.** No product catalog, no GST calculations, no supplier ledger, no complexity.
 
 ### Product Goal
 
-> Create the simplest and most reliable digital credit ledger for small businesses.
+> **The simplest digital khata for small businesses.**
 
-Every product decision is evaluated against this goal. Features that add complexity without proportionally improving reliability or simplicity are not shipped.
+Every feature is evaluated against this question: "Is this needed to track credit between two people?" If no, it's not shipped.
 
 ### Core Value Propositions
 
 - **Instant balance visibility** — Know exactly who owes what at any moment
-- **Fast transaction recording** — Bill or payment recorded in under 60 seconds
-- **Reliable audit trail** — Sequential bills, immutable records, payment history
-- **Supplier-side tracking** — Balance what you're owed vs. what you owe
+- **Fast entry recording** — Entry or payment in under 30 seconds
+- **Reliable audit trail** — Sequential entries, payment history, shareable PDFs
+- **Works offline** — No internet needed for core recording
 
 ### Business Model
 
-> **KredBook is free for all users.** No paywalls, no feature gating, no subscription required.
+> **KredBook is free for all users.** No paywalls, no subscriptions.
 
-All core features — credit tracking, billing, payments, supplier management, PDF export, and reminders — are available to every business at zero cost. The product succeeds by becoming indispensable through daily use, not by locking features behind subscriptions.
-
-If the app grows significantly, optional value-add features (multi-user access, advanced analytics, custom invoice branding) may be considered as additive paid upgrades. **Core ledger functionality will never be gated.**
+If the app grows, optional paid features may be added. **Core credit tracking will always be free.**
 
 ---
 
 ## 2. Target Users
 
-### 2.1 Retailers
+### Who Uses KredBook
 
-**Description**: Shop owners who sell goods directly to local customers and extend credit on purchases.
+Anyone who extends credit to customers and wants to track it digitally:
 
-**Examples**: Kirana stores, medical shops, hardware shops, clothing retailers
+- **Kirana / General Stores** — Track credit given to regular customers
+- **Medical Shops** — Medicine on credit, track payments
+- **Small Shops** — Any business with repeat customers on credit
+- **Service Providers** — Repair shops, salons, tiffin services
 
-**Primary Jobs To Be Done**:
-
-- Record what each customer owes after each sale
-- Track partial payments made over multiple visits
-- Send reminders to customers with outstanding dues
-- Generate a printed or PDF bill for record-keeping
-
-**Pain Points**:
-
-- Forgetting to record a transaction in the khata
-- Customers disputing balances on old entries
-- No way to know total recoverable debt across all customers
-
----
-
-### 2.2 Wholesalers
-
-**Description**: Distributors who supply goods to multiple retailers in bulk and manage complex credit cycles.
-
-**Examples**: FMCG distributors, vegetable/grain wholesalers, textile suppliers
+**Single-user app** — Designed for one person managing their own customers. Not a team app.
 
 **Primary Jobs To Be Done**:
 
-- Track credit extended to each retail buyer
-- Record deliveries with item-level detail
-- Manage transport (loading) charges separately from goods
-- Monitor which retailers have overdue balances
+1. Add a person (customer)
+2. Record what they owe (entry)  
+3. Record what they paid (payment)
+4. See who owes what — instantly
 
-**Pain Points**:
+**Pain Points Solved**:
 
-- High transaction volume makes manual tracking unreliable
-- Multiple partial payments on a single delivery are hard to reconcile
-- No consolidated view of net receivables across all buyers
-
----
-
-### 2.3 Small Businesses
-
-**Description**: Service providers and specialty retailers who extend informal credit to regular customers.
-
-**Examples**: Auto repair shops, pharmacies, tiffin services, building material suppliers
-
-**Primary Jobs To Be Done**:
-
-- Record service charges and dues against named customers
-- Track payments received in cash, UPI, or cheque
-- Identify customers who have not paid in 30+ days
-
-**Pain Points**:
-
-- No consistent format for tracking; different staff record differently
-- Cannot distinguish between cash paid and credit still outstanding
+- Lost notebook = lost records → Digital backup, works offline
+- Mental math errors → Automatic balance calculation
+- "Who owes me most?" → Sorted list, instant visibility
+- Disputes → Payment history proof
 
 ---
 
 ## 3. Key Features
 
-### 3.1 Customer Credit Ledger
+### 3.1 People & Credit Ledger
 
-Track the complete credit relationship with each customer from the first transaction.
+Track credit relationship with each person.
 
-- Lifetime transaction history per customer (bills + payments in one unified feed)
-- Running balance updated automatically on every transaction
-- Balance color-coded by state: green (paid/advance), amber (pending), red (overdue)
-- Customer-level overdue flag when balance is unpaid for 30+ days
-
----
-
-### 3.2 Payment Recording
-
-Record multiple payment types against any open bill or customer balance.
-
-- Supported modes: **Cash, UPI, NEFT, Demand Draft, Cheque**
-- Partial payment support — record any amount without closing the bill
-- Mark Full Paid — one tap to settle the entire outstanding balance
-- Payment history visible per customer and per bill
+- Add person by name + phone (optional)
+- Quick inline add on People screen
+- Balance updated automatically on every entry/payment
+- Color-coded: green (advance/paid), amber (pending), red (overdue)
+- Overdue flag when unpaid for 30+ days
 
 ---
 
-### 3.3 Bill Creation
+### 3.2 Entry Recording
 
-Generate itemized bills with professional formatting suitable for WhatsApp sharing or PDF printing.
+Record what a person owes — quick amount-first flow.
 
-- Product catalog with real-time search
-- Variant support (size, weight, unit) with distinct pricing
-- Dynamic rate editing per bill (for deal pricing)
-- **GST %** applied to item total (configurable per bill)
-- **Loading Charge** added post-tax (non-taxable transport/delivery fee)
-- Previous balance pulled automatically at bill creation
-- Sequential bill IDs (`INV-001`, `INV-002`) with custom prefix support
-- PDF output with business name, GSTIN, UPI QR, and bank details
+- Enter amount only (no product catalog)
+- Quick note (optional, e.g., "Rice", " Medicines")
+- Previous balance shown automatically
+- Share as PDF via WhatsApp
 
 ---
 
-### 3.4 Supplier Management
+### 3.3 Payment Tracking
 
-Track what the business owes to its own suppliers and distributors.
+Record payments against outstanding balance.
 
-- Supplier directory with name, phone, address, and bank details
-- Record deliveries with itemized rows (item × qty × rate), loading charge, and advance paid
-- Record payments made to suppliers with mode and notes
-- Balance owed = `SUM(deliveries)` − `SUM(payments made)` per supplier
-- Suppliers sorted by highest balance owed
-
----
-
-### 3.5 Net Position Dashboard
-
-Give the business owner a single-screen financial health summary.
-
-- **Customers Owe Me** (green): sum of all positive customer balances
-- **I Owe Suppliers** (red): sum of all outstanding supplier balances
-- **Net Position** (green if positive, amber if negative): `receivable − payable`
-- Dashboard mode toggle: Seller / Distributor / Both — controls which cards appear
-- Recent activity feed with status chips and customer/supplier names
+- Supported modes: **Cash, UPI, Bank Transfer**
+- Partial payments — record any amount
+- Payment history per person
+- Mark Full Paid on one tap
 
 ---
 
-### 3.6 Transaction History
+### 3.4 Financial Overview
 
-Full chronological activity log at both customer and account level.
+Dashboard shows total outstanding.
 
-- Unified feed: bills and payments on the same timeline, newest first
-- Date-group separators (Today / Yesterday / date)
-- Running balance shown per transaction row
-- Filterable by type: All / Bills / Payments
-
----
-
-### 3.7 Payment Reminders
-
-Allow sending payment reminders to customers without leaving the app.
-
-- One-tap WhatsApp reminder with pre-filled message including customer name, balance, and business name
-- Deep link to WhatsApp via `Linking.openURL('whatsapp://send?text=...')`
-- Reminder visible from Customer Detail screen and Customer List screen
+- One number: Total Outstanding
+- List of top overdue people
+- One-tap to add new entry
 
 ---
 
-### 3.8 Offline-First Architecture
+### 3.5 Offline-First Architecture
 
-The app must function without an internet connection. Recording a bill or payment must never fail due to network conditions.
+All data stored locally, syncs when online.
 
-To achieve extreme performance and offline reliability without the heavy overhead of WatermelonDB / SQLite, KredBook v1.0 uses an **MMKV + React Query hybrid approach**.
-
-#### 3.8.1 Read Strategy (React Query)
-
-- All `useQuery` hooks (Customers, Orders, Products, Suppliers) have extended `staleTime` and `gcTime` to maximise cache reuse.
-- Queries are persisted to disk using `@tanstack/react-query-persist-client` with an MMKV storage persister, enabling instant cold boots even while offline.
-- After the first network sync, all subsequent reads are served from the TanStack Query cache — no network round-trip required.
-- Stale data is refetched in the background when the app regains connection.
-
-#### 3.8.2 Write Strategy (MMKV Mutation Queue)
-
-- When offline, `useMutation` calls intercept network failures and push the mutation payload (e.g., `{ operation: 'INSERT_ORDER', payload: {...} }`) into a local Zustand store backed by `react-native-mmkv` (`@kredbook/sync-queue`).
-- **Optimistic UI**: The UI updates instantly as if the mutation succeeded (e.g., Dashboard balance increases immediately, newly created Customer appears in the list, recent bill shows in the Orders feed). This gives the user instant feedback and maintains perceived speed.
-- **Background Sync**: A network listener (via `@react-native-community/netinfo`) watches for connection restoration. On reconnect, the queue is dequeued **sequentially** (FIFO) and each mutation is replayed against Supabase in order.
-- **Conflict Resolution**: Last-write-wins per entity. Sufficient for v1.0 (single user per account). If a server-side update occurred while the user was offline, the local write overwrites it upon sync.
-- **UI Feedback**: A dismissible sync status banner appears at the top of the screen in three states:
-  1. **Offline (red)**: "No internet — entries are saved locally" — shows queued entry count
-  2. **Syncing (amber)**: "Syncing X entries..." — spinner animation
-  3. **Synced (green)**: "All entries synced" — auto-dismisses after 2 seconds
-
-#### 3.8.3 Authentication Architecture
-
-- Supabase GoTrue client handles Email/Password and Google OAuth flows.
-- Session tokens are securely stored in the device's encrypted keychain (via `@kredbook/secure-storage`).
-- Token refresh occurs transparently — if expired, GoTrue refreshes it in the background without user intervention.
-- Sign-out clears the session token from secure storage and resets Zustand auth state.
-
-#### 3.8.4 Implementation Files
-
-- `src/lib/syncQueue.ts` — MMKV queue management (enqueue, dequeue, flush, state)
-- `src/hooks/useNetworkSync.ts` — Network listener + background replay logic
-- `src/components/ui/SyncStatusBanner.tsx` — 3-state sync indicator
-- `src/services/supabase.ts` — Enhanced with error → queue fallback
+- Works without internet
+- Entries saved locally when offline
+- Auto-sync when connection returns
+- No data loss
 
 ---
-
-### 3.9 Localization
-
-English and Hindi are both supported from day one.
-
-- All UI strings are externalised to `src/i18n/en.ts` and `src/i18n/hi.ts`
-- Language preference is persisted to AsyncStorage and restored on app start via `languageStore`
-- Language toggle is available in Profile & Settings screen
-- No string literal is permitted directly in component JSX — all copy must go through `i18next` `t()` calls
 
 ---
 
 ## 4. Core Screens
 
-### 4.1 Welcome / Onboarding
+### Navigation Structure
 
-**Purpose**: Introduce the product and complete initial setup.
+5 tabs at the bottom:
 
-**Steps**:
+1. **Home** — Dashboard with total outstanding
+2. **People** — List of all people (customers)
+3. **Add** (center FAB) — Quick add entry
+4. **Entries** — List of all entries/bills
+5. **Profile** — Settings, language, business details
 
-1. Email/password sign-up **or** Google OAuth — no phone OTP in v1.0
-2. Role selection (Retailer / Wholesaler / Small Business)
-3. Business setup (business name, GSTIN, UPI ID, bill prefix, bank details)
-4. Ready screen — summary of setup with nudge to add first customer
-
-**Exit condition**: `profiles.onboarding_complete = true`; subsequent logins skip onboarding.
-
----
-
-### 4.2 Role Selection
-
-**Purpose**: Determine which product surfaces to activate.
-
-**Options**:
-
-| Role               | Dashboard Mode | Bottom Tab Bar                                 |
-| :----------------- | :------------- | :--------------------------------------------- |
-| **Retailer**       | Seller         | Home · Customers · ➕ New Bill · Orders · More |
-| **Wholesaler**     | Distributor    | Home · Customers · ➕ New Bill · Orders · More |
-| **Small Business** | Seller         | Home · Customers · ➕ New Bill · Orders · More |
-
-> **Suppliers** is accessible from the **More** bottom sheet on all roles. It is not a persistent tab. This keeps the tab bar focused on the highest-frequency daily actions.
-
-Role maps to `dashboard_mode` on the `profiles` table and controls which net-position cards appear on the dashboard.
+More sheet (slide up from tab bar):
+- Profile Settings
+- Export Data (CSV)
+- Sign Out
 
 ---
 
-### 4.3 Home Dashboard
+### 4.1 Dashboard (Home Tab)
 
-**Purpose**: Single-screen financial health snapshot.
-
-**Contents**:
-
-- Business name + avatar header
-- **Hero card**: gradient net receivable amount; in `dashboard_mode = 'both'`, splits into a green "YOU RECEIVE" panel (`#F0FDF4`) + red "YOU OWE" panel (`#FEF2F2`) + net position row
-- **Action bar**: "View Report" (navigates to Financial Position screen at `/(main)/reports`) / "Send Reminder" quick actions
-- Active Buyers count + Overdue count stat cards
-- Recent Activity feed (last 5 transactions with status chips)
-- FAB for creating a new bill
+- Total Outstanding amount (hero)
+- "X overdue" badge
+- Add Entry button
+- Top overdue people list
+- Tap person → View ledger / Record payment
 
 ---
 
-### 4.4 Customers Screen
+### 4.2 People Screen
 
-**Purpose**: Browse and manage all customers.
-
-**Contents**:
-
-- Pill-shaped search bar
-- Filter tabs: All / Overdue / Paid / Pending
-- Customer cards with:
-  - Initials avatar (deterministic color per name)
-  - Balance right-aligned and color-coded
-  - Status badge (OVERDUE / PENDING / PAID / ADVANCE)
-- FAB: add new customer
-- Secondary FAB: import from phone contacts
+- Search bar
+- Inline add: Name + Phone → Add Person
+- Person cards: Name, phone, balance (color-coded)
+- Tap card → Open ledger / Create entry
 
 ---
 
-### 4.5 Customer Detail Screen
+### 4.3 Entry Detail (from Entries list)
 
-**Purpose**: Full financial history and actions for a single customer.
-
-**Contents**:
-
-- Back navigation + customer name + last-active subtitle
-- Hero card: Total Balance Due (gradient), overdue flag, last bill info
-- Quick action cards: New Bill / Received / Send Reminder
-- Transaction feed with sub-tabs (All / Bills Given / Payments)
-- Date-group separators, running balance per row
-- Download Statement footer (PDF via `expo-print` + `expo-sharing`)
-- Record Payment bottom-sheet modal
+- Entry number + date
+- Person name + phone
+- Amount + status (Paid/Pending)
+- Payment history
+- Send Entry (PDF)
+- Record Payment button
 
 ---
 
-### 4.6 New Bill Screen
+### 4.4 Profile Screen
 
-**Purpose**: Create an itemized bill for a customer.
-
-**Contents** (v3.9):
-
-- Customer selector with previous balance auto-populated from RPC `get_customer_previous_balance`
-- **Product picker** (stay-open sheet): search products, tap to add; variant sub-view renders inline in same sheet with Back button; "Done" button for explicit close; 1.2 s checkmark flash confirms each add
-- **Smart cart dedup**: tapping the same product/variant increments quantity instead of adding a duplicate row
-- **Editable rates**: each `OrderItemCard` row has an inline `TextInput` for rate override (commits on blur, reverts on invalid input)
-- GST % and loading charge inputs
-- Live total breakdown: Items + Tax + Loading + Previous Balance = Grand Total
-- Two action buttons: **"Save Bill"** (outline, saves to DB only) · **"Save & Share"** (solid, saves → real `bill_number` → PDF → native share sheet via `expo-sharing`)
-- Bill PDF is **never generated before a successful DB save** — invoice number is always the real sequential `bill_number`
+- Business name (editable)
+- Language toggle (EN/HI)
+- Sign Out
 
 ---
 
-### 4.7 Suppliers Screen
+## 5. What's NOT in Scope
 
-**Purpose**: Manage all supplier relationships and outstanding balances.
+> These features existed in earlier versions but are **removed** to keep the app simple.
 
-**Contents**:
+| Feature | Why Removed |
+|---------|-----------|
+| **Supplier Management** | Adds complexity, not needed for basic credit tracking |
+| **Product Catalog** | Quick amount entry is simpler than product picker |
+| **GST Calculations** | Most small businesses don't need invoicing |
+| **Reports/Dashboards** | One number (total outstanding) is enough |
+| **Multi-user/Team** | Single-user app for now |
+| **Push Notifications** | Future feature, not core |
+| **WhatsApp Reminders** | Future feature, not core |
 
-- Supplier list sorted by highest balance owed
-- Balance card per supplier (red)
-- Record Delivery modal (itemized rows, loading charge, advance paid)
-- Record Payment Made modal (amount, mode, notes)
-- Supplier detail: balance card, delivery history, bank details
-
----
-
-### 4.8 Financial Position Screen
-
-**Purpose**: Aggregate financial health view.
-
-**Contents**:
-
-- Customers Owe Me card (green)
-- I Owe Suppliers card (red)
-- Net Position card (green/amber)
-- Only shown if `dashboard_mode = 'both'`; seller/distributor views show subset
+> **Rule**: If it's not needed to track credit between two people, it's not in scope.
 
 ---
 
-### 4.9 Financial Position Screen
-
-**Route**: `/(main)/reports`  
-**Purpose**: Dedicated full-screen financial breakdown; accessible from the "View Report" button in the Dashboard action bar.
-
-**Contents** (v3.9):
-
-- Header with back navigation + title "Financial Position" + today's date subtitle
-- **`StatCard` — Customers Owe Me**: green background, `colors.primary` amount text, `TrendingUp` icon
-- **`StatCard` — I Owe Suppliers**: uses `colors.supplierPrimary` (`#DB2777`) for amount text — all colors via theme tokens
-- **`NetCard`**: uses `gradients.netPosition` (`#0F172A → #334155`) background via `LinearGradient`; white amount text
-- Loading spinner and error state handled gracefully
-
----
-
-### 4.10 Export Data Screen
-
-**Route**: `/(main)/export` (hidden tab; pushed from ProfileScreen)  
-**Purpose**: Export business data as CSV for external analysis.
-
-**Contents** (v3.6 redesign):
-
-- Custom header with back button + “Export Data” title + subtitle
-- **Date Filter card** (FILTER BY DATE — OPTIONAL): `DateInput` sub-components for From / To; “All time” and “This month” preset chips
-- **Export Type card** (CHOOSE EXPORT TYPE): 4 `ExportRow` sub-components
-  - Orders & Bills (green pill)
-  - Payments Received (green pill)
-  - Customer Balances (blue pill)
-  - Supplier Purchases (amber pill)
-- Each row has a loading state; `loadingKey` prevents concurrent exports
-- Info banner (blue border): explains format + date range behaviour
-- “KredBook Export” footer
-
----
-
-### 4.11 Orders List Screen
-
-**Route**: `/(main)/orders/` (tab root — no back arrow)  
-**Purpose**: Browse and filter all bills created by the vendor.
-
-**Contents** (v3.7):
-
-- `SafeAreaView edges={['top']}` with `#F6F7F9` background
-- **Header row**: "Orders" title (22 sp bold, `#1C1C1E`) + Search icon — tap to expand a collapsible `SearchBar`; tap again to collapse and clear
-- **Filter chips** (horizontal `ScrollView`, 32 dp height, pill radius):
-  - All · Paid · Partial · Pending · Overdue
-  - Active chip: `#22C55E` background/border, white text
-  - Inactive: `#F6F7F9` bg, `#E5E7EB` border, `#6B7280` text
-  - **"Overdue"** is a client-side sub-filter — API fetches Pending; `useMemo` filters `daysSince(created_at) > 30`
-  - **Sort chip** at end of row: opens BottomSheet with Newest / Oldest / High Amount / Low Amount options
-- **Order Card** (white, `radius:12`, `mx:16`, `mb:12`, `elevation:2`):
-  - Left: 44 dp initials avatar + customer name (15 sp bold) + bill number (13 sp `#6B7280`)
-  - Right: `₹amount` (17 sp bold) + status chip (PAID / PARTIAL / PENDING / OVERDUE)
-  - Bottom row: formatted date e.g. "15 Feb 2026" (13 sp `#6B7280`)
-- **Empty state**: "No orders yet" message + "Create Bill" green CTA button
-- **FAB**: 56 dp circle, `#2563EB`, `+` icon, bottom-right
-- **Performance**: `getItemLayout` (108 dp/item), `windowSize:10`, `removeClippedSubviews`, `useCallback` on `renderItem`
-
----
-
-### 4.12 Order Detail Screen
-
-**Route**: `/(main)/orders/[orderId]` (stack-pushed — back arrow, dynamic title)  
-**Purpose**: Full bill view with payment recording and WhatsApp / PDF sharing.
-
-**Contents** (v3.7):
-
-- Stack header: `Order #<bill_number>` (dynamic, from loaded order data)
-- `SafeAreaView edges={['bottom']}` — floats action bar above tab bar
-
-**1. Customer Card** (white, `radius:16`):
-
-- 48 dp initials avatar + customer name (17 sp bold) + phone (13 sp `#6B7280`)
-- Previous Balance label + amount — red if `> 0`, green `#22C55E` if `= 0`
-
-**2. Items Card** (top-rounded `radius:16`, flush-joined with Bill Summary below):
-
-- Section label: "ITEMS" (13 sp uppercase `#6B7280`)
-- Each row: product name (15 sp) · `qty × ₹price` (13 sp `#6B7280`) · `₹subtotal` (15 sp bold)
-
-**3. Bill Summary Card** (bottom-rounded, top flush — joined to Items):
-
-- Subtotal / GST (shown only if `tax_percent > 0`) / Loading Charge (shown only if `> 0`) / Previous Balance (shown only if `> 0`, in `#E74C3C`)
-- Divider then Grand Total (22 sp bold) + status chip right-aligned
-
-**4. Payment History Card** (white, `radius:16`):
-
-- Sorted oldest → newest; running "Remaining: ₹X" below each payment
-- Mode chips: Cash=green, UPI=blue, NEFT=purple, Draft=amber, Cheque=sky
-- Payment amounts in `#22C55E`; empty state: "No payments recorded yet"
-
-**5. Fixed Action Bar** (absolute bottom, white bg, `borderTop: #E5E7EB`):
-
-- **"Send Bill"** (outline green): `generateBillPdf()` → `expo-sharing` native share sheet
-- **"Record Payment"** (filled green): opens `RecordCustomerPaymentModal` (uses `useRecordPayment` hook — no direct API calls in modal); hidden when `status === "Paid"`
-- On modal success: hook invalidates `orderKeys.all`, `orderDetail`, `payments`, `customers`, `customerDetail`, `dashboard` caches
-
----
-
-## 5. UX Principles
+## 6. UX Principles
 
 ### 5.1 Simplicity
 
@@ -585,63 +329,55 @@ Full design system documentation is available in [`docs/design-system.md`](./des
 
 ---
 
-## 8. Performance Requirements
+## 7. Technology Stack
 
-| Requirement               | Target                             | Measurement                                                      |
-| :------------------------ | :--------------------------------- | :--------------------------------------------------------------- |
-| **App cold launch**       | < 2 seconds                        | Time from tap to interactive home screen                         |
-| **Transaction recording** | Feels instant                      | Optimistic UI — row appears before API responds                  |
-| **Offline support**       | Core recording works offline       | Bills and payments queue locally; sync on reconnect              |
-| **PDF generation**        | < 3 seconds                        | From "Download Statement" tap to share sheet                     |
-| **List rendering**        | 60 fps scroll on mid-range Android | FlatList with `keyExtractor`, `removeClippedSubviews`, windowing |
-| **API response**          | < 500ms for all read queries       | Supabase indexed queries; TanStack Query caching                 |
-
----
-
-## 9. Product Roadmap
-
-### v1.0 — Foundation _(First Release, Android)_
-
-> **Scope locked.** Everything in §3 Key Features is in scope. Nothing else.
-
-| Area                | Shipped                                             |
-| :------------------ | :-------------------------------------------------- |
-| Authentication      | Email/Password + Google OAuth                       |
-| Platform            | Android only                                        |
-| Navigation          | Home · Customers · New Bill FAB · Orders · More     |
-| Core ledger         | Customer credit, bill creation, payment recording   |
-| Supplier management | Deliveries, payments made, balance tracking         |
-| Product catalog     | Full inventory with variants and category filters   |
-| PDF generation      | Bill PDF + Net Position report PDF                  |
-| Reminders           | WhatsApp deep-link reminders                        |
-| Offline-first       | MMKV write queue + sync status banner               |
-| Localization        | English + Hindi                                     |
-| Export              | CSV export — Orders, Payments, Customers, Suppliers |
+| Layer                    | Technology              | Notes                    |
+| :----------------------- | :---------------------- | :---------------------- |
+| **App Framework**        | React Native + Expo     | Cross-platform mobile  |
+| **Routing**              | Expo Router             | File-based routing     |
+| **Styling**              | NativeWind             | Tailwind CSS          |
+| **Backend / DB**         | Supabase               | PostgreSQL + Auth   |
+| **State**                | Zustand                | Local state          |
+| **Server State**         | TanStack Query        | Cache + offline      |
+| **PDF**                  | expo-print              | Shareable PDFs       |
+| **Offline**               | MMKV + Sync Queue     | Works without internet|
 
 ---
 
-### v1.1 — Delight _(~6–8 weeks post-launch)_
+## 8. Product Roadmap
 
-Improvements driven by early user feedback and Play Store reviews.
+### v3.0 — Simple Digital Khata
 
-| Feature                        | Description                                                      |
-| :----------------------------- | :--------------------------------------------------------------- |
-| **Push notifications**         | Local scheduled reminders for overdue customers                  |
-| **WhatsApp delivery receipts** | Detect if reminder was read (WhatsApp Business API read receipt) |
-| **Bill PDF improvements**      | Business logo upload, bill footer custom message                 |
-| **Play Store rating prompt**   | In-app NPS + review nudge after 5th bill created                 |
+Current simplified version.
+
+- ✅ People management
+- ✅ Quick entry recording
+- ✅ Payment tracking
+- ✅ Dashboard
+- ✅ Offline-first
+- ✅ EN/HI localization
+- ✅ CSV Export
+
+### Future Features (Not in Scope v3.0)
+
+To be considered based on user feedback:
+
+| Feature | Description |
+|---------|-------------|
+| WhatsApp Reminders | One-tap reminder |
+| Push Notifications | Overdue alerts |
+| UPI Payments | Collect via UPI |
+| Business Logo | Custom PDF branding |
 
 ---
 
-### v1.2 — Growth _(~3 months post-launch)_
+## 9. Success Metrics
 
-| Feature                     | Description                                                                   |
-| :-------------------------- | :---------------------------------------------------------------------------- |
-| **UPI payment collection**  | Generate UPI QR / deep link embedded in bill PDF                              |
-| **Multi-user staff access** | Owner + billing-staff roles; owner has full access, staff can record only     |
-| **iOS release**             | App Store submission after Android stability is proven                        |
-| **Weekly digest**           | Monday summary: top overdue customers, collection score, week-over-week trend |
-| **Phone OTP login**         | Optional alongside email — for users who prefer mobile-number sign-in         |
+| Metric | Target |
+|--------|--------|
+| Daily Active Users | Track growth |
+| Transactions/user/day | ≥ 3 |
+| Day-7 retention | ≥ 40% |
 
 ---
 

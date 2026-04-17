@@ -1,34 +1,84 @@
 # KredBook — Current Status
 
-**Last Updated:** April 9, 2026
+**Last Updated:** April 17, 2026
 
-## Phase Summary
+## Version
 
-- **Phase 1 — Shared Ledger:** ✅ Complete
-- **Phase 2 — Clean Architecture:** ✅ Complete
-- **Phase 3 — Advanced Features:** ✅ Complete
-- **Phase 4 — Simplification (Phase 1):** ✅ Complete
-- **Phase 4 — Simplification (Phase 2):** 🚧 In Progress
+**KredBook v3.0** — Simple Digital Khata
 
-## Highlights (Current Build)
+---
 
-- Shared public ledger with WhatsApp links and phone-based linking
-- Unified parties table (customers + suppliers)
-- Quick bill creation (amount-first) + edit bill flow with atomic updates
-- Business profile edit screen + logo upload
-- Product image upload + storage policies
-- Payment reminders (daily schedule, snooze, local activity log)
-- Public ledger enhancements (last updated, call/WhatsApp)
-- Phase 4 Simplification: Home/People/Add/Entries/Profile nav, amount-first add, minimal filters
+## What's Implemented
 
-## Database Notes
+### Core Features (v3.0)
 
-- Atomic order edit RPC: `update_order_transaction`
-- Orders status values: `Pending`, `Partially Paid`, `Paid`
-- Legacy tables dropped: `customers`, `suppliers`
-- Storage buckets: `product-images`, `business-logos`
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Authentication | ✅ Working | Email + Google OAuth |
+| Dashboard | ✅ Working | Total outstanding + overdue list |
+| People/Customers | ✅ Working | Add, list, search |
+| Entries | ✅ Working | Create, list, detail |
+| Payments | ✅ Working | Record, history |
+| Profile | ✅ Working | Business name, language, sign out |
+| Offline-first | ✅ Working | MMKV queue, auto-sync |
+| Localization | ✅ Working | EN/HI toggle |
+| Export | ✅ Working | CSV export |
 
-## Runbooks
+### Navigation Structure
 
-- `docs/PHASE_3_MCP_RUNBOOK.md` (DB changes via Gemini MCP)
-- `docs/EDIT_BILL_TEST_CHECKLIST.md` (manual verification)
+- **5 tabs**: Home → People → Add (FAB) → Entries → Profile
+- **More sheet**: Profile Settings, Export, Sign Out
+
+---
+
+## What's NOT in Scope v3.0
+
+| Feature | Status | Reason |
+|---------|--------|--------|
+| Suppliers | ❌ Removed | No longer needed |
+| Products Catalog | ❌ Removed | Quick amount only |
+| Reports | ❌ Removed | Single number is enough |
+| GST | ❌ Removed | Not for small businesses |
+| Multi-user | ❌ Removed | Single user app |
+| Notifications | ❌ Removed | Future feature |
+
+---
+
+## Architecture Notes
+
+- Routes use `/entries/` (NOT `/orders/`)
+- Main tab FAB points to `/entries/create`
+- "People" = Customers (unified)
+- Quick amount-first entry (no product picker)
+
+---
+
+## Updates Required
+
+When making changes to the product:
+
+1. **Update this STATUS.md** with feature status
+2. **Update PRD** if scope changes
+3. Keep documentation in sync with implementation
+
+**Rule:** If it's not needed to track credit between two people, it's not in scope.
+
+---
+
+## Documentation Rule
+
+> **When any major change is made to the product, update this document.**
+
+**What to update:**
+
+| If you... | Then update... |
+|----------|----------------|
+| Add a new feature | PRD §3 (Key Features) + STATUS |
+| Remove a feature | PRD §6 (What's NOT in Scope) + STATUS |
+| Change navigation | PRD §4 (Core Screens) + STATUS |
+| Change architecture | ARCHITECTURE.md + STATUS |
+
+**Always keep:**
+- This STATUS.md in sync with implementation
+- PRD aligned with product scope
+- Architecture docs match code

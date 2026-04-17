@@ -113,7 +113,7 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Tab 5 — Profile */}
+      {/* Tab 5 — Profile (includes Export + Settings) */}
       <Tabs.Screen
         name="profile"
         options={{
@@ -129,12 +129,7 @@ export default function TabLayout() {
       />
 
       {/* Hidden routes — accessible via router.push but not shown in the tab bar */}
-      <Tabs.Screen name="more" options={{ href: null }} />
       <Tabs.Screen name="export" options={{ href: null }} />
-      <Tabs.Screen name="settings" options={{ href: null }} />
-      <Tabs.Screen name="orders/[orderId]" options={{ href: null }} />
-      <Tabs.Screen name="orders/create" options={{ href: null }} />
-      <Tabs.Screen name="notifications/index" options={{ href: null }} />
     </Tabs>
   );
 }
