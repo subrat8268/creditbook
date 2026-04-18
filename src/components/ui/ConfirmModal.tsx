@@ -1,7 +1,7 @@
 import { colors } from "@/src/utils/theme";
 import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { AlertTriangle } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
 interface ConfirmModalProps {
@@ -19,7 +19,7 @@ interface ConfirmModalProps {
   loading?: boolean;
 }
 
-export default function ConfirmModal({
+export default memo(function ConfirmModal({
   visible,
   title,
   message,

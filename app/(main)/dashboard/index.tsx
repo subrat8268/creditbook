@@ -96,18 +96,18 @@ export default function DashboardScreen() {
           onPressSettings={() => router.push("/(main)/profile" as never)}
         />
 
-        <View className="px-5">
+        <View className="px-4">
           {/* Hero Card - Simple */}
           <View 
-            className="rounded-[24px] p-6 mb-5"
+            className="rounded-2xl p-4 mb-5"
             style={{
               backgroundColor: totalOutstanding > 0 ? colors.danger : colors.primary,
             }}
           >
-            <Text className="text-[12px] font-semibold text-white/80 uppercase tracking-[2px]">
+            <Text className="text-[11px] font-bold text-white/80 uppercase tracking-[1.5px]">
               Total Outstanding
             </Text>
-            <Text className="text-[40px] font-black text-white mt-1">
+            <Text className="text-[36px] font-extrabold text-white mt-1">
               {formatCurrency(totalOutstanding)}
             </Text>
             
@@ -135,10 +135,10 @@ export default function DashboardScreen() {
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={() => router.push("/(main)/entries/create" as never)}
-            className="flex-row items-center justify-center bg-primary rounded-2xl p-4 mb-6"
+            className="flex-row items-center justify-center bg-primary rounded-xl p-4 mb-6"
           >
             <Plus size={18} color={colors.surface} strokeWidth={2.5} />
-            <Text className="text-[15px] font-semibold text-surface ml-2">
+            <Text className="text-base font-bold text-surface ml-2">
               Add Entry
             </Text>
           </TouchableOpacity>

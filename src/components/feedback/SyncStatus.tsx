@@ -1,88 +1,117 @@
 import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 import { colors } from "@/src/utils/theme";
 import { AlertCircle, Check, RefreshCw, WifiOff } from "lucide-react-native";
-import { ActivityIndicator, Text, TouchableOpacity } from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
-/**
- * Real-time sync status indicator
- * Shows: "✓ Synced", "Saving...", "📡 Offline", "Syncing...", "⚠️ Error"
- * Taps to retry if needed
- */
-export function SyncStatus() {
+// Variant options: inline, banner, compact
+export type SyncStatusVariant = 'inline' | 'banner' | 'compact';
+
+interface SyncStatusProps {
+  variant?: SyncStatusVariant;
+  className?: string;
+}
+
+// Unified SyncStatus component - replaces 3 separate components
+export default function SyncStatus({ variant = 'inline', className }: SyncStatusProps) {
   const { syncStatus, isConnected, queueLength, hasSyncError, triggerSync } =
     useNetworkSync();
 
-  // Determine icon & color
+  // Get status UI based on current state
   const getStatusUI = () => {
     if (hasSyncError) {
       return {
         icon: <AlertCircle size={14} color={colors.danger} />,
         text: "Sync error",
         textColor: colors.danger,
-        bgColor: colors.danger + "15",
+        bgColor: colors.dangerBg,
       };
     }
 
     if (!isConnected) {
       return {
-        icon: <WifiOff size={14} color={colors.sync.offlineText} />,
+        icon: <WifiOff size={14} color={colors.warning} />,
         text: "Offline",
-        textColor: colors.sync.offlineText,
-        bgColor: colors.sync.offlineBg,
+        textColor: colors.warning,
+        bgColor: colors.warningBg,
       };
     }
 
     switch (syncStatus) {
-      case "syncing":
+      case 'syncing':
         return {
-          icon: <RefreshCw size={14} color={colors.sync.syncingText} />,
+          icon: <RefreshCw size={14} color={colors.primary} className="animate-spin" />,
           text: "Syncing...",
-          textColor: colors.sync.syncingText,
-          bgColor: colors.sync.syncingBg,
+          textColor: colors.primary,
+          bgColor: colors.successBg,
         };
-
-      case "offline":
+      case 'offline':
         return {
-          icon: <Check size={14} color={colors.sync.offlineText} />,
+          icon: <Check size={14} color={colors.primary} />,
           text: "Saved offline",
-          textColor: colors.sync.offlineText,
-          bgColor: colors.sync.offlineBg,
+          textColor: colors.primary,
+          bgColor: colors.successBg,
         };
-
-      case "synced":
-      default:
+      default: // synced
         return {
-          icon: <Check size={14} color={colors.sync.syncedText} />,
+          icon: <Check size={14} color={colors.primary} />,
           text: "Synced",
-          textColor: colors.sync.syncedText,
-          bgColor: colors.sync.syncedBg,
+          textColor: colors.primary,
+          bgColor: colors.successBg,
         };
     }
   };
 
-  const { icon, text, textColor, bgColor } = getStatusUI();
+  const status = getStatusUI();
 
+  // Different render based on variant
+  if (variant === 'compact') {
+    return (
+      <View className={"flex-row items-center gap-1.5"}>
+        {status.icon}
+        <Text className="text-xs" style={{ color: status.textColor }}>
+          {status.text}
+        </Text>
+      </View>
+    );
+  }
+
+  if (variant === 'banner') {
+    return (
+      <View
+        className={`flex-row items-center justify-between px-4 py-2 ${className || ''}`}
+        style={{ backgroundColor: status.bgColor }}
+      >
+        <View className="flex-row items-center gap-2">
+          {status.icon}
+          <Text className="text-sm font-medium" style={{ color: status.textColor }}>
+            {status.text}
+            {queueLength > 0 && ` (${queueLength} queued)`}
+          </Text>
+        </View>
+        {hasSyncError && (
+          <TouchableOpacity onPress={triggerSync}>
+            <Text className="text-sm font-bold" style={{ color: colors.danger }}>
+              Retry
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  }
+
+  // Default: inline (full version)
   return (
     <TouchableOpacity
-      onPress={triggerSync}
-      activeOpacity={hasSyncError || syncStatus === "syncing" ? 0.7 : 1}
+      className={`flex-row items-center gap-2 px-3 py-1.5 rounded-full ${className || ''}`}
+      style={{ backgroundColor: status.bgColor }}
+      onPress={hasSyncError ? triggerSync : undefined}
       disabled={!hasSyncError}
-      className="flex-row items-center gap-1.5 px-2.5 py-1 rounded-full"
-      style={{ backgroundColor: bgColor }}
     >
-      {syncStatus === "syncing" ? (
-        <ActivityIndicator size="small" color={textColor} />
-      ) : (
-        icon
-      )}
-      <Text style={{ color: textColor }} className="text-[10px] font-medium">
-        {text}
+      {status.icon}
+      <Text className="text-xs font-semibold" style={{ color: status.textColor }}>
+        {status.text}
+        {queueLength > 0 ? ` (${queueLength})` : ''}
       </Text>
-      {queueLength > 0 && syncStatus !== "syncing" && (
-        <Text style={{ color: textColor }} className="text-[9px] ml-0.5">
-          ({queueLength})
-        </Text>
-      )}
     </TouchableOpacity>
   );
 }

@@ -1,10 +1,11 @@
 import { RecentActivityItem } from "@/src/api/dashboard";
 import { dashboardPalette as C } from "@/src/utils/dashboardUi";
+import React, { memo } from "react";
 import { Text, View } from "react-native";
 
 type Props = { status: RecentActivityItem["status"] };
 
-export default function StatusBadge({ status }: Props) {
+export default memo(function StatusBadge({ status }: Props) {
   const map = {
     Paid: { bg: C.paidBg, text: C.paidText, label: "Paid" },
     Pending: { bg: C.pendingBg, text: C.pendingText, label: "Pending" },

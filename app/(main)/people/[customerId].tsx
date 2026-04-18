@@ -1,6 +1,6 @@
 import EmptyState from "@/src/components/feedback/EmptyState";
 import Loader from "@/src/components/feedback/Loader";
-import { SyncStatusIndicator } from "@/src/components/feedback/SyncStatusIndicator";
+import SyncStatus from "@/src/components/feedback/SyncStatus";
 import { useToast } from "@/src/components/feedback/Toast";
 import RecordCustomerPaymentModal from "@/src/components/people/RecordCustomerPaymentModal";
 import { usePersonDetail } from "@/src/hooks/usePeople";
@@ -22,6 +22,7 @@ import {
   Phone,
   Plus,
   Receipt,
+  Share2,
 } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -205,7 +206,7 @@ function TransactionRow({ tx }: { tx: Transaction }) {
           {formatTime(tx.created_at)}
         </Text>
         <View className="flex-row items-center gap-1.5">
-          <SyncStatusIndicator compact={true} />
+          <SyncStatus variant="compact" />
           <Text className="text-xs text-textPrimary font-semibold">
             Bal: {formatINR(tx.runningBalance)}
           </Text>
@@ -427,7 +428,7 @@ export default function CustomerDetailScreen() {
         contentContainerStyle={{ paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Hero Card ── */}
+        {/* ── Hero Card (cleaner) ── */}
         <LinearGradient
           colors={
             customer.outstandingBalance === 0
@@ -436,61 +437,46 @@ export default function CustomerDetailScreen() {
           }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={{
-            marginHorizontal: 16,
-            marginTop: 16,
-            borderRadius: 20,
-            padding: 22,
-            overflow: "hidden",
-            minHeight: 140,
-          }}
+          className="mx-4 mt-4 rounded-[20px] p-5 overflow-hidden"
+          style={{ minHeight: 130 }}
         >
-          <View
-            style={{
-              position: "absolute",
-              right: -30,
-              top: -30,
-              width: 130,
-              height: 130,
-              borderRadius: 65,
-              backgroundColor: "rgba(255,255,255,0.07)",
-            }}
-          />
-          <View
-            style={{
-              position: "absolute",
-              right: 50,
-              bottom: -40,
-              width: 100,
-              height: 100,
-              borderRadius: 50,
-              backgroundColor: "rgba(255,255,255,0.05)",
-            }}
-          />
+          {/* Decorative circles */}
+          <View className="absolute right-[-20] top-[-20] w-24 h-24 rounded-full bg-white/5" />
+          <View className="absolute right-10 bottom-[-30] w-20 h-20 rounded-full bg-white/3" />
 
-          <View className="flex-row justify-between items-center mb-[10px]">
-            <Text className="text-[11px] font-bold text-white/75 tracking-widest">
-              TOTAL BALANCE DUE
-            </Text>
-          </View>
-
-          <Text className="text-[38px] font-extrabold text-white leading-tight mb-3">
-            {formatINR(customer.outstandingBalance)}
+          {/* Balance Label */}
+          <Text className="text-[11px] font-bold text-white/70 tracking-widest">
+            {customer.outstandingBalance === 0 
+              ? "SETTLED" 
+              : customer.outstandingBalance < 0 
+                ? "ADVANCE" 
+                : "TOTAL DUE"}
           </Text>
 
-          {/* Bottom row: settled subtitle | overdue pill | last bill date */}
+          {/* Amount */}
+          <Text className="text-[42px] font-extrabold text-white mt-1">
+            {formatINR(Math.abs(customer.outstandingBalance))}
+          </Text>
+
+          {/* Status or last entry */}
           {customer.outstandingBalance === 0 ? (
-            <Text className="text-[13px] text-white/70">
-              No outstanding balance
+            <Text className="text-[13px] text-white/70 mt-1">
+              All cleared
             </Text>
           ) : customer.isOverdue ? (
-            <View className="flex-row items-center gap-3">
-              <View
-                className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full"
-                style={{ backgroundColor: "rgba(255,255,255,0.18)" }}
-              >
-                <AlertTriangle size={12} color="#FFF" strokeWidth={2.5} />
-                <Text className="text-[12px] font-bold text-white">
+            <View className="flex-row items-center gap-2 mt-1">
+              <View className="px-2 py-1 rounded-full bg-white/15">
+                <Text className="text-[11px] font-bold text-white">
+                  OVERDUE {customer.daysSinceLastOrder}d
+                </Text>
+              </View>
+            </View>
+          ) : customer.lastActiveAt ? (
+            <Text className="text-[12px] text-white/60 mt-1">
+              Last: {formatLastEntryDate(customer.lastActiveAt)}
+            </Text>
+          ) : null}
+        </LinearGradient>
                   OVERDUE \u00b7 {customer.daysSinceLastOrder} days
                 </Text>
               </View>
@@ -580,33 +566,20 @@ export default function CustomerDetailScreen() {
           </View>
         </View>
 
-        {/* ── Transactions ── */}
-        <View className="mt-6">
-          {/* Underline tab bar */}
-          <View
-            className="flex-row border-b"
-            style={{ borderBottomColor: colors.border }}
-          >
+{/* ── Transactions ── */}
+        <View className="mt-6 mx-4">
+          {/* Clean tab bar */}
+          <View className="flex-row border-b border-border">
             {(["All", "Entries", "Payments"] as TxFilter[]).map((f) => {
               const active = txFilter === f;
               return (
                 <TouchableOpacity
                   key={f}
                   onPress={() => setTxFilter(f)}
-                  activeOpacity={0.75}
-                  className="flex-1 items-center pb-3 pt-1"
-                  style={{
-                    borderBottomWidth: active ? 2 : 0,
-                    borderBottomColor: active ? colors.primary : "transparent",
-                    marginBottom: active ? -1 : 0,
-                  }}
+                  className="flex-1 items-center py-3"
+                  style={{ borderBottomWidth: 2, borderBottomColor: active ? colors.primary : 'transparent' }}
                 >
-                  <Text
-                    className="text-[13px] font-semibold"
-                    style={{
-                      color: active ? colors.primary : colors.textSecondary,
-                    }}
-                  >
+                  <Text className={`text-[13px] font-semibold ${active ? 'text-primary' : 'text-textSecondary'}`}>
                     {f}
                   </Text>
                 </TouchableOpacity>
@@ -614,49 +587,27 @@ export default function CustomerDetailScreen() {
             })}
           </View>
 
-          {/* Rows or rich empty state */}
+          {/* Transaction List */}
           {listItems.length === 0 ? (
-            <View className="items-center px-8 pt-10 pb-6 gap-4">
-              {/* Dashed icon box */}
-              <View
-                className="w-[112px] h-[112px] rounded-[24px] items-center justify-center"
-                style={{
-                  borderWidth: 2,
-                  borderStyle: "dashed",
-                  borderColor: colors.paid.bg,
-                  backgroundColor: colors.successBg,
-                }}
-              >
-                <Receipt size={48} color={colors.paid.bg} strokeWidth={1.5} />
+            <View className="items-center py-12 gap-3">
+              <View className="w-20 h-20 rounded-2xl items-center justify-center border-2 border-dashed border-success/30 bg-successBg">
+                <Receipt size={32} color={colors.primary} strokeWidth={1.5} />
               </View>
-              <Text className="text-[17px] font-bold text-textDark">
-                No transactions yet
-              </Text>
-              <Text className="text-[13px] text-textSecondary text-center leading-5">
-                Add an entry to start this ledger.
-              </Text>
-              {/* Single CTA */}
-              <TouchableOpacity
-                className="w-full items-center justify-center py-3 rounded-full"
-                style={{ backgroundColor: colors.primary }}
-                activeOpacity={0.8}
-                onPress={() =>
-                  router.push({
-                    pathname: "/(main)/entries/create",
-                    params: { customer: JSON.stringify(customer) },
-                  })
-                }
-              >
-                <Text
-                  className="text-[14px] font-bold"
-                  style={{ color: colors.surface }}
-                >
-                  Add Entry
-                </Text>
-              </TouchableOpacity>
+              <Text className="text-[15px] font-bold text-textPrimary">No transactions</Text>
+              <Text className="text-[12px] text-textSecondary">Add an entry to start</Text>
             </View>
           ) : (
-            <View className="px-4 pt-4">
+            <View className="mt-4 gap-2">
+              {listItems.map((tx) => (
+                <TransactionRow key={tx.id} tx={tx} />
+              ))}
+            </View>
+)}
+        </View>
+
+        {/* Transaction List - expanded */}
+        {listItems.length > 0 && (
+          <View className="px-4 pt-4 pb-8">
               {(historyExpanded
                 ? listItems
                 : listItems.slice(0, INITIAL_TX_COUNT)

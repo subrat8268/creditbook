@@ -1,5 +1,6 @@
 import { colors } from "@/src/utils/theme";
 import { MoreVertical } from "lucide-react-native";
+import React, { memo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
@@ -12,7 +13,7 @@ type Props = {
  * Fixed header for the Customers list screen.
  * Layout: "Customers" (bold) + green count badge | three-dot menu (right)
  */
-export default function CustomersHeader({ count, onMenuPress }: Props) {
+export default memo(function CustomersHeader({ count, onMenuPress }: Props) {
   return (
     <View className="flex-row items-center justify-between px-5 pt-4 pb-3.5 bg-white">
       {/* Left — title + count */}

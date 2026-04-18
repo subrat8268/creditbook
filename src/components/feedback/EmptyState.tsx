@@ -1,6 +1,6 @@
 import { CircleOff } from "lucide-react-native";
-import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import React, { memo, useEffect, useRef } from "react";
+import { Animated, Text, TouchableOpacity, View } from "react-native";
 
 interface EmptyStateProps {
   /** Legacy single-line message (falls back to subtitle when no title is set) */
@@ -22,7 +22,7 @@ interface EmptyStateProps {
   ctaIcon?: React.ReactNode;
 }
 
-export default function EmptyState({
+export default memo(function EmptyState({
   message,
   title,
   description,
@@ -37,10 +37,24 @@ export default function EmptyState({
   const sub = title ? (description ?? message) : undefined;
   const containerSize = iconSize ?? 72;
   const containerBg = iconBgColor ?? "#F6F7F9";
+  
+  // Fade-in animation
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
 
   return (
-    <View className="flex-1 items-center justify-center px-8 py-12">
-      {/* Icon container circle */}
+    <Animated.View 
+      className="flex-1 items-center justify-center px-8 py-12"
+      style={{ opacity: fadeAnim }}
+    >
+      {/* Icon container circle with subtle pulse */}
       <View
         className="rounded-full items-center justify-center mb-6"
         style={{

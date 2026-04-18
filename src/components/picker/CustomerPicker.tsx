@@ -119,6 +119,10 @@ export default function CustomerPicker({
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.4}
           keyboardShouldPersistTaps="handled"
+          initialNumToRender={8}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
           ListHeaderComponent={
             isLoading ? (
               <View className="py-4">

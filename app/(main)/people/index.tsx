@@ -164,9 +164,9 @@ export default function CustomersScreen() {
       />
 
       {/* ── Screen header ── */}
-      <View className="px-5 py-4 flex-row justify-between items-center">
+      <View className="px-4 py-4 flex-row justify-between items-center">
         <Text
-          style={{ fontSize: 24, fontWeight: "800", color: colors.textPrimary }}
+          className="text-2xl font-bold text-textPrimary"
         >
           People
         </Text>
@@ -185,7 +185,7 @@ export default function CustomersScreen() {
       {/* Summary Removed per design */}
 
       {/* ── Search bar ── */}
-      <View className="px-5 pt-1 pb-2">
+      <View className="px-4 pt-1 pb-2">
         <SearchBar
           value={search}
           onChangeText={setSearch}
@@ -194,7 +194,7 @@ export default function CustomersScreen() {
       </View>
 
       {/* ── Inline add person (name + phone) ── */}
-      <View className="px-5 pb-3">
+      <View className="px-4 pb-3">
         <View className="bg-surface border border-border rounded-2xl p-4">
           <Text className="text-[12px] font-bold text-textSecondary tracking-widest mb-3">
             ADD PERSON

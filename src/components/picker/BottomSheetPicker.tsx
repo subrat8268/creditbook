@@ -106,6 +106,9 @@ export default function BottomSheetPicker({
               renderItem={({ item }) => renderItem?.(item) || null}
               onEndReached={handleEndReached}
               onEndReachedThreshold={0.3}
+              initialNumToRender={12}
+              maxToRenderPerBatch={10}
+              windowSize={5}
               ListHeaderComponent={
                 isLoading ? (
                   <View className="py-4">

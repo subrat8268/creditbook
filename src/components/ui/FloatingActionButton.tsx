@@ -11,7 +11,7 @@ interface FABProps {
 
 export default function FloatingActionButton({
   onPress,
-  bottom = 80,
+  bottom = 24,
   right = 20,
   style,
 }: FABProps) {

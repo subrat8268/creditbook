@@ -1,6 +1,6 @@
 # KredBook — Current Status
 
-**Last Updated:** April 17, 2026
+**Last Updated:** April 18, 2026
 
 ## Version
 
@@ -15,11 +15,12 @@
 | Feature | Status | Notes |
 |---------|--------|-------|
 | Authentication | ✅ Working | Email + Google OAuth |
-| Dashboard | ✅ Working | Total outstanding + overdue list |
+| Dashboard | ✅ Working | Total outstanding + top 3 overdue |
 | People/Customers | ✅ Working | Add, list, search |
+| Customer Detail | ✅ Working | Hero card, CTAs, transaction list |
 | Entries | ✅ Working | Create, list, detail |
 | Payments | ✅ Working | Record, history |
-| Profile | ✅ Working | Business name, language, sign out |
+| Profile | ✅ Working | Business name, language, export, sign out |
 | Offline-first | ✅ Working | MMKV queue, auto-sync |
 | Localization | ✅ Working | EN/HI toggle |
 | Export | ✅ Working | CSV export |
@@ -41,6 +42,92 @@
 | GST | ❌ Removed | Not for small businesses |
 | Multi-user | ❌ Removed | Single user app |
 | Notifications | ❌ Removed | Future feature |
+
+---
+
+## Cleanup Performed (April 18, 2026)
+
+### Deleted Unused Files
+
+**Components (10 files removed):**
+- `src/components/orders/` (8 files) - order components from v2
+- `src/components/onboarding/` (1 file) - unused onboarding
+- `src/components/SearchablePickerModal.tsx` (1 file) - orphaned utility
+
+**Types (1 file removed):**
+- `src/types/supplier.ts` - unused supplier type definition
+
+### Current Component Count
+
+- Before: 44 component files
+- After: 34 component files
+
+---
+
+## Performance Optimizations (April 18, 2026)
+
+### FlatList Optimizations
+
+| Component | Fix Applied |
+|-----------|-------------|
+| `CustomerPicker.tsx` | Added initialNumToRender=8, maxToRenderPerBatch=10, windowSize=5, removeClippedSubviews |
+| `BottomSheetPicker.tsx` | Added initialNumToRender=12, maxToRenderPerBatch=10, windowSize=5 |
+
+### React.memo Applied
+
+**List Items (Critical):**
+- `CustomerCard.tsx` - memo wrapped
+- `ActivityRow.tsx` - memo wrapped
+- `EntryCard.tsx` (inline in entries/index.tsx) - memo wrapped
+
+**Headers:**
+- `DashboardHeader.tsx` - memo + useMemo for derived values
+- `CustomersHeader.tsx` - memo wrapped
+
+**UI Components:**
+- `Button.tsx` - memo wrapped
+- `Input.tsx` - memo wrapped
+- `SearchBar.tsx` - memo wrapped
+- `Card.tsx` - memo wrapped
+- `Avatar.tsx` - memo wrapped
+- `StatusBadge.tsx` - memo wrapped
+
+**Feedback/Modals:**
+- `EmptyState.tsx` - memo wrapped
+- `ConfirmModal.tsx` - memo wrapped
+
+### Result
+
+- Reduced unnecessary re-renders across all list items and UI components
+- Optimized FlatList rendering for large lists (people, entries, pickers)
+- Target: 60fps smooth scrolling
+
+---
+
+## UX Micro-interactions (April 18, 2026)
+
+### New Components
+
+| Component | Purpose |
+|-----------|---------|
+| `Skeleton.tsx` | Shimmer loading placeholders with pulse animation |
+| `SkeletonCard` | Pre-built skeleton for list items |
+| `SkeletonList` | Loading state for FlatList |
+
+### Enhanced Components
+
+| Component | Enhancement |
+|-----------|-------------|
+| `Button.tsx` | Press feedback with scale animation (spring to 0.96) |
+| `Toast.tsx` | Icon bounce animation on show |
+| `EmptyState.tsx` | Fade-in animation on mount |
+
+### Implementation
+
+- Button: Uses Animated.spring for tactile press feel
+- Toast: Icon scales from 0.5 → 1 with bounce
+- EmptyState: 400ms fade-in on mount
+- Skeleton: 1200ms shimmer loop with opacity interpolation
 
 ---
 

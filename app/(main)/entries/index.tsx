@@ -1,4 +1,3 @@
-import OrderCard from "@/src/components/orders/OrderCard";
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import { useOrders } from "@/src/hooks/useEntries";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
@@ -7,7 +6,7 @@ import { useAuthStore } from "@/src/store/authStore";
 import { colors, spacing, typography } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { Search } from "lucide-react-native";
-import { useCallback, useMemo, useState } from "react";
+import React, { memo, useCallback, useMemo, useState } from "react";
 import {
   FlatList,
   ScrollView,
@@ -18,6 +17,68 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+// ── Inline Entry Card (replaces deleted OrderCard) ───────────────────────────
+interface EntryItem {
+  id: string;
+  bill_number?: string;
+  created_at: string;
+  amount: number;
+  status: "Paid" | "Pending" | "Partially Paid";
+  party?: {
+    name: string;
+  };
+}
+
+const EntryCard = memo(function EntryCard({ entry, onPress }: { entry: EntryItem; onPress: () => void }) {
+  const statusColors = {
+    Paid: { bg: colors.paid.bg, text: colors.paid.text },
+    Pending: { bg: colors.pending.bg, text: colors.pending.text },
+    "Partially Paid": { bg: colors.pending.bg, text: colors.pending.text },
+  };
+  const status = entry.status === "Partially Paid" ? "Partial" : entry.status;
+  const ui = statusColors[entry.status] || statusColors.Paid;
+  
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      className="flex-row items-center bg-surface p-4 rounded-2xl mb-3 border border-border"
+      style={{
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+        elevation: 2,
+      }}
+    >
+      <View className="flex-1">
+        <Text className="text-base font-semibold text-textPrimary mb-0.5">
+          {entry.party?.name || "Unknown"}
+        </Text>
+        <Text className="text-xs font-medium text-textSecondary">
+          {entry.bill_number || "—"} • {new Date(entry.created_at).toLocaleDateString("en-IN")}
+        </Text>
+      </View>
+      <View className="items-end space-y-1.5">
+        <Text className="text-base font-bold text-textPrimary">
+          ₹{entry.amount.toLocaleString("en-IN")}
+        </Text>
+        <View 
+          className="rounded-full px-2 py-1"
+          style={{ backgroundColor: ui.bg }}
+        >
+          <Text 
+            className="text-[11px] font-bold uppercase tracking-wider"
+            style={{ color: ui.text }}
+          >
+            {status}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+});
 
 // Filter chips
 const FILTER_OPTIONS: { label: StatusFilter; color: string; bg: string }[] = [
@@ -195,7 +256,7 @@ export default function OrdersScreen() {
             paddingBottom: 120,
           }}
           renderItem={({ item }) => (
-            <OrderCard order={item} onPress={handlePressOrder} />
+            <EntryCard entry={item} onPress={() => handlePressOrder(item.id)} />
           )}
           ListFooterComponent={
             isFetchingNextPage ? (

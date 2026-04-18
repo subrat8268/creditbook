@@ -54,7 +54,7 @@ interface SectionCardProps {
 
 function SectionCard({ title, children }: SectionCardProps) {
   return (
-    <View className="px-5 pt-4 pb-2 mb-4 border shadow-sm bg-surface rounded-2xl border-border">
+    <View className="px-4 pt-4 pb-2 mb-4 border shadow-sm bg-surface rounded-2xl border-border">
       <Text className="text-[11px] font-bold text-textSecondary uppercase tracking-widest mb-3">
         {title}
       </Text>

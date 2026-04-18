@@ -242,6 +242,224 @@ components/
 
 ---
 
+## Data Flow
+
+### Overview
+
+```
+UI Components
+     ↓ (user action)
+TanStack Query (useQuery/useMutation)
+     ↓ (fetch/write)
+Supabase (PostgreSQL)
+     ↓ (response)
+TanStack Query Cache → UI Update
+```
+
+---
+
+### State Management
+
+Two types of state, managed separately:
+
+| Type | Tool | Purpose | Examples |
+|------|------|---------|-----------|
+| **Client/Local** | Zustand | User session, preferences | Auth, language, draft entries |
+| **Server** | TanStack Query | Data from API | Customers, entries, dashboard |
+
+#### When to use Zustand
+
+- User authentication state
+- Language preference
+- Draft form data (in-progress entry)
+- App settings
+
+#### When to use TanStack Query
+
+- Any data from Supabase
+- Customer lists
+- Entry lists
+- Dashboard totals
+- Payment history
+
+---
+
+### Zustand Stores
+
+| Store | Purpose | Data Type |
+|-------|---------|-----------|
+| `authStore` | User + profile | User object, Profile |
+| `languageStore` | Language | 'en' or 'hi' |
+| `orderStore` | Draft entry | In-progress entry form |
+| `preferencesStore` | Feature flags | UI preferences |
+
+**Zustand Structure:**
+
+```typescript
+// src/store/authStore.ts
+interface AuthState = {
+  user: User | null;
+  profile: Profile | null;
+  setAuth: (user) => void;
+  fetchProfile: (userId) => Promise<void>;
+  logout: () => void;
+}
+```
+
+---
+
+### TanStack Query
+
+Data fetching with caching and optimistic updates.
+
+#### Query Keys
+
+| Key | Purpose |
+|-----|---------|
+| `['people', vendorId]` | All customers |
+| `['people', vendorId, search]` | Filtered customers |
+| `['entries', vendorId]` | All entries |
+| `['dashboard', vendorId]` | Dashboard totals |
+| `['orderDetail', orderId]` | Single entry |
+
+#### Example: Fetching Customers
+
+```typescript
+// src/hooks/usePeople.ts
+export function usePeople(vendorId: string, search?: string) {
+  return useQuery({
+    queryKey: search 
+      ? ['people', vendorId, search] 
+      : ['people', vendorId],
+    queryFn: () => fetchPeople(vendorId, search),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+```
+
+---
+
+### Data Flow: Reading
+
+```
+1. Component calls useXxx() hook
+2. Hook creates query with queryKey
+3. TanStack Query checks cache
+   - If fresh: Return cached data
+   - If stale: Fetch from Supabase
+4. Return data to component
+5. UI renders
+```
+
+**Cache Behavior:**
+- `staleTime`: Data good for 5 minutes
+- `gcTime`: Cache kept for 30 minutes
+- Refetch on app focus
+
+---
+
+### Data Flow: Writing (Mutations)
+
+```
+1. User submits form (e.g., Add Entry)
+2. Component calls mutate() from TanStack Query
+3. Optimistic update immediately:
+   - UI shows new data (e.g., entry appears in list)
+   - Balance updates instantly
+4. Mutation sends to Supabase
+5. 
+   - Success: Invalidate related queries → Refetch
+   - Failure: Show error toast, roll back UI
+```
+
+**Optimistic Update Pattern:**
+
+```typescript
+const createOrderMutation = useMutation({
+  mutationFn: (data) => createOrder(data),
+  onSuccess: () => {
+    // Refresh related queries
+    queryClient.invalidateQueries({ queryKey: ['entries', vendorId] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard', vendorId] });
+  },
+});
+```
+
+---
+
+### Offline Sync Behavior
+
+**When offline:**
+
+1. **Writes queued locally**: Mutations saved to MMKV queue
+2. **UI updates optimistically**: Data appears immediately
+3. **Sync banner shows**: "Offline - X saved locally"
+
+**When back online:**
+
+1. **Queue processed FIFO**: Each mutation replayed to Supabase
+2. **Sync banner shows**: "Syncing X changes..."
+3. **Success**: Banner shows "All synced"
+
+**Flow:**
+
+```
+Offline Mutation
+     ↓
+MMKV Queue (local storage)
+     ↓
+Network listener detects online
+     ↓
+Process queue (FIFO order)
+     ↓
+Each mutation → Supabase
+     ↓
+Success: Update cache
+Failure: Show error, keep in queue
+```
+
+---
+
+### Query Client Setup
+
+In `app/_layout.tsx`:
+
+```typescript
+const [queryClient] = useState(
+  () =>
+    new QueryClient({
+      defaultOptions: {
+        queries: {
+          staleTime: 5 * 60 * 1000,
+          gcTime: 30 * 60 * 1000,
+          retry: 1,
+          refetchOnWindowFocus: true,
+        },
+        mutations: {
+          retry: 1,
+        },
+      },
+    }),
+);
+```
+
+---
+
+### Summary: When to Use What
+
+| Need | Use |
+|------|-----|
+| User logged in | `useAuthStore()` |
+| Language setting | `useLanguageStore()` |
+| Get all customers | `usePeople()` |
+| Get entries | `useEntries()` |
+| Get dashboard | `useDashboard()` |
+| Create entry | `useCreateOrder()` |
+| Record payment | `useRecordPayment()` |
+| Draft form data | `useOrderStore()` |
+
+---
+
 ## Known Issues
 
 | Issue | Status |

@@ -2,6 +2,7 @@ import { RecentActivityItem } from "@/src/api/dashboard";
 import { formatDashboardDate, formatINR } from "@/src/utils/dashboardUi";
 import { colors } from "@/src/utils/theme";
 import { CreditCard, FileText, Truck } from "lucide-react-native";
+import React, { memo } from "react";
 import { Text, View } from "react-native";
 import StatusBadge from "./StatusBadge";
 
@@ -93,3 +94,5 @@ export default function ActivityRow({ item }: Props) {
     </View>
   );
 }
+
+export default memo(ActivityRow);

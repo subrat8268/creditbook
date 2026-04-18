@@ -274,9 +274,9 @@ export const typography = {
   },
 
   screenTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "700" as const,
-    lineHeight: 28,
+    lineHeight: 30,
     color: colors.textPrimary,
   },
 

@@ -1,4 +1,5 @@
 import { Image, Text, TouchableOpacity, View } from "react-native";
+import React, { memo } from "react";
 import { formatRelativeActivity } from "../../utils/helper";
 import { colors } from "../../utils/theme";
 
@@ -43,29 +44,30 @@ function formatAmount(status: CustomerStatus, balance: number): string {
   return `\u20B9${Math.abs(balance).toLocaleString("en-IN")}`;
 }
 
+// Design system status chip colors
 const STATUS_UIMAP: Record<CustomerStatus, { badgeBg: string; badgeText: string; amountText: string; textLabel: string }> = {
   Overdue: {
-    badgeBg: "bg-danger-light",
-    badgeText: "text-danger-text",
-    amountText: "text-danger",
+    badgeBg: colors.overdue.bg,
+    badgeText: colors.overdue.text,
+    amountText: colors.danger,
     textLabel: "OVERDUE",
   },
   Pending: {
-    badgeBg: "bg-warning-light",
-    badgeText: "text-warning-dark",
-    amountText: "text-warning",
+    badgeBg: colors.pending.bg,
+    badgeText: colors.pending.text,
+    amountText: colors.warning,
     textLabel: "PENDING",
   },
   Paid: {
-    badgeBg: "bg-success-light",
-    badgeText: "text-success-text",
-    amountText: "text-success",
+    badgeBg: colors.paid.bg,
+    badgeText: colors.paid.text,
+    amountText: colors.primary,
     textLabel: "PAID",
   },
   Advance: {
-    badgeBg: "bg-info-light",
-    badgeText: "text-info-dark",
-    amountText: "text-success",
+    badgeBg: colors.primaryBlueBg,
+    badgeText: colors.primaryBlue,
+    amountText: colors.primary,
     textLabel: "ADVANCE",
   },
 };
@@ -135,11 +137,17 @@ export default function CustomerCard({
 
       {/* Amount + Pill Badge */}
       <View className="items-end space-y-1.5">
-        <Text className={`text-base font-bold ${ui.amountText}`}>
+        <Text className="text-base font-bold" style={{ color: ui.amountText }}>
           {amountStr}
         </Text>
-        <View className={`rounded-full px-2 py-1 ${ui.badgeBg}`}>
-          <Text className={`text-[11px] font-bold uppercase tracking-wider ${ui.badgeText}`}>
+        <View 
+          className="rounded-full px-2 py-1"
+          style={{ backgroundColor: ui.badgeBg }}
+        >
+          <Text 
+            className="text-[11px] font-bold uppercase tracking-wider"
+            style={{ color: ui.badgeText }}
+          >
             {ui.textLabel}
           </Text>
         </View>
@@ -147,3 +155,5 @@ export default function CustomerCard({
     </TouchableOpacity>
   );
 }
+
+export default memo(CustomerCard);

@@ -1,6 +1,6 @@
 import { colors } from "@/src/utils/theme";
 import { clsx } from "clsx";
-import React from "react";
+import React, { memo } from "react";
 import { Text, TextInput, View } from "react-native";
 
 type Props = {
@@ -77,3 +77,5 @@ export default function Input({
     </View>
   );
 }
+
+export default memo(Input);

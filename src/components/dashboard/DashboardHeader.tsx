@@ -1,6 +1,7 @@
 import { useAuthStore } from "@/src/store/authStore";
 import { colors, spacing } from "@/src/utils/theme";
 import { Bell, Settings } from "lucide-react-native";
+import React, { memo, useMemo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
@@ -25,7 +26,7 @@ const getGreeting = (): string => {
   return "Good evening 👋";
 };
 
-export default function DashboardHeader({
+export default memo(function DashboardHeader({
   variant = "default",
   overdueCount = 0,
   onPressNotifications,
@@ -33,7 +34,8 @@ export default function DashboardHeader({
 }: Props) {
   const { profile } = useAuthStore();
   const businessName = profile?.business_name ?? profile?.name ?? "My Business";
-  const initials = getInitials(businessName);
+  const initials = useMemo(() => getInitials(businessName), [businessName]);
+  const greeting = useMemo(() => getGreeting(), []);
 
   return (
     <View

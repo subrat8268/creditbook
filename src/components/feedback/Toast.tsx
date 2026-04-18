@@ -47,6 +47,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toast, setToast] = useState<Required<ToastOptions> | null>(null);
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(-20)).current;
+  const iconScale = useRef(new Animated.Value(0.5)).current;
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const show = useCallback(
@@ -59,9 +60,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         duration: opts.duration ?? 2800,
       });
 
-      // Slide + fade in
+      // Reset animations
       opacity.setValue(0);
       translateY.setValue(-20);
+      iconScale.setValue(0.5);
+
+      // Slide + fade in with icon bounce
       Animated.parallel([
         Animated.timing(opacity, {
           toValue: 1,
@@ -71,6 +75,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         Animated.timing(translateY, {
           toValue: 0,
           duration: 220,
+          useNativeDriver: true,
+        }),
+        Animated.spring(iconScale, {
+          toValue: 1,
+          friction: 3,
+          tension: 100,
           useNativeDriver: true,
         }),
       ]).start();
@@ -91,7 +101,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         ]).start(() => setToast(null));
       }, opts.duration ?? 2800);
     },
-    [opacity, translateY],
+    [opacity, translateY, iconScale],
   );
 
   const isSuccess = toast?.type !== "error";
@@ -109,11 +119,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           ]}
           pointerEvents="none"
         >
-          {isSuccess ? (
-            <CheckCircle size={18} color={"#FFFFFF"} strokeWidth={2.5} />
-          ) : (
-            <XCircle size={18} color={"#FFFFFF"} strokeWidth={2.5} />
-          )}
+          <Animated.View style={{ transform: [{ scale: iconScale }] }}>
+            {isSuccess ? (
+              <CheckCircle size={18} color={"#FFFFFF"} strokeWidth={2.5} />
+            ) : (
+              <XCircle size={18} color={"#FFFFFF"} strokeWidth={2.5} />
+            )}
+          </Animated.View>
           <Text style={styles.message}>{toast.message}</Text>
         </Animated.View>
       )}

@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import React from "react";
+import React, { memo } from "react";
 import { Text, View } from "react-native";
 
 interface CardProps {
@@ -9,7 +9,7 @@ interface CardProps {
   className?: string;
 }
 
-const Card = ({ title, value, icon, className }: CardProps) => {
+const Card = memo(function Card({ title, value, icon, className }: CardProps) {
   return (
     <View
       className={clsx(

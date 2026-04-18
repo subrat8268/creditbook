@@ -156,8 +156,26 @@ src/
 | `docs/design-system.md` | UI colors, spacing, components |
 | `docs/ARCHITECTURE.md` | System design |
 | `docs/prd.md` | Product requirements |
+| `docs/components.md` | Component patterns |
+| `docs/flows.md` | User flows |
 | `src/utils/theme.ts` | Color tokens |
 | `src/utils/schemas.ts` | Type definitions |
+
+---
+
+## Component Rules
+
+Before creating new components:
+
+1. **Check `docs/components.md`** for existing patterns
+2. **Use existing components:**
+   - `Button`, `Input`, `Card`, `SearchBar` for base UI
+   - `Toast` hook for notifications
+   - `colors` from `theme.ts` for all colors
+3. **Don't duplicate:**
+   - Avatar patterns → use existing patterns
+   - Status badges → use `StatusBadge`
+   - Empty states → use `EmptyState`
 
 ---
 

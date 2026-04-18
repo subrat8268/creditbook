@@ -1,6 +1,6 @@
 # KredBook Design System
 
-> **Last Updated**: April 17, 2026
+> **Last Updated**: April 18, 2026
 > **App Version**: 3.0
 > **Status**: Simplified — Credit tracking only
 
@@ -26,13 +26,13 @@
 | :--- | :--- | :--- |
 | `primary` | `#22C55E` | Primary buttons, FAB, confirmations |
 | `success` | `#22C55E` | Money received, paid state |
-| `danger` | `#E74C3C` | Money owed, overdue |
+| `danger` | `#EF4444` | Money owed, overdue (NOTE: design-system says #E74C3C, theme uses #EF4444) |
 | `warning` | `#F59E0B` | Pending, partial |
 | `background` | `#F6F7F9` | App background |
 | `surface` | `#FFFFFF` | Cards, modals |
 | `textPrimary` | `#1C1C1E` | Headings, amounts |
 | `textSecondary` | `#6B7280` | Labels, metadata |
-| `border` | `#E5E7EB` | Borders, dividers |
+| `border` | `#E2E8F0` | Borders, dividers |
 
 ### Financial State Colors
 
@@ -42,18 +42,13 @@
 | Owed / Overdue | Red | `danger` |
 | Pending / Partial | Amber | `warning` |
 
-### Avatar Palette
+### Status Chips (Design System)
 
-```ts
-avatarPalette: [
-  "#4F9CFF",  // Blue
-  "#9B59B6",  // Purple
-  "#E91E8C",  // Pink
-  "#00BCD4",  // Cyan
-  "#FF5722",  // Orange
-  "#F59E0B",  // Amber
-]
-```
+| State | Background | Text |
+| :--- | :--- | :--- |
+| PAID | `#DCFCE7` | `#16A34A` |
+| PENDING | `#FEF3C7` | `#D97706` |
+| OVERDUE | `#FEE2E2` | `#DC2626` |
 
 ---
 
@@ -98,7 +93,7 @@ SafeAreaView (full screen)
 | :--- | :--- | :--- |
 | xs | 4dp | Tight gaps |
 | sm | 8dp | Chip padding |
-| md | 16dp | Screen padding |
+| md | 16dp | Screen padding (NOTE: use px-4, NOT px-5) |
 | lg | 24dp | Section spacing |
 | xl | 32dp | Major spacing |
 
@@ -141,7 +136,7 @@ SafeAreaView (full screen)
 | Size | 56dp |
 | Background | `#2563EB` (Blue) |
 | Icon | White, + |
-| Position | Bottom-right, 20dp from edge |
+| Position | Bottom-right, 20dp from edge, 24dp above tab bar |
 | Border Radius | Full circle |
 
 ### Status Chips
@@ -248,12 +243,27 @@ SafeAreaView (full screen)
 
 ---
 
+## Implementation Notes (April 18, 2026)
+
+### Spacing Standard
+- **Always use `px-4`** for screen padding (not px-5)
+- Card padding: `p-4` (16dp)
+- Section spacing: `mb-4` or `mb-6`
+
+### Theme Updates Applied
+- Button: 52dp height, 14dp radius, 16px text
+- FAB: bottom-24 (above tab bar)
+- Screen title: 24px
+- Hero amount: 36px
+
+---
+
 ## Updates
 
 When adding new components:
 
 1. Use existing colors from `theme.ts`
-2. Use existing spacing values
+2. Use existing spacing values (px-4 standard)
 3. Keep animations under 400ms
 4. Test with both green and red states
 

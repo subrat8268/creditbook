@@ -1,5 +1,6 @@
 import { colors } from "@/src/utils/theme";
 import { Search } from "lucide-react-native";
+import React, { memo } from "react";
 import { TextInput, View } from "react-native";
 
 type Props = {
@@ -8,7 +9,7 @@ type Props = {
   placeholder?: string;
 };
 
-export default function SearchBar({ value, onChangeText, placeholder }: Props) {
+export default memo(function SearchBar({ value, onChangeText, placeholder }: Props) {
   return (
     <View className="flex-row items-center bg-search rounded-full px-4 py-2.5">
       <Search size={18} color={colors.textSecondary} strokeWidth={2} />
