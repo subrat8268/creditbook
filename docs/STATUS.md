@@ -131,6 +131,40 @@
 
 ---
 
+## Retention Features (April 18, 2026)
+
+### Customer Card Enhancements
+
+| Feature | Location | Description |
+|---------|----------|-------------|
+| Days Overdue | CustomerCard | Shows "X days overdue" badge |
+| Quick Call | CustomerCard | One-tap call button |
+| Quick Remind | CustomerCard | One-tap WhatsApp with pre-filled message |
+
+### Dashboard Polish
+
+| Feature | Location | Description |
+|---------|----------|-------------|
+| Hero Card | Dashboard | "You will receive" / "All settled" |
+| Quick Summary | Dashboard | Total owed / Pending / Overdue stats |
+| Collected This Week | Dashboard | Positive reinforcement card |
+
+### Entry Detail Enhancements
+
+| Feature | Location | Description |
+|---------|----------|-------------|
+| Quick Call | [orderId].tsx | Phone icon in header |
+| Quick Remind | [orderId].tsx | WhatsApp icon with pre-filled message |
+
+### Implementation Notes
+
+- Call/WhatsApp buttons appear only when customer has phone number
+- Days overdue shows only on overdue entries (30+ days)
+- weekDelta from API powers "Collected this week" card
+- Quick remind auto-generates contextual WhatsApp message
+
+---
+
 ## Architecture Notes
 
 - Routes use `/entries/` (NOT `/orders/`)

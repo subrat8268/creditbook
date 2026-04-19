@@ -63,10 +63,14 @@ export default function DashboardScreen() {
     // Alias for backward compatibility with the existing dashboard hook.
     overdueCustomers: overduePeople,
     overdueTotalCount,
+    weekDelta,
     isLoading,
   } = useDashboard(profile?.id);
 
   const totalOutstanding = useMemo(() => toReceive ?? 0, [toReceive]);
+  
+  // Collection this week (from weekDelta - positive means collected)
+  const collectedThisWeek = weekDelta > 0 ? weekDelta : 0;
 
   if (isLoading || !profile) {
     return (
@@ -105,14 +109,14 @@ export default function DashboardScreen() {
             }}
           >
             <Text className="text-[11px] font-bold text-white/80 uppercase tracking-[1.5px]">
-              Total Outstanding
+              {totalOutstanding > 0 ? "You will receive" : "All settled"}
             </Text>
             <Text className="text-[36px] font-extrabold text-white mt-1">
               {formatCurrency(totalOutstanding)}
             </Text>
             
             {totalOutstanding > 0 && (
-              <View className="flex-row items-center mt-3">
+              <View className="flex-row items-center mt-3 gap-2">
                 <View
                   className="px-3 py-1.5 rounded-full"
                   style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
@@ -121,15 +125,51 @@ export default function DashboardScreen() {
                     {overdueTotalCount} overdue
                   </Text>
                 </View>
+                <Text className="text-[12px] text-white/80">
+                  from {overduePeople.length} customers
+                </Text>
               </View>
             )}
             
             {totalOutstanding === 0 && (
               <Text className="text-[14px] text-white/80 mt-2">
-                All clear!
+                All clear! No pending payments. ✓
               </Text>
             )}
           </View>
+
+          {/* Quick Summary Card */}
+          {totalOutstanding > 0 && (
+            <View 
+              className="rounded-2xl p-4 mb-5 bg-surface border border-border"
+            >
+              <Text className="text-[12px] font-bold text-textSecondary uppercase tracking-wider mb-3">
+                Quick Summary
+              </Text>
+              <View className="flex-row justify-between">
+                <View>
+                  <Text className="text-[24px] font-bold text-danger">
+                    {formatCurrency(totalOutstanding)}
+                  </Text>
+                  <Text className="text-[12px] text-textSecondary">Total owed</Text>
+                </View>
+                <View className="w-px bg-border" />
+                <View>
+                  <Text className="text-[24px] font-bold text-warning">
+                    {overduePeople.length}
+                  </Text>
+                  <Text className="text-[12px] text-textSecondary">Pending</Text>
+                </View>
+                <View className="w-px bg-border" />
+                <View>
+                  <Text className="text-[24px] font-bold text-primary">
+                    {overdueTotalCount}
+                  </Text>
+                  <Text className="text-[12px] text-textSecondary">Overdue</Text>
+                </View>
+              </View>
+            </View>
+          )}
 
           {/* Primary CTA — keep the home flow focused */}
           <TouchableOpacity
@@ -142,6 +182,39 @@ export default function DashboardScreen() {
               Add Entry
             </Text>
           </TouchableOpacity>
+
+          {/* Collected This Week - Positive reinforcement */}
+          {collectedThisWeek > 0 && (
+            <View 
+              className="rounded-xl p-3 mb-6"
+              style={{ backgroundColor: colors.successBg }}
+            >
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center gap-2">
+                  <View 
+                    className="w-8 h-8 rounded-full items-center justify-center"
+                    style={{ backgroundColor: colors.primary }}
+                  >
+                    <Text className="text-[14px]">📥</Text>
+                  </View>
+                  <View>
+                    <Text className="text-[12px] font-medium text-textSecondary">
+                      Collected this week
+                    </Text>
+                    <Text className="text-[16px] font-bold text-primary">
+                      +{formatCurrency(collectedThisWeek)}
+                    </Text>
+                  </View>
+                </View>
+                <View className="flex-row items-center gap-1">
+                  <Text className="text-[10px] text-primary">↑</Text>
+                  <Text className="text-[12px] font-bold text-primary">
+                    Great!
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
 
 {overduePeople.length > 0 ? (
             <View className="mb-6">

@@ -1,17 +1,19 @@
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Image, Linking, Text, TouchableOpacity, View } from "react-native";
 import React, { memo } from "react";
-import { formatRelativeActivity } from "../../utils/helper";
+import { formatRelativeActivity, daysSince } from "../../utils/helper";
 import { colors } from "../../utils/theme";
+import { Phone, MessageCircle } from "lucide-react-native";
 
 type CustomerStatus = "Overdue" | "Pending" | "Paid" | "Advance";
 
 type Props = {
   name: string;
-  phone: string;
+  phone?: string;
   avatar?: string;
   isOverdue?: boolean;
   outstandingBalance?: number;
   lastActiveAt?: string;
+  lastOrderAt?: string; // For calculating days overdue
   onPress?: () => void;
   onLongPress?: () => void;
 };
@@ -79,6 +81,7 @@ export default function CustomerCard({
   isOverdue = false,
   outstandingBalance = 0,
   lastActiveAt,
+  lastOrderAt,
   onPress,
   onLongPress,
 }: Props) {
@@ -86,10 +89,24 @@ export default function CustomerCard({
   const amountStr = formatAmount(status, outstandingBalance);
   const ui = STATUS_UIMAP[status];
   
-  // For avatar background, we must use style prop because standard tailwind config 
-  // might not have these specific deterministic hex values from theme.avatarPalette generated as JIT classes.
-  // All other styles use NativeWind classes exclusively.
+  // Calculate days overdue for display
+  const daysOverdue = lastOrderAt ? daysSince(lastOrderAt) : null;
+  const showDaysOverdue = status === "Overdue" && daysOverdue && daysOverdue > 0;
+  
+  // Avatar background color
   const avatarBgColor = getAvatarColor(name);
+
+  // Quick action handlers
+  const handleCall = () => {
+    if (phone) Linking.openURL(`tel:${phone}`);
+  };
+  
+  const handleWhatsApp = () => {
+    if (phone) {
+      const message = encodeURIComponent(`Hi ${name.split(' ')[0]}, this is a reminder about your outstanding balance of ₹${outstandingBalance?.toLocaleString('en-IN') || 0}. Please clear when convenient. - KredBook`);
+      Linking.openURL(`whatsapp://send?phone=${phone.replace(/\D/g, '')}&text=${message}`);
+    }
+  };
 
   return (
     <TouchableOpacity
@@ -122,7 +139,7 @@ export default function CustomerCard({
         </View>
       )}
 
-      {/* Name + Phone */}
+      {/* Name + Phone + Days Overdue */}
       <View className="flex-1 mr-2.5">
         <Text
           className="text-base font-semibold text-textPrimary mb-0.5"
@@ -130,9 +147,48 @@ export default function CustomerCard({
         >
           {name}
         </Text>
-        <Text className="text-xs font-medium text-textSecondary">
-          Last activity: {formatRelativeActivity(lastActiveAt)}
-        </Text>
+        <View className="flex-row items-center gap-2">
+          {showDaysOverdue && (
+            <View className="flex-row items-center">
+              <View 
+                className="rounded-full px-1.5 py-0.5"
+                style={{ backgroundColor: colors.overdue.bg }}
+              >
+                <Text 
+                  className="text-[10px] font-bold"
+                  style={{ color: colors.overdue.text }}
+                >
+                  {daysOverdue}d overdue
+                </Text>
+              </View>
+            </View>
+          )}
+          <Text className="text-xs font-medium text-textSecondary">
+            {formatRelativeActivity(lastActiveAt)}
+          </Text>
+        </View>
+        
+        {/* Quick action buttons (show on overdue only) */}
+        {status === "Overdue" && phone && (
+          <View className="flex-row items-center gap-2 mt-2">
+            <TouchableOpacity
+              onPress={handleCall}
+              className="flex-row items-center bg-primaryLight rounded-full px-2 py-1"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Phone size={12} color={colors.primary} strokeWidth={2} />
+              <Text className="text-[10px] font-semibold text-primary ml-1">Call</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleWhatsApp}
+              className="flex-row items-center bg-[#25D366]/10 rounded-full px-2 py-1"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <MessageCircle size={12} color="#25D366" strokeWidth={2} />
+              <Text className="text-[10px] font-semibold text-[#25D366] ml-1">Remind</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {/* Amount + Pill Badge */}

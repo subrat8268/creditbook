@@ -12,8 +12,8 @@ import { colors, gradients, spacing, typography } from "@/src/utils/theme";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
-import { MessageCircle, Pencil, Wallet } from "lucide-react-native";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { MessageCircle, Pencil, Wallet, Phone } from "lucide-react-native";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import {
   Alert,
   Linking,
@@ -152,6 +152,20 @@ export default function OrderDetailScreen() {
       return { payment: p, remaining: Math.max(0, running) };
     });
   }, [sortedPayments, grandTotal]);
+
+  // Quick reminder handlers
+  const handleCall = () => {
+    if (customerPhone) Linking.openURL(`tel:${customerPhone}`);
+  };
+  
+  const handleWhatsApp = () => {
+    if (customerPhone) {
+      const message = encodeURIComponent(
+        `Hi ${customerName.split(' ')[0]}, this is a reminder about your outstanding entry #${order?.bill_number} of ₹${order?.balance_due?.toLocaleString('en-IN') || 0}. Please clear when convenient. - KredBook`
+      );
+      Linking.openURL(`whatsapp://send?phone=${customerPhone.replace(/\D/g, '')}&text=${message}`);
+    }
+  };
 
   // ── Send Entry ──────────────────────────────────────────────────
   const handleSendEntry = useCallback(async () => {
@@ -338,15 +352,14 @@ export default function OrderDetailScreen() {
         </Text>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           {!isPaid && (
-            <TouchableOpacity
-              onPress={() =>
-                router.push(`/(main)/entries/${order.id}/edit` as never)
-              }
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Pencil size={20} color={colors.textSecondary} strokeWidth={2} />
-            </TouchableOpacity>
-          )}
+<TouchableOpacity
+            onPress={() =>
+              router.push(`/(main)/entries/${order.id}/edit` as never)
+            }
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Pencil size={20} color={colors.textSecondary} strokeWidth={2} />
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={handleSendEntry}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -357,6 +370,24 @@ export default function OrderDetailScreen() {
               strokeWidth={2}
             />
           </TouchableOpacity>
+          
+          {/* Quick Remind buttons (show only when not paid and has phone) */}
+          {!isPaid && customerPhone && (
+            <>
+              <TouchableOpacity
+                onPress={handleCall}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Phone size={20} color={colors.primary} strokeWidth={2} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleWhatsApp}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <MessageCircle size={20} color="#25D366" strokeWidth={2} />
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       </View>
 
