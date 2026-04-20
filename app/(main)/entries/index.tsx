@@ -147,7 +147,7 @@ export default function OrdersScreen() {
 
   const handlePressOrder = useCallback(
     (orderId: string) =>
-      router.push({ pathname: "/entries/[orderId]", params: { orderId } }),
+      router.push({ pathname: "/(main)/entries/[orderId]", params: { orderId } }),
     [router],
   );
 

@@ -97,7 +97,7 @@ export default function CustomersScreen() {
           type: "success",
         });
         router.push({
-          pathname: "/people/[customerId]",
+          pathname: "/(main)/people/[customerId]",
           params: { customerId: createdPerson.id },
         });
       }
@@ -148,7 +148,7 @@ export default function CustomersScreen() {
   const handleOpenLedger = useCallback(
     (customerId: string) => {
       router.push({
-        pathname: "/people/[customerId]",
+        pathname: "/(main)/people/[customerId]",
         params: { customerId },
       });
     },

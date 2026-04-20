@@ -1,7 +1,7 @@
 import { getCustomerPreviousBalance, recordPayment } from "@/src/api/entries";
 import { fetchPersonDetail } from "@/src/api/people";
 import Loader from "@/src/components/feedback/Loader";
-import { SyncStatus } from "@/src/components/feedback/SyncStatus";
+import SyncStatus from "@/src/components/feedback/SyncStatus";
 import { useToast } from "@/src/components/feedback/Toast";
 import BillFooter from "@/src/components/orders/BillFooter";
 import CustomerPicker from "@/src/components/picker/CustomerPicker";
@@ -250,7 +250,7 @@ export default function CreateOrderScreen() {
       });
       if (nextParam === "share" && selectedCustomerMeta) {
         router.replace({
-          pathname: "/people/[customerId]",
+          pathname: "/(main)/people/[customerId]",
           params: { customerId: selectedCustomerMeta.id, focus: "share" },
         });
       } else {
