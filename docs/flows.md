@@ -1,83 +1,62 @@
-# KredBook — Core User Flows
+# KredBook Core Flows
 
-> **Last Updated**: April 18, 2026
-> **Version**: v3.0 Simplified
+## Purpose
 
----
+This file is the index for active user flows in the strict single-mode product.
 
-## Overview
+## Active Flow Files
 
-This document is the quick reference for KredBook user flows.
+| Flow | File | Purpose |
+|---|---|---|
+| Dashboard | `docs/flows/dashboard.md` | Outstanding overview and quick actions |
+| People | `docs/flows/people.md` | Customer list and add-customer behavior |
+| Add Entry | `docs/flows/add-entry.md` | Create entry flow |
+| Entries | `docs/flows/entries.md` | Entry list behavior |
+| Entry Detail | `docs/flows/entry-detail.md` | Entry detail and payment actions |
+| Customer Detail | `docs/flows/customer-detail.md` | Customer ledger and actions |
+| Record Payment | `docs/flows/record-payment.md` | Record payment flow |
+| Profile | `docs/flows/profile.md` | Settings, language, export, sign out |
+| Export | `docs/flows/export.md` | CSV export flow |
 
-For detailed specifications, see individual flow files in `docs/flows/`.
+Supporting auth/onboarding flows also exist in `docs/flows/` and should be treated as supporting flows, not core business nouns.
 
-### Flow Files
+## Canonical Navigation Map
 
-| Flow | File | Description |
-|------|------|-------------|
-| Add Customer | `flows/add-customer.md` | Adding new people |
-| Add Entry | `flows/add-entry.md` | Recording what customer owes |
-| Record Payment | `flows/record-payment.md` | Recording payments received |
-| Customer Detail | `flows/customer-detail.md` | Viewing customer + transactions |
-| View Dashboard | `flows/dashboard.md` | Dashboard flow |
-
----
-
-## Quick Reference
-
-### Navigation Map
-
-```
-Dashboard (Home)
-├── Add Entry → Entry Create
-├── Top Overdue → Pay → Entry Create (with customer)
-└── Tap customer → Customer Detail
+```text
+Dashboard
+├── add entry
+├── open customer detail
+└── review outstanding state
 
 People
-├── Tap card → Entry Create (with customer)
-├── Long press → Customer Detail
-└── Inline add → Add Person
+├── add customer
+├── open customer detail
+└── start new entry for a customer
 
 Entries
-├── Tap card → Entry Detail
-│   └── Record Payment → Payment Modal
-└── FAB → Entry Create
+├── open entry detail
+└── record payment from entry flow
+
+Profile
+├── update business/profile details
+├── switch language
+├── export CSV
+└── sign out
 ```
 
-### Common Actions
+## Common Actions
 
 | Action | Path |
-|--------|------|
-| Add customer | People → Inline form |
-| Add entry | FAB → Amount → Save |
-| Record payment | Customer Detail → Record Payment |
-| View balance | Dashboard / Customer Detail |
-| Export data | Profile → Export |
+|---|---|
+| Add customer | People |
+| Add entry | Dashboard, People, or FAB |
+| Record payment | Customer detail or entry detail |
+| View outstanding | Dashboard or customer detail |
+| Export CSV | Profile |
 
----
+## Flow Writing Rules
 
-### Balance States
-
-| State | Hero Color | Shows |
-|-------|------------|-------|
-| Has dues | Red gradient | Amount + "TOTAL DUE" |
-| Overdue | Red gradient | Amount + "OVERDUE Xd" |
-| Cleared (₹0) | Green gradient | "SETTLED" |
-| Advance (< 0) | Green gradient | "ADVANCE" |
-
----
-
-### Quick Actions
-
-| Screen | Actions |
-|--------|---------|
-| Dashboard | Add Entry, Pay |
-| People | Add Person, Create Entry |
-| Customer Detail | Add Entry, Record Payment, Share |
-| Entries | View Detail, Record Payment |
-
----
-
-**Updated: April 18, 2026**
-
-For detailed flow specifications, see `docs/flows/` directory.
+1. Use **Customer**, **Entry**, and **Payment** as primary nouns.
+2. Do not document a hidden More sheet as an active flow.
+3. Do not document suppliers, reports, or reminders as active user flows.
+4. If a flow still touches legacy implementation surfaces, call that out explicitly.

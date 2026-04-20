@@ -1,18 +1,11 @@
-/**
- * Edit Entry Screen - Edit existing entries
- *
- * Reuses most of the create order logic but pre-populates with existing data.
- * Tracks edits with edited_at and edit_count fields.
- */
-
 import Loader from "@/src/components/feedback/Loader";
 import { useToast } from "@/src/components/feedback/Toast";
 import BillFooter from "@/src/components/orders/BillFooter";
-import OrderSummary from "@/src/components/orders/OrderBillSummary";
+import OrderSummary from "@/src/components/orders/OrderSummary";
 import OrderItemCard from "@/src/components/orders/OrderItemCard";
 import { useOrderDetail, useUpdateOrder } from "@/src/hooks/useEntries";
 import { useAuthStore } from "@/src/store/authStore";
-import { useOrderStore } from "@/src/store/orderStore";
+import { useOrderStore, DraftOrderItem } from "@/src/store/orderStore";
 import { generateBillPdf } from "@/src/utils/generateBillPdf";
 import { colors } from "@/src/utils/theme";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -100,7 +93,7 @@ export default function EditOrderScreen() {
     }
 
     if (order.items && order.items.length > 0) {
-      const mapped = order.items.map((item: any) => ({
+      const mapped = order.items.map((item: DraftOrderItem) => ({
         id: `order-${item.id}`,
         product_id: item.product_id ?? null,
         product_name: item.product_name,

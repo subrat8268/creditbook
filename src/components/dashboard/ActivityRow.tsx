@@ -43,7 +43,7 @@ type Props = {
   item: RecentActivityItem;
 };
 
-export default function ActivityRow({ item }: Props) {
+export default memo(function ActivityRow({ item }: Props) {
   const cfg = ICON_CONFIG[item.type] ?? ICON_CONFIG.bill;
   const IconComp = cfg.icon;
   // Money received (payment) → green +; anything else → red −
@@ -93,6 +93,4 @@ export default function ActivityRow({ item }: Props) {
       </View>
     </View>
   );
-}
-
-export default memo(ActivityRow);
+});

@@ -74,7 +74,7 @@ const STATUS_UIMAP: Record<CustomerStatus, { badgeBg: string; badgeText: string;
   },
 };
 
-export default function CustomerCard({
+export default memo(function CustomerCard({
   name,
   phone,
   avatar,
@@ -210,6 +210,4 @@ export default function CustomerCard({
       </View>
     </TouchableOpacity>
   );
-}
-
-export default memo(CustomerCard);
+});

@@ -142,4 +142,4 @@ export default memo(function DashboardHeader({
       </TouchableOpacity>
     </View>
   );
-}
+});

@@ -17,7 +17,7 @@ type Props = {
   keyboardType?: "default" | "decimal-pad" | "numeric" | "email-address";
 };
 
-export default function Input({
+export default memo(function Input({
   label,
   placeholder,
   value,
@@ -76,6 +76,4 @@ export default function Input({
       {error && <Text className="text-danger text-xs mt-1">{error}</Text>}
     </View>
   );
-}
-
-export default memo(Input);
+});

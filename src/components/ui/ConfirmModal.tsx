@@ -172,4 +172,4 @@ export default memo(function ConfirmModal({
       </View>
     </BottomSheet>
   );
-}
+});

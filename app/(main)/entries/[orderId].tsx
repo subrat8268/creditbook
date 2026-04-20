@@ -352,25 +352,28 @@ export default function OrderDetailScreen() {
         </Text>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           {!isPaid && (
-<TouchableOpacity
-            onPress={() =>
-              router.push(`/(main)/entries/${order.id}/edit` as never)
-            }
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Pencil size={20} color={colors.textSecondary} strokeWidth={2} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleSendEntry}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <MessageCircle
-              size={20}
-              color={colors.textSecondary}
-              strokeWidth={2}
-            />
-          </TouchableOpacity>
-          
+            <>
+              <TouchableOpacity
+                onPress={() => {
+                  router.push(`/(main)/entries/${order.id}/edit` as never);
+                }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Pencil size={20} color={colors.textSecondary} strokeWidth={2} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleSendEntry}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <MessageCircle
+                  size={20}
+                  color={colors.textSecondary}
+                  strokeWidth={2}
+                />
+              </TouchableOpacity>
+            </>
+          )}
+
           {/* Quick Remind buttons (show only when not paid and has phone) */}
           {!isPaid && customerPhone && (
             <>

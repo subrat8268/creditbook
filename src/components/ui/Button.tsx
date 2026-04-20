@@ -103,6 +103,4 @@ export default memo(function Button({
     </TouchableOpacity>
     </Animated.View>
   );
-}
-
-export default memo(Button);
+});

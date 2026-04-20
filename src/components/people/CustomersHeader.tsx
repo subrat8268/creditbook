@@ -47,4 +47,4 @@ export default memo(function CustomersHeader({ count, onMenuPress }: Props) {
       </TouchableOpacity>
     </View>
   );
-}
+});

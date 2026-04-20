@@ -34,4 +34,4 @@ export default memo(function StatusBadge({ status }: Props) {
       </Text>
     </View>
   );
-}
+});

@@ -305,16 +305,41 @@ The **Dashboard** is the home screen — the first thing users see when they ope
 
 ---
 
+## Implemented Retention Features (P0)
+
+The following retention-focused features have been implemented:
+
+### 1. Hero Card - Urgent Balance Display
+- **Total outstanding** prominently displayed with urgency color (red when owed)
+- **Overdue count badge**: Shows "X overdue from Y customers"
+- **"All settled"** state when zero balance (green hero)
+
+### 2. Quick Summary Card
+- Total owed (red), Pending count (amber), Overdue count (green)
+- Provides instant context at a glance
+
+### 3. Collected This Week - Positive Reinforcement
+- Shows weekly collection increases: "📥 +₹5,000 ↑ Great!"
+- Encourages continued business activity
+
+### 4. Top Overdue List
+- Top 3 overdue customers displayed
+- Each row shows: avatar, name, balance, days overdue, "Pay" button
+
+### 5. Quick Pay Button
+- One-tap to create payment for any overdue customer
+- Pre-fills customer from dashboard
+
+---
+
 ## Future Considerations
 
 Features that could be added (NOT in v3.0 scope):
 
 1. **App icon badge** — Show pending count on home screen icon
-2. **Weekly summary** — "You collected ₹X this week vs ₹Y last week"
-3. **Activity graph** — Sparkline showing 7-day trend
-4. **Filter by date** — "Due this week", "Due this month"
-5. **Sort options** — By amount, by date, by name
+2. **Activity graph** — Sparkline showing 7-day trend
+3. **Filter by date** — "Due this week", "Due this month"
 
 ---
 
-_Last updated: April 18, 2026_
+_Last updated: April 20, 2026_

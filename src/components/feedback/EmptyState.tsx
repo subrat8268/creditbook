@@ -87,6 +87,6 @@ export default memo(function EmptyState({
           <Text className="text-white text-[15px] font-bold">{cta}</Text>
         </TouchableOpacity>
       ) : null}
-    </View>
+    </Animated.View>
   );
-}
+});

@@ -46,7 +46,7 @@ interface AvatarProps {
   color?: string; // optional override
 }
 
-export default function Avatar({ name, size = 'md', color }: AvatarProps) {
+export default memo(function Avatar({ name, size = 'md', color }: AvatarProps) {
   const bgColor = color ?? getAvatarColor(name);
   const initials = getInitials(name);
   const { container, text } = SIZES[size];
@@ -68,6 +68,4 @@ export default function Avatar({ name, size = 'md', color }: AvatarProps) {
       </Text>
     </View>
   );
-}
-
-export default memo(Avatar);
+});

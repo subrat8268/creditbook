@@ -1,482 +1,159 @@
-# KredBook — Architecture
+# KredBook Architecture
 
-> **Last Updated**: April 17, 2026
-> **App Version**: 3.0
-> **Status**: Simplified — Credit tracking only
+> Phase 1 truth-reset version.
 
----
+## Product Shape
 
-## Product Identity
+KredBook is a **strict single-mode digital khata**.
 
-> **KredBook is a simple digital khata** — a mobile app that replaces the physical notebook for small businesses in India.
+Active product flow:
 
-**Core Flow:**
-
-```
-People → Entries → Payments → Dashboard
+```text
+Dashboard → People → Entries → Payments → Profile
 ```
 
-**What's In Scope:**
+## Active Scope
 
-- Add person (customer)
-- Record what they owe (entry)
-- Record what they paid (payment)
-- See total outstanding (dashboard)
+- Customers
+- Entries
+- Payments
+- Dashboard
+- Profile
+- Offline-first sync
+- EN/HI localization
+- CSV export
 
-**What's NOT In Scope:**
+## Out of Scope
 
-- Supplier management
+The following are out of scope unless explicitly marked legacy or transitional:
+
+- Suppliers
+- Distributor mode
+- Party abstraction as primary product language
 - Product catalog
 - Reports
+- GST
 - Multi-user
+- Notifications/reminders as active product features
 
----
+## Technical Stack
 
-## Folder Structure
+| Area | Choice |
+|---|---|
+| App | React Native + Expo |
+| Routing | Expo Router |
+| Server/backend | Supabase |
+| Local state | Zustand |
+| Server state | TanStack Query |
+| Offline writes | MMKV-backed queue |
+| Styling | NativeWind + `src/utils/theme.ts` |
 
-### `/app` — Routes
+## Route Model
 
-```
+### Active routes
+
+```text
 app/
-├── _layout.tsx                   ← Root (QueryClient, auth guard)
+├── _layout.tsx
 ├── (auth)/
-│   ├── _layout.tsx
 │   ├── login.tsx
 │   ├── signup.tsx
 │   ├── resetPassword.tsx
 │   ├── set-new-password.tsx
+│   ├── phone-setup.tsx
 │   └── onboarding/
-│       ├── business.tsx
-│       ├── ready.tsx
-│       └── role.tsx
-│
-└── (main)/
-    ├── _layout.tsx               ← Bottom tab navigator (5 tabs)
-    ├── dashboard/
-    │   └── index.tsx             ← Home tab
-    ├── people/
-    │   ├── index.tsx            ← People tab
-    │   ├── [customerId].tsx     ← Person detail
-    │   └── _layout.tsx
-    ├── entries/
-    │   ├── index.tsx             ← Entries tab
-    │   ├── create.tsx            ← Entry creation
-    │   ├── [orderId].tsx         ← Entry detail
-    │   ├── [orderId]/
-    │   │   └── edit.tsx          ← Edit entry
-    │   └── _layout.tsx
-    ├── profile/
-    │   ├── index.tsx
-    │   ├── edit.tsx
-    │   └── _layout.tsx
-    ├── more.tsx                 ← Hidden sheet
-    ├── export/
-    │   └── index.tsx
-    └── new-entry.tsx             ← FAB route
+├── (main)/
+│   ├── dashboard/
+│   ├── people/
+│   ├── entries/
+│   ├── profile/
+│   ├── export/
+│   └── new-entry.tsx
+└── profile-error.tsx
 ```
 
-### `/src` — Source Code
+### Important notes
 
-```
-src/
-├── api/           ← Data fetching
-├── components/    ← UI components
-├── hooks/         ← TanStack Query + utilities
-├── services/      ← Supabase client
-├── store/         ← Zustand stores
-├── types/         ← TypeScript types
-└── utils/         ← Theme, helpers
-```
+- Export exists as its own hidden route and is reached from the Profile area.
+- The repo should not describe a hidden **More sheet** as active architecture.
+- Some route identifiers still use legacy names such as `[orderId]`. Those are transitional implementation surfaces, not canonical product language.
+- A notifications route or permission may still exist in code/config. That should be treated as **legacy or transitional**, not active product scope.
 
----
+## Screen Model
 
-## Key Architecture Files
+| Screen | Purpose |
+|---|---|
+| Dashboard | Total outstanding and collection-focused overview |
+| People | Customer list and quick customer actions |
+| Entries | Entry list and entry detail flow |
+| Profile | Business/profile settings, language, export, sign out |
 
-| File | Purpose |
-| :--- | :--- |
-| `app/_layout.tsx` | Root layout with QueryClient, auth guard |
-| `src/utils/theme.ts` | All design tokens (colors, spacing, typography) |
-| `src/services/supabase.ts` | Supabase client |
-| `src/store/authStore.ts` | User + profile state |
+## State Model
 
----
+### Zustand
 
-## Navigation
-
-### Tab Bar (5 tabs)
-
-| Tab | Route | Purpose |
-| :--- | :--- | :--- |
-| Home | `/dashboard` | Total outstanding + overdue list |
-| People | `/people` | Customer list |
-| Add Entry | `/entries/create` | Create new entry (FAB) |
-| Entries | `/entries` | All entries |
-| Profile | `/profile` | Settings |
-
-### Hidden Routes
-
-| Route | How to access |
-| :--- | :--- |
-| `/export` | Via More sheet |
-| `/more` | Hidden tab |
-
----
-
-## Screen Summary
-
-### Dashboard (`/dashboard`)
-
-- Total Outstanding amount
-- Overdue count badge
-- Add Entry button
-- Top overdue people list
-
-### People (`/people`)
-
-- Search bar
-- Inline add (Name + Phone)
-- Person cards with balance
-- Tap → Create entry
-
-### Entry Detail (`/entries/[orderId]`)
-
-- Entry number + date
-- Person name + phone
-- Amount + status (Paid/Pending)
-- Payment history
-- Send Entry (PDF)
-- Record Payment
-
-### Profile (`/profile`)
-
-- Business name
-- Language toggle (EN/HI)
-- Sign Out
-
----
-
-## Data Layer
-
-### Zustand Stores
-
-| Store | Purpose |
-| :--- | :--- |
-| `authStore` | User, profile, session |
-| `orderStore` | Draft entry during creation |
-| `languageStore` | EN/HI preference |
-
-### TanStack Query Hooks
-
-| Hook | Purpose |
-| :--- | :--- |
-| `useDashboard(vendorId)` | Total outstanding |
-| `usePeople(vendorId, search)` | Customer list |
-| `useEntries(vendorId)` | Entry list |
-| `useCreateOrder(vendorId)` | Create entry mutation |
-| `useRecordPayment(orderId)` | Record payment mutation |
-
-### API Functions
-
-| File | Functions |
-| :--- | :--- |
-| `api/entries.ts` | Create, fetch, payment |
-| `api/people.ts` | Add, fetch people |
-| `api/dashboard.ts` | Dashboard data |
-| `api/export.ts` | CSV export |
-
----
-
-## Offline-First
-
-KredBook works without internet:
-
-- **Reads**: TanStack Query cache serves data
-- **Writes**: MMKV queue stores mutations offline
-- **Sync**: Auto-sync when connection returns
-- **UI**: Optimistic updates
-
-### Implementation
-
-| File | Responsibility |
-| :--- | :--- |
-| `src/lib/syncQueue.ts` | MMKV queue |
-| `src/hooks/useNetworkSync.ts` | Network listener |
-| `src/components/ui/SyncStatusBanner.tsx` | Sync status UI |
-
----
-
-## Component Structure
-
-### `/src/components/`
-
-```
-components/
-├── dashboard/
-│   ├── DashboardHeader.tsx
-│   ├── ActivityRow.tsx
-│   └── StatusBadge.tsx
-├── feedback/
-│   ├── Toast.tsx
-│   ├── Loader.tsx
-│   ├── EmptyState.tsx
-│   └── ErrorState.tsx
-├── orders/
-│   ├── OrderCard.tsx
-│   ├── BillFooter.tsx
-│   └── OrderSummary.tsx
-├── people/
-│   ├── CustomerList.tsx
-│   ├── CustomerCard.tsx
-│   ├── NewCustomerModal.tsx
-│   └── RecordCustomerPaymentModal.tsx
-├── picker/
-│   ├── CustomerPicker.tsx
-│   └── BottomSheetPicker.tsx
-└── ui/
-    ├── Button.tsx
-    ├── Input.tsx
-    ├── SearchBar.tsx
-    ├── Card.tsx
-    └── FloatingActionButton.tsx
-```
-
----
-
-## Data Flow
-
-### Overview
-
-```
-UI Components
-     ↓ (user action)
-TanStack Query (useQuery/useMutation)
-     ↓ (fetch/write)
-Supabase (PostgreSQL)
-     ↓ (response)
-TanStack Query Cache → UI Update
-```
-
----
-
-### State Management
-
-Two types of state, managed separately:
-
-| Type | Tool | Purpose | Examples |
-|------|------|---------|-----------|
-| **Client/Local** | Zustand | User session, preferences | Auth, language, draft entries |
-| **Server** | TanStack Query | Data from API | Customers, entries, dashboard |
-
-#### When to use Zustand
-
-- User authentication state
-- Language preference
-- Draft form data (in-progress entry)
-- App settings
-
-#### When to use TanStack Query
-
-- Any data from Supabase
-- Customer lists
-- Entry lists
-- Dashboard totals
-- Payment history
-
----
-
-### Zustand Stores
-
-| Store | Purpose | Data Type |
-|-------|---------|-----------|
-| `authStore` | User + profile | User object, Profile |
-| `languageStore` | Language | 'en' or 'hi' |
-| `orderStore` | Draft entry | In-progress entry form |
-| `preferencesStore` | Feature flags | UI preferences |
-
-**Zustand Structure:**
-
-```typescript
-// src/store/authStore.ts
-interface AuthState = {
-  user: User | null;
-  profile: Profile | null;
-  setAuth: (user) => void;
-  fetchProfile: (userId) => Promise<void>;
-  logout: () => void;
-}
-```
-
----
+Used for local/app state such as:
+- auth/session state
+- language preference
+- draft entry state
+- preferences and local flags
 
 ### TanStack Query
 
-Data fetching with caching and optimistic updates.
+Used for server-backed data such as:
+- customer lists and details
+- entry lists and details
+- payments and related mutations
+- dashboard summaries
 
-#### Query Keys
+## Current Data-Layer Reality
 
-| Key | Purpose |
-|-----|---------|
-| `['people', vendorId]` | All customers |
-| `['people', vendorId, search]` | Filtered customers |
-| `['entries', vendorId]` | All entries |
-| `['dashboard', vendorId]` | Dashboard totals |
-| `['orderDetail', orderId]` | Single entry |
+Canonical product nouns are **Customer / Entry / Payment**.
 
-#### Example: Fetching Customers
+The implementation still includes some transitional internals such as:
+- `orderStore`
+- `useCreateOrder`
+- `orderId`
+- `useParties`
 
-```typescript
-// src/hooks/usePeople.ts
-export function usePeople(vendorId: string, search?: string) {
-  return useQuery({
-    queryKey: search 
-      ? ['people', vendorId, search] 
-      : ['people', vendorId],
-    queryFn: () => fetchPeople(vendorId, search),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-}
-```
+These are legacy or transitional surfaces. They should not be treated as the product contract.
 
----
+## Offline-First Model
 
-### Data Flow: Reading
+KredBook is expected to:
+- read from cache when offline
+- queue writes locally
+- sync automatically when connectivity returns
+- keep the UI responsive with optimistic updates where appropriate
 
-```
-1. Component calls useXxx() hook
-2. Hook creates query with queryKey
-3. TanStack Query checks cache
-   - If fresh: Return cached data
-   - If stale: Fetch from Supabase
-4. Return data to component
-5. UI renders
-```
+Primary implementation surfaces:
+- `src/lib/syncQueue.ts`
+- `src/hooks/useNetworkSync.ts`
+- sync-status UI components
 
-**Cache Behavior:**
-- `staleTime`: Data good for 5 minutes
-- `gcTime`: Cache kept for 30 minutes
-- Refetch on app focus
+## Component Architecture
 
----
+Primary component domains:
+- `src/components/ui/`
+- `src/components/feedback/`
+- `src/components/people/`
+- `src/components/dashboard/`
+- `src/components/picker/`
 
-### Data Flow: Writing (Mutations)
+The repo also still contains `src/components/orders/` as a transitional/legacy folder tied to entry flows. Do not describe it as the active product-domain name.
 
-```
-1. User submits form (e.g., Add Entry)
-2. Component calls mutate() from TanStack Query
-3. Optimistic update immediately:
-   - UI shows new data (e.g., entry appears in list)
-   - Balance updates instantly
-4. Mutation sends to Supabase
-5. 
-   - Success: Invalidate related queries → Refetch
-   - Failure: Show error toast, roll back UI
-```
+## Design-System Rule
 
-**Optimistic Update Pattern:**
+`src/utils/theme.ts` is the design-token source of truth.
 
-```typescript
-const createOrderMutation = useMutation({
-  mutationFn: (data) => createOrder(data),
-  onSuccess: () => {
-    // Refresh related queries
-    queryClient.invalidateQueries({ queryKey: ['entries', vendorId] });
-    queryClient.invalidateQueries({ queryKey: ['dashboard', vendorId] });
-  },
-});
-```
+Documentation may explain token usage, but it must not override actual token values from:
+- `src/utils/theme.ts`
+- `tailwind.config.js`
 
----
+## Architecture Drift Rule
 
-### Offline Sync Behavior
+If a concept exists in code but is out of scope, document it honestly as:
+- legacy
+- transitional
 
-**When offline:**
-
-1. **Writes queued locally**: Mutations saved to MMKV queue
-2. **UI updates optimistically**: Data appears immediately
-3. **Sync banner shows**: "Offline - X saved locally"
-
-**When back online:**
-
-1. **Queue processed FIFO**: Each mutation replayed to Supabase
-2. **Sync banner shows**: "Syncing X changes..."
-3. **Success**: Banner shows "All synced"
-
-**Flow:**
-
-```
-Offline Mutation
-     ↓
-MMKV Queue (local storage)
-     ↓
-Network listener detects online
-     ↓
-Process queue (FIFO order)
-     ↓
-Each mutation → Supabase
-     ↓
-Success: Update cache
-Failure: Show error, keep in queue
-```
-
----
-
-### Query Client Setup
-
-In `app/_layout.tsx`:
-
-```typescript
-const [queryClient] = useState(
-  () =>
-    new QueryClient({
-      defaultOptions: {
-        queries: {
-          staleTime: 5 * 60 * 1000,
-          gcTime: 30 * 60 * 1000,
-          retry: 1,
-          refetchOnWindowFocus: true,
-        },
-        mutations: {
-          retry: 1,
-        },
-      },
-    }),
-);
-```
-
----
-
-### Summary: When to Use What
-
-| Need | Use |
-|------|-----|
-| User logged in | `useAuthStore()` |
-| Language setting | `useLanguageStore()` |
-| Get all customers | `usePeople()` |
-| Get entries | `useEntries()` |
-| Get dashboard | `useDashboard()` |
-| Create entry | `useCreateOrder()` |
-| Record payment | `useRecordPayment()` |
-| Draft form data | `useOrderStore()` |
-
----
-
-## Known Issues
-
-| Issue | Status |
-| :--- | :--- |
-| Old `/orders` route removed | ✅ Cleaned |
-| Old `/suppliers` route removed | ✅ Cleaned |
-| Old `/products` route removed | ✅ Cleaned |
-| Settings screen unused | ✅ Hidden from nav |
-
----
-
-## Updates Required
-
-When making changes:
-
-1. Update this ARCHITECTURE.md
-2. Update PRD if adding/removing features
-3. Keep STATUS.md in sync
-
-**Rule:** Document first, then code.
+Do not mark it removed unless it is actually removed.

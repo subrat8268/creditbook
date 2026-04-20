@@ -1,272 +1,114 @@
 # KredBook Design System
 
-> **Last Updated**: April 18, 2026
-> **App Version**: 3.0
-> **Status**: Simplified — Credit tracking only
+> Phase 1 truth-reset version.
 
----
+## Rule Zero
 
-## Product Identity
+`src/utils/theme.ts` is the design-token source of truth.
 
-> **KredBook is a simple digital khata** — replaces the physical notebook.
+`tailwind.config.js` extends those tokens for NativeWind usage.
 
-**Core Principles:**
+If any document conflicts with actual token values in code, the code-backed token source wins and the docs must be updated.
 
-- Simple — 5 tabs, one primary action per screen
-- Fast — Entry in under 30 seconds
-- Clear — Color shows financial state
+## Product Context
 
----
+KredBook is a simple digital khata.
 
-## Color System
+The UI should feel:
+- focused
+- fast
+- legible
+- trustworthy
 
-### Core Colors
+## Core Visual Principles
 
-| Token | Hex | Usage |
-| :--- | :--- | :--- |
-| `primary` | `#22C55E` | Primary buttons, FAB, confirmations |
-| `success` | `#22C55E` | Money received, paid state |
-| `danger` | `#EF4444` | Money owed, overdue (NOTE: design-system says #E74C3C, theme uses #EF4444) |
-| `warning` | `#F59E0B` | Pending, partial |
-| `background` | `#F6F7F9` | App background |
-| `surface` | `#FFFFFF` | Cards, modals |
-| `textPrimary` | `#1C1C1E` | Headings, amounts |
-| `textSecondary` | `#6B7280` | Labels, metadata |
+1. One clear primary action per screen.
+2. Financial state should be obvious at a glance.
+3. Use consistent spacing and tokenized colors.
+4. Avoid decorative complexity.
+
+## Canonical Tokens
+
+### Colors
+
+These are the active semantic tokens to document and use:
+
+| Token | Value | Use |
+|---|---|---|
+| `primary` | `#22C55E` | Brand, active states, primary CTAs |
+| `danger` | `#EF4444` | Money owed / overdue |
+| `warning` | `#F59E0B` | Pending / action needed |
+| `background` | `#F6F7F9` | App canvas |
+| `surface` | `#FFFFFF` | Cards, sheets, modals |
+| `textPrimary` | `#1C1C1E` | Main text |
+| `textSecondary` | `#6B7280` | Secondary text |
 | `border` | `#E2E8F0` | Borders, dividers |
+| `fab` | `#2563EB` | Reusable FAB token |
 
-### Financial State Colors
+### Important implementation note
 
-| State | Color | Token |
-| :--- | :--- | :--- |
-| Paid / Received | Green | `success` |
-| Owed / Overdue | Red | `danger` |
-| Pending / Partial | Amber | `warning` |
+The tab-bar Add Entry FAB implementation currently uses `colors.warning` (orange) in `app/(main)/_layout.tsx`.
 
-### Status Chips (Design System)
+Treat that as a **current implementation inconsistency to clean up later**, not as a new canonical design rule.
+
+## Status Colors
 
 | State | Background | Text |
-| :--- | :--- | :--- |
-| PAID | `#DCFCE7` | `#16A34A` |
-| PENDING | `#FEF3C7` | `#D97706` |
-| OVERDUE | `#FEE2E2` | `#DC2626` |
+|---|---|---|
+| Paid | `#DCFCE7` | `#16A34A` |
+| Pending | `#FEF3C7` | `#D97706` |
+| Overdue | `#FEE2E2` | `#DC2626` |
 
----
+## Spacing and Layout
+
+Use the token system from `src/utils/theme.ts`.
+
+Key active dimensions:
+- screen padding: `16`
+- input height: `48`
+- button height in theme: `50`
+- card radius: `16`
+- FAB size: `56`
+
+### Current implementation note
+
+`Button.tsx` currently renders a `52px` visual height while `theme.ts` documents `buttonHeight: 50`.
+
+For Phase 1:
+- document this as drift
+- do not invent a third value
+- align docs to the token source and record the component mismatch as cleanup work
 
 ## Typography
 
-### Font
+Typography source of truth is `src/utils/theme.ts`.
 
-**Inter** — Primary font for all text
+Important active roles:
+- screen title
+- hero amount
+- card title
+- body
+- caption
+- label
 
-### Type Scale
+Use financial emphasis intentionally:
+- balances should be visually prominent
+- color should reinforce financial state, not replace readable labels
 
-| Role | Weight | Size | Usage |
-| :--- | :--- | :--- | :--- |
-| Screen Title | Bold | 24px | Screen headers |
-| Hero Amount | Bold | 36px | Total outstanding |
-| Card Title | SemiBold | 18px | Card headings |
-| Body | Regular | 16px | List items |
-| Caption | Medium | 13px | Metadata |
+## Component Guidance
 
-### Rules
+- Use `Button`, `Input`, `Card`, `SearchBar`, and `Avatar` before creating variations.
+- Keep animations functional, not decorative.
+- Keep interaction feedback fast and clear.
 
-- Financial amounts: **bold 700**, larger than surrounding text
-- Color-coded: green = paid, red = owed, amber = pending
+## Anti-Drift Rules
 
----
+This document must not:
+- override `theme.ts`
+- claim token values that differ from the source
+- treat supplier/distributor visual semantics as active product design
+- introduce new product concepts through visual terminology
 
-## Layout
+## Legacy / Transitional Note
 
-### Screen Structure
-
-```
-SafeAreaView (full screen)
-├── ScrollView / FlatList (content)
-│   └── Cards with 16dp padding
-├── FloatingActionButton (bottom-right)
-└── Bottom Tab Bar (fixed)
-```
-
-### Spacing
-
-| Token | Value | Usage |
-| :--- | :--- | :--- |
-| xs | 4dp | Tight gaps |
-| sm | 8dp | Chip padding |
-| md | 16dp | Screen padding (NOTE: use px-4, NOT px-5) |
-| lg | 24dp | Section spacing |
-| xl | 32dp | Major spacing |
-
-### Cards
-
-| Property | Value |
-| :--- | :--- |
-| Background | White |
-| Border Radius | 16dp |
-| Shadow | elevation 2 |
-| Padding | 16dp |
-
----
-
-## Components
-
-### Buttons
-
-#### Primary Button
-
-| Property | Value |
-| :--- | :--- |
-| Background | `#22C55E` |
-| Text | White, Bold, 16px |
-| Height | 52dp |
-| Border Radius | 14dp |
-
-#### Secondary Button
-
-| Property | Value |
-| :--- | :--- |
-| Background | Transparent |
-| Border | 1.5dp `#22C55E` |
-| Text | `#22C55E`, SemiBold |
-
-### Floating Action Button (FAB)
-
-| Property | Value |
-| :--- | :--- |
-| Size | 56dp |
-| Background | `#2563EB` (Blue) |
-| Icon | White, + |
-| Position | Bottom-right, 20dp from edge, 24dp above tab bar |
-| Border Radius | Full circle |
-
-### Status Chips
-
-| State | Background | Text |
-| :--- | :--- | :--- |
-| PAID | `#DCFCE7` | `#16A34A` |
-| PENDING | `#FEF3C7` | `#D97706` |
-| OVERDUE | `#FEE2E2` | `#DC2626` |
-
-### Input Fields
-
-| Property | Value |
-| :--- | :--- |
-| Background | `#F6F7F9` |
-| Border | 1dp `#E5E7EB`, focused: 1.5dp `#22C55E` |
-| Height | 48dp |
-| Border Radius | 12dp |
-
-### Bottom Sheet
-
-| Property | Value |
-| :--- | :--- |
-| Background | White |
-| Border Radius | 24dp |
-| Handle | 40×4dp centered |
-| Snap Points | `["65%"]`, `["90%"]` |
-
----
-
-## Navigation
-
-### Tab Bar
-
-| Property | Value |
-| :--- | :--- |
-| Background | White |
-| Active Color | `#22C55E` |
-| Inactive Color | `#9CA3AF` |
-| Height | 64dp + inset |
-
-### Tabs
-
-1. **Home** — Dashboard
-2. **People** — Customers
-3. **Add** — Entry (FAB)
-4. **Entries** — All entries
-5. **Profile** — Settings
-
----
-
-## Icons
-
-### Library
-
-**`lucide-react-native`** — Used for all icons
-
-### Guidelines
-
-- Outline style only
-- Stroke: 1.5–2dp
-- Size: 22–24dp (navigation), 18–20dp (inline)
-- Color: Match token or surrounding text
-
----
-
-## Animations
-
-### Timing
-
-| Use Case | Duration |
-| :--- | :--- |
-| Modal slide | 250–300ms |
-| Toast | 200ms in, 3s auto-dismiss |
-| Button feedback | 100ms |
-
-### Rules
-
-- Functional, not decorative
-- No bounce on financial confirmations
-- Keep under 400ms
-
----
-
-## UX Patterns
-
-### 3-Tap Entry
-
-1. Tap FAB
-2. Enter amount
-3. Confirm
-
-### Color Communication
-
-- Green = money received
-- Red = money owed
-- Amber = action needed
-
-### Optimistic UI
-
-- Transactions appear immediately
-- Background sync
-- Error shows toast
-
----
-
-## Implementation Notes (April 18, 2026)
-
-### Spacing Standard
-- **Always use `px-4`** for screen padding (not px-5)
-- Card padding: `p-4` (16dp)
-- Section spacing: `mb-4` or `mb-6`
-
-### Theme Updates Applied
-- Button: 52dp height, 14dp radius, 16px text
-- FAB: bottom-24 (above tab bar)
-- Screen title: 24px
-- Hero amount: 36px
-
----
-
-## Updates
-
-When adding new components:
-
-1. Use existing colors from `theme.ts`
-2. Use existing spacing values (px-4 standard)
-3. Keep animations under 400ms
-4. Test with both green and red states
-
----
-
-_This document reflects KredBook v3.0. Update when design patterns change._
+Supplier-era or report-era colors may still exist in `theme.ts` for legacy reasons. They are not part of the active product design language unless explicitly called out as legacy.

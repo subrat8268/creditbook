@@ -8,7 +8,7 @@ import { useWhatsAppShare } from "@/src/hooks/useWhatsAppShare";
 import { useAuthStore } from "@/src/store/authStore";
 import { usePreferencesStore } from "@/src/store/preferencesStore";
 import { Transaction } from "@/src/types/customer";
-import { colors } from "@/src/utils/theme";
+import { colors, gradients, spacing, typography } from "@/src/utils/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Print from "expo-print";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -18,7 +18,9 @@ import {
   ArrowDown,
   ArrowLeft,
   ArrowUp,
+  Download,
   FileText,
+  MessageCircle,
   Phone,
   Plus,
   Receipt,
@@ -215,6 +217,15 @@ function TransactionRow({ tx }: { tx: Transaction }) {
     </View>
   );
 }
+
+// ── Card shadow style ─────────────────────────────────────────────────
+const SHADOW = {
+  shadowColor: colors.textPrimary,
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.06,
+  shadowRadius: 4,
+  elevation: 2,
+};
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 type ListItem =
@@ -475,22 +486,7 @@ export default function CustomerDetailScreen() {
             <Text className="text-[12px] text-white/60 mt-1">
               Last: {formatLastEntryDate(customer.lastActiveAt)}
             </Text>
-          ) : null}
-        </LinearGradient>
-                  OVERDUE \u00b7 {customer.daysSinceLastOrder} days
-                </Text>
-              </View>
-              {customer.lastActiveAt ? (
-                <Text className="text-[12px] text-white/65">
-                  Last entry: {formatLastEntryDate(customer.lastActiveAt)}
-                </Text>
-              ) : null}
-            </View>
-          ) : customer.lastActiveAt ? (
-            <Text className="text-[12px] text-white/65">
-              Last entry: {formatLastEntryDate(customer.lastActiveAt)}
-            </Text>
-          ) : null}
+) : null}
         </LinearGradient>
 
         {/* ── Primary Action Buttons ── */}
@@ -587,22 +583,20 @@ export default function CustomerDetailScreen() {
             })}
           </View>
 
-          {/* Transaction List */}
-          {listItems.length === 0 ? (
+          {/* Empty State */}
+          {listItems.length === 0 && (
             <View className="items-center py-12 gap-3">
               <View className="w-20 h-20 rounded-2xl items-center justify-center border-2 border-dashed border-success/30 bg-successBg">
                 <Receipt size={32} color={colors.primary} strokeWidth={1.5} />
               </View>
-              <Text className="text-[15px] font-bold text-textPrimary">No transactions</Text>
-              <Text className="text-[12px] text-textSecondary">Add an entry to start</Text>
+              <Text className="text-[15px] font-bold text-textPrimary">
+                No transactions
+              </Text>
+              <Text className="text-[12px] text-textSecondary">
+                Add an entry to start
+              </Text>
             </View>
-          ) : (
-            <View className="mt-4 gap-2">
-              {listItems.map((tx) => (
-                <TransactionRow key={tx.id} tx={tx} />
-              ))}
-            </View>
-)}
+          )}
         </View>
 
         {/* Transaction List - expanded */}
@@ -646,7 +640,6 @@ export default function CustomerDetailScreen() {
               )}
             </View>
           )}
-        </View>
       </ScrollView>
 
       {/* ── Footer: Download PDF + WhatsApp ── */}
