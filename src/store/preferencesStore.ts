@@ -3,13 +3,6 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 export type NetPositionRange = 7 | 30 | 90;
-export type BusinessType = "seller" | "distributor";
-
-export type FeatureFlags = {
-  hideSuppliers: boolean;
-  hideQuickItems: boolean;
-  hideExport: boolean;
-};
 
 export type ReminderLogEntry = {
   id: string;
@@ -36,14 +29,6 @@ type PreferencesState = {
   netPositionRange: NetPositionRange;
   setNetPositionRange: (value: NetPositionRange) => void;
 
-  // Business type (seller or distributor)
-  businessType: BusinessType;
-  setBusinessType: (value: BusinessType) => void;
-
-  // Feature flags for progressive disclosure
-  featureFlags: FeatureFlags;
-  setFeatureFlags: (flags: Partial<FeatureFlags>) => void;
-
   // Reminders
   overdueRemindersEnabled: boolean;
   overdueReminderHour: number;
@@ -63,19 +48,6 @@ export const usePreferencesStore = create<PreferencesState>()(
     (set) => ({
       netPositionRange: 30,
       setNetPositionRange: (value) => set({ netPositionRange: value }),
-
-      businessType: "seller",
-      setBusinessType: (value) => set({ businessType: value }),
-
-      featureFlags: {
-        hideSuppliers: true, // Default: retailers don't see suppliers
-        hideQuickItems: true, // Default: hide quick items (optional feature)
-        hideExport: false, // Default: show export (common feature)
-      },
-      setFeatureFlags: (flags) =>
-        set((state) => ({
-          featureFlags: { ...state.featureFlags, ...flags },
-        })),
 
       overdueRemindersEnabled: true,
       overdueReminderHour: 9,
@@ -129,8 +101,6 @@ export const usePreferencesStore = create<PreferencesState>()(
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         netPositionRange: state.netPositionRange,
-        businessType: state.businessType,
-        featureFlags: state.featureFlags,
         overdueRemindersEnabled: state.overdueRemindersEnabled,
         overdueReminderHour: state.overdueReminderHour,
         overdueReminderMinute: state.overdueReminderMinute,

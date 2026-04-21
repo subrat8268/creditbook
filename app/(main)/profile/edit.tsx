@@ -6,14 +6,12 @@
  * - Bank details (bank name, account number, IFSC)
  * - Payment info (UPI ID)
  * - Business logo (upload)
- * - Business Type (Retailer vs Distributor)
  */
 
 import { uploadBusinessLogo } from "@/src/api/upload";
 import { useToast } from "@/src/components/feedback/Toast";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
-import { usePreferencesStore } from "@/src/store/preferencesStore";
 import { pickImageFromLibrary } from "@/src/utils/imagePicker";
 import { colors, spacing } from "@/src/utils/theme";
 import { Stack, useRouter } from "expo-router";
@@ -36,14 +34,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function ProfileEditScreen() {
   const router = useRouter();
   const { profile, setProfile } = useAuthStore();
-  const { businessType: prefBusinessType, setBusinessType } =
-    usePreferencesStore();
   const { show: showToast } = useToast();
 
   // Form state
-  const [businessType, setLocalBusinessType] = useState<
-    "seller" | "distributor"
-  >(prefBusinessType || "seller");
   const [businessName, setBusinessName] = useState(
     profile?.business_name || "",
   );
@@ -142,7 +135,6 @@ export default function ProfileEditScreen() {
 
       // Update local stores
       setProfile(data);
-      setBusinessType(businessType); // Persist business type preference
 
       showToast({ message: "Profile updated", type: "success" });
       router.back();
@@ -255,174 +247,6 @@ export default function ProfileEditScreen() {
             >
               Name and phone cannot be changed
             </Text>
-          </View>
-
-          {/* Business Type Section */}
-          <View
-            style={{
-              backgroundColor: colors.surface,
-              marginBottom: spacing.sm,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                padding: spacing.md,
-                borderBottomWidth: 1,
-                borderBottomColor: colors.border,
-              }}
-            >
-              <Building2 size={20} color={colors.primary} />
-              <Text
-                style={{
-                  flex: 1,
-                  marginLeft: spacing.sm,
-                  fontSize: 15,
-                  fontWeight: "600",
-                  color: colors.textPrimary,
-                }}
-              >
-                Business Type
-              </Text>
-            </View>
-
-            <View style={{ padding: spacing.md }}>
-              <Text
-                style={{
-                  fontSize: 12,
-                  color: colors.textSecondary,
-                  marginBottom: spacing.sm,
-                }}
-              >
-                Select your business model
-              </Text>
-
-              {/* Retailer Option */}
-              <TouchableOpacity
-                onPress={() => setLocalBusinessType("seller")}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  paddingVertical: spacing.sm,
-                  paddingHorizontal: spacing.sm,
-                  marginBottom: spacing.sm,
-                  borderRadius: 8,
-                  backgroundColor:
-                    businessType === "seller"
-                      ? colors.primaryLight
-                      : colors.border + "20",
-                }}
-              >
-                <View
-                  style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: 10,
-                    borderWidth: 2,
-                    borderColor:
-                      businessType === "seller"
-                        ? colors.primary
-                        : colors.border,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {businessType === "seller" && (
-                    <View
-                      style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 5,
-                        backgroundColor: colors.primary,
-                      }}
-                    />
-                  )}
-                </View>
-                <View style={{ marginLeft: spacing.sm, flex: 1 }}>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: "500",
-                      color: colors.textPrimary,
-                    }}
-                  >
-                    Retailer
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: colors.textSecondary,
-                      marginTop: spacing.xs,
-                    }}
-                  >
-                    Manage customers who owe you money
-                  </Text>
-                </View>
-              </TouchableOpacity>
-
-              {/* Distributor Option */}
-              <TouchableOpacity
-                onPress={() => setLocalBusinessType("distributor")}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  paddingVertical: spacing.sm,
-                  paddingHorizontal: spacing.sm,
-                  borderRadius: 8,
-                  backgroundColor:
-                    businessType === "distributor"
-                      ? colors.primaryLight
-                      : colors.border + "20",
-                }}
-              >
-                <View
-                  style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: 10,
-                    borderWidth: 2,
-                    borderColor:
-                      businessType === "distributor"
-                        ? colors.primary
-                        : colors.border,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {businessType === "distributor" && (
-                    <View
-                      style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 5,
-                        backgroundColor: colors.primary,
-                      }}
-                    />
-                  )}
-                </View>
-                <View style={{ marginLeft: spacing.sm, flex: 1 }}>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: "500",
-                      color: colors.textPrimary,
-                    }}
-                  >
-                    Distributor
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: colors.textSecondary,
-                      marginTop: spacing.xs,
-                    }}
-                  >
-                    Manage suppliers + customers. Buy and sell.
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
           </View>
 
           {/* Business Details Section */}

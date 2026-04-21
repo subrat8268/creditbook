@@ -102,8 +102,7 @@ export default function ExportScreen() {
           </TouchableOpacity>
 
           <Text style={styles.helpText}>
-            Exports all your entries (bills, customers, payments). Open in Excel
-            or Google Sheets.
+            Exports all your entries as CSV. Open in Excel or Google Sheets.
           </Text>
         </View>
 

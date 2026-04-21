@@ -64,7 +64,10 @@ export default memo(function MoneyAmount({
       {...props}
       style={[
         textStyle,
-        { color: color ?? (variant === "hero" ? "#FFFFFF" : colors.textPrimary) },
+        {
+          color:
+            color ?? (variant === "hero" ? colors.surface : colors.textPrimary),
+        },
         style,
       ]}
     >

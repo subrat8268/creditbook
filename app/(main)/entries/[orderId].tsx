@@ -14,7 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { MessageCircle, Pencil, Wallet, Phone } from "lucide-react-native";
-import { useCallback, useMemo, useRef, useState, useEffect } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Linking,
@@ -426,17 +426,16 @@ export default function OrderDetailScreen() {
               style={{
                 alignSelf: "flex-start",
                 backgroundColor: colors.surface,
-                paddingHorizontal: 10,
-                paddingVertical: 4,
+                paddingHorizontal: spacing.chipPadding,
+                paddingVertical: spacing.xs,
                 borderRadius: 999,
                 marginTop: spacing.sm,
               }}
             >
               <Text
                 style={{
+                  ...typography.label,
                   color: heroGradient.start,
-                  fontSize: 11,
-                  fontWeight: "700",
                   letterSpacing: 0.3,
                 }}
               >
@@ -491,13 +490,13 @@ export default function OrderDetailScreen() {
               <Text
                 style={{
                   ...typography.cardTitle,
-                  marginBottom: 2,
+                  marginBottom: spacing.xs,
                 }}
                 numberOfLines={1}
               >
                 {customerName}
               </Text>
-              <Text style={{ fontSize: 13, color: colors.textSecondary }}>
+              <Text style={typography.small}>
                 +91 {customerPhone}
               </Text>
             </View>
@@ -506,23 +505,19 @@ export default function OrderDetailScreen() {
             <View style={{ alignItems: "flex-end", marginLeft: 8 }}>
               <Text
                 style={{
-                  fontSize: 11,
-                  color: colors.textSecondary,
-                  marginBottom: 3,
+                  ...typography.label,
+                  marginBottom: spacing.xs,
                 }}
               >
                 Previous Balance
               </Text>
-              <Text
-                style={{
-                  fontSize: 15,
-                  fontWeight: "700",
-                  color:
-                    order.previous_balance > 0 ? colors.danger : colors.primary,
-                }}
-              >
-                ₹{fmt(order.previous_balance)}
-              </Text>
+              <MoneyAmount
+                value={order.previous_balance}
+                color={
+                  order.previous_balance > 0 ? colors.danger : colors.primary
+                }
+                style={{ fontSize: 15, fontWeight: "700" as const }}
+              />
             </View>
           </View>
         </View>
@@ -644,70 +639,75 @@ export default function OrderDetailScreen() {
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
-              paddingVertical: 5,
+              paddingVertical: spacing.xs,
             }}
           >
-            <Text style={{ fontSize: 14, color: colors.textSecondary }}>
+            <Text style={typography.subtitle}>
               Subtotal
             </Text>
-            <Text style={{ fontSize: 14, color: colors.textPrimary }}>
-              ₹{fmt(itemsSubtotal)}
-            </Text>
+            <MoneyAmount
+              value={itemsSubtotal}
+              style={[typography.subtitle, { color: colors.textPrimary }]}
+            />
           </View>
 
           {/* GST row — only if tax_percent > 0 */}
           {order.tax_percent > 0 && (
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                paddingVertical: 5,
-              }}
-            >
-              <Text style={{ fontSize: 14, color: colors.textSecondary }}>
-                GST ({order.tax_percent}%)
-              </Text>
-              <Text style={{ fontSize: 14, color: colors.textPrimary }}>
-                ₹{fmt(taxAmount)}
-              </Text>
-            </View>
-          )}
+             <View
+               style={{
+                 flexDirection: "row",
+                 justifyContent: "space-between",
+                 paddingVertical: spacing.xs,
+               }}
+             >
+               <Text style={typography.subtitle}>
+                 GST ({order.tax_percent}%)
+               </Text>
+               <MoneyAmount
+                 value={taxAmount}
+                 style={[typography.subtitle, { color: colors.textPrimary }]}
+               />
+             </View>
+           )}
 
           {/* Loading Charge row — only if > 0 */}
           {order.loading_charge > 0 && (
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                paddingVertical: 5,
-              }}
-            >
-              <Text style={{ fontSize: 14, color: colors.textSecondary }}>
-                Loading Charge
-              </Text>
-              <Text style={{ fontSize: 14, color: colors.textSecondary }}>
-                ₹{fmt(order.loading_charge)}
-              </Text>
-            </View>
-          )}
+             <View
+               style={{
+                 flexDirection: "row",
+                 justifyContent: "space-between",
+                 paddingVertical: spacing.xs,
+               }}
+             >
+               <Text style={typography.subtitle}>
+                 Loading Charge
+               </Text>
+               <MoneyAmount
+                 value={order.loading_charge}
+                 style={typography.subtitle}
+               />
+             </View>
+           )}
 
           {/* Previous balance row — only if > 0 */}
           {order.previous_balance > 0 && (
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                paddingVertical: 5,
-              }}
-            >
-              <Text style={{ fontSize: 14, color: colors.danger }}>
-                Previous Balance
-              </Text>
-              <Text style={{ fontSize: 14, color: colors.danger }}>
-                ₹{fmt(order.previous_balance)}
-              </Text>
-            </View>
-          )}
+             <View
+               style={{
+                 flexDirection: "row",
+                 justifyContent: "space-between",
+                 paddingVertical: spacing.xs,
+               }}
+             >
+               <Text style={[typography.subtitle, { color: colors.danger }]}>
+                 Previous Balance
+               </Text>
+               <MoneyAmount
+                 value={order.previous_balance}
+                 color={colors.danger}
+                 style={typography.subtitle}
+               />
+             </View>
+           )}
 
           {/* Divider before Grand Total */}
           <View
@@ -728,23 +728,20 @@ export default function OrderDetailScreen() {
           >
             <Text style={{ ...typography.screenTitle }}>Grand Total</Text>
             <View style={{ alignItems: "flex-end" }}>
-              <Text style={{ ...typography.screenTitle }}>
-                ₹{fmt(grandTotal)}
-              </Text>
+              <MoneyAmount value={grandTotal} variant="title" />
               <View
                 style={{
                   backgroundColor: chipStyle.bg,
                   borderRadius: 999,
-                  paddingHorizontal: 10,
-                  paddingVertical: 3,
+                  paddingHorizontal: spacing.chipPadding,
+                  paddingVertical: spacing.xs,
                   marginTop: 6,
                 }}
               >
                 <Text
                   style={{
                     color: chipStyle.text,
-                    fontSize: 11,
-                    fontWeight: "700",
+                    ...typography.label,
                     letterSpacing: 0.4,
                   }}
                 >
@@ -851,24 +848,22 @@ export default function OrderDetailScreen() {
 
                     {/* Amount + remaining */}
                     <View style={{ alignItems: "flex-end" }}>
-                      <Text
+                      <MoneyAmount
+                        value={payment.amount}
+                        showPlusForPositive
+                        color={colors.primary}
+                        style={{ fontSize: 16, fontWeight: "700" as const }}
+                      />
+                      <View
                         style={{
-                          fontSize: 16,
-                          fontWeight: "700",
-                          color: colors.primary,
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginTop: spacing.xs,
                         }}
                       >
-                        +₹{fmt(payment.amount)}
-                      </Text>
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: colors.textSecondary,
-                          marginTop: 3,
-                        }}
-                      >
-                        Remaining: ₹{fmt(remaining)}
-                      </Text>
+                        <Text style={typography.caption}>Remaining: </Text>
+                        <MoneyAmount value={remaining} variant="caption" />
+                      </View>
                     </View>
                   </View>
                 </View>

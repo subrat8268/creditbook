@@ -1,5 +1,6 @@
 import { RecentActivityItem } from "@/src/api/dashboard";
 import { dashboardPalette as C } from "@/src/utils/dashboardUi";
+import { spacing, typography } from "@/src/utils/theme";
 import React, { memo } from "react";
 import { Text, View } from "react-native";
 
@@ -23,13 +24,20 @@ export default memo(function StatusBadge({ status }: Props) {
     <View
       style={{
         backgroundColor: s.bg,
-        borderRadius: 20,
-        paddingHorizontal: 10,
-        paddingVertical: 3,
+        borderRadius: 999,
+        paddingHorizontal: spacing.chipPadding,
+        paddingVertical: spacing.xs,
         alignSelf: "flex-end",
       }}
     >
-      <Text style={{ fontSize: 11, fontWeight: "600", color: s.text }}>
+      <Text
+        style={{
+          ...typography.caption,
+          fontSize: 11,
+          fontWeight: "600",
+          color: s.text,
+        }}
+      >
         {s.label}
       </Text>
     </View>

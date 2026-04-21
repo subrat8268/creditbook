@@ -50,7 +50,7 @@ module.exports = {
         textDark: theme.colors.textPrimary, // #1C1C1E — headings
         textPrimary: theme.colors.textPrimary, // #1C1C1E — body
         textSecondary: theme.colors.textSecondary, // #6B7280 — labels / captions
-        textMuted: "#AEAEB2", // placeholder / muted
+        textMuted: theme.colors.textMuted, // placeholder / muted
 
         // ── Borders & dividers ────────────────────
         border: theme.colors.border, // #E5E7EB

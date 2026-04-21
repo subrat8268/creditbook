@@ -43,13 +43,13 @@ These are the active semantic tokens to document and use:
 | `textPrimary` | `#1C1C1E` | Main text |
 | `textSecondary` | `#6B7280` | Secondary text |
 | `border` | `#E2E8F0` | Borders, dividers |
-| `fab` | `#2563EB` | Reusable FAB token |
+| `fabBg` | `#F59E0B` | Floating Action Button background (orange) |
 
 ### Important implementation note
 
-The tab-bar Add Entry FAB implementation currently uses `colors.warning` (orange) in `app/(main)/_layout.tsx`.
+The FAB background should come from `colors.fabBg` (orange). Avoid hardcoding `colors.warning` directly for FAB.
 
-Treat that as a **current implementation inconsistency to clean up later**, not as a new canonical design rule.
+`colors.fab` remains a semantic blue token for info accents (not the main FAB background).
 
 ## Status Colors
 
@@ -72,12 +72,7 @@ Key active dimensions:
 
 ### Current implementation note
 
-`Button.tsx` currently renders a `52px` visual height while `theme.ts` documents `buttonHeight: 50`.
-
-For Phase 1:
-- document this as drift
-- do not invent a third value
-- align docs to the token source and record the component mismatch as cleanup work
+Button height should follow the token: `spacing.buttonHeight`.
 
 ## Typography
 

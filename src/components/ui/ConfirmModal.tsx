@@ -1,4 +1,4 @@
-import { colors } from "@/src/utils/theme";
+import { colors, spacing } from "@/src/utils/theme";
 import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { AlertTriangle } from "lucide-react-native";
 import React, { memo, useCallback, useEffect, useMemo, useRef } from "react";
@@ -67,21 +67,21 @@ export default memo(function ConfirmModal({
       <View
         style={{
           alignItems: "center",
-          paddingHorizontal: 20,
-          paddingTop: 8,
-          paddingBottom: 24,
+          paddingHorizontal: spacing.screenPadding,
+          paddingTop: spacing.sm,
+          paddingBottom: spacing["2xl"],
         }}
       >
         {/* ── Warning icon circle ── */}
         <View
           style={{
-            width: 64,
-            height: 64,
-            borderRadius: 32,
-            backgroundColor: colors.dangerBg ?? "#FEF2F2",
+            width: spacing.avatarLg,
+            height: spacing.avatarLg,
+            borderRadius: spacing.avatarLg / 2,
+            backgroundColor: colors.dangerBg,
             alignItems: "center",
             justifyContent: "center",
-            marginBottom: 20,
+            marginBottom: spacing.xl,
           }}
         >
           <AlertTriangle
@@ -97,7 +97,7 @@ export default memo(function ConfirmModal({
             fontSize: 18,
             fontWeight: "700",
             color: colors.textPrimary,
-            marginBottom: 10,
+            marginBottom: spacing.md - spacing.sm,
             textAlign: "center",
           }}
         >
@@ -112,7 +112,7 @@ export default memo(function ConfirmModal({
             textAlign: "center",
             lineHeight: 21,
             paddingHorizontal: 8,
-            marginBottom: 28,
+            marginBottom: spacing["2xl"] + spacing.xs,
           }}
         >
           {message}
@@ -136,9 +136,15 @@ export default memo(function ConfirmModal({
           }}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.surface} />
           ) : (
-            <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
+            <Text
+              style={{
+                color: colors.surface,
+                fontWeight: "700",
+                fontSize: 16,
+              }}
+            >
               {confirmLabel}
             </Text>
           )}

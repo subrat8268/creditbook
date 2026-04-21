@@ -175,90 +175,23 @@ export async function getDashboardData(
     .filter((o) => Number(o.balance_due ?? 0) > 0)
     .reduce((sum, o) => sum + Number(o.balance_due ?? 0), 0);
 
-  // Net Position — I owe suppliers
-  const [{ data: deliveries }, { data: paymentsMade }] = await Promise.all([
-    supabase
-      .from("supplier_deliveries")
-      .select("total_amount, supplier_id, created_at")
-      .eq("vendor_id", vendorId),
-    supabase.from("payments_made").select("amount").eq("vendor_id", vendorId),
-  ]);
+  // Strict single-mode: supplier payables are out of scope.
+  // Keep legacy fields in the response shape as zeros/empty to avoid breaking consumers.
+  const iOweSuppliers = 0;
+  const netPosition = peopleOweMe;
+  const activeSuppliers = 0;
+  const overdueSuppliersList: DashboardData["overdueSuppliersList"] = [];
+  const overduePayments = 0;
 
-  const totalDeliveries = (deliveries ?? []).reduce(
-    (s, d) => s + Number(d.total_amount),
-    0,
-  );
-  const totalPaidToSuppliers = (paymentsMade ?? []).reduce(
-    (s, p) => s + Number(p.amount),
-    0,
-  );
-  const iOweSuppliers = Math.max(0, totalDeliveries - totalPaidToSuppliers);
-  const netPosition = peopleOweMe - iOweSuppliers;
-
-  // Distributor stats — distinct active suppliers + overdue supplier deliveries
-  const activeSuppliers = new Set(
-    (deliveries ?? []).map((d: any) => d.supplier_id).filter(Boolean),
-  ).size;
-  const overdueSupplierMap = new Map<
-    string,
-    { name: string; phone?: string; total: number; oldestDate: Date }
-  >();
-  for (const delivery of deliveries ?? []) {
-    const sid: string = (delivery as any).supplier_id;
-    if (!sid) continue;
-      const supplier = Array.isArray((delivery as any).parties)
-        ? (delivery as any).parties[0]
-        : (delivery as any).parties;
-      const supName: string = supplier?.name ?? "Supplier";
-      const supPhone: string | undefined = supplier?.phone;
-    const amount = Number((delivery as any).total_amount ?? 0);
-    const createdAt = new Date((delivery as any).created_at ?? new Date());
-    const entry = overdueSupplierMap.get(sid);
-    if (entry) {
-      entry.total += amount;
-      if (createdAt < entry.oldestDate) entry.oldestDate = createdAt;
-    } else {
-      overdueSupplierMap.set(sid, {
-        name: supName,
-        phone: supPhone,
-        total: amount,
-        oldestDate: createdAt,
-      });
-    }
-  }
-  const overdueSuppliersList = Array.from(overdueSupplierMap.entries())
-    .filter(([, info]) => info.oldestDate < thirtyDaysAgo)
-    .map(([id, info]) => ({
-      id,
-      name: info.name,
-      phone: info.phone,
-      amount: info.total,
-      daysSince: Math.floor(
-        (now.getTime() - info.oldestDate.getTime()) / (1000 * 60 * 60 * 24),
-      ),
-    }))
-    .sort((a, b) => b.amount - a.amount)
-    .slice(0, 5);
-  const overduePayments = overdueSuppliersList.length;
-
-  // Recent activity — last 8 person orders + last 4 supplier deliveries, merged by date
-  const [{ data: recentOrders }, { data: recentDeliveries }] =
-    await Promise.all([
-      supabase
-        .from("orders")
-      .select(
-          "id, bill_number, total_amount, amount_paid, balance_due, status, created_at, parties(name)",
-        )
-        .eq("vendor_id", vendorId)
-        .order("created_at", { ascending: false })
-        .limit(8),
-      supabase
-        .from("supplier_deliveries")
-      .select("id, total_amount, created_at, parties(name)")
-        .eq("vendor_id", vendorId)
-        .order("created_at", { ascending: false })
-        .limit(4),
-    ]);
+  // Recent activity — last 8 Entries/Payments only (strict single-mode)
+  const { data: recentOrders } = await supabase
+    .from("orders")
+    .select(
+      "id, bill_number, total_amount, amount_paid, balance_due, status, created_at, parties(name)",
+    )
+    .eq("vendor_id", vendorId)
+    .order("created_at", { ascending: false })
+    .limit(8);
 
   const orderItems: RecentActivityItem[] = (recentOrders ?? []).map(
     (o: any) => {
@@ -298,23 +231,8 @@ export async function getDashboardData(
     },
   );
 
-  const deliveryItems: RecentActivityItem[] = (recentDeliveries ?? []).map(
-    (d: any) => {
-      const supplierName: string = d.parties?.name ?? "Supplier";
-      return {
-        id: `delivery-${d.id}`,
-        type: "delivery" as const,
-        name: supplierName,
-        title: `Inventory from ${supplierName}`,
-        date: d.created_at,
-        amount: Number(d.total_amount),
-        status: "Pending" as const,
-      };
-    },
-  );
-
-  // Merge and sort by date descending, cap at 8 items for the feed
-  const recentActivity: RecentActivityItem[] = [...orderItems, ...deliveryItems]
+  // Sort by date descending, cap at 8 items for the feed
+  const recentActivity: RecentActivityItem[] = [...orderItems]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 8);
 

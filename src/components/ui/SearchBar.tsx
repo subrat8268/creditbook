@@ -17,8 +17,8 @@ export default memo(function SearchBar({ value, onChangeText, placeholder }: Pro
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder || "Search..."}
-        className="ml-2 flex-1 text-base text-neutral-900"
-        placeholderTextColor={colors.textSecondary}
+        className="ml-2 flex-1 text-base text-textPrimary"
+        placeholderTextColor={colors.textMuted}
         returnKeyType="search"
       />
     </View>
