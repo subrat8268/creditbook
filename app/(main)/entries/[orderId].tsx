@@ -2,6 +2,7 @@ import EmptyState from "@/src/components/feedback/EmptyState";
 import Loader from "@/src/components/feedback/Loader";
 import { useToast } from "@/src/components/feedback/Toast";
 import RecordCustomerPaymentModal from "@/src/components/people/RecordCustomerPaymentModal";
+import MoneyAmount from "@/src/components/ui/MoneyAmount";
 import { orderKeys, useOrderDetail } from "@/src/hooks/useEntries";
 
 import { usePayments } from "@/src/hooks/usePayments";
@@ -23,6 +24,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+const WHATSAPP_GREEN = "#25D366";
 
 // ── Design tokens — map status keys to the central theme chip tokens ──────
 const STATUS_STYLES: Record<
@@ -387,7 +390,7 @@ export default function OrderDetailScreen() {
                 onPress={handleWhatsApp}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <MessageCircle size={20} color="#25D366" strokeWidth={2} />
+                <MessageCircle size={20} color={WHATSAPP_GREEN} strokeWidth={2} />
               </TouchableOpacity>
             </>
           )}
@@ -418,7 +421,7 @@ export default function OrderDetailScreen() {
             <Text style={{ ...typography.label, color: colors.surface }}>
               TOTAL AMOUNT
             </Text>
-            <Text style={typography.heroAmount}>₹{fmt(grandTotal)}</Text>
+            <MoneyAmount value={grandTotal} variant="hero" />
             <View
               style={{
                 alignSelf: "flex-start",
@@ -462,13 +465,13 @@ export default function OrderDetailScreen() {
             {/* Avatar */}
             <View
               style={{
-                width: 48,
-                height: 48,
-                borderRadius: 24,
+                width: spacing.avatarMd,
+                height: spacing.avatarMd,
+                borderRadius: spacing.avatarMd / 2,
                 backgroundColor: getAvatarColor(customerName),
                 alignItems: "center",
                 justifyContent: "center",
-                marginRight: 12,
+                marginRight: spacing.md,
                 flexShrink: 0,
               }}
             >

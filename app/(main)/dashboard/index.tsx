@@ -1,8 +1,9 @@
 import DashboardHeader from "@/src/components/dashboard/DashboardHeader";
 import Loader from "@/src/components/feedback/Loader";
+import MoneyAmount from "@/src/components/ui/MoneyAmount";
 import { useDashboard } from "@/src/hooks/useDashboard";
 import { useAuthStore } from "@/src/store/authStore";
-import { colors } from "@/src/utils/theme";
+import { colors, spacing } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { Plus } from "lucide-react-native";
 import { useMemo } from "react";
@@ -10,7 +11,6 @@ import {
   ScrollView,
   StatusBar,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -100,20 +100,19 @@ export default function DashboardScreen() {
           onPressSettings={() => router.push("/(main)/profile" as never)}
         />
 
-        <View className="px-4">
-          {/* Hero Card - Simple */}
-          <View 
-            className="rounded-2xl p-4 mb-5"
-            style={{
-              backgroundColor: totalOutstanding > 0 ? colors.danger : colors.primary,
-            }}
-          >
-            <Text className="text-[11px] font-bold text-white/80 uppercase tracking-[1.5px]">
-              {totalOutstanding > 0 ? "You will receive" : "All settled"}
-            </Text>
-            <Text className="text-[36px] font-extrabold text-white mt-1">
-              {formatCurrency(totalOutstanding)}
-            </Text>
+         <View style={{ paddingHorizontal: spacing.screenPadding }}>
+           {/* Hero Card - Simple */}
+           <View 
+             className="rounded-2xl mb-5"
+             style={{
+               padding: spacing.cardPadding,
+               backgroundColor: totalOutstanding > 0 ? colors.danger : colors.primary,
+             }}
+           >
+             <Text className="text-[11px] font-bold text-white/80 uppercase tracking-[1.5px]">
+               {totalOutstanding > 0 ? "You will receive" : "All settled"}
+             </Text>
+             <MoneyAmount value={totalOutstanding} variant="hero" style={{ marginTop: 4 }} />
             
             {totalOutstanding > 0 && (
               <View className="flex-row items-center mt-3 gap-2">

@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     width: spacing.fabSize,
     height: spacing.fabSize,
     borderRadius: spacing.fabSize / 2,
-    backgroundColor: colors.fab,
+    backgroundColor: colors.fabBg,
     alignItems: "center",
     justifyContent: "center",
     elevation: 6,

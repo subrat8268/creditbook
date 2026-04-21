@@ -1,6 +1,7 @@
 import { useRecordPayment } from "@/src/hooks/usePayments";
 import { useAuthStore } from "@/src/store/authStore";
-import { colors } from "@/src/utils/theme";
+import MoneyAmount from "@/src/components/ui/MoneyAmount";
+import { colors, spacing, typography } from "@/src/utils/theme";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -41,9 +42,6 @@ function getInitials(name: string): string {
   return name.substring(0, 2).toUpperCase();
 }
 
-function formatINR(n: number) {
-  return n.toLocaleString("en-IN", { minimumFractionDigits: 0 });
-}
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
@@ -135,9 +133,9 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
       >
         <BottomSheetScrollView
           contentContainerStyle={{
-            paddingHorizontal: 20,
-            paddingBottom: 40,
-            paddingTop: 4,
+            paddingHorizontal: spacing.screenPadding,
+            paddingBottom: spacing["3xl"] + spacing.sm,
+            paddingTop: spacing.xs,
           }}
           keyboardShouldPersistTaps="handled"
         >
@@ -163,9 +161,16 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
               <Text className="font-bold text-[15px] text-textPrimary">
                 {customerName}
               </Text>
-              <Text className="text-[13px] font-semibold text-danger">
-                Balance: ₹{formatINR(balanceDue)}
-              </Text>
+              <View className="flex-row items-center">
+                <Text style={[typography.small, { fontWeight: "600" as const, color: colors.danger }]}>
+                  Balance: 
+                </Text>
+                <MoneyAmount
+                  value={balanceDue}
+                  color={colors.danger}
+                  style={[typography.small, { fontWeight: "600" as const }]}
+                />
+              </View>
             </View>
 
             {/* History icon */}
@@ -198,9 +203,16 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
             activeOpacity={0.7}
             className="mb-5"
           >
-            <Text className="text-[13px] font-semibold text-primary">
-              Full balance: ₹{formatINR(balanceDue)}
-            </Text>
+            <View className="flex-row items-center">
+              <Text style={[typography.small, { fontWeight: "600" as const, color: colors.primary }]}>
+                Full balance: 
+              </Text>
+              <MoneyAmount
+                value={balanceDue}
+                color={colors.primary}
+                style={[typography.small, { fontWeight: "600" as const }]}
+              />
+            </View>
           </TouchableOpacity>
 
           {/* ── Payment Mode ── */}

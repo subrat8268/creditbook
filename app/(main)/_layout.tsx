@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     width: spacing.fabSize,
     height: spacing.fabSize,
     borderRadius: spacing.fabSize / 2,
-    backgroundColor: colors.warning, // orange — per UX spec §2
+    backgroundColor: colors.fabBg, // orange — FAB source of truth
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 4,

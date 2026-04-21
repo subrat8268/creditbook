@@ -1,8 +1,9 @@
 import { Image, Linking, Text, TouchableOpacity, View } from "react-native";
 import React, { memo } from "react";
 import { formatRelativeActivity, daysSince } from "../../utils/helper";
-import { colors } from "../../utils/theme";
+import { colors, spacing, typography } from "../../utils/theme";
 import { Phone, MessageCircle } from "lucide-react-native";
+import MoneyAmount from "../ui/MoneyAmount";
 
 type CustomerStatus = "Overdue" | "Pending" | "Paid" | "Advance";
 
@@ -41,10 +42,7 @@ function getStatus(isOverdue: boolean, balance: number): CustomerStatus {
   return "Paid";
 }
 
-function formatAmount(status: CustomerStatus, balance: number): string {
-  if (status === "Paid") return "\u20B90";
-  return `\u20B9${Math.abs(balance).toLocaleString("en-IN")}`;
-}
+const WHATSAPP_GREEN = "#25D366";
 
 // Design system status chip colors
 const STATUS_UIMAP: Record<CustomerStatus, { badgeBg: string; badgeText: string; amountText: string; textLabel: string }> = {
@@ -86,8 +84,9 @@ export default memo(function CustomerCard({
   onLongPress,
 }: Props) {
   const status = getStatus(isOverdue, outstandingBalance);
-  const amountStr = formatAmount(status, outstandingBalance);
   const ui = STATUS_UIMAP[status];
+
+  const displayBalance = status === "Paid" ? 0 : Math.abs(outstandingBalance);
   
   // Calculate days overdue for display
   const daysOverdue = lastOrderAt ? daysSince(lastOrderAt) : null;
@@ -113,27 +112,38 @@ export default memo(function CustomerCard({
       onPress={onPress}
       onLongPress={onLongPress}
       activeOpacity={0.7}
-      className="flex-row items-center bg-surface p-4 rounded-2xl mb-3 border border-border"
+      className="flex-row items-center bg-surface rounded-2xl border border-border"
       style={{
-        shadowColor: "#000",
+        padding: spacing.cardPadding,
+        marginBottom: spacing.md,
+        shadowColor: colors.textPrimary,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.04,
         shadowRadius: 8,
         elevation: 2,
       }}
     >
-      {/* Avatar (52x52) */}
+      {/* Avatar */}
       {avatar ? (
         <Image
           source={{ uri: avatar }}
-          className="w-[52px] h-[52px] rounded-full mr-3.5"
+          className="rounded-full mr-3.5"
+          style={{ width: spacing.avatarMd, height: spacing.avatarMd }}
         />
       ) : (
         <View
-          className="w-[52px] h-[52px] rounded-full mr-3.5 items-center justify-center"
-          style={{ backgroundColor: avatarBgColor }}
+          className="rounded-full mr-3.5 items-center justify-center"
+          style={{
+            width: spacing.avatarMd,
+            height: spacing.avatarMd,
+            borderRadius: spacing.avatarMd / 2,
+            backgroundColor: avatarBgColor,
+          }}
         >
-          <Text className="text-[17px] font-bold tracking-wide text-surface">
+          <Text
+            className="tracking-wide text-surface"
+            style={{ fontSize: 15, fontWeight: "700" as const }}
+          >
             {getInitials(name)}
           </Text>
         </View>
@@ -181,11 +191,14 @@ export default memo(function CustomerCard({
             </TouchableOpacity>
             <TouchableOpacity
               onPress={handleWhatsApp}
-              className="flex-row items-center bg-[#25D366]/10 rounded-full px-2 py-1"
+              className="flex-row items-center rounded-full px-2 py-1"
+              style={{ backgroundColor: `${WHATSAPP_GREEN}1A` }}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <MessageCircle size={12} color="#25D366" strokeWidth={2} />
-              <Text className="text-[10px] font-semibold text-[#25D366] ml-1">Remind</Text>
+              <MessageCircle size={12} color={WHATSAPP_GREEN} strokeWidth={2} />
+              <Text className="text-[10px] font-semibold ml-1" style={{ color: WHATSAPP_GREEN }}>
+                Remind
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -193,9 +206,11 @@ export default memo(function CustomerCard({
 
       {/* Amount + Pill Badge */}
       <View className="items-end space-y-1.5">
-        <Text className="text-base font-bold" style={{ color: ui.amountText }}>
-          {amountStr}
-        </Text>
+        <MoneyAmount
+          value={displayBalance}
+          color={ui.amountText}
+          style={[typography.cardTitle, { fontWeight: "800" as const }]}
+        />
         <View 
           className="rounded-full px-2 py-1"
           style={{ backgroundColor: ui.badgeBg }}

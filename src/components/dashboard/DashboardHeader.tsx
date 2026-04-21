@@ -35,7 +35,17 @@ export default memo(function DashboardHeader({
   const { profile } = useAuthStore();
   const businessName = profile?.business_name ?? profile?.name ?? "My Business";
   const initials = useMemo(() => getInitials(businessName), [businessName]);
-  const greeting = useMemo(() => getGreeting(), []);
+
+  // No dedicated token yet; keep visual size stable but derived from avatar tokens.
+  const iconButtonSize = spacing.avatarSm + 2; // 36 + 2 = 38
+
+  const iconButtonShadow = {
+    shadowColor: colors.textPrimary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  } as const;
 
   return (
     <View
@@ -93,15 +103,11 @@ export default memo(function DashboardHeader({
       <TouchableOpacity
         className="items-center justify-center rounded-full"
         style={{
-          width: 38,
-          height: 38,
+          width: iconButtonSize,
+          height: iconButtonSize,
           marginRight: spacing.sm,
           backgroundColor: colors.surface,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.06,
-          shadowRadius: 4,
-          elevation: 2,
+          ...iconButtonShadow,
         }}
         onPress={onPressNotifications}
       >
@@ -127,14 +133,10 @@ export default memo(function DashboardHeader({
       <TouchableOpacity
         className="items-center justify-center rounded-full"
         style={{
-          width: 38,
-          height: 38,
+          width: iconButtonSize,
+          height: iconButtonSize,
           backgroundColor: colors.surface,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.06,
-          shadowRadius: 4,
-          elevation: 2,
+          ...iconButtonShadow,
         }}
         onPress={onPressSettings}
       >

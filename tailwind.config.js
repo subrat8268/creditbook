@@ -44,7 +44,7 @@ module.exports = {
         // ── Layout surfaces ───────────────────────
         background: theme.colors.background, // #F6F7F9 — app bg
         surface: theme.colors.surface, // #FFFFFF — cards / modals
-        fab: theme.colors.fab, // #2563EB — FAB
+        fab: theme.colors.fabBg, // #F59E0B — FAB bg (orange)
 
         // ── Typography ────────────────────────────
         textDark: theme.colors.textPrimary, // #1C1C1E — headings

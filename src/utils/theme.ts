@@ -20,6 +20,10 @@ export const colors = {
   // ─ Semantic Blues
   fab: "#2563EB", // Floating Action Button (highest elevation)
 
+  // ─ FAB (UI decision)
+  // Use this token for the main FAB background color across the app.
+  fabBg: "#F59E0B", // Orange (aligns with warning)
+
   // ─ Semantic Reds / Pinks
   danger: "#EF4444", // Owed, Overdue states
   dangerStrong: "#DC2626", // Dashboard-level alert red (gradient start)
