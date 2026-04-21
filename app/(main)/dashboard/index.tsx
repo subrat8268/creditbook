@@ -1,33 +1,29 @@
 import DashboardHeader from "@/src/components/dashboard/DashboardHeader";
+import StatusBadge from "@/src/components/dashboard/StatusBadge";
 import Loader from "@/src/components/feedback/Loader";
+import Button from "@/src/components/ui/Button";
+import Card from "@/src/components/ui/Card";
+import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import MoneyAmount from "@/src/components/ui/MoneyAmount";
 import { useDashboard } from "@/src/hooks/useDashboard";
 import { useAuthStore } from "@/src/store/authStore";
-import { colors, spacing } from "@/src/utils/theme";
+import { colors, radius, spacing, typography } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
-import { Plus } from "lucide-react-native";
+import { AlertCircle, ArrowUpRight, TrendingUp } from "lucide-react-native";
 import { useMemo } from "react";
-import {
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const currencyFormatter = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 0,
 });
 
-// Format currency for dashboard totals.
 const formatCurrency = (value: number) => {
   const isNegative = value < 0;
   const absolute = Math.abs(value);
   return `${isNegative ? "-" : ""}₹${currencyFormatter.format(absolute)}`;
 };
 
-// Build initials for list avatars.
 const getInitials = (name: string) =>
   name
     .trim()
@@ -36,7 +32,6 @@ const getInitials = (name: string) =>
     .map((word) => word[0]?.toUpperCase() ?? "")
     .join("") || "KB";
 
-// Deterministic avatar colors per person.
 const getAvatarBg = (name: string) => {
   const palette = colors.avatarPalette;
   if (!palette.length) return colors.primary;
@@ -60,7 +55,6 @@ export default function DashboardScreen() {
   const { profile } = useAuthStore();
   const {
     toReceive,
-    // Alias for backward compatibility with the existing dashboard hook.
     overdueCustomers: overduePeople,
     overdueTotalCount,
     weekDelta,
@@ -68,8 +62,6 @@ export default function DashboardScreen() {
   } = useDashboard(profile?.id);
 
   const totalOutstanding = useMemo(() => toReceive ?? 0, [toReceive]);
-  
-  // Collection this week (from weekDelta - positive means collected)
   const collectedThisWeek = weekDelta > 0 ? weekDelta : 0;
 
   if (isLoading || !profile) {
@@ -89,155 +81,95 @@ export default function DashboardScreen() {
       />
 
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{
+          paddingBottom: spacing.fabBottom + spacing.fabSize + 56,
+        }}
         showsVerticalScrollIndicator={false}
       >
         <DashboardHeader
           overdueCount={overdueTotalCount}
-          onPressNotifications={() =>
-            router.push("/(main)/profile" as never)
-          }
+          onPressNotifications={() => router.push("/(main)/profile" as never)}
           onPressSettings={() => router.push("/(main)/profile" as never)}
         />
 
-         <View style={{ paddingHorizontal: spacing.screenPadding }}>
-           {/* Hero Card - Simple */}
-           <View 
-             className="rounded-2xl mb-5"
-             style={{
-               padding: spacing.cardPadding,
-               backgroundColor: totalOutstanding > 0 ? colors.danger : colors.primary,
-             }}
-           >
-             <Text className="text-[11px] font-bold text-white/80 uppercase tracking-[1.5px]">
-               {totalOutstanding > 0 ? "You will receive" : "All settled"}
-             </Text>
-             <MoneyAmount value={totalOutstanding} variant="hero" style={{ marginTop: 4 }} />
-            
-            {totalOutstanding > 0 && (
-              <View className="flex-row items-center mt-3 gap-2">
-                <View
-                  className="px-3 py-1.5 rounded-full"
-                  style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
-                >
-                  <Text className="text-[12px] font-bold text-white">
-                    {overdueTotalCount} overdue
-                  </Text>
-                </View>
-                <Text className="text-[12px] text-white/80">
-                  from {overduePeople.length} customers
-                </Text>
-              </View>
-            )}
-            
-            {totalOutstanding === 0 && (
-              <Text className="text-[14px] text-white/80 mt-2">
-                All clear! No pending payments. ✓
+        <View style={{ paddingHorizontal: spacing.screenPadding }}>
+          <View
+            className="mb-4"
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: radius.xl,
+              padding: spacing.cardPadding,
+              borderWidth: 1,
+              borderColor: colors.border,
+              shadowColor: colors.textPrimary,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.04,
+              shadowRadius: 8,
+              elevation: 2,
+            }}
+          >
+            <Text style={typography.caption}>Outstanding balance</Text>
+            <MoneyAmount
+              value={totalOutstanding}
+              variant="hero"
+              color={colors.textPrimary}
+              style={{ marginTop: spacing.xs }}
+            />
+
+            <View className="flex-row items-center mt-3 gap-2">
+              <StatusBadge status={overdueTotalCount > 0 ? "Overdue" : "Paid"} />
+              <Text style={typography.caption}>
+                {overdueTotalCount > 0
+                  ? `${overdueTotalCount} overdue · ${overduePeople.length} customers`
+                  : "All customers are up to date"}
               </Text>
-            )}
+            </View>
           </View>
 
-          {/* Quick Summary Card */}
-          {totalOutstanding > 0 && (
-            <View 
-              className="rounded-2xl p-4 mb-5 bg-surface border border-border"
-            >
-              <Text className="text-[12px] font-bold text-textSecondary uppercase tracking-wider mb-3">
-                Quick Summary
-              </Text>
-              <View className="flex-row justify-between">
-                <View>
-                  <Text className="text-[24px] font-bold text-danger">
-                    {formatCurrency(totalOutstanding)}
-                  </Text>
-                  <Text className="text-[12px] text-textSecondary">Total owed</Text>
-                </View>
-                <View className="w-px bg-border" />
-                <View>
-                  <Text className="text-[24px] font-bold text-warning">
-                    {overduePeople.length}
-                  </Text>
-                  <Text className="text-[12px] text-textSecondary">Pending</Text>
-                </View>
-                <View className="w-px bg-border" />
-                <View>
-                  <Text className="text-[24px] font-bold text-primary">
-                    {overdueTotalCount}
-                  </Text>
-                  <Text className="text-[12px] text-textSecondary">Overdue</Text>
-                </View>
-              </View>
+          <View className="flex-row gap-3 mb-4">
+            <View className="flex-1">
+              <Card
+                title="Customers due"
+                value={String(overduePeople.length)}
+                icon={<AlertCircle size={18} color={colors.warning} strokeWidth={2} />}
+              />
             </View>
-          )}
+            <View className="flex-1">
+              <Card
+                title="Overdue"
+                value={String(overdueTotalCount)}
+                icon={<ArrowUpRight size={18} color={colors.danger} strokeWidth={2} />}
+              />
+            </View>
+          </View>
 
-          {/* Primary CTA — keep the home flow focused */}
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={() => router.push("/(main)/entries/create" as never)}
-            className="flex-row items-center justify-center bg-primary rounded-xl p-4 mb-6"
-          >
-            <Plus size={18} color={colors.surface} strokeWidth={2.5} />
-            <Text className="text-base font-bold text-surface ml-2">
-              Add Entry
-            </Text>
-          </TouchableOpacity>
-
-          {/* Collected This Week - Positive reinforcement */}
           {collectedThisWeek > 0 && (
-            <View 
-              className="rounded-xl p-3 mb-6"
-              style={{ backgroundColor: colors.successBg }}
-            >
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center gap-2">
-                  <View 
-                    className="w-8 h-8 rounded-full items-center justify-center"
-                    style={{ backgroundColor: colors.primary }}
-                  >
-                    <Text className="text-[14px]">📥</Text>
-                  </View>
-                  <View>
-                    <Text className="text-[12px] font-medium text-textSecondary">
-                      Collected this week
-                    </Text>
-                    <Text className="text-[16px] font-bold text-primary">
-                      +{formatCurrency(collectedThisWeek)}
-                    </Text>
-                  </View>
-                </View>
-                <View className="flex-row items-center gap-1">
-                  <Text className="text-[10px] text-primary">↑</Text>
-                  <Text className="text-[12px] font-bold text-primary">
-                    Great!
-                  </Text>
-                </View>
-              </View>
+            <View className="mb-6">
+              <Card
+                title="Collected this week"
+                value={`+${formatCurrency(collectedThisWeek)}`}
+                icon={<TrendingUp size={18} color={colors.success} strokeWidth={2} />}
+              />
             </View>
           )}
 
-{overduePeople.length > 0 ? (
+          {overduePeople.length > 0 ? (
             <View className="mb-6">
               <View className="flex-row items-center justify-between mb-3">
-                <Text className="text-[16px] font-extrabold text-textPrimary">
-                  Top Overdue
-                </Text>
-                <TouchableOpacity
-                  onPress={() => router.push("/(main)/people" as never)}
-                >
-                  <Text className="text-[13px] font-semibold text-primary">
-                    See all
-                  </Text>
+                <Text style={typography.sectionTitle}>Top Overdue</Text>
+                <TouchableOpacity onPress={() => router.push("/(main)/people" as never)}>
+                  <Text className="text-[13px] font-semibold text-primary">See all</Text>
                 </TouchableOpacity>
               </View>
 
-              {/* Top 3 only - with quick pay */}
               {overduePeople.slice(0, 3).map((person: OverduePerson) => {
                 const initials = getInitials(person.name);
                 const avatarBg = getAvatarBg(person.name);
+
                 return (
                   <View
                     key={person.id}
-                    className="flex-row items-center p-3 mb-3 bg-surface rounded-2xl border border-border"
+                    className="flex-row items-center p-4 mb-3 bg-surface rounded-2xl border border-border"
                   >
                     <TouchableOpacity
                       className="flex-row items-center flex-1"
@@ -253,10 +185,9 @@ export default function DashboardScreen() {
                         className="w-10 h-10 rounded-full items-center justify-center mr-3"
                         style={{ backgroundColor: avatarBg }}
                       >
-                        <Text className="text-[12px] font-bold text-surface">
-                          {initials}
-                        </Text>
+                        <Text className="text-[12px] font-bold text-surface">{initials}</Text>
                       </View>
+
                       <View className="flex-1">
                         <Text
                           className="text-[14px] font-bold text-textPrimary"
@@ -267,13 +198,15 @@ export default function DashboardScreen() {
                         <Text className="text-[12px] font-semibold text-danger">
                           {formatCurrency(person.balance)}
                         </Text>
+                        <Text className="text-[11px] text-textSecondary mt-1">
+                          {person.daysSince}d overdue
+                        </Text>
                       </View>
                     </TouchableOpacity>
-                    
-                    {/* Quick Payment button */}
+
                     <TouchableOpacity
-                      className="px-3 py-2 rounded-lg bg-danger"
-                    onPress={() =>
+                      className="px-3 py-2 rounded-xl bg-danger"
+                      onPress={() =>
                         router.push({
                           pathname: "/(main)/entries/create",
                           params: {
@@ -287,24 +220,31 @@ export default function DashboardScreen() {
                         } as never)
                       }
                     >
-                      <Text className="text-[12px] font-bold text-surface">
-                        Pay
-                      </Text>
+                      <Text className="text-[12px] font-bold text-surface">Pay</Text>
                     </TouchableOpacity>
                   </View>
                 );
               })}
+
+              <Button
+                title="View Customers"
+                variant="secondary"
+                onPress={() => router.push("/(main)/people" as never)}
+              />
             </View>
           ) : (
-            /* No overdue - show empty state */
-            <View className="bg-surface rounded-2xl p-6 mb-6 items-center">
-              <Text className="text-[15px] text-textSecondary">
-                No overdue balances
-              </Text>
+            <View className="mb-6">
+              <Card title="Overdue customers" value="0" />
             </View>
           )}
         </View>
       </ScrollView>
+
+      <FloatingActionButton
+        onPress={() => router.push("/(main)/entries/create" as never)}
+        bottom={spacing.fabBottom}
+        right={spacing.fabMargin}
+      />
     </SafeAreaView>
   );
 }
