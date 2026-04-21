@@ -1,4 +1,4 @@
-import { colors, spacing } from "@/src/utils/theme";
+import { colors, radius, spacing, typography } from "@/src/utils/theme";
 import { clsx } from "clsx";
 import React, { memo, useRef } from "react";
 import { ActivityIndicator, Animated, Text, TouchableOpacity, View } from "react-native";
@@ -41,8 +41,7 @@ export default memo(function Button({
     }).start();
   };
 
-  const baseStyle =
-    "w-full py-3 rounded-[14px] items-center justify-center flex-row";
+  const baseStyle = "w-full items-center justify-center flex-row";
 
   const variantStyle = clsx({
     "bg-primary": variant === "primary" && !disabled,
@@ -57,6 +56,14 @@ export default memo(function Button({
     "text-textPrimary": variant === "secondary" && !disabled,
   });
 
+  const resolvedTextColor = disabled
+    ? colors.textMuted
+    : variant === "outline"
+      ? colors.primary
+      : variant === "secondary"
+        ? colors.textPrimary
+        : colors.surface;
+
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
       <TouchableOpacity
@@ -67,14 +74,18 @@ export default memo(function Button({
         disabled={disabled || loading}
         activeOpacity={1}
         style={[
-          { height: spacing.buttonHeight },
+          {
+            height: spacing.buttonHeight,
+            borderRadius: radius.lg,
+            paddingHorizontal: spacing.lg,
+          },
           variant === "primary" && !disabled
             ? {
                 shadowColor: colors.primary,
-                shadowOffset: { width: 0, height: 10 },
-                shadowOpacity: 0.2,
-                shadowRadius: 15,
-                elevation: 8,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.16,
+                shadowRadius: 10,
+                elevation: 4,
               }
             : undefined,
           disabled && { backgroundColor: colors.border },
@@ -98,7 +109,11 @@ export default memo(function Button({
 
           <Text
             className={textStyle}
-            style={disabled ? { color: colors.textMuted } : undefined}
+            style={[
+              typography.body,
+              { fontWeight: "700" },
+              { color: resolvedTextColor },
+            ]}
           >
             {title}
           </Text>

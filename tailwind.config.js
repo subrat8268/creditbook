@@ -8,22 +8,22 @@ module.exports = {
     extend: {
       colors: {
         // ── Brand ────────────────────────────────
-        primary: theme.colors.primary, // #22C55E — CTAs, active nav
-        "primary-dark": theme.colors.primaryDark, // #16A34A — pressed / icon accent
-        "primary-light": theme.colors.paid.bg, // #DCFCE7 — chip bg, tinted surfaces
+        primary: theme.colors.primary,
+        "primary-dark": theme.colors.primaryDark,
+        "primary-light": theme.colors.primaryLight,
 
         // ── Success ──────────────────────────────
-        success: theme.colors.primary, // #22C55E
-        "success-bg": theme.colors.successBg, // #F0FDF4 — panel bg
-        "success-light": theme.colors.paid.bg, // #DCFCE7
-        "success-dark": theme.colors.primaryDark, // #16A34A
-        "success-text": theme.colors.paid.text, // #16A34A
+        success: theme.colors.success,
+        "success-bg": theme.colors.successBg,
+        "success-light": theme.colors.successLight,
+        "success-dark": theme.colors.successDark,
+        "success-text": theme.colors.paid.text,
 
         // ── Danger / Red ─────────────────────────
         danger: theme.colors.danger, // #EF4444
         "danger-bg": theme.colors.dangerBg, // #FEF2F2 — panel bg
         "danger-light": theme.colors.overdue.bg, // #FEE2E2
-        "danger-dark": "#B33226", // deep red — pressed state
+        "danger-dark": theme.colors.dangerStrong,
         "danger-text": theme.colors.overdue.text, // #DC2626
         "danger-strong": theme.colors.dangerStrong, // #DC2626
 
@@ -32,19 +32,19 @@ module.exports = {
         "warning-bg": theme.colors.warningBg, // #FFFBEB — panel bg
         "warning-light": theme.colors.pending.bg, // #FEF3C7
         "warning-dark": theme.colors.pending.text, // #D97706
-        "warning-text": "#92400E", // amber-900
+        "warning-text": theme.colors.pending.text,
 
         // ── Info / Blue ───────────────────────────
-        info: "#4F9CFF", // info blue
-        "info-bg": "#EFF6FF", // blue-50
-        "info-light": "#EAF0FB", // light blue tint
-        "info-dark": theme.colors.fab, // #2563EB
-        "info-text": "#0369A1", // blue-700
+        info: theme.colors.primary,
+        "info-bg": theme.colors.primaryLight,
+        "info-light": theme.colors.partial.bg,
+        "info-dark": theme.colors.primaryDark,
+        "info-text": theme.colors.partial.text,
 
         // ── Layout surfaces ───────────────────────
         background: theme.colors.background, // #F6F7F9 — app bg
         surface: theme.colors.surface, // #FFFFFF — cards / modals
-        fab: theme.colors.fabBg, // #F59E0B — FAB bg (orange)
+        fab: theme.colors.fabBg,
 
         // ── Typography ────────────────────────────
         textDark: theme.colors.textPrimary, // #1C1C1E — headings
@@ -65,8 +65,8 @@ module.exports = {
         "overdue-text": theme.colors.overdue.text,
 
         // ── Misc ─────────────────────────────────
-        icon: theme.colors.iconBg, // #22C55E22
-        search: theme.colors.background, // #F6F7F9
+        icon: theme.colors.iconBg,
+        search: theme.colors.surfaceAlt,
       },
       borderColor: {
         light: theme.colors.border,
@@ -82,8 +82,11 @@ module.exports = {
       fontSize: {
         h1: ["30px", { lineHeight: "40px", fontWeight: "700" }],
         h2: ["24px", { lineHeight: "32px", fontWeight: "600" }],
-        body: ["16px", { lineHeight: "24px", fontWeight: "400" }],
-        caption: ["12px", { lineHeight: "16px", fontWeight: "400" }],
+        "screen-title": ["24px", { lineHeight: "30px", fontWeight: "700" }],
+        "section-title": ["18px", { lineHeight: "24px", fontWeight: "700" }],
+        "card-title": ["16px", { lineHeight: "22px", fontWeight: "600" }],
+        body: ["15px", { lineHeight: "22px", fontWeight: "400" }],
+        caption: ["12px", { lineHeight: "16px", fontWeight: "500" }],
       },
       borderRadius: {
         sm: theme.radius.sm,

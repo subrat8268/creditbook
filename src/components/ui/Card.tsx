@@ -1,3 +1,4 @@
+import { colors, radius, spacing, typography } from "@/src/utils/theme";
 import { clsx } from "clsx";
 import React, { memo } from "react";
 import { Text, View } from "react-native";
@@ -12,16 +13,35 @@ interface CardProps {
 const Card = memo(function Card({ title, value, icon, className }: CardProps) {
   return (
     <View
-      className={clsx(
-        "bg-search rounded-lg p-4 flex-row justify-between items-center shadow-sm",
-        className,
-      )}
+      className={clsx("flex-row justify-between items-center", className)}
+      style={{
+        backgroundColor: colors.surface,
+        borderRadius: radius.lg,
+        padding: spacing.cardPadding,
+        borderWidth: 1,
+        borderColor: colors.border,
+        shadowColor: colors.textPrimary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+        elevation: 2,
+      }}
     >
       <View>
-        <Text className="mb-1 text-textSecondary">{title}</Text>
-        <Text className="text-2xl font-semibold">{value}</Text>
+        <Text style={[typography.caption, { marginBottom: spacing.xs }]}>{title}</Text>
+        <Text style={typography.screenTitle}>{value}</Text>
       </View>
-      {icon && <View className="bg-icon p-3 rounded-full">{icon}</View>}
+      {icon && (
+        <View
+          style={{
+            backgroundColor: colors.iconBg,
+            padding: spacing.md,
+            borderRadius: radius.full,
+          }}
+        >
+          {icon}
+        </View>
+      )}
     </View>
   );
 });

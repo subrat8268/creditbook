@@ -1,6 +1,5 @@
 import { RecentActivityItem } from "@/src/api/dashboard";
-import { dashboardPalette as C } from "@/src/utils/dashboardUi";
-import { spacing, typography } from "@/src/utils/theme";
+import { colors, radius, spacing, typography } from "@/src/utils/theme";
 import React, { memo } from "react";
 import { Text, View } from "react-native";
 
@@ -8,12 +7,12 @@ type Props = { status: RecentActivityItem["status"] };
 
 export default memo(function StatusBadge({ status }: Props) {
   const map = {
-    Paid: { bg: C.paidBg, text: C.paidText, label: "Paid" },
-    Pending: { bg: C.pendingBg, text: C.pendingText, label: "Pending" },
-    Overdue: { bg: C.overdueBg, text: C.overdueText, label: "Overdue" },
+    Paid: { bg: colors.paid.bg, text: colors.paid.text, label: "Paid" },
+    Pending: { bg: colors.pending.bg, text: colors.pending.text, label: "Pending" },
+    Overdue: { bg: colors.overdue.bg, text: colors.overdue.text, label: "Overdue" },
     "Partially Paid": {
-      bg: C.partialBg,
-      text: C.partialText,
+      bg: colors.partial.bg,
+      text: colors.partial.text,
       label: "Partial",
     },
   } as const;
@@ -24,7 +23,8 @@ export default memo(function StatusBadge({ status }: Props) {
     <View
       style={{
         backgroundColor: s.bg,
-        borderRadius: 999,
+        borderRadius: radius.full,
+        minHeight: spacing.chipHeight,
         paddingHorizontal: spacing.chipPadding,
         paddingVertical: spacing.xs,
         alignSelf: "flex-end",

@@ -12,17 +12,14 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const colors = {
-  // ─ Primary Green (Brand, CTAs, Active States)
-  primary: "#22C55E",
-  primaryDark: "#16A34A",
-  primaryLight: "#DCFCE7", // Green-100 — Light tint of brand color
+  // ─ Brand Blue (Primary UI actions only)
+  primary: "#2563EB",
+  primaryDark: "#1D4ED8",
+  primaryLight: "#EFF6FF",
 
-  // ─ Semantic Blues
-  fab: "#2563EB", // Floating Action Button (highest elevation)
-
-  // ─ FAB (UI decision)
-  // Use this token for the main FAB background color across the app.
-  fabBg: "#F59E0B", // Orange (aligns with warning)
+  // ─ Brand aliases
+  fab: "#2563EB",
+  fabBg: "#2563EB",
 
   // ─ Semantic Reds / Pinks
   danger: "#EF4444", // Owed, Overdue states
@@ -31,6 +28,11 @@ export const colors = {
 
   // ─ Semantic Amber
   warning: "#F59E0B", // Pending, Reminder, Caution
+
+  // ─ Semantic Green (positive money only)
+  success: "#16A34A",
+  successDark: "#15803D",
+  successLight: "#DCFCE7",
 
   // ─ Neutrals
   background: "#F6F7F9", // App canvas (very light gray)
@@ -41,7 +43,7 @@ export const colors = {
   borderLight: "#F1F5F9", // Slate-100 — innercard borders, sub-box dividers
 
   // ─ Semantic Blues (FAB + action bar "New Entry")
-  primaryBlue: "#3B82F6",    // Blue-500 — New Entry icon color
+  primaryBlue: "#2563EB",    // Blue-600 — Brand/info alias
   primaryBlueBg: "#EFF6FF",  // Blue-50  — New Entry icon circle bg
 
   // ─ Semantic backgrounds (tinted panels)
@@ -59,7 +61,7 @@ export const colors = {
   // ─ Status chip colors
   paid: {
     bg: "#DCFCE7", // Green-100
-    text: "#16A34A", // Green-700
+    text: "#15803D", // Green-700
   },
   partial: {
     bg: "#DBEAFE", // Blue-100
@@ -126,7 +128,7 @@ export const colors = {
   supplierBadgeBg: "#FCE7F3", // pink-100 — header "I Owe" badge bg
 
   // ─ Icon backgrounds
-  iconBg: "#22C55E22", // Translucent brand green
+  iconBg: "#EFF6FF", // Light brand blue surface
 
   // ─ Sync status tokens (for SyncStatusBanner component)
   sync: {
@@ -135,7 +137,7 @@ export const colors = {
     syncingBg: "#DBEAFE",   // Blue-100 — Light blue tint
     syncingText: "#2563EB", // Blue-600
     syncedBg: "#ECFDF5",    // Green-50 — Light green tint
-    syncedText: "#10B981",  // Green-500 (= success)
+    syncedText: "#16A34A",  // Green-600 (= success)
   },
 } as const;
 
@@ -172,8 +174,8 @@ export const gradients = {
 
   // When person balance is zero (paid up) — green gradient
   zeroBalance: {
-    start: "#22C55E", // Primary green
-    end: "#16A34A", // Primary dark
+    start: "#16A34A", // Success green
+    end: "#15803D", // Success dark
   },
 
   // Order status hero gradients
@@ -271,10 +273,9 @@ export const typography = {
 
   // ─ Text styles (size, weight, line-height)
   heroAmount: {
-    fontSize: 38,
+    fontSize: 36,
     fontWeight: "800" as const,
-    lineHeight: 46,
-    color: "#FFFFFF",
+    lineHeight: 42,
   },
 
   screenTitle: {
@@ -284,10 +285,17 @@ export const typography = {
     color: colors.textPrimary,
   },
 
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700" as const,
+    lineHeight: 24,
+    color: colors.textPrimary,
+  },
+
   cardTitle: {
     fontSize: 16,
     fontWeight: "600" as const,
-    lineHeight: 20,
+    lineHeight: 22,
     color: colors.textPrimary,
   },
 
@@ -373,7 +381,7 @@ export const dashboardPalette = {
   heroLabel: colors.textSecondary,
   heroAmount: colors.warning,
   heroSub: colors.textSecondary,
-  blue: colors.fab,
+  blue: colors.primary,
   blueLight: "#EFF6FF",
   red: colors.danger,
   redLight: colors.dangerBg,
@@ -387,8 +395,8 @@ export const dashboardPalette = {
   pendingText: colors.pending.text,
   overdueBg: colors.overdue.bg,
   overdueText: colors.overdue.text,
-  partialBg: "#EAF0FB",
-  partialText: "#0369A1",
+  partialBg: colors.partial.bg,
+  partialText: colors.partial.text,
 } as const;
 
 export const radius = {

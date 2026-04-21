@@ -54,7 +54,7 @@ export default memo(function MoneyAmount({
     variant === "hero"
       ? typography.heroAmount
       : variant === "title"
-        ? typography.screenTitle
+        ? typography.cardTitle
         : variant === "caption"
           ? typography.caption
           : typography.body;
