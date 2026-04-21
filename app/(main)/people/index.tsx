@@ -136,24 +136,20 @@ export default function CustomersScreen() {
   ]);
 
   const handlePressCustomer = (customerId: string) => {
+    router.push({
+      pathname: "/(main)/people/[customerId]",
+      params: { customerId },
+    });
+  };
+
+  const handleAddEntryForCustomer = (customerId: string) => {
     const selected = people.find((c) => c.id === customerId);
     if (!selected) return;
-    // Tap person → amount-first entry flow.
     router.push({
       pathname: "/(main)/entries/create",
       params: { customer: JSON.stringify(selected) },
     });
   };
-
-  const handleOpenLedger = useCallback(
-    (customerId: string) => {
-      router.push({
-        pathname: "/(main)/people/[customerId]",
-        params: { customerId },
-      });
-    },
-    [router],
-  );
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
@@ -242,8 +238,8 @@ export default function CustomersScreen() {
         onEndReached={handleEndReached}
         isFetchingNextPage={isFetchingNextPage}
         onPressPerson={handlePressCustomer}
-        onLongPressPerson={handleOpenLedger}
         onAddPerson={() => setIsModalOpen(true)}
+        onAddEntry={handleAddEntryForCustomer}
       />
 
       <NewCustomerModal

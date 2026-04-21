@@ -19,7 +19,7 @@ The **Entry Detail** screen shows a single entry's full details — items, summa
 - Scroll to see items, summary, payment history
 - Tap "Record Payment" → Modal to enter amount
 - Tap "Send Entry" → Generate PDF + share
-- Tap phone/whatsapp → Quick remind customer
+- Tap phone/whatsapp → Quick contact shortcut for the customer
 
 ---
 

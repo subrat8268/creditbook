@@ -6,14 +6,14 @@ Let a business share a **read-only** Customer ledger with someone via a **token-
 
 This is a **limited / transitional** capability. It supports the core khata loop (Customer → Entry → Payment) but must stay read-only.
 
-## Entry Points (where the vendor starts sharing)
+## Entry Points (where the business starts sharing)
 
 - Customer Detail → Share
 - Entry Detail → Share (when sharing an Entry/ledger context)
 
 ## Flow (simple steps)
 
-1. Vendor taps **Share**.
+1. User taps **Share**.
 2. App generates (or reuses) a share **token** for this Customer.
 3. App builds a link like: `https://kredbook.app/l/<token>`.
 4. App opens the native share sheet (WhatsApp, SMS, etc.).
@@ -37,4 +37,4 @@ Cannot:
 
 - The token is the key: **anyone with the link can view** the ledger.
 - The link should not expose edit actions.
-- Vendors should be able to revoke/rotate links (implementation detail; do not treat as core scope).
+- Businesses should be able to revoke/rotate links (implementation detail; do not treat as core scope).

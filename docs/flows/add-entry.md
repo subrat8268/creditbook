@@ -9,14 +9,16 @@
 
 The **Add Entry** screen is the quick amount-first entry creation flow. It's designed for speed — add an entry in under 30 seconds.
 
+Use **Customer** as the product noun here. Current UI still shows some `Person`/`People` strings; those are transitional labels only.
+
 **Primary Goals**:
 1. **Fast entry** — Amount-first input for speed
 2. **Quick payment** — Record payments against outstanding balance
 3. **Shareable** — Generate and share PDF instantly
 
 **User Behavior**:
-- Tap FAB → Enter amount → Select person → Save & Share
-- Tap customer in People → Quick entry with person pre-selected
+- Tap FAB → Enter amount → Select customer → Save & Share
+- Tap customer in People → Quick entry with customer pre-selected
 - Tap "Record Payment" → Enter amount → Done
 
 ---
@@ -103,15 +105,15 @@ The **Add Entry** screen is the quick amount-first entry creation flow. It's des
 | Avatar | 52×52dp, rounded-full, deterministic color |
 | Initials | 17px bold, white |
 | Name | 17px bold, textPrimary |
-| Subtitle | 14px textSecondary ("Choose from your people list below") |
+| Subtitle | 14px textSecondary (current UI: "Choose from your people list below" — transitional copy for customer list) |
 | Edit icon | Pencil, 18dp, primary |
 
 **Selector States**:
 
 | State | Avatar | Name | Subtitle |
 |-------|--------|------|---------|
-| Not selected | gray border, "?" | "Select Person" | "Choose from your people list below" |
-| Selected | deterministic color | Person name | - |
+| Not selected | gray border, "?" | "Select Person" (transitional UI copy) | "Choose from your people list below" |
+| Selected | deterministic color | Customer name | - |
 
 **Previous Balance Warning** (conditional):
 - Shows when: selectedCustomer && previousBalance > 0
@@ -123,7 +125,7 @@ The **Add Entry** screen is the quick amount-first entry creation flow. It's des
 | Element | Spec |
 |---------|------|
 | Container | bg-surface, border border-border, rounded-2xl |
-| Section label | "SELECT PERSON", 12px bold, textSecondary, tracking-widest |
+| Section label | Current UI: "SELECT PERSON" (transitional copy) |
 | Search bar | Standard SearchBar component |
 | List | FlatList with virtualization |
 | Item | px-4 py-3, border-b border-border |
@@ -135,7 +137,7 @@ The **Add Entry** screen is the quick amount-first entry creation flow. It's des
 - Selected state: bg-primaryLight
 
 **Empty State**:
-- Text: "No people found" or "Offline — connect to load people"
+- Text: current UI shows "No people found" / "Offline — connect to load people"; treat these as transitional customer-list copy
 
 ### 4. Amount Input
 
@@ -245,7 +247,7 @@ The screen supports two modes:
 |---------|--------|
 | Back arrow | Navigate back |
 | Customer selector | Opens inline picker (always visible) |
-| Person item (list) | Select person, fetch previous balance |
+| Customer item (list) | Select customer, fetch previous balance |
 | Amount input | Focus for typing |
 | Save & Share | Create entry + generate PDF + share |
 | Record Payment | Record payment against balance |
@@ -256,14 +258,14 @@ The screen supports two modes:
 1. Navigate to `/entries/create`
 2. Auto-focus amount field
 
-**From People "Tap customer"**:
+**From People "Add Entry" action**:
 1. Navigate to `/entries/create?customer={json}`
 2. Pre-fill customer
 3. Pre-fetch previous balance
 
 **From Customer Detail "Add Entry"**:
-1. Navigate to `/entries/create?customer={json}&next=share`
-2. After save → redirect to customer detail with share focus
+1. Navigate to `/entries/create?customer={json}`
+2. After save → navigate to the created Entry Detail screen
 
 **From Dashboard "Pay" button**:
 1. Navigate to `/entries/create?customer={json}&amount={amount}`
@@ -277,7 +279,7 @@ On "Save & Share":
 2. Generate PDF invoice
 3. Open native share sheet
 4. Show success toast
-5. Navigate back
+5. Navigate to the created Entry Detail screen
 
 ### Payment Validation
 
@@ -306,7 +308,7 @@ On "Record Payment":
 
 | Scenario | Alert Title | Alert Message |
 |----------|------------|--------------|
-| No customer selected | Error | "Please select a person" |
+| No customer selected | Error | Current UI says "Please select a person" (transitional copy) |
 | No amount for entry | Error | "Please enter an amount" |
 | No amount for payment | Error | "Please enter a payment amount" |
 | No pending for payment | Up to date | "{Person} has no pending entries to pay." |
@@ -316,7 +318,7 @@ On "Record Payment":
 
 | Scenario | Display |
 |----------|----------|
-| No search results | "No people found" |
+| No search results | Current UI says "No people found" |
 | Offline | "You're offline. People will load when back online." |
 
 ---
@@ -418,7 +420,7 @@ On "Record Payment":
 Features NOT in v3.0 scope:
 
 1. **Quick select recent** — Show recent customers at top
-2. **Favorite customers** — Pin frequently used people
+2. **Favorite customers** — Pin frequently used customers
 3. **Partial payment** — Pay towards specific entry
 4. **Multiple items** — Product picker (removed, not returning)
 5. **Custom invoice numbering** — User-defined prefix

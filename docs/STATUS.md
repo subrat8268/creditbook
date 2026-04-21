@@ -54,6 +54,12 @@ The repo still contains legacy or transitional surfaces. These should be treated
 - notifications route in app code
 - supplier/report-era token and type remnants
 
+### Phase 1 cleanup status
+- Notification settings are **not** active product scope and should stay removed from active product docs.
+- Supplier/distributor language has been cleaned from active product scope and should remain legacy-only.
+- Export is the **Profile → Export → CSV backup** flow; do not describe it as a broader reports/download center.
+- Public ledger sharing is classified as **limited / transitional** and must remain read-only and token-based.
+
 ### Limited / transitional sharing surface
 
 - A read-only, token-based public Customer ledger link exists for sharing.

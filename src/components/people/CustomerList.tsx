@@ -27,6 +27,7 @@ export default function CustomerList({
   people,
   onPressPerson,
   onLongPressPerson,
+  onAddEntry,
   isLoading,
   error,
   onRefresh,
@@ -45,6 +46,7 @@ export default function CustomerList({
   onEndReached: () => void;
   isFetchingNextPage: boolean;
   onAddPerson?: () => void;
+  onAddEntry?: (personId: string) => void;
 }) {
   const renderItem = useCallback(
     ({ item }: { item: Person }) => (
@@ -56,9 +58,10 @@ export default function CustomerList({
         lastActiveAt={item.lastActiveAt}
         onPress={() => onPressPerson(item.id)}
         onLongPress={onLongPressPerson ? () => onLongPressPerson(item.id) : undefined}
+        onAddEntry={onAddEntry ? () => onAddEntry(item.id) : undefined}
       />
     ),
-    [onPressPerson, onLongPressPerson]
+    [onPressPerson, onLongPressPerson, onAddEntry]
   );
 
   const { isConnected } = useNetworkSync();

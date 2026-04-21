@@ -4,6 +4,8 @@
 
 This file is the index for active user flows in the strict single-mode product.
 
+`People` is an allowed screen label. Use **Customer** as the primary business noun in flow writing, and call out any current `Person`/`People` UI copy as transitional.
+
 ## Active Flow Files
 
 | Flow | File | Purpose |

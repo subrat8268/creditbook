@@ -9,6 +9,8 @@
 
 The **Onboarding Flow** guides new users through setting up their business. It's triggered after Sign Up / phone-setup.
 
+Note: the current completion CTA still says **"Add Your First Person"** in the UI. Treat that as transitional copy for **Add Your First Customer**.
+
 **Primary Goals**:
 1. **Business setup** — Enter business name, GSTIN, invoice prefix
 2. **Bank details** — Enter UPI, bank name, account, IFSC

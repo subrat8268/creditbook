@@ -273,7 +273,7 @@ export default function DashboardScreen() {
                     {/* Quick Payment button */}
                     <TouchableOpacity
                       className="px-3 py-2 rounded-lg bg-danger"
-                      onPress={() =>
+                    onPress={() =>
                         router.push({
                           pathname: "/(main)/entries/create",
                           params: {
@@ -282,6 +282,7 @@ export default function DashboardScreen() {
                               name: person.name,
                               phone: person.phone,
                             }),
+                            amount: String(person.balance),
                           },
                         } as never)
                       }

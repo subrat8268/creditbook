@@ -2,7 +2,7 @@ import { Image, Linking, Text, TouchableOpacity, View } from "react-native";
 import React, { memo } from "react";
 import { formatRelativeActivity, daysSince } from "../../utils/helper";
 import { colors, spacing, typography } from "../../utils/theme";
-import { Phone, MessageCircle } from "lucide-react-native";
+import { MessageCircle, Phone, Plus } from "lucide-react-native";
 import MoneyAmount from "../ui/MoneyAmount";
 
 type CustomerStatus = "Overdue" | "Pending" | "Paid" | "Advance";
@@ -17,6 +17,7 @@ type Props = {
   lastOrderAt?: string; // For calculating days overdue
   onPress?: () => void;
   onLongPress?: () => void;
+  onAddEntry?: () => void;
 };
 
 function getAvatarColor(name: string): string {
@@ -82,6 +83,7 @@ export default memo(function CustomerCard({
   lastOrderAt,
   onPress,
   onLongPress,
+  onAddEntry,
 }: Props) {
   const status = getStatus(isOverdue, outstandingBalance);
   const ui = STATUS_UIMAP[status];
@@ -177,6 +179,19 @@ export default memo(function CustomerCard({
             {formatRelativeActivity(lastActiveAt)}
           </Text>
         </View>
+
+        {onAddEntry && (
+          <TouchableOpacity
+            onPress={onAddEntry}
+            activeOpacity={0.8}
+            className="flex-row items-center self-start mt-2 px-3 py-1.5 rounded-full bg-primaryLight border border-primary"
+          >
+            <Plus size={12} color={colors.primary} strokeWidth={2.5} />
+            <Text className="ml-1 text-[11px] font-semibold text-primary">
+              Add Entry
+            </Text>
+          </TouchableOpacity>
+        )}
         
         {/* Quick action buttons (show on overdue only) */}
         {status === "Overdue" && phone && (

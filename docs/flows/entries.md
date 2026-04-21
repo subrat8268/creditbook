@@ -7,12 +7,12 @@
 
 ## Screen Purpose
 
-The **Entries** screen is the central ledger — showing all entries (bills/transactions) across all customers.
+The **Entries** screen is the central ledger — showing all entries across all customers.
 
 **Primary Goals**:
 1. **Overview** — See all entries at a glance
 2. **Filter** — Filter by status (All/Paid/Pending/Overdue)
-3. **Find** — Search entries by person or bill number
+3. **Find** — Search entries by customer or bill number
 4. **Quick action** — Tap entry to view details or record payment
 
 **User Behavior**:
@@ -104,7 +104,7 @@ The **Entries** screen is the central ledger — showing all entries (bills/tran
 | Height | 44dp (searchBarHeight) |
 | Icon | Search, 16dp, textSecondary, mr-2 |
 | Input | flex-1, 14px, textPrimary |
-| Placeholder | "Search entry or person…" |
+| Placeholder | Current UI: "Search entry or person…" (transitional copy; product noun is customer) |
 | Placeholder color | textSecondary |
 | Clear button | while-editing mode |
 
@@ -236,7 +236,7 @@ From Entry Detail screen:
 - View full entry with items, summary, payments
 - Tap "Send Entry" → Generate PDF + share
 - Tap "Record Payment" → Open payment modal
-- Tap phone/whatsapp icons → Quick call or remind
+- Tap phone/whatsapp icons → Quick customer contact shortcut
 
 ---
 
@@ -357,7 +357,7 @@ Features NOT in v3.0 scope:
 1. **Sort options** — By date, amount, customer name
 2. **Date filter** — This week, this month, custom range
 3. **Export entries** — CSV download
-4. **Bulk actions** — Select multiple, send reminders
+4. **Bulk actions** — Not in scope for the current product
 
 ---
 

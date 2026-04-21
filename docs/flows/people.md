@@ -7,19 +7,21 @@
 
 ## Screen Purpose
 
-The **People** screen is the customer list view — where shopkeepers manage their ledger partners (customers).
+The **People** screen is the customer list view — where shopkeepers manage Customers.
+
+`People` is the screen label. Some current UI strings still say `Person`/`People`; treat those as transitional labels for **Customer**.
 
 **Primary Goals**:
-1. **Quick add** — Add a new person in under 30 seconds
-2. **Find fast** — Search and locate any person instantly
-3. **Quick actions** — Call or remind overdue customers with one tap
+1. **Quick add** — Add a new customer quickly
+2. **Find fast** — Search and locate any customer instantly
+3. **Quick actions** — Call or open WhatsApp for overdue customers with one tap
 
 **User Behavior**:
 - Tap "Add Person" → Enter name/phone → Done
-- Search by name → Find person
-- Tap person → Quick entry creation
-- Long press → Open customer ledger (detail view)
-- See overdue → One-tap call or WhatsApp reminder
+- Search by name → Find customer
+- Tap customer card → Open Customer Detail
+- Tap visible Add Entry action → Quick entry creation
+- See overdue → One-tap call or WhatsApp shortcut
 
 ---
 
@@ -236,20 +238,20 @@ The **People** screen is the customer list view — where shopkeepers manage the
 | Element | Action |
 |---------|--------|
 | Add Person button (header) | Opens NewCustomerModal |
-| Inline add button | Creates person + optional entry |
+| Inline add button | Creates customer + optional entry |
 | Search input | Filters people list in real-time |
-| Customer card (tap) | Navigate to entry create with customer |
-| Customer card (long press) | Navigate to customer detail (ledger) |
+| Customer card (tap) | Navigate to customer detail (ledger) |
+| Add Entry action | Navigate to entry create with customer |
 | Days overdue badge | No action (indicator only) |
 | Call button | Opens phone dialer with customer phone |
-| Remind button | Opens WhatsApp with pre-filled message |
+| WhatsApp button | Opens WhatsApp with pre-filled message |
 
 ### Navigation
 
 | From | To | With |
 |------|----|------|
-| Tap person | /entries/create | customer JSON |
-| Long press person | /people/[customerId] | customerId param |
+| Tap customer card | /people/[customerId] | customerId param |
+| Add Entry action | /entries/create | customer JSON |
 | Add Person header | NewCustomerModal (bottom sheet) | - |
 | FAB (global) | /entries/create | - |
 
@@ -344,7 +346,7 @@ if (balance === 0) → PAID → Green amount + "PAID" badge
 | Customer name | Screen reader announces name |
 | Balance amount | Announces "Balance: ₹X,XXX" |
 | Status | Announces "OVERDUE", "PENDING", "PAID", or "ADVANCE" |
-| Quick actions | "Call" and "Remind" buttons labeled |
+| Quick actions | "Call" and WhatsApp buttons labeled |
 | List | VoiceOver support for navigation |
 | Touch targets | Minimum 44dp |
 
@@ -385,8 +387,9 @@ if (balance === 0) → PAID → Green amount + "PAID" badge
 - [x] Loading states
 - [x] Pull-to-refresh
 - [x] Infinite scroll
-- [x] Long press to open ledger
-- [x] Tap to create entry
+- [x] Tap customer card opens customer detail
+- [x] Visible Add Entry action on each card
+- [x] Add Entry action creates entry from customer card
 - [x] NewCustomerModal bottom sheet
 
 ---
@@ -413,7 +416,7 @@ Features NOT in v3.0 scope:
 
 1. **Sort options** — By name, amount, recent activity
 2. **Filter by status** — Show only overdue, pending, etc.
-3. **Bulk actions** — Select multiple, send reminders
+3. **Bulk actions** — Not in scope for the current product
 4. **Import contacts** — From phone contacts
 5. **Customer groups** — Tags/categories
 

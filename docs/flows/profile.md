@@ -20,7 +20,7 @@ The **Profile** screen is the settings and account management screen. It's where
 - Tap profile tab → View business details
 - Tap "Edit Profile" → Update business information
 - Toggle language → Switch between English and Hindi
-- Tap "Export All Data" → Download CSV
+- Tap "Export All Data" → Open Export screen → Download CSV
 - Tap "Sign Out" → Confirm and sign out
 
 ---
@@ -388,8 +388,6 @@ Features NOT in v3.0 scope:
 1. **Profile picture** — Upload business logo
 2. **Multiple businesses** — Handle multiple stores
 3. **Dark mode** — Theme toggle
-4. **Notification settings** — Push notification preferences
-
 ---
 
 _Last updated: April 20, 2026_

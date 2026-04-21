@@ -240,22 +240,18 @@ export default function CreateOrderScreen() {
         await Sharing.shareAsync(localPdfPath, { mimeType: "application/pdf" });
       }
 
-      // Cleanup Draft on success and pop
+      // Cleanup Draft on success and go to the created detail screen.
       clearOrder();
       setQuickAmount("");
       setNote("");
       showToast({
-        message: `Entry shared with ${selectedCustomerMeta?.name ?? "person"}`,
+        message: `Entry created for ${selectedCustomerMeta?.name ?? "customer"}`,
         type: "success",
       });
-      if (nextParam === "share" && selectedCustomerMeta) {
-        router.replace({
-          pathname: "/(main)/people/[customerId]",
-          params: { customerId: selectedCustomerMeta.id, focus: "share" },
-        });
-      } else {
-        router.back();
-      }
+      router.replace({
+        pathname: "/(main)/entries/[orderId]",
+        params: { orderId: savedOrder.id },
+      } as never);
     } catch (err: any) {
       console.error("Save & Share failed:", err.message);
       const errorMessage = err.message || "Failed to save and share entry";

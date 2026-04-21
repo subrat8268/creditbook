@@ -202,19 +202,19 @@ The **Dashboard** is the home screen — the first thing users see when they ope
 
 | Action | Target | Behavior |
 |--------|-------|----------|
-| Tap notification bell | /profile | Opens profile screen |
+| Tap top-right bell icon | /profile | Opens profile screen (profile shortcut, not an active notifications flow) |
 | Tap settings | /profile | Opens profile screen |
 | Tap "Add Entry" | /entries/create | Opens create entry screen |
 | Tap "See all" | /people | Opens people list |
 | Tap customer row | /people/[id] | Opens customer detail |
-| Tap "Pay" button | /entries/create | Opens with customer prefilled |
+| Tap "Pay" button | /entries/create | Opens the payment flow with customer + amount prefilled |
 
-### Quick Pay Flow
+### Quick Pay Flow (current implementation)
 
 1. User taps "Pay" on overdue customer
-2. Navigate to `/entries/create?customer={json}`
-3. Create screen pre-fills: customer id, name, phone
-4. User enters amount, confirms
+2. Navigate to `/entries/create?customer={json}&amount={amount}`
+3. Create screen pre-fills: customer id, name, phone, and amount
+4. The create screen enters payment mode because amount is prefilled
 
 ---
 
