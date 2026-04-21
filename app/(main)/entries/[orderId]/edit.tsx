@@ -338,7 +338,7 @@ export default function EditOrderScreen() {
             color: colors.textPrimary,
           }}
         >
-          Editing will update the person's ledger and payment history
+          Editing will update the person’s ledger and payment history
         </Text>
       </View>
 

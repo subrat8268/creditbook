@@ -24,6 +24,6 @@ const Card = memo(function Card({ title, value, icon, className }: CardProps) {
       {icon && <View className="bg-icon p-3 rounded-full">{icon}</View>}
     </View>
   );
-};
+});
 
 export default Card;

@@ -1,4 +1,4 @@
-import { colors } from "@/src/utils/theme";
+import { colors, spacing } from "@/src/utils/theme";
 import React, { memo } from "react";
 import { Text, View } from "react-native";
 
@@ -35,9 +35,9 @@ export function getInitials(name: string | null | undefined): string {
 
 // Size configurations
 const SIZES: Record<AvatarSize, { container: number; text: number }> = {
-  sm: { container: 32, text: 12 },
-  md: { container: 44, text: 15 },
-  lg: { container: 56, text: 18 },
+  sm: { container: spacing.avatarSm, text: 12 },
+  md: { container: spacing.avatarMd, text: 15 },
+  lg: { container: spacing.avatarLg, text: 18 },
 };
 
 interface AvatarProps {

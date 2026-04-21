@@ -1,6 +1,7 @@
 import { CircleOff } from "lucide-react-native";
 import React, { memo, useEffect, useRef } from "react";
 import { Animated, Text, TouchableOpacity, View } from "react-native";
+import { colors, spacing } from "@/src/utils/theme";
 
 interface EmptyStateProps {
   /** Legacy single-line message (falls back to subtitle when no title is set) */
@@ -36,7 +37,7 @@ export default memo(function EmptyState({
   const heading = title ?? message ?? "Nothing here yet";
   const sub = title ? (description ?? message) : undefined;
   const containerSize = iconSize ?? 72;
-  const containerBg = iconBgColor ?? "#F6F7F9";
+  const containerBg = iconBgColor ?? colors.background;
   
   // Fade-in animation
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -63,7 +64,9 @@ export default memo(function EmptyState({
           backgroundColor: containerBg,
         }}
       >
-        {icon ?? <CircleOff size={36} color="#AEAEB2" strokeWidth={1.5} />}
+        {icon ?? (
+          <CircleOff size={36} color={colors.textMuted} strokeWidth={1.5} />
+        )}
       </View>
 
       <Text className="text-[17px] font-bold text-textDark text-center mb-2">
@@ -78,8 +81,8 @@ export default memo(function EmptyState({
 
       {cta && onCta ? (
         <TouchableOpacity
-          className="mt-1 rounded-full bg-primary flex-row items-center justify-center h-[52px] px-8"
-          style={{ gap: 8 }}
+          className="mt-1 rounded-full bg-primary flex-row items-center justify-center px-8"
+          style={{ gap: 8, height: spacing.buttonHeight }}
           onPress={onCta}
           activeOpacity={0.8}
         >

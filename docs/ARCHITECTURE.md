@@ -55,6 +55,8 @@ The following are out of scope unless explicitly marked legacy or transitional:
 ```text
 app/
 ├── _layout.tsx
+├── l/
+│   └── [token].tsx
 ├── (auth)/
 │   ├── login.tsx
 │   ├── signup.tsx
@@ -71,6 +73,14 @@ app/
 │   └── new-entry.tsx
 └── profile-error.tsx
 ```
+
+### Limited public sharing route (transitional)
+
+- `app/l/[token].tsx` is a **limited, read-only, token-based** Customer ledger view.
+- It exists to support sharing a Customer’s ledger link.
+- It must not allow edits; anyone with the link can view the ledger.
+
+Implementation note (not product language): the link is backed by a Supabase RPC that validates the token and returns a read-only ledger payload.
 
 ### Important notes
 

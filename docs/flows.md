@@ -14,6 +14,7 @@ This file is the index for active user flows in the strict single-mode product.
 | Entries | `docs/flows/entries.md` | Entry list behavior |
 | Entry Detail | `docs/flows/entry-detail.md` | Entry detail and payment actions |
 | Customer Detail | `docs/flows/customer-detail.md` | Customer ledger and actions |
+| Public Ledger Link (Limited) | `docs/flows/public-ledger-link.md` | Read-only, token-based Customer ledger link |
 | Record Payment | `docs/flows/record-payment.md` | Record payment flow |
 | Profile | `docs/flows/profile.md` | Settings, language, export, sign out |
 | Export | `docs/flows/export.md` | CSV export flow |

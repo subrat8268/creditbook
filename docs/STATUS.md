@@ -10,6 +10,7 @@
 | Dashboard | Working | Outstanding-focused summary |
 | People / Customers | Working | Add, list, search, detail |
 | Entries | Working | Create, list, detail |
+| Public ledger link sharing | Limited (Transitional) | Read-only, token-based Customer ledger link |
 | Payments | Working | Record and view payment context |
 | Profile | Working | Settings, language, export, sign out |
 | Offline-first sync | Working | Queue + sync model present |
@@ -52,6 +53,11 @@ The repo still contains legacy or transitional surfaces. These should be treated
 - notifications permission in `app.json`
 - notifications route in app code
 - supplier/report-era token and type remnants
+
+### Limited / transitional sharing surface
+
+- A read-only, token-based public Customer ledger link exists for sharing.
+- It must remain limited (read-only) and should be documented as transitional until explicitly promoted to core scope.
 
 These are not active product truth.
 

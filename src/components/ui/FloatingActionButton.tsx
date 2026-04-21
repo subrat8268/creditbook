@@ -1,4 +1,4 @@
-import { colors } from "@/src/utils/theme";
+import { colors, spacing } from "@/src/utils/theme";
 import { Plus } from "lucide-react-native";
 import { StyleSheet, TouchableOpacity, ViewStyle } from "react-native";
 
@@ -30,9 +30,9 @@ export default function FloatingActionButton({
 const styles = StyleSheet.create({
   fab: {
     position: "absolute",
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: spacing.fabSize,
+    height: spacing.fabSize,
+    borderRadius: spacing.fabSize / 2,
     backgroundColor: colors.fab,
     alignItems: "center",
     justifyContent: "center",

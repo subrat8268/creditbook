@@ -87,6 +87,7 @@ The product must keep working when connectivity is poor.
 - list entries
 - open entry detail
 - support share/send entry workflows where implemented
+- limited (transitional): share a **read-only** Customer ledger link (**token-based**)
 
 ### Payments
 - record payment against outstanding balance

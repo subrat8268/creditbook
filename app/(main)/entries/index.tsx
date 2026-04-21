@@ -1,4 +1,5 @@
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
+import MoneyAmount from "@/src/components/ui/MoneyAmount";
 import { useOrders } from "@/src/hooks/useEntries";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useNetworkSync } from "@/src/hooks/useNetworkSync";
@@ -43,27 +44,33 @@ const EntryCard = memo(function EntryCard({ entry, onPress }: { entry: EntryItem
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      className="flex-row items-center bg-surface p-4 rounded-2xl mb-3 border border-border"
+      className="flex-row items-center bg-surface rounded-2xl border border-border"
       style={{
-        shadowColor: "#000",
+        padding: spacing.cardPadding,
+        marginBottom: spacing.md,
+        shadowColor: colors.textPrimary,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04,
+        shadowOpacity: 0.06,
         shadowRadius: 8,
         elevation: 2,
       }}
     >
       <View className="flex-1">
-        <Text className="text-base font-semibold text-textPrimary mb-0.5">
+        <Text
+          numberOfLines={1}
+          style={[typography.body, { fontWeight: "600" as const, marginBottom: 2 }]}
+        >
           {entry.party?.name || "Unknown"}
         </Text>
-        <Text className="text-xs font-medium text-textSecondary">
+        <Text style={typography.caption}>
           {entry.bill_number || "—"} • {new Date(entry.created_at).toLocaleDateString("en-IN")}
         </Text>
       </View>
       <View className="items-end space-y-1.5">
-        <Text className="text-base font-bold text-textPrimary">
-          ₹{entry.amount.toLocaleString("en-IN")}
-        </Text>
+        <MoneyAmount
+          value={entry.amount}
+          style={[typography.cardTitle, { fontWeight: "800" as const }]}
+        />
         <View 
           className="rounded-full px-2 py-1"
           style={{ backgroundColor: ui.bg }}

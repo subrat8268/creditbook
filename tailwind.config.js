@@ -25,7 +25,7 @@ module.exports = {
         "danger-light": theme.colors.overdue.bg, // #FEE2E2
         "danger-dark": "#B33226", // deep red — pressed state
         "danger-text": theme.colors.overdue.text, // #DC2626
-        "danger-strong": theme.colors.damgerStrong, // #DC2626
+        "danger-strong": theme.colors.dangerStrong, // #DC2626
 
         // ── Warning / Amber ───────────────────────
         warning: theme.colors.warning, // #F59E0B

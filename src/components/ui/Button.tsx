@@ -1,4 +1,4 @@
-import { colors } from "@/src/utils/theme";
+import { colors, spacing } from "@/src/utils/theme";
 import { clsx } from "clsx";
 import React, { memo, useRef } from "react";
 import { ActivityIndicator, Animated, Text, TouchableOpacity, View } from "react-native";
@@ -42,18 +42,19 @@ export default memo(function Button({
   };
 
   const baseStyle =
-    "w-full py-3 rounded-[14px] items-center justify-center h-[52px] flex-row";
+    "w-full py-3 rounded-[14px] items-center justify-center flex-row";
 
   const variantStyle = clsx({
     "bg-primary": variant === "primary" && !disabled,
-    "bg-secondary": variant === "secondary" && !disabled,
+    "bg-surface border border-border": variant === "secondary" && !disabled,
     "bg-danger": variant === "danger" && !disabled,
     "bg-surface border border-primary": variant === "outline" && !disabled,
   });
 
   const textStyle = clsx("text-base font-bold", {
-    "text-white": variant !== "outline" && !disabled,
+    "text-white": variant !== "outline" && variant !== "secondary" && !disabled,
     "text-primary": variant === "outline" && !disabled,
+    "text-textPrimary": variant === "secondary" && !disabled,
   });
 
   return (
@@ -66,6 +67,7 @@ export default memo(function Button({
         disabled={disabled || loading}
         activeOpacity={1}
         style={[
+          { height: spacing.buttonHeight },
           variant === "primary" && !disabled
             ? {
                 shadowColor: colors.primary,
@@ -75,12 +77,18 @@ export default memo(function Button({
                 elevation: 8,
               }
             : undefined,
-          disabled && { backgroundColor: "#E2E8F0" },
+          disabled && { backgroundColor: colors.border },
         ]}
       >
       {loading ? (
         <ActivityIndicator
-          color={variant === "outline" ? colors.primary : colors.surface}
+          color={
+            variant === "outline"
+              ? colors.primary
+              : variant === "secondary"
+                ? colors.textPrimary
+                : colors.surface
+          }
         />
       ) : (
         <View className="flex-row items-center justify-center">
