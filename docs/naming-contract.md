@@ -81,13 +81,14 @@ Phase 1 is a **truth reset and operating-system cleanup**.
 
 ## Source-of-Truth Order
 
-1. `docs/naming-contract.md` — canonical language
-2. `docs/prd.md` — product scope
-3. `docs/ARCHITECTURE.md` — technical architecture
-4. `src/utils/theme.ts` — design tokens
-5. `_agents/orchestration.md` — workflow and skill sequencing
-6. `_agents/doc-sync-checklist.md` — change closeout gate
-7. `docs/STATUS.md` — current implementation state
+1. `SYSTEM_CONTEXT.md` — repo AI single source of truth
+2. `docs/naming-contract.md` — canonical language
+3. `docs/prd.md` — product scope
+4. `docs/ARCHITECTURE.md` — technical architecture
+5. `src/utils/theme.ts` — design tokens
+6. `_agents/orchestration.md` — workflow pipelines
+7. `_agents/doc-sync-checklist.md` — change closeout gate
+8. `docs/STATUS.md` — current implementation state
 
 ## Decision Rule
 

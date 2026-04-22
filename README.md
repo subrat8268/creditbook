@@ -57,8 +57,8 @@ Do not use `Order`, `Party`, `Supplier`, `Vendor`, or `Distributor` as active pr
 
 Read in this order before non-trivial work:
 1. `docs/naming-contract.md`
-2. `docs/prd.md`
-3. `docs/ARCHITECTURE.md`
+2. `SYSTEM_CONTEXT.md`
+3. `_agents/commands.md`
 4. `_agents/orchestration.md`
 5. `_agents/doc-sync-checklist.md`
 
@@ -67,6 +67,17 @@ Supporting references:
 - `docs/design-system.md`
 - `docs/flows.md`
 - `docs/STATUS.md`
+
+## AI workflow (beginner-friendly)
+
+Use short commands as prompts:
+- `/plan` — break down work safely
+- `/build` — implement a feature end-to-end
+- `/fix` — debug + fix with verification
+- `/refactor` — safe structure improvements
+- `/audit` — evidence-based repo/feature audit
+
+See `AGENTS.md` and `_agents/commands.md`.
 
 ## Repo Layout
 

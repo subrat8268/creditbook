@@ -48,12 +48,15 @@ designs/*
 #audit
 Audit.md
 design-audit-results.txt
-GEMINI.md
-AGENTS.md
 
-#agents
-_agents/*
-_agents
+# NOTE (AI OS):
+# We intentionally TRACK the repo AI operating system files:
+# - AGENTS.md
+# - SYSTEM_CONTEXT.md
+# - _agents/**
+# Tool-specific configs (Cursor/Gemini) are archived under /archive.
+
+#agents (legacy local tooling)
 .agents/*
 .agents
 .windsurf/*
