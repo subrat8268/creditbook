@@ -1,10 +1,12 @@
 import { useToast } from "@/src/components/feedback/Toast";
+import Button from "@/src/components/ui/Button";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
+import { colors, spacing, typography } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { CalendarDays, CheckCircle2 } from "lucide-react-native";
 import { useState } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function OnboardingReady() {
@@ -70,12 +72,12 @@ export default function OnboardingReady() {
         </View>
 
         {/* Title */}
-        <Text className="mb-3 text-2xl font-extrabold text-center text-textDark">
+        <Text style={[typography.screenTitle, { textAlign: "center", marginBottom: spacing.sm }]}> 
           {"You're all set!"}
         </Text>
 
         {/* Subtitle */}
-        <Text className="text-[15px] text-textSecondary text-center leading-[22px] mb-7">
+        <Text style={[typography.body, { color: colors.textSecondary, textAlign: "center", lineHeight: 22, marginBottom: spacing.xl }]}> 
           {
             "KredBook is ready to replace your khata book. Start tracking credit instantly."
           }
@@ -83,24 +85,25 @@ export default function OnboardingReady() {
 
         <View className="flex-row flex-wrap gap-2.5 justify-center">
           <View
-            className="flex-row items-center gap-1.5 border-[1.5px] rounded-full px-3.5 py-[7px] bg-white"
-            style={{ borderColor: hasBusinessSetup ? "#22C55E" : "#D1D5DB" }}
+            className="flex-row items-center gap-1.5 border rounded-full px-3.5 py-[7px] bg-white"
+            style={{ borderColor: hasBusinessSetup ? colors.success : colors.border }}
           >
             <CalendarDays
               size={14}
-              color={hasBusinessSetup ? "#22C55E" : "#9CA3AF"}
+              color={hasBusinessSetup ? colors.success : colors.textSecondary}
               strokeWidth={2}
             />
             <Text
-              className={`text-[13px] font-semibold ${hasBusinessSetup ? "text-primary" : "text-textSecondary"}`}
+              className="text-[13px] font-semibold"
+              style={{ color: hasBusinessSetup ? colors.success : colors.textSecondary }}
               numberOfLines={1}
             >
               {businessLabel}
             </Text>
           </View>
 
-          <View className="flex-row items-center gap-1.5 border-[1.5px] border-primary rounded-full px-3.5 py-[7px] bg-white">
-            <CheckCircle2 size={14} color="#22C55E" strokeWidth={2.5} />
+          <View className="flex-row items-center gap-1.5 border rounded-full px-3.5 py-[7px] bg-white" style={{ borderColor: colors.primary }}>
+            <CheckCircle2 size={14} color={colors.success} strokeWidth={2.5} />
             <Text className="text-[13px] font-semibold text-primary">
               Ledger ready
             </Text>
@@ -109,25 +112,20 @@ export default function OnboardingReady() {
       </View>
 
       <View className="px-6 pb-10">
-        <TouchableOpacity
+        <Button
+          title={isLoading ? "Loading…" : "Add Your First Customer"}
           onPress={handleAddPerson}
           disabled={isLoading}
-          activeOpacity={0.85}
-          className={`rounded-full py-[17px] items-center ${isLoading ? "bg-neutral-300" : "bg-primary"}`}
-        >
-          <Text className="text-base font-bold text-white">
-            {isLoading ? "Loading…" : "Add Your First Person"}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleGoDashboard}
-          disabled={isLoading}
-          className="items-center mt-4"
-        >
-          <Text className="text-primary font-semibold text-sm">
-            Go to Dashboard
-          </Text>
-        </TouchableOpacity>
+          loading={isLoading}
+        />
+        <View style={{ marginTop: spacing.md }}>
+          <Button
+            title="Go to Dashboard"
+            onPress={handleGoDashboard}
+            disabled={isLoading}
+            variant="outline"
+          />
+        </View>
       </View>
     </SafeAreaView>
   );

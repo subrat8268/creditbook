@@ -1,6 +1,6 @@
 import { useGoogleSignIn, useLogin } from "@/src/hooks/useAuth";
 import { LoginSchema } from "@/src/utils/schemas";
-import { colors } from "@/src/utils/theme";
+import { colors, spacing, typography } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { Formik } from "formik";
 import { AlertCircle, ArrowLeft, Eye, EyeOff } from "lucide-react-native";
@@ -50,7 +50,7 @@ export default function LoginPage() {
 
             <AuthHeader
               title="Welcome Back"
-              subtitle="Sign in to your kredBook"
+              subtitle="Sign in to continue tracking customers, entries, and payments"
             />
 
             <AuthCard>
@@ -61,7 +61,7 @@ export default function LoginPage() {
               >
                 {({ handleChange, handleSubmit, values, errors, touched }) => (
                   <>
-                    <Text className="text-[13px] font-semibold text-textPrimary mb-2">
+                    <Text style={[typography.caption, { marginBottom: spacing.sm, color: colors.textPrimary, fontWeight: "600" }]}>
                       Email Address
                     </Text>
                     <Input
@@ -73,7 +73,7 @@ export default function LoginPage() {
                       variant="white"
                     />
 
-                    <Text className="text-[13px] font-semibold text-textPrimary mb-2 mt-4">
+                    <Text style={[typography.caption, { marginBottom: spacing.sm, marginTop: spacing.lg, color: colors.textPrimary, fontWeight: "600" }]}>
                       Password
                     </Text>
                     <Input
@@ -112,7 +112,7 @@ export default function LoginPage() {
                       }
                       className="self-end mt-2.5 mb-5"
                     >
-                      <Text className="text-sm font-medium text-primary">
+                      <Text style={[typography.caption, { color: colors.primary, fontWeight: "600" }]}>
                         Forgot password?
                       </Text>
                     </TouchableOpacity>
@@ -157,15 +157,12 @@ export default function LoginPage() {
               </View>
             )}
 
-            <TouchableOpacity
-              onPress={() => router.push("/(auth)/signup" as any)}
-              className="mt-8"
-            >
-              <Text className="text-sm text-center text-textSecondary">
-                {"New to KredBook? "}
-                <Text className="font-semibold text-primary">Sign Up</Text>
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push("/(auth)/signup" as any)} className="mt-8">
+                <Text style={[typography.body, { textAlign: "center", color: colors.textSecondary }]}> 
+                  {"New to KredBook? "}
+                  <Text style={{ fontWeight: "600", color: colors.primary }}>Sign Up</Text>
+                </Text>
+              </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

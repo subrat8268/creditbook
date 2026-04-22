@@ -1,9 +1,11 @@
 import { Image, Linking, Text, TouchableOpacity, View } from "react-native";
 import React, { memo } from "react";
-import { formatRelativeActivity, daysSince } from "../../utils/helper";
-import { colors, spacing, typography } from "../../utils/theme";
-import { MessageCircle, Phone, Plus } from "lucide-react-native";
+import { formatRelativeActivity } from "../../utils/helper";
+import { colors, radius, spacing, typography } from "../../utils/theme";
+import { ChevronRight, MessageCircle, Phone, Plus } from "lucide-react-native";
+import Avatar from "../ui/Avatar";
 import MoneyAmount from "../ui/MoneyAmount";
+import StatusBadge from "../dashboard/StatusBadge";
 
 type CustomerStatus = "Overdue" | "Pending" | "Paid" | "Advance";
 
@@ -14,27 +16,10 @@ type Props = {
   isOverdue?: boolean;
   outstandingBalance?: number;
   lastActiveAt?: string;
-  lastOrderAt?: string; // For calculating days overdue
   onPress?: () => void;
   onLongPress?: () => void;
   onAddEntry?: () => void;
 };
-
-function getAvatarColor(name: string): string {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const palette = colors.avatarPalette;
-  return palette[Math.abs(hash) % palette.length];
-}
-
-function getInitials(name: string): string {
-  const parts = name.trim().split(" ").filter(Boolean);
-  if (parts.length >= 2)
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  return name.substring(0, 2).toUpperCase();
-}
 
 function getStatus(isOverdue: boolean, balance: number): CustomerStatus {
   if (balance > 0 && isOverdue) return "Overdue";
@@ -62,7 +47,7 @@ const STATUS_UIMAP: Record<CustomerStatus, { badgeBg: string; badgeText: string;
   Paid: {
     badgeBg: colors.paid.bg,
     badgeText: colors.paid.text,
-    amountText: colors.primary,
+    amountText: colors.success,
     textLabel: "PAID",
   },
   Advance: {
@@ -80,22 +65,15 @@ export default memo(function CustomerCard({
   isOverdue = false,
   outstandingBalance = 0,
   lastActiveAt,
-  lastOrderAt,
   onPress,
   onLongPress,
   onAddEntry,
 }: Props) {
   const status = getStatus(isOverdue, outstandingBalance);
   const ui = STATUS_UIMAP[status];
+  const badgeStatus = status === "Advance" ? null : status;
 
   const displayBalance = status === "Paid" ? 0 : Math.abs(outstandingBalance);
-  
-  // Calculate days overdue for display
-  const daysOverdue = lastOrderAt ? daysSince(lastOrderAt) : null;
-  const showDaysOverdue = status === "Overdue" && daysOverdue && daysOverdue > 0;
-  
-  // Avatar background color
-  const avatarBgColor = getAvatarColor(name);
 
   // Quick action handlers
   const handleCall = () => {
@@ -114,7 +92,7 @@ export default memo(function CustomerCard({
       onPress={onPress}
       onLongPress={onLongPress}
       activeOpacity={0.7}
-      className="flex-row items-center bg-surface rounded-2xl border border-border"
+      className="bg-surface rounded-2xl border border-border"
       style={{
         padding: spacing.cardPadding,
         marginBottom: spacing.md,
@@ -125,80 +103,82 @@ export default memo(function CustomerCard({
         elevation: 2,
       }}
     >
-      {/* Avatar */}
-      {avatar ? (
-        <Image
-          source={{ uri: avatar }}
-          className="rounded-full mr-3.5"
-          style={{ width: spacing.avatarMd, height: spacing.avatarMd }}
-        />
-      ) : (
-        <View
-          className="rounded-full mr-3.5 items-center justify-center"
-          style={{
-            width: spacing.avatarMd,
-            height: spacing.avatarMd,
-            borderRadius: spacing.avatarMd / 2,
-            backgroundColor: avatarBgColor,
-          }}
-        >
-          <Text
-            className="tracking-wide text-surface"
-            style={{ fontSize: 15, fontWeight: "700" as const }}
-          >
-            {getInitials(name)}
-          </Text>
-        </View>
-      )}
+      <View className="flex-row items-start">
+        {avatar ? (
+          <Image
+            source={{ uri: avatar }}
+            className="rounded-full mr-3.5"
+            style={{ width: spacing.avatarMd, height: spacing.avatarMd }}
+          />
+        ) : (
+          <View className="mr-3.5">
+            <Avatar name={name} size="md" />
+          </View>
+        )}
 
-      {/* Name + Phone + Days Overdue */}
-      <View className="flex-1 mr-2.5">
-        <Text
-          className="text-base font-semibold text-textPrimary mb-0.5"
-          numberOfLines={1}
-        >
-          {name}
-        </Text>
-        <View className="flex-row items-center gap-2">
-          {showDaysOverdue && (
-            <View className="flex-row items-center">
-              <View 
-                className="rounded-full px-1.5 py-0.5"
-                style={{ backgroundColor: colors.overdue.bg }}
-              >
-                <Text 
-                  className="text-[10px] font-bold"
-                  style={{ color: colors.overdue.text }}
-                >
-                  {daysOverdue}d overdue
-                </Text>
-              </View>
-            </View>
-          )}
-          <Text className="text-xs font-medium text-textSecondary">
+        <View className="flex-1 mr-3">
+          <Text style={typography.cardTitle} numberOfLines={1}>
+            {name}
+          </Text>
+          <Text style={[typography.caption, { marginTop: 2 }]}>
             {formatRelativeActivity(lastActiveAt)}
           </Text>
         </View>
 
-        {onAddEntry && (
+        <View className="items-end">
+          <MoneyAmount
+            value={displayBalance}
+            variant="title"
+            color={ui.amountText}
+            style={{ fontWeight: "800" }}
+          />
+          <View style={{ marginTop: spacing.xs }}>
+            {badgeStatus ? (
+              <StatusBadge status={badgeStatus} />
+            ) : (
+              <View
+                style={{
+                  backgroundColor: ui.badgeBg,
+                  borderRadius: radius.full,
+                  paddingHorizontal: spacing.chipPadding,
+                  paddingVertical: spacing.xs,
+                  minHeight: spacing.chipHeight,
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={[typography.caption, { fontSize: 11, fontWeight: "600", color: ui.badgeText }]}>
+                  {ui.textLabel}
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </View>
+
+      <View
+        className="flex-row items-center justify-between"
+        style={{ marginTop: spacing.lg }}
+      >
+        {onAddEntry ? (
           <TouchableOpacity
             onPress={onAddEntry}
             activeOpacity={0.8}
-            className="flex-row items-center self-start mt-2 px-3 py-1.5 rounded-full bg-primaryLight border border-primary"
+            className="flex-row items-center self-start px-3 py-1.5 rounded-full bg-primaryLight border border-primary"
           >
             <Plus size={12} color={colors.primary} strokeWidth={2.5} />
             <Text className="ml-1 text-[11px] font-semibold text-primary">
               Add Entry
             </Text>
           </TouchableOpacity>
+        ) : (
+          <View />
         )}
-        
-        {/* Quick action buttons (show on overdue only) */}
-        {status === "Overdue" && phone && (
-          <View className="flex-row items-center gap-2 mt-2">
+
+        {status === "Overdue" && phone ? (
+          <View className="flex-row items-center gap-2">
             <TouchableOpacity
               onPress={handleCall}
-              className="flex-row items-center bg-primaryLight rounded-full px-2 py-1"
+              className="flex-row items-center bg-primaryLight rounded-full px-2.5 py-1.5"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Phone size={12} color={colors.primary} strokeWidth={2} />
@@ -206,7 +186,7 @@ export default memo(function CustomerCard({
             </TouchableOpacity>
             <TouchableOpacity
               onPress={handleWhatsApp}
-              className="flex-row items-center rounded-full px-2 py-1"
+              className="flex-row items-center rounded-full px-2.5 py-1.5"
               style={{ backgroundColor: `${WHATSAPP_GREEN}1A` }}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
@@ -216,27 +196,12 @@ export default memo(function CustomerCard({
               </Text>
             </TouchableOpacity>
           </View>
+        ) : (
+          <View className="flex-row items-center" style={{ gap: spacing.xs }}>
+            <Text style={typography.caption}>View details</Text>
+            <ChevronRight size={14} color={colors.textSecondary} strokeWidth={2} />
+          </View>
         )}
-      </View>
-
-      {/* Amount + Pill Badge */}
-      <View className="items-end space-y-1.5">
-        <MoneyAmount
-          value={displayBalance}
-          color={ui.amountText}
-          style={[typography.cardTitle, { fontWeight: "800" as const }]}
-        />
-        <View 
-          className="rounded-full px-2 py-1"
-          style={{ backgroundColor: ui.badgeBg }}
-        >
-          <Text 
-            className="text-[11px] font-bold uppercase tracking-wider"
-            style={{ color: ui.badgeText }}
-          >
-            {ui.textLabel}
-          </Text>
-        </View>
       </View>
     </TouchableOpacity>
   );

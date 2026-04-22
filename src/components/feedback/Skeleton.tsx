@@ -4,7 +4,7 @@ import { Animated, StyleSheet, View } from "react-native";
 
 interface SkeletonProps {
   /** Width of the skeleton line */
-  width?: number | string;
+  width?: number | `${number}%` | "auto";
   /** Height of the skeleton line */
   height?: number;
   /** Border radius (default: 8) */
@@ -57,7 +57,7 @@ export default function Skeleton({
       style={[
         styles.skeleton,
         {
-          width: typeof width === "number" ? width : width,
+          width,
           height,
           borderRadius: radius,
           opacity,

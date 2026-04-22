@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -12,9 +11,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Phone, AlertCircle, CheckCircle2 } from "lucide-react-native";
 import Button from "@/src/components/ui/Button";
-import { colors } from "@/src/utils/theme";
+import Input from "@/src/components/ui/Input";
+import { colors, spacing, typography } from "@/src/utils/theme";
 import { usePhoneSetup } from "@/src/hooks/usePhoneSetup";
-import type { LedgerInfo } from "@/src/utils/accessToken";
 import { useAuthStore } from "@/src/store/authStore";
 
 export default function PhoneSetup() {
@@ -59,16 +58,16 @@ export default function PhoneSetup() {
               className="w-16 h-16 rounded-full items-center justify-center"
               style={{ backgroundColor: colors.successBg }}
             >
-              <CheckCircle2 size={32} color={colors.primary} strokeWidth={2} />
+               <CheckCircle2 size={32} color={colors.success} strokeWidth={2} />
             </View>
           </View>
 
           {/* Title */}
-          <Text className="text-2xl font-extrabold text-textPrimary text-center mb-2">
-            Great news!
-          </Text>
-          <Text className="text-sm text-textSecondary text-center mb-8">
-             We found {discoveredLedgers.length} business
+           <Text style={[typography.screenTitle, { textAlign: "center", marginBottom: spacing.xs }]}> 
+             Great news!
+           </Text>
+           <Text style={[typography.body, { textAlign: "center", color: colors.textSecondary, marginBottom: spacing.xl }]}> 
+              We found {discoveredLedgers.length} business
              {discoveredLedgers.length > 1 ? "s" : ""} who already have your
              ledger
           </Text>
@@ -116,11 +115,11 @@ export default function PhoneSetup() {
           </View>
 
           {/* Info box */}
-          <View className="bg-primary-light rounded-xl p-4 mb-6">
-            <Text className="text-[13px] text-textPrimary leading-5">
-              You can now view your ledgers from these vendors directly in your
-              KredBook app. They can also share updated ledgers with you via
-              WhatsApp.
+           <View className="bg-primary-light rounded-xl p-4 mb-6">
+             <Text style={[typography.body, { lineHeight: 22 }]}> 
+               You can now view your ledgers from these vendors directly in your
+               KredBook app. They can also share updated ledgers with you via
+               WhatsApp.
             </Text>
           </View>
 
@@ -158,57 +157,57 @@ export default function PhoneSetup() {
           </View>
 
           {/* Title */}
-          <Text className="text-2xl font-extrabold text-textPrimary text-center mb-2">
-            One last thing!
-          </Text>
-          <Text className="text-sm text-textSecondary text-center mb-8">
-            Add your phone number to automatically link your ledgers across
-            vendors
-          </Text>
+           <Text style={[typography.screenTitle, { textAlign: "center", marginBottom: spacing.xs }]}> 
+             One last thing!
+           </Text>
+           <Text style={[typography.body, { textAlign: "center", color: colors.textSecondary, marginBottom: spacing.xl }]}> 
+             Add your phone number to automatically link your ledgers across
+             vendors
+           </Text>
 
           {/* Phone input */}
-          <View className="mb-4">
-            <Text className="text-sm font-semibold text-textPrimary mb-2">
-              Phone Number
-            </Text>
-            <View
-              className="bg-surface border rounded-xl px-4 py-3.5 flex-row items-center"
-              style={{
-                borderColor: error ? colors.danger : colors.border,
-              }}
-            >
-              <Text className="text-base text-textSecondary mr-2">+91</Text>
-              <TextInput
-                value={phone}
-                onChangeText={(text) => {
-                  setPhone(text);
-                  setError(null);
-                }}
-                placeholder="9876543210"
-                placeholderTextColor={colors.textSecondary}
-                keyboardType="phone-pad"
-                maxLength={15}
-                className="flex-1 text-base text-textPrimary"
-                autoFocus
-              />
-            </View>
-            {error && (
-              <View className="flex-row items-center mt-2 gap-1.5">
-                <AlertCircle size={14} color={colors.danger} />
+           <View className="mb-4">
+             <Text style={[typography.caption, { color: colors.textPrimary, fontWeight: "600", marginBottom: spacing.sm }]}> 
+               Phone Number
+             </Text>
+             <View className="flex-row items-center gap-2">
+               <View
+                 className="bg-surface border rounded-xl items-center justify-center"
+                 style={{ width: 68, height: 48, borderColor: error ? colors.danger : colors.border }}
+               >
+                 <Text style={[typography.body, { color: colors.textSecondary }]}>+91</Text>
+               </View>
+               <View style={{ flex: 1 }}>
+                 <Input
+                   placeholder="9876543210"
+                   value={phone}
+                   onChangeText={(text) => {
+                     setPhone(text);
+                     setError(null);
+                   }}
+                   error={error ?? undefined}
+                   keyboardType="numeric"
+                   variant="white"
+                 />
+               </View>
+             </View>
+             {error && (
+                <View className="flex-row items-center mt-2 gap-1.5">
+                  <AlertCircle size={14} color={colors.danger} />
                 <Text className="text-[13px] text-danger flex-1">{error}</Text>
               </View>
             )}
           </View>
 
           {/* Info box */}
-          <View className="bg-surface border border-border rounded-xl p-4 mb-6">
-            <Text className="text-[13px] text-textPrimary font-semibold mb-2">
-              Why we need your phone number:
-            </Text>
-            <Text className="text-[13px] text-textSecondary leading-5">
-              • Link your ledgers across different vendors automatically{"\n"}•
-              Allow vendors to share your ledger via WhatsApp{"\n"}• Discover
-              existing credit relationships
+           <View className="bg-surface border border-border rounded-xl p-4 mb-6">
+             <Text style={[typography.caption, { color: colors.textPrimary, fontWeight: "600", marginBottom: spacing.sm }]}> 
+               Why we need your phone number:
+             </Text>
+             <Text style={[typography.body, { color: colors.textSecondary, lineHeight: 22 }]}> 
+               • Link your ledgers across different vendors automatically{"\n"}•
+               Allow vendors to share your ledger via WhatsApp{"\n"}• Discover
+               existing credit relationships
             </Text>
           </View>
 
@@ -232,10 +231,10 @@ export default function PhoneSetup() {
               className="mt-4 py-3 items-center"
               disabled={loading}
             >
-              <Text className="text-sm text-textSecondary">
-                Skip for now (you can add it later)
-              </Text>
-            </TouchableOpacity>
+               <Text style={[typography.body, { color: colors.textSecondary }]}> 
+                 Skip for now (you can add it later)
+               </Text>
+             </TouchableOpacity>
           )}
         </ScrollView>
       </KeyboardAvoidingView>

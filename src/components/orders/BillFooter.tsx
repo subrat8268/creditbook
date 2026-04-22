@@ -1,5 +1,5 @@
 import { colors } from "@/src/utils/theme";
-import { Loader, Share2 } from "lucide-react-native";
+import { Share2 } from "lucide-react-native";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
 interface BillFooterProps {
@@ -8,6 +8,8 @@ interface BillFooterProps {
   shareLabel?: string;
   totalAmount?: number;
   totalLabel?: string;
+  showIcon?: boolean;
+  offlineQueueCount?: number;
   disabled?: boolean;
 }
 
@@ -17,6 +19,8 @@ export default function BillFooter({
   shareLabel = "Save & Share",
   totalAmount,
   totalLabel,
+  showIcon = true,
+  offlineQueueCount = 0,
   disabled = false,
 }: BillFooterProps) {
   return (
@@ -29,6 +33,12 @@ export default function BillFooter({
         borderTopColor: colors.border,
       }}
     >
+      {offlineQueueCount > 0 ? (
+        <Text style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 10 }}>
+          Offline queue: {offlineQueueCount}
+        </Text>
+      ) : null}
+
       {totalAmount !== undefined && totalLabel && (
         <View
           style={{
@@ -64,7 +74,9 @@ export default function BillFooter({
           <ActivityIndicator color={colors.surface} />
         ) : (
           <>
-            <Share2 size={18} color={colors.surface} style={{ marginRight: 8 }} />
+            {showIcon ? (
+              <Share2 size={18} color={colors.surface} style={{ marginRight: 8 }} />
+            ) : null}
             <Text
               style={{
                 color: colors.surface,

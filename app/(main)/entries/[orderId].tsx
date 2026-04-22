@@ -2,6 +2,10 @@ import EmptyState from "@/src/components/feedback/EmptyState";
 import Loader from "@/src/components/feedback/Loader";
 import { useToast } from "@/src/components/feedback/Toast";
 import RecordCustomerPaymentModal from "@/src/components/people/RecordCustomerPaymentModal";
+import StatusBadge from "@/src/components/dashboard/StatusBadge";
+import Avatar from "@/src/components/ui/Avatar";
+import Button from "@/src/components/ui/Button";
+import Card from "@/src/components/ui/Card";
 import MoneyAmount from "@/src/components/ui/MoneyAmount";
 import { orderKeys, useOrderDetail } from "@/src/hooks/useEntries";
 
@@ -9,11 +13,11 @@ import { usePayments } from "@/src/hooks/usePayments";
 import { useAuthStore } from "@/src/store/authStore";
 import { generateBillPdf } from "@/src/utils/generateBillPdf";
 import { daysSince, formatDate } from "@/src/utils/helper";
-import { colors, gradients, spacing, typography } from "@/src/utils/theme";
+import { colors, radius, spacing, typography } from "@/src/utils/theme";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
-import { MessageCircle, Pencil, Wallet, Phone } from "lucide-react-native";
+import { MessageCircle, Pencil, Phone, Receipt, Wallet } from "lucide-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Alert,
@@ -27,29 +31,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const WHATSAPP_GREEN = "#25D366";
 
-// ── Design tokens — map status keys to the central theme chip tokens ──────
-const STATUS_STYLES: Record<
-  string,
-  { bg: string; text: string; label: string }
-> = {
-  Paid: { bg: colors.paid.bg, text: colors.paid.text, label: "PAID" },
-  "Partially Paid": {
-    bg: colors.partial.bg,
-    text: colors.partial.text,
-    label: "PARTIAL",
-  },
-  Pending: {
-    bg: colors.pending.bg,
-    text: colors.pending.text,
-    label: "PENDING",
-  },
-  Overdue: {
-    bg: colors.overdue.bg,
-    text: colors.overdue.text,
-    label: "OVERDUE",
-  },
-};
-
 const PAYMENT_MODE_COLORS: Record<string, { bg: string; text: string }> = {
   Cash: { bg: colors.paid.bg, text: colors.paid.text },
   UPI: { bg: colors.partial.bg, text: colors.partial.text },
@@ -57,28 +38,6 @@ const PAYMENT_MODE_COLORS: Record<string, { bg: string; text: string }> = {
   Draft: { bg: colors.pending.bg, text: colors.pending.text },
   Cheque: { bg: colors.successBg, text: colors.primaryDark },
 };
-
-// ── Avatar helpers ──────────────────────────────────────────────────────
-const AVATAR_COLORS = [
-  colors.danger,
-  colors.warning,
-  colors.primary,
-  ...colors.avatarPalette,
-] as const;
-
-function getAvatarColor(name: string): string {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++)
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
-
-function getInitials(name: string): string {
-  const parts = name.trim().split(" ").filter(Boolean);
-  if (parts.length >= 2)
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  return name.substring(0, 2).toUpperCase();
-}
 
 function fmt(n: number) {
   return n.toLocaleString("en-IN");
@@ -117,14 +76,6 @@ export default function OrderDetailScreen() {
   const isOverdue =
     order?.status === "Pending" && daysSince(order?.created_at ?? "") > 30;
   const statusKey = isOverdue ? "Overdue" : (order?.status ?? "Pending");
-  const chipStyle = STATUS_STYLES[statusKey] ?? STATUS_STYLES["Pending"];
-
-  const heroGradient = useMemo(() => {
-    if (statusKey === "Paid") return gradients.orderPaid;
-    if (statusKey === "Partially Paid") return gradients.orderPartial;
-    if (statusKey === "Overdue") return gradients.orderOverdue;
-    return gradients.orderPending;
-  }, [statusKey]);
 
   const itemsSubtotal = useMemo(
     () => order?.items?.reduce((s, i) => s + i.subtotal, 0) ?? 0,
@@ -136,6 +87,7 @@ export default function OrderDetailScreen() {
   // Grand total = order total (subtotal+tax+loading) + previous balance
   const grandTotal =
     (order?.total_amount ?? 0) + (order?.previous_balance ?? 0);
+  const paidAmount = Math.max(0, grandTotal - (order?.balance_due ?? 0));
 
   // Payments sorted oldest → newest for running-balance calculation
   const sortedPayments = useMemo(
@@ -401,47 +353,49 @@ export default function OrderDetailScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: spacing.md, paddingBottom: 140 }}
       >
-        {/* ───────────────────────────────────────── */}
-        {/* 1. Status Hero */}
-        {/* ───────────────────────────────────────── */}
         <View
-          style={{
-            marginHorizontal: spacing.screenPadding,
-            marginBottom: spacing.sm,
-            borderRadius: spacing.cardRadius,
-            overflow: "hidden",
-          }}
-        >
-          <View
-            style={{
+          style={[
+            {
+              backgroundColor: colors.surface,
+              borderRadius: spacing.cardRadius,
+              marginHorizontal: spacing.screenPadding,
+              marginBottom: spacing.sm,
               padding: spacing.lg,
-              backgroundColor: heroGradient.start,
-            }}
-          >
-            <Text style={{ ...typography.label, color: colors.surface }}>
-              TOTAL AMOUNT
+              borderWidth: 1,
+              borderColor: colors.border,
+            },
+            SHADOW,
+          ]}
+        >
+          <Text style={typography.caption}>Balance due</Text>
+          <MoneyAmount
+            value={order.balance_due}
+            variant="hero"
+            color={order.balance_due > 0 ? colors.danger : colors.textPrimary}
+            style={{ marginTop: spacing.xs }}
+          />
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: spacing.sm, gap: spacing.sm }}>
+            <StatusBadge status={statusKey as "Paid" | "Pending" | "Overdue" | "Partially Paid"} />
+            <Text style={typography.caption}>
+              {formatDate(order.created_at)} · Entry #{order.bill_number}
             </Text>
-            <MoneyAmount value={grandTotal} variant="hero" />
-            <View
-              style={{
-                alignSelf: "flex-start",
-                backgroundColor: colors.surface,
-                paddingHorizontal: spacing.chipPadding,
-                paddingVertical: spacing.xs,
-                borderRadius: 999,
-                marginTop: spacing.sm,
-              }}
-            >
-              <Text
-                style={{
-                  ...typography.label,
-                  color: heroGradient.start,
-                  letterSpacing: 0.3,
-                }}
-              >
-                {chipStyle.label}
-              </Text>
-            </View>
+          </View>
+        </View>
+
+        <View style={{ flexDirection: "row", gap: spacing.sm, marginHorizontal: spacing.screenPadding, marginBottom: spacing.sm }}>
+          <View style={{ flex: 1 }}>
+            <Card
+              title="Total"
+              value={`₹${fmt(grandTotal)}`}
+              icon={<Receipt size={18} color={colors.textPrimary} strokeWidth={2} />}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Card
+              title="Paid"
+              value={`₹${fmt(paidAmount)}`}
+              icon={<Wallet size={18} color={colors.success} strokeWidth={2} />}
+            />
           </View>
         </View>
 
@@ -461,31 +415,10 @@ export default function OrderDetailScreen() {
           ]}
         >
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            {/* Avatar */}
-            <View
-              style={{
-                width: spacing.avatarMd,
-                height: spacing.avatarMd,
-                borderRadius: spacing.avatarMd / 2,
-                backgroundColor: getAvatarColor(customerName),
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: spacing.md,
-                flexShrink: 0,
-              }}
-            >
-              <Text
-                style={{
-                  color: colors.surface,
-                  fontSize: 17,
-                  fontWeight: "700",
-                }}
-              >
-                {getInitials(customerName)}
-              </Text>
+            <View style={{ marginRight: spacing.md, flexShrink: 0 }}>
+              <Avatar name={customerName} size="md" />
             </View>
 
-            {/* Name + phone */}
             <View style={{ flex: 1 }}>
               <Text
                 style={{
@@ -501,11 +434,10 @@ export default function OrderDetailScreen() {
               </Text>
             </View>
 
-            {/* Previous balance */}
             <View style={{ alignItems: "flex-end", marginLeft: 8 }}>
               <Text
                 style={{
-                  ...typography.label,
+                  ...typography.caption,
                   marginBottom: spacing.xs,
                 }}
               >
@@ -514,9 +446,9 @@ export default function OrderDetailScreen() {
               <MoneyAmount
                 value={order.previous_balance}
                 color={
-                  order.previous_balance > 0 ? colors.danger : colors.primary
+                  order.previous_balance > 0 ? colors.danger : colors.textPrimary
                 }
-                style={{ fontSize: 15, fontWeight: "700" as const }}
+                style={{ ...typography.cardTitle, fontWeight: "700" }}
               />
             </View>
           </View>
@@ -729,24 +661,8 @@ export default function OrderDetailScreen() {
             <Text style={{ ...typography.screenTitle }}>Grand Total</Text>
             <View style={{ alignItems: "flex-end" }}>
               <MoneyAmount value={grandTotal} variant="title" />
-              <View
-                style={{
-                  backgroundColor: chipStyle.bg,
-                  borderRadius: 999,
-                  paddingHorizontal: spacing.chipPadding,
-                  paddingVertical: spacing.xs,
-                  marginTop: 6,
-                }}
-              >
-                <Text
-                  style={{
-                    color: chipStyle.text,
-                    ...typography.label,
-                    letterSpacing: 0.4,
-                  }}
-                >
-                  {chipStyle.label}
-                </Text>
+              <View style={{ marginTop: spacing.xs }}>
+                <StatusBadge status={statusKey as "Paid" | "Pending" | "Overdue" | "Partially Paid"} />
               </View>
             </View>
           </View>
@@ -767,15 +683,10 @@ export default function OrderDetailScreen() {
             SHADOW,
           ]}
         >
-          <Text
-            style={{
-              ...typography.label,
-              color: colors.textSecondary,
-              marginBottom: 14,
-            }}
-          >
-            Payments
-          </Text>
+          <View style={{ marginBottom: spacing.md }}>
+            <Text style={typography.sectionTitle}>Payments</Text>
+            <Text style={[typography.caption, { marginTop: spacing.xs }]}>Paid {fmt(paidAmount)} of {fmt(grandTotal)}</Text>
+          </View>
 
           {paymentsLoading ? (
             <Loader />
@@ -796,63 +707,58 @@ export default function OrderDetailScreen() {
                 PAYMENT_MODE_COLORS[payment.payment_mode] ??
                 PAYMENT_MODE_COLORS["Cash"];
               return (
-                <View key={payment.id}>
-                  {idx > 0 && (
-                    <View
-                      style={{
-                        height: 1,
-                        backgroundColor: colors.border,
-                        marginVertical: spacing.sm,
-                      }}
-                    />
-                  )}
+                <View
+                  key={payment.id}
+                  style={{
+                    backgroundColor: colors.surfaceAlt,
+                    borderRadius: radius.lg,
+                    padding: spacing.md,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    marginBottom: idx === paymentRows.length - 1 ? 0 : spacing.sm,
+                  }}
+                >
                   <View
                     style={{
                       flexDirection: "row",
                       alignItems: "flex-start",
                       justifyContent: "space-between",
                     }}
-                  >
-                    {/* Date + mode */}
-                    <View>
-                      <Text
-                        style={{
-                          fontSize: 14,
-                          color: colors.textPrimary,
-                          fontWeight: "600",
-                        }}
-                      >
-                        {formatDate(payment.payment_date)}
-                      </Text>
-                      <View
-                        style={{
-                          backgroundColor: modeStyle.bg,
-                          borderRadius: 999,
-                          paddingHorizontal: 8,
-                          paddingVertical: 2,
-                          alignSelf: "flex-start",
-                          marginTop: 4,
-                        }}
-                      >
-                        <Text
+                    >
+                      <View>
+                        <Text style={typography.cardTitle}>
+                          {formatDate(payment.payment_date)}
+                        </Text>
+                        <View
                           style={{
-                            color: modeStyle.text,
-                            fontSize: 11,
-                            fontWeight: "600",
+                            backgroundColor: modeStyle.bg,
+                            borderRadius: radius.full,
+                            paddingHorizontal: spacing.chipPadding,
+                            paddingVertical: spacing.xs,
+                            alignSelf: "flex-start",
+                            marginTop: spacing.xs,
                           }}
                         >
+                          <Text
+                            style={{
+                              ...typography.caption,
+                              color: modeStyle.text,
+                              fontSize: 11,
+                              fontWeight: "600",
+                            }}
+                          >
                           {payment.payment_mode}
                         </Text>
                       </View>
                     </View>
 
-                    {/* Amount + remaining */}
                     <View style={{ alignItems: "flex-end" }}>
                       <MoneyAmount
                         value={payment.amount}
                         showPlusForPositive
-                        color={colors.primary}
-                        style={{ fontSize: 16, fontWeight: "700" as const }}
+                        variant="title"
+                        color={colors.success}
+                        style={{ fontWeight: "800" }}
                       />
                       <View
                         style={{
@@ -861,8 +767,8 @@ export default function OrderDetailScreen() {
                           marginTop: spacing.xs,
                         }}
                       >
-                        <Text style={typography.caption}>Remaining: </Text>
-                        <MoneyAmount value={remaining} variant="caption" />
+                        <Text style={typography.caption}>Due: </Text>
+                        <MoneyAmount value={remaining} variant="caption" color={remaining > 0 ? colors.danger : colors.success} />
                       </View>
                     </View>
                   </View>
@@ -892,58 +798,24 @@ export default function OrderDetailScreen() {
           gap: spacing.sm,
         }}
       >
-        {/* Send Entry button — always visible */}
-        <TouchableOpacity
-          onPress={handleSendEntry}
-          disabled={sendingEntry}
-          activeOpacity={0.8}
-          style={[
-            {
-              flex: 1,
-              height: spacing.buttonHeight,
-              borderRadius: 12,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              borderWidth: 1.5,
-              borderColor: colors.primary,
-              backgroundColor: colors.surface,
-              gap: spacing.sm,
-            },
-            sendingEntry && { opacity: 0.5 },
-          ]}
-        >
-          <MessageCircle size={18} color={colors.primary} strokeWidth={2} />
-          <Text
-            style={{ fontSize: 15, fontWeight: "600", color: colors.primary }}
-          >
-            {sendingEntry ? "Generating…" : "Send Entry"}
-          </Text>
-        </TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <Button
+            title={sendingEntry ? "Generating…" : "Send Entry"}
+            variant="outline"
+            onPress={handleSendEntry}
+            loading={sendingEntry}
+            icon={<MessageCircle size={18} color={colors.primary} strokeWidth={2} />}
+          />
+        </View>
 
-        {/* Record Payment button — hidden when order is Paid */}
         {!isPaid && (
-          <TouchableOpacity
-            onPress={() => openPaymentFlow()}
-            activeOpacity={0.85}
-            style={{
-              flex: 1,
-              height: spacing.buttonHeight,
-              borderRadius: 12,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: colors.primary,
-              gap: spacing.sm,
-            }}
-          >
-            <Wallet size={18} color={colors.surface} strokeWidth={2} />
-            <Text
-              style={{ fontSize: 15, fontWeight: "600", color: colors.surface }}
-            >
-              Record Payment
-            </Text>
-          </TouchableOpacity>
+          <View style={{ flex: 1 }}>
+            <Button
+              title="Record Payment"
+              onPress={() => openPaymentFlow()}
+              icon={<Wallet size={18} color={colors.surface} strokeWidth={2} />}
+            />
+          </View>
         )}
       </View>
 

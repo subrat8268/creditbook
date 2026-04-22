@@ -2,14 +2,14 @@ import { Person } from "@/src/types/customer";
 import { BookOpen, Plus, UserPlus } from "lucide-react-native";
 import { useCallback } from "react";
 import { FlatList, RefreshControl, View } from "react-native";
-import { colors } from "../../utils/theme";
+import { colors, spacing } from "../../utils/theme";
 import EmptyState from "../feedback/EmptyState";
 import ErrorState from "../feedback/ErrorState";
 import Loader from "../feedback/Loader";
 import CustomerCard from "./CustomerCard";
 import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 
-// ── People-specific empty state icon: open book + green plus badge ──────────
+// ── People-specific empty state icon: open book + brand plus badge ──────────
 const PeopleEmptyIcon = (
   <View className="w-16 h-16">
     <BookOpen size={64} color={colors.primary} strokeWidth={1.5} />
@@ -87,16 +87,16 @@ export default function CustomerList({
         ListEmptyComponent={
           <View className="mt-8">
             <EmptyState
-              title={isConnected ? "Your people list is empty" : "You’re offline"}
+              title={isConnected ? "Your customer list is empty" : "You’re offline"}
               description={
                 isConnected
-                  ? "Add your first person to start tracking entries"
-                  : "Connect to the internet to load your people"
+                  ? "Add your first customer to start tracking entries"
+                  : "Connect to the internet to load your customers"
               }
               icon={PeopleEmptyIcon}
               iconBgColor={colors.successBg}
               iconSize={112}
-              cta={isConnected && onAddPerson ? "Add Person" : undefined}
+              cta={isConnected && onAddPerson ? "Add Customer" : undefined}
               onCta={isConnected ? onAddPerson : undefined}
               ctaIcon={isConnected && onAddPerson ? PeopleEmptyCtaIcon : undefined}
             />
@@ -115,7 +115,11 @@ export default function CustomerList({
         initialNumToRender={8}
         maxToRenderPerBatch={10}
         windowSize={5}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 120 }}
+        contentContainerStyle={{
+          paddingHorizontal: spacing.screenPadding,
+          paddingTop: spacing.sm,
+          paddingBottom: 120,
+        }}
       />
     </View>
   );

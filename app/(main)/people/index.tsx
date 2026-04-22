@@ -8,7 +8,7 @@ import { useCreateOrder } from "@/src/hooks/useEntries";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useAddPerson, usePeople } from "@/src/hooks/usePeople";
 import { useAuthStore } from "@/src/store/authStore";
-import { colors } from "@/src/utils/theme";
+import { colors, spacing, typography } from "@/src/utils/theme";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { UserPlus } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -160,12 +160,11 @@ export default function CustomersScreen() {
       />
 
       {/* ── Screen header ── */}
-      <View className="px-4 py-4 flex-row justify-between items-center">
-        <Text
-          className="text-2xl font-bold text-textPrimary"
-        >
-          People
-        </Text>
+      <View className="px-4 pt-4 pb-3 flex-row justify-between items-start">
+        <View className="flex-1 pr-4">
+          <Text style={typography.screenTitle}>People</Text>
+          <Text style={[typography.caption, { marginTop: spacing.xs }]}>Track customers and balances</Text>
+        </View>
         <TouchableOpacity
           onPress={() => setIsModalOpen(true)}
           activeOpacity={0.8}
@@ -173,7 +172,7 @@ export default function CustomersScreen() {
         >
           <View style={styles.inlineAddPill}>
             <UserPlus size={16} color={colors.primary} strokeWidth={2} />
-            <Text style={styles.inlineAddText}>Add Person</Text>
+            <Text style={styles.inlineAddText}>Add Customer</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -185,16 +184,15 @@ export default function CustomersScreen() {
         <SearchBar
           value={search}
           onChangeText={setSearch}
-          placeholder="Search people..."
+          placeholder="Search customers..."
         />
       </View>
 
-      {/* ── Inline add person (name + phone) ── */}
+      {/* ── Inline add customer (name + phone) ── */}
       <View className="px-4 pb-3">
         <View className="bg-surface border border-border rounded-2xl p-4">
-          <Text className="text-[12px] font-bold text-textSecondary tracking-widest mb-3">
-            ADD PERSON
-          </Text>
+          <Text style={typography.sectionTitle}>Quick add customer</Text>
+          <Text style={[typography.caption, { marginTop: spacing.xs, marginBottom: spacing.lg }]}>Create a customer first, then add entries from the card or detail view.</Text>
           <View className="gap-3">
             <Input
               label="Name"
@@ -210,7 +208,7 @@ export default function CustomersScreen() {
               keyboardType="numeric"
             />
             <Button
-              title="Add Person"
+              title="Save Customer"
               onPress={async () => {
                 if (!inlineName.trim()) return;
                 await handleAddPerson({

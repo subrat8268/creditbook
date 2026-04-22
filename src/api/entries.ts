@@ -79,8 +79,8 @@ export async function fetchOrders(
   // Use !inner when searching so the join filters the result set;
   // fall back to regular join (allows orders with no customer) when not searching.
   const selectClause = search?.trim()
-    ? "*, parties!inner(id, name, phone)"
-    : "*, parties(id, name, phone)";
+    ? "*, customer:parties!inner(id, name, phone)"
+    : "*, customer:parties(id, name, phone)";
 
   let query = supabase
     .from("orders")

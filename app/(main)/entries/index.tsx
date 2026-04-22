@@ -1,44 +1,31 @@
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import MoneyAmount from "@/src/components/ui/MoneyAmount";
+import SearchBar from "@/src/components/ui/SearchBar";
+import StatusBadge from "@/src/components/dashboard/StatusBadge";
+import Button from "@/src/components/ui/Button";
+import type { Order } from "@/src/api/entries";
 import { useOrders } from "@/src/hooks/useEntries";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 import { useAuthStore } from "@/src/store/authStore";
 import { colors, spacing, typography } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
-import { Search } from "lucide-react-native";
 import React, { memo, useCallback, useMemo, useState } from "react";
 import {
   FlatList,
   ScrollView,
   StatusBar,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // ── Inline Entry Card (replaces deleted OrderCard) ───────────────────────────
-interface EntryItem {
-  id: string;
-  bill_number?: string;
-  created_at: string;
-  amount: number;
-  status: "Paid" | "Pending" | "Partially Paid";
-  party?: {
-    name: string;
-  };
-}
+type EntryItem = Order;
 
 const EntryCard = memo(function EntryCard({ entry, onPress }: { entry: EntryItem; onPress: () => void }) {
-  const statusColors = {
-    Paid: { bg: colors.paid.bg, text: colors.paid.text },
-    Pending: { bg: colors.pending.bg, text: colors.pending.text },
-    "Partially Paid": { bg: colors.pending.bg, text: colors.pending.text },
-  };
-  const status = entry.status === "Partially Paid" ? "Partial" : entry.status;
-  const ui = statusColors[entry.status] || statusColors.Paid;
+  const status = entry.status;
   
   return (
     <TouchableOpacity
@@ -55,32 +42,25 @@ const EntryCard = memo(function EntryCard({ entry, onPress }: { entry: EntryItem
         elevation: 2,
       }}
     >
-      <View className="flex-1">
+      <View className="flex-1 pr-3">
         <Text
           numberOfLines={1}
-          style={[typography.body, { fontWeight: "600" as const, marginBottom: 2 }]}
+          style={[typography.cardTitle, { marginBottom: spacing.xs }]}
         >
-          {entry.party?.name || "Unknown"}
+          {entry.customer?.name || "Unknown"}
         </Text>
         <Text style={typography.caption}>
           {entry.bill_number || "—"} • {new Date(entry.created_at).toLocaleDateString("en-IN")}
         </Text>
       </View>
-      <View className="items-end space-y-1.5">
+      <View className="items-end">
         <MoneyAmount
-          value={entry.amount}
-          style={[typography.cardTitle, { fontWeight: "800" as const }]}
+          value={entry.total_amount}
+          variant="title"
+          style={{ fontWeight: "800" as const }}
         />
-        <View 
-          className="rounded-full px-2 py-1"
-          style={{ backgroundColor: ui.bg }}
-        >
-          <Text 
-            className="text-[11px] font-bold uppercase tracking-wider"
-            style={{ color: ui.text }}
-          >
-            {status}
-          </Text>
+        <View style={{ marginTop: spacing.xs }}>
+          <StatusBadge status={status as "Paid" | "Pending" | "Overdue" | "Partially Paid"} />
         </View>
       </View>
     </TouchableOpacity>
@@ -177,7 +157,10 @@ export default function OrdersScreen() {
         }}
       >
         <View className="flex-row items-center justify-between mb-3">
-          <Text style={typography.screenTitle}>Entries</Text>
+          <View>
+            <Text style={typography.screenTitle}>Entries</Text>
+            <Text style={[typography.caption, { marginTop: spacing.xs }]}>Scan recent entries and their payment status</Text>
+          </View>
         </View>
 
         {/* Filter chips */}
@@ -211,26 +194,11 @@ export default function OrdersScreen() {
         </ScrollView>
 
         {/* Pill search bar — always visible */}
-        <View
-          className="flex-row items-center bg-background rounded-full px-4"
-          style={{ height: spacing.searchBarHeight }}
-        >
-          <Search
-            size={16}
-            color={colors.textSecondary}
-            strokeWidth={2}
-            style={{ marginRight: spacing.sm }}
-          />
-          <TextInput
-            value={search}
-            onChangeText={setSearch}
-            placeholder="Search entry or person…"
-            placeholderTextColor={colors.textSecondary}
-            className="flex-1 text-textPrimary text-[14px]"
-            returnKeyType="search"
-            clearButtonMode="while-editing"
-          />
-        </View>
+        <SearchBar
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Search entry or customer…"
+        />
       </View>
 
       {/* ── Entry list ────────────────────────────────────────────────── */}
@@ -287,25 +255,19 @@ export default function OrdersScreen() {
               >
                 <Text style={{ fontSize: 36 }}>📋</Text>
               </View>
-              <Text className="text-textPrimary text-[18px] font-bold mb-2 text-center">
-                {isConnected ? "No entries yet" : "You’re offline"}
-              </Text>
+                <Text className="text-textPrimary text-[18px] font-bold mb-2 text-center">
+                  {isConnected ? "No entries yet" : "You’re offline"}
+                </Text>
               <Text className="text-textSecondary text-[14px] text-center leading-6">
                 {isConnected
                   ? "Add your first entry to start tracking."
                   : "Connect to the internet to load entries."}
               </Text>
-              {isConnected ? (
-                <TouchableOpacity
-                  onPress={handleCreateEntry}
-                  activeOpacity={0.85}
-                  className="mt-5 rounded-full bg-primary px-8 py-3"
-                >
-                  <Text className="text-[14px] font-bold text-surface">
-                    Add Entry
-                  </Text>
-                </TouchableOpacity>
-              ) : null}
+                {isConnected ? (
+                  <View style={{ marginTop: spacing.lg, width: 180 }}>
+                    <Button title="Add Entry" onPress={handleCreateEntry} />
+                  </View>
+                ) : null}
             </View>
           }
         />

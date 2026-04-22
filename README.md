@@ -92,3 +92,9 @@ kredBook/
 - Do not guess backend schema; use Supabase MCP.
 - Treat docs drift as a product and engineering risk.
 - Run `_agents/doc-sync-checklist.md` before closing non-trivial work.
+
+## Dev seeding
+
+To populate a **dev-only** Supabase project with realistic Customers / Entries / Payments, see:
+
+- `docs/dev-seed.md`

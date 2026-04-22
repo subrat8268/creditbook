@@ -1,6 +1,6 @@
 import { useGoogleSignIn, useSignUp } from "@/src/hooks/useAuth";
 import { SignUpSchema } from "@/src/utils/schemas";
-import { colors } from "@/src/utils/theme";
+import { colors, spacing, typography } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { Formik } from "formik";
 import { AlertCircle, ArrowLeft, Eye, EyeOff } from "lucide-react-native";
@@ -51,7 +51,7 @@ export default function SignUpPage() {
 
             <AuthHeader
               title="Create Account"
-              subtitle="Set up your CreditBook in 2 minutes"
+              subtitle="Create your account and finish setup in a few guided steps"
             />
 
             <AuthCard>
@@ -73,7 +73,7 @@ export default function SignUpPage() {
               >
                 {({ handleChange, handleSubmit, values, errors, touched }) => (
                   <>
-                    <Text className="text-[13px] font-semibold text-textPrimary mb-2">
+                    <Text style={[typography.caption, { marginBottom: spacing.sm, color: colors.textPrimary, fontWeight: "600" }]}>
                       Full Name
                     </Text>
                     <Input
@@ -84,7 +84,7 @@ export default function SignUpPage() {
                       variant="white"
                     />
 
-                    <Text className="text-[13px] font-semibold text-textPrimary mb-2 mt-4">
+                    <Text style={[typography.caption, { marginBottom: spacing.sm, marginTop: spacing.lg, color: colors.textPrimary, fontWeight: "600" }]}>
                       Email Address
                     </Text>
                     <Input
@@ -96,7 +96,7 @@ export default function SignUpPage() {
                       variant="white"
                     />
 
-                    <Text className="text-[13px] font-semibold text-textPrimary mb-2 mt-4">
+                    <Text style={[typography.caption, { marginBottom: spacing.sm, marginTop: spacing.lg, color: colors.textPrimary, fontWeight: "600" }]}>
                       Password
                     </Text>
                     <Input
@@ -130,7 +130,7 @@ export default function SignUpPage() {
                       iconPosition="right"
                     />
 
-                    <Text className="text-[13px] font-semibold text-textPrimary mb-2 mt-4">
+                    <Text style={[typography.caption, { marginBottom: spacing.sm, marginTop: spacing.lg, color: colors.textPrimary, fontWeight: "600" }]}>
                       Confirm Password
                     </Text>
                     <Input
@@ -209,15 +209,12 @@ export default function SignUpPage() {
               </View>
             )}
 
-            <TouchableOpacity
-              onPress={() => router.replace("/(auth)/login")}
-              className="mt-4 mb-10"
-            >
-              <Text className="text-center text-textSecondary text-sm">
-                {"Already have an account? "}
-                <Text className="text-primary font-semibold">Log In</Text>
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.replace("/(auth)/login")} className="mt-4 mb-10">
+                <Text style={[typography.body, { textAlign: "center", color: colors.textSecondary }]}> 
+                  {"Already have an account? "}
+                  <Text style={{ color: colors.primary, fontWeight: "600" }}>Log In</Text>
+                </Text>
+              </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

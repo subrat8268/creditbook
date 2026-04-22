@@ -1,8 +1,9 @@
 // Step 4 of onboarding — Business Setup (Step 2 of 2) — Bank Details
 import Button from "@/src/components/ui/Button";
+import Input from "@/src/components/ui/Input";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
-import { colors } from "@/src/utils/theme";
+import { colors, spacing, typography } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -10,7 +11,6 @@ import {
     Platform,
     ScrollView,
     Text,
-    TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
@@ -69,7 +69,7 @@ export default function OnboardingBank() {
   };
 
   const OptionalBadge = () => (
-    <View className="bg-neutral-100 rounded-md px-2 py-0.5 ml-2">
+      <View className="bg-background rounded-md px-2 py-0.5 ml-2">
       <Text className="text-[11px] font-semibold text-textSecondary uppercase tracking-wide">
         OPTIONAL
       </Text>
@@ -98,7 +98,7 @@ export default function OnboardingBank() {
           </TouchableOpacity>
           {/* ── Progress ── */}
           <View className="mt-5 mb-6">
-            <Text className="text-[13px] text-textSecondary mb-2">
+            <Text style={typography.caption}>
               Step 2 of 2
             </Text>
             <View className="flex-row gap-1.5">
@@ -108,87 +108,50 @@ export default function OnboardingBank() {
           </View>
 
           {/* ── Heading ── */}
-          <Text className="text-2xl font-extrabold text-textDark mb-1">
-            Bank & Payment Info
-          </Text>
-          <Text className="text-sm text-textSecondary mb-6">
-            Your customers will see this on their bills.
-          </Text>
+            <Text style={[typography.screenTitle, { marginBottom: spacing.xs }]}> 
+              Bank & Payment Info
+            </Text>
+            <Text style={[typography.body, { color: colors.textSecondary, marginBottom: spacing.xl }]}> 
+              Your customers will see this on their bills.
+            </Text>
 
           {/* ── Card ── */}
-          <View
-            className="bg-white rounded-2xl p-5"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.05,
-              shadowRadius: 4,
-              elevation: 2,
-            }}
-          >
+            <View className="bg-surface rounded-2xl p-5" style={{ shadowColor: colors.textPrimary, shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 }}>
             {/* UPI ID */}
             <View className="flex-row items-center mb-2">
-              <Text className="text-sm font-semibold text-neutral-800">
-                UPI ID
-              </Text>
+                <Text style={[typography.caption, { color: colors.textPrimary, fontWeight: "600" }]}> 
+                  UPI ID
+                </Text>
               <OptionalBadge />
             </View>
-            <TextInput
-              placeholder="e.g. sharma@upi"
-              placeholderTextColor="#AEAEB2"
-              value={upiId}
-              onChangeText={setUpiId}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              className="border-[1.5px] border-border rounded-xl px-3.5 py-3 text-[15px] text-textDark bg-white"
-            />
+              <Input placeholder="e.g. sharma@upi" value={upiId} onChangeText={setUpiId} keyboardType="email-address" variant="white" />
 
             {/* Bank Name */}
             <View className="flex-row items-center mt-5 mb-2">
-              <Text className="text-sm font-semibold text-neutral-800">
-                Bank Name
-              </Text>
+                <Text style={[typography.caption, { color: colors.textPrimary, fontWeight: "600" }]}> 
+                  Bank Name
+                </Text>
               <OptionalBadge />
             </View>
-            <TextInput
-              placeholder="e.g. State Bank of India"
-              placeholderTextColor="#AEAEB2"
-              value={bankName}
-              onChangeText={setBankName}
-              className="border-[1.5px] border-border rounded-xl px-3.5 py-3 text-[15px] text-textDark bg-white"
-            />
+              <Input placeholder="e.g. State Bank of India" value={bankName} onChangeText={setBankName} variant="white" />
 
             {/* Account Number */}
             <View className="flex-row items-center mt-5 mb-2">
-              <Text className="text-sm font-semibold text-neutral-800">
-                Account Number
-              </Text>
+                <Text style={[typography.caption, { color: colors.textPrimary, fontWeight: "600" }]}> 
+                  Account Number
+                </Text>
               <OptionalBadge />
             </View>
-            <TextInput
-              placeholder="e.g. 00112233445566"
-              placeholderTextColor="#AEAEB2"
-              value={accountNumber}
-              onChangeText={setAccountNumber}
-              keyboardType="numeric"
-              className="border-[1.5px] border-border rounded-xl px-3.5 py-3 text-[15px] text-textDark bg-white"
-            />
+              <Input placeholder="e.g. 00112233445566" value={accountNumber} onChangeText={setAccountNumber} keyboardType="numeric" variant="white" />
 
             {/* IFSC Code */}
             <View className="flex-row items-center mt-5 mb-2">
-              <Text className="text-sm font-semibold text-neutral-800">
-                IFSC Code
-              </Text>
+                <Text style={[typography.caption, { color: colors.textPrimary, fontWeight: "600" }]}> 
+                  IFSC Code
+                </Text>
               <OptionalBadge />
             </View>
-            <TextInput
-              placeholder="e.g. SBIN0001234"
-              placeholderTextColor="#AEAEB2"
-              value={ifscCode}
-              onChangeText={(t) => setIfscCode(t.toUpperCase())}
-              autoCapitalize="characters"
-              className="border-[1.5px] border-border rounded-xl px-3.5 py-3 text-[15px] text-textDark bg-white"
-            />
+              <Input placeholder="e.g. SBIN0001234" value={ifscCode} onChangeText={(t) => setIfscCode(t.toUpperCase())} variant="white" />
           </View>
 
           {/* ── Error ── */}

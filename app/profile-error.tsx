@@ -13,13 +13,14 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
  * conditional Stack.Screen guard.
  */
 export default function AuthProfileErrorScreen() {
-  const { fetchProfile, logout } = useAuthStore();
+  const { fetchProfile, logout, user } = useAuthStore();
   const [retrying, setRetrying] = useState(false);
 
   const handleRetry = async () => {
+    if (!user?.id) return;
     setRetrying(true);
     try {
-      await fetchProfile();
+      await fetchProfile(user.id);
     } finally {
       setRetrying(false);
     }

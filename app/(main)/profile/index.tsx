@@ -25,18 +25,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import Avatar from "@/src/components/ui/Avatar";
+import Button from "@/src/components/ui/Button";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { useLanguageStore } from "@/src/store/languageStore";
-import { colors } from "@/src/utils/theme";
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function getInitials(name?: string | null): string {
-  if (!name) return "CB";
-  const parts = name.trim().split(/\s+/).slice(0, 2);
-  return parts.map((w) => w[0]?.toUpperCase() ?? "").join("");
-}
+import { colors, spacing, typography } from "@/src/utils/theme";
 
 function maskAccount(acc?: string | null): string {
   if (!acc) return "—";
@@ -54,8 +48,11 @@ interface SectionCardProps {
 
 function SectionCard({ title, children }: SectionCardProps) {
   return (
-    <View className="px-4 pt-4 pb-2 mb-4 border shadow-sm bg-surface rounded-2xl border-border">
-      <Text className="text-[11px] font-bold text-textSecondary uppercase tracking-widest mb-3">
+    <View
+      className="mb-4 bg-surface rounded-2xl border border-border"
+      style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: spacing.sm }}
+    >
+      <Text style={[typography.caption, { marginBottom: spacing.md, textTransform: "uppercase", letterSpacing: 0.8 }]}>
         {title}
       </Text>
       {children}
@@ -89,66 +86,15 @@ function DetailRow({ Icon, label, value, last, onPress }: DetailRowProps) {
         <Icon size={20} color={colors.primary} strokeWidth={2} />
       </View>
       <View className="flex-1 ml-3">
-        <Text className="text-[10px] font-bold text-textSecondary uppercase tracking-wide mb-0.5">
+        <Text style={[typography.caption, { marginBottom: 2, textTransform: "uppercase", letterSpacing: 0.4 }]}>
           {label}
         </Text>
-        <Text
-          className="text-[14px] font-bold text-textPrimary"
-          numberOfLines={1}
-        >
+        <Text style={typography.body} numberOfLines={1}>
           {value || "—"}
         </Text>
       </View>
       <ChevronRight size={18} color={colors.textSecondary} strokeWidth={2} />
     </TouchableOpacity>
-  );
-}
-
-// ─── SegmentControl ───────────────────────────────────────────────────────────
-
-interface SegmentOption<T extends string> {
-  value: T;
-  label: string;
-}
-
-interface SegmentControlProps<T extends string> {
-  options: SegmentOption<T>[];
-  value: T;
-  onChange: (v: T) => void;
-}
-
-function SegmentControl<T extends string>({
-  options,
-  value,
-  onChange,
-}: SegmentControlProps<T>) {
-  return (
-    <View className="flex-row mt-1 mb-3 overflow-hidden border border-border rounded-xl">
-      {options.map((opt) => {
-        const isActive = value === opt.value;
-        return (
-          <TouchableOpacity
-            key={opt.value}
-            onPress={() => onChange(opt.value)}
-            activeOpacity={0.8}
-            className={`flex-1 py-2.5 items-center border-r border-border last:border-r-0`}
-            style={{
-              backgroundColor: isActive ? colors.primaryLight : colors.surface,
-              borderBottomWidth: isActive ? 2 : 0,
-              borderBottomColor: colors.primary,
-            }}
-          >
-            <Text
-              className={`text-[13px] font-bold ${
-                isActive ? "text-primary" : "text-textSecondary"
-              }`}
-            >
-              {opt.label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
   );
 }
 
@@ -195,9 +141,7 @@ export default function ProfileScreen() {
         >
           <ArrowLeft size={24} color={colors.textPrimary} strokeWidth={2} />
         </TouchableOpacity>
-        <Text className="flex-1 text-center text-[18px] font-extrabold text-textPrimary">
-          Profile & Settings
-        </Text>
+        <Text style={[typography.sectionTitle, { flex: 1, textAlign: "center" }]}>Profile</Text>
         <View className="w-10" />
       </View>
 
@@ -208,29 +152,23 @@ export default function ProfileScreen() {
       >
         {/* ── Avatar ── */}
         <View className="items-center py-4 mb-4">
-          <View className="items-center justify-center w-20 h-20 mb-3 border-4 rounded-full shadow-sm bg-success border-successLight">
-            <Text className="text-[28px] font-black text-surface tracking-tight">
-              {getInitials(profile.business_name)}
-            </Text>
-          </View>
-          <Text className="text-[20px] font-black text-textPrimary">
+          <Avatar name={profile.business_name || "Your Business"} size="lg" />
+          <Text style={[typography.screenTitle, { marginTop: spacing.md }]}> 
             {profile.business_name || "Your Business"}
           </Text>
           {!!email && (
-            <Text className="text-[14px] font-semibold text-textSecondary mt-1">
+            <Text style={[typography.caption, { marginTop: spacing.xs }]}> 
               {email}
             </Text>
           )}
 
-          <TouchableOpacity
-            onPress={() => router.push("/(main)/profile/edit" as never)}
-            activeOpacity={0.8}
-            className="px-8 py-2 mt-4 border-2 rounded-full border-primary"
-          >
-            <Text className="text-[14px] font-bold text-primary">
-              Edit Profile
-            </Text>
-          </TouchableOpacity>
+          <View style={{ marginTop: spacing.lg, width: 180 }}>
+            <Button
+              title="Edit Profile"
+              variant="outline"
+              onPress={() => router.push("/(main)/profile/edit" as never)}
+            />
+          </View>
         </View>
 
         {/* ── Business Details ── */}
@@ -267,18 +205,18 @@ export default function ProfileScreen() {
 
         {/* ── App Preferences ── */}
         <SectionCard title="APP PREFERENCES">
-          <View className="flex-row items-center justify-between py-2 mb-2">
-            <View className="flex-row items-center gap-3">
+            <View className="flex-row items-center justify-between py-2 mb-2">
+              <View className="flex-row items-center gap-3">
               <View
                 className="items-center justify-center w-10 h-10 rounded-xl"
                 style={{ backgroundColor: colors.primaryLight }}
               >
                 <Languages size={20} color={colors.primary} strokeWidth={2} />
               </View>
-              <Text className="text-[15px] font-bold text-textPrimary">
-                Language
-              </Text>
-            </View>
+                <Text style={typography.body}>
+                  Language
+                </Text>
+              </View>
             <View className="flex-row gap-2">
               <TouchableOpacity
                 onPress={() => setLanguage("en")}
@@ -349,20 +287,16 @@ export default function ProfileScreen() {
         </SectionCard>
 
         {/* ── Sign Out ── */}
-        <View className="mt-2 mb-4 border shadow-sm bg-surface rounded-2xl border-border">
-          <TouchableOpacity
+        <View className="mt-2 mb-4">
+          <Button
+            title="Sign Out"
+            variant="danger"
             onPress={handleSignOut}
-            activeOpacity={0.8}
-            className="flex-row items-center justify-center gap-2 py-4"
-          >
-            <LogOut size={20} color={colors.danger} strokeWidth={2.5} />
-            <Text className="text-[16px] font-extrabold text-danger">
-              Sign Out
-            </Text>
-          </TouchableOpacity>
+            icon={<LogOut size={18} color={colors.surface} strokeWidth={2.5} />}
+          />
         </View>
 
-        <Text className="text-center text-[12px] font-semibold text-textSecondary mt-2 mb-4 opacity-50">
+        <Text style={[typography.caption, { textAlign: "center", marginTop: spacing.sm, marginBottom: spacing.md, opacity: 0.6 }]}> 
           KredBook Systems • v1.0.0
         </Text>
       </ScrollView>

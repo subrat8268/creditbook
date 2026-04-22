@@ -1,9 +1,10 @@
 import BottomSheet, {
   BottomSheetBackdrop,
+  type BottomSheetBackdropProps,
   BottomSheetFlatList,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
-import { useCallback, useMemo, useRef } from "react";
+import { type ReactElement, useCallback, useMemo, useRef } from "react";
 import { Keyboard, Text, View } from "react-native";
 import Loader from "../feedback/Loader";
 import SearchBar from "../ui/SearchBar";
@@ -19,7 +20,7 @@ interface BottomSheetPickerProps {
   search?: string;
   setSearch?: (search: string) => void;
   keyExtractor?: (item: any) => string;
-  renderItem?: (item: any) => React.ReactNode;
+  renderItem?: (item: any) => ReactElement | null;
 }
 
 export default function BottomSheetPicker({
@@ -50,7 +51,7 @@ export default function BottomSheetPicker({
   );
 
   const renderBackdrop = useCallback(
-    (props) => (
+    (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop
         {...props}
         opacity={0.5}
