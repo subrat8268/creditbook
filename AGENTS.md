@@ -33,8 +33,26 @@ If any repo instruction conflicts, `SYSTEM_CONTEXT.md` wins.
 
 ## OpenCode Workflow
 
-- Command-first prompts: `/plan`, `/build`, `/fix`, `/refactor`, `/audit` (reference: `_agents/commands.md`).
-- Deterministic pipelines: `_agents/orchestration.md`. Closeout gate for non-trivial changes: `_agents/doc-sync-checklist.md`.
+- Command-first prompts: `/plan`, `/build`, `/fix`, `/refactor`, `/audit` (reference: `.agents/commands.md`).
+- Deterministic pipelines: `.agents/orchestration.md`. Closeout gate for non-trivial changes: `.agents/doc-sync-checklist.md`.
+
+## Skills
+
+Available skills under `.agents/skills/`:
+
+- `project-planner` - scoped plans and task breakdowns
+- `tech-lead` - architecture and implementation decisions
+- `ui-ux-pro-max` - UI direction and polish
+- `ui-designer` - apply repo design tokens and patterns
+- `react-native-skills` - React Native and Expo best practices
+- `debugger` - diagnose and fix bugs and errors
+- `thinker` - deep analysis and tradeoff evaluation
+- `code-reviewer` - review changes for correctness and risk
+- `refactor-engineer` - safe refactors and cleanup
+- `supabase-expert` - Supabase schema, RLS, and migrations
+- `context7-mcp` - current library and framework documentation
+
+When manually invoking tasks, load the matching skills with `load_skills=["skill-name", ...]`.
 
 <!-- context7 -->
 Use Context7 MCP to fetch current documentation whenever the user asks about a library, framework, SDK, API, CLI tool, or cloud service -- even well-known ones like React, Next.js, Prisma, Express, Tailwind, Django, or Spring Boot. This includes API syntax, configuration, version migration, library-specific debugging, setup instructions, and CLI tool usage. Use even when you think you know the answer -- your training data may not reflect recent changes. Prefer this over web search for library docs.

@@ -62,7 +62,7 @@ When a task touches schema/RLS/migrations/data correctness:
 
 ## Execution defaults (deterministic)
 
-Use the command-first workflow in `_agents/commands.md`.
+Use the command-first workflow in `.agents/commands.md`.
 
 Minimum quality gates for any non-trivial change:
 - naming checked (Customer/Entry/Payment)
@@ -74,5 +74,5 @@ Minimum quality gates for any non-trivial change:
 
 - `docs/naming-contract.md` (tracked product language contract)
 - `docs/prd.md`, `docs/ARCHITECTURE.md`, `docs/design-system.md` (product/engineering references)
-- `_agents/orchestration.md` (pipelines)
-- `_agents/doc-sync-checklist.md` (closeout)
+- `.agents/orchestration.md` (pipelines)
+- `.agents/doc-sync-checklist.md` (closeout)
