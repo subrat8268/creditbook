@@ -3,18 +3,18 @@ import Loader from "@/src/components/feedback/Loader";
 import SyncStatus from "@/src/components/feedback/SyncStatus";
 import { useToast } from "@/src/components/feedback/Toast";
 import RecordCustomerPaymentModal from "@/src/components/people/RecordCustomerPaymentModal";
+import ListItem from "@/src/components/layer2/ListItem";
 import { usePersonDetail } from "@/src/hooks/usePeople";
 import { useWhatsAppShare } from "@/src/hooks/useWhatsAppShare";
 import { useAuthStore } from "@/src/store/authStore";
 import { usePreferencesStore } from "@/src/store/preferencesStore";
 import { Transaction } from "@/src/types/customer";
-import { colors, gradients, spacing, typography } from "@/src/utils/theme";
+import { colors, gradients } from "@/src/utils/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Print from "expo-print";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import {
-  AlertTriangle,
   ArrowDown,
   ArrowLeft,
   ArrowUp,
@@ -147,8 +147,6 @@ const MODE_LABEL: Record<string, string> = {
 
 function TransactionRow({ tx }: { tx: Transaction }) {
   const isPayment = tx.type === "payment";
-  const borderColor = isPayment ? colors.primary : colors.danger;
-  const iconBg = isPayment ? colors.successBg : colors.dangerBg;
   const iconColor = isPayment ? colors.primary : colors.danger;
   const amountColor = isPayment ? colors.primary : colors.danger;
   const title = isPayment
@@ -166,69 +164,41 @@ function TransactionRow({ tx }: { tx: Transaction }) {
       ? `${tx.itemCount} item${tx.itemCount !== 1 ? "s" : ""}`
       : (tx.status ?? "");
 
-  return (
-    <View
-      className={`bg-surface rounded-[14px] px-3.5 py-3.5 mb-[10px] border-l-4`}
-      style={{
-        borderLeftColor: borderColor,
-        shadowColor: colors.textPrimary,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.04,
-        shadowRadius: 4,
-        elevation: 1,
-      }}
-    >
-      <View className="flex-row items-center">
-        <View
-          className="w-[38px] h-[38px] rounded-full items-center justify-center mr-3"
-          style={{ backgroundColor: iconBg }}
-        >
-          {isPayment ? (
-            <ArrowDown size={18} color={iconColor} strokeWidth={2} />
-          ) : (
-            <ArrowUp size={18} color={iconColor} strokeWidth={2} />
-          )}
-        </View>
-        <View className="flex-1">
-          <Text className="text-sm font-bold text-textDark">{title}</Text>
-          {subtitle ? (
-            <Text className="text-xs text-textMuted mt-px">{subtitle}</Text>
-          ) : null}
-        </View>
-        <Text
-          className="text-[16px] font-extrabold"
-          style={{ color: amountColor }}
-        >
-          {isPayment ? "+" : ""}
-          {formatINR(tx.amount)}
-        </Text>
-      </View>
-      <View className="flex-row justify-between mt-[10px] pl-[50px]">
-        <Text className="text-xs text-textMuted">
-          {formatTime(tx.created_at)}
-        </Text>
-        <View className="flex-row items-center gap-1.5">
-          <SyncStatus variant="compact" />
-          <Text className="text-xs text-textPrimary font-semibold">
-            Bal: {formatINR(tx.runningBalance)}
-          </Text>
-        </View>
-      </View>
+  const icon = (
+    <View className="w-[38px] h-[38px] rounded-full items-center justify-center bg-surfaceAlt">
+      {isPayment ? (
+        <ArrowDown size={18} color={iconColor} strokeWidth={2} />
+      ) : (
+        <ArrowUp size={18} color={iconColor} strokeWidth={2} />
+      )}
     </View>
+  );
+
+  const rightMeta = (
+    <View className="flex-row items-center gap-1.5">
+      <SyncStatus variant="compact" />
+      <Text className="text-xs text-textPrimary font-semibold">
+        Bal: {formatINR(tx.runningBalance)}
+      </Text>
+    </View>
+  );
+
+  return (
+    <ListItem
+      title={title}
+      subtitle={subtitle || formatTime(tx.created_at)}
+      leftSlot={icon}
+      amount={tx.amount}
+      amountColor={amountColor}
+      footerLeft={<Text className="text-xs text-textMuted">{formatTime(tx.created_at)}</Text>}
+      footerRight={rightMeta}
+      compact
+    />
   );
 }
 
-// ── Card shadow style ─────────────────────────────────────────────────
-const SHADOW = {
-  shadowColor: colors.textPrimary,
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.06,
-  shadowRadius: 4,
-  elevation: 2,
-};
-
 // ─── Main Screen ──────────────────────────────────────────────────────────────
-type ListItem =
+type TxListItem =
   | { kind: "header"; label: string; key: string }
   | { kind: "tx"; data: Transaction; key: string };
 
@@ -363,7 +333,7 @@ export default function CustomerDetailScreen() {
     paymentModalRef.current?.present();
   };
 
-  const listItems = useMemo<ListItem[]>(() => {
+  const listItems = useMemo<TxListItem[]>(() => {
     if (!customer) return [];
     const filtered = customer.transactions.filter((tx) => {
       if (txFilter === "Entries") return tx.type === "bill";
@@ -376,7 +346,7 @@ export default function CustomerDetailScreen() {
       if (!groups[label]) groups[label] = [];
       groups[label].push(tx);
     }
-    const items: ListItem[] = [];
+    const items: TxListItem[] = [];
     for (const [label, txs] of Object.entries(groups)) {
       items.push({ kind: "header", label, key: `h-${label}` });
       for (const tx of txs)

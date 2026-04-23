@@ -58,9 +58,9 @@ Do not use `Order`, `Party`, `Supplier`, `Vendor`, or `Distributor` as active pr
 Read in this order before non-trivial work:
 1. `docs/naming-contract.md`
 2. `SYSTEM_CONTEXT.md`
-3. `_agents/commands.md`
-4. `_agents/orchestration.md`
-5. `_agents/doc-sync-checklist.md`
+3. `.agents/commands.md`
+4. `.agents/orchestration.md`
+5. `.agents/doc-sync-checklist.md`
 
 Supporting references:
 - `docs/components.md`
@@ -77,7 +77,7 @@ Use short commands as prompts:
 - `/refactor` — safe structure improvements
 - `/audit` — evidence-based repo/feature audit
 
-See `AGENTS.md` and `_agents/commands.md`.
+See `AGENTS.md` and `.agents/commands.md`.
 
 ## Repo Layout
 
@@ -86,7 +86,7 @@ kredBook/
 ├── app/                  # Expo Router app
 ├── src/                  # Components, hooks, store, services, utils
 ├── docs/                 # Product and engineering docs
-├── _agents/              # Repo operating system for agents
+├── .agents/              # Repo operating system for agents
 └── AGENTS.md             # Short canonical operating guide
 ```
 
@@ -102,7 +102,7 @@ kredBook/
 - `src/utils/theme.ts` is the design-token source of truth.
 - Do not guess backend schema; use Supabase MCP.
 - Treat docs drift as a product and engineering risk.
-- Run `_agents/doc-sync-checklist.md` before closing non-trivial work.
+- Run `.agents/doc-sync-checklist.md` before closing non-trivial work.
 
 ## Dev seeding
 

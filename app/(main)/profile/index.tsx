@@ -27,6 +27,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import Avatar from "@/src/components/ui/Avatar";
 import Button from "@/src/components/ui/Button";
+import ListItem from "@/src/components/layer2/ListItem";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { useLanguageStore } from "@/src/store/languageStore";
@@ -71,30 +72,23 @@ interface DetailRowProps {
 }
 
 function DetailRow({ Icon, label, value, last, onPress }: DetailRowProps) {
+  const iconSlot = (
+    <View className="items-center justify-center w-10 h-10 rounded-xl bg-primaryLight">
+      <Icon size={20} color={colors.primary} strokeWidth={2} />
+    </View>
+  );
+
   return (
-    <TouchableOpacity
+    <ListItem
+      title={value || "—"}
+      subtitle={label}
+      leftSlot={iconSlot}
+      variant="row"
+      bordered={!last}
+      noMargin
       onPress={onPress}
-      activeOpacity={onPress ? 0.7 : 1}
-      className={`flex-row items-center py-3 ${
-        !last ? "border-b border-border" : "mb-2"
-      }`}
-    >
-      <View
-        className="items-center justify-center w-10 h-10 rounded-xl"
-        style={{ backgroundColor: colors.primaryLight }}
-      >
-        <Icon size={20} color={colors.primary} strokeWidth={2} />
-      </View>
-      <View className="flex-1 ml-3">
-        <Text style={[typography.caption, { marginBottom: 2, textTransform: "uppercase", letterSpacing: 0.4 }]}>
-          {label}
-        </Text>
-        <Text style={typography.body} numberOfLines={1}>
-          {value || "—"}
-        </Text>
-      </View>
-      <ChevronRight size={18} color={colors.textSecondary} strokeWidth={2} />
-    </TouchableOpacity>
+      trailingSlot={<ChevronRight size={18} color={colors.textSecondary} strokeWidth={2} />}
+    />
   );
 }
 

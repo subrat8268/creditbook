@@ -1,71 +1,23 @@
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
-import MoneyAmount from "@/src/components/ui/MoneyAmount";
 import SearchBar from "@/src/components/ui/SearchBar";
-import StatusBadge from "@/src/components/dashboard/StatusBadge";
 import Button from "@/src/components/ui/Button";
-import type { Order } from "@/src/api/entries";
+import Header from "@/src/components/layer2/Header";
+import ListItem from "@/src/components/layer2/ListItem";
+import ScreenLayout from "@/src/components/layer2/ScreenLayout";
 import { useOrders } from "@/src/hooks/useEntries";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 import { useAuthStore } from "@/src/store/authStore";
-import { colors, spacing, typography } from "@/src/utils/theme";
+import { colors, spacing } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
-import React, { memo, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   FlatList,
   ScrollView,
-  StatusBar,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
-// ── Inline Entry Card (replaces deleted OrderCard) ───────────────────────────
-type EntryItem = Order;
-
-const EntryCard = memo(function EntryCard({ entry, onPress }: { entry: EntryItem; onPress: () => void }) {
-  const status = entry.status;
-  
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.7}
-      className="flex-row items-center bg-surface rounded-2xl border border-border"
-      style={{
-        padding: spacing.cardPadding,
-        marginBottom: spacing.md,
-        shadowColor: colors.textPrimary,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        elevation: 2,
-      }}
-    >
-      <View className="flex-1 pr-3">
-        <Text
-          numberOfLines={1}
-          style={[typography.cardTitle, { marginBottom: spacing.xs }]}
-        >
-          {entry.customer?.name || "Unknown"}
-        </Text>
-        <Text style={typography.caption}>
-          {entry.bill_number || "—"} • {new Date(entry.created_at).toLocaleDateString("en-IN")}
-        </Text>
-      </View>
-      <View className="items-end">
-        <MoneyAmount
-          value={entry.total_amount}
-          variant="title"
-          style={{ fontWeight: "800" as const }}
-        />
-        <View style={{ marginTop: spacing.xs }}>
-          <StatusBadge status={status as "Paid" | "Pending" | "Overdue" | "Partially Paid"} />
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-});
 
 // Filter chips
 const FILTER_OPTIONS: { label: StatusFilter; color: string; bg: string }[] = [
@@ -144,8 +96,7 @@ export default function OrdersScreen() {
   );
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-background">
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+    <ScreenLayout>
 
       {/* ── Header ────────────────────────────────────────────────────── */}
       <View
@@ -156,12 +107,10 @@ export default function OrdersScreen() {
           paddingBottom: spacing.xs,
         }}
       >
-        <View className="flex-row items-center justify-between mb-3">
-          <View>
-            <Text style={typography.screenTitle}>Entries</Text>
-            <Text style={[typography.caption, { marginTop: spacing.xs }]}>Scan recent entries and their payment status</Text>
-          </View>
-        </View>
+        <Header
+          title="Entries"
+          subtitle="Scan recent entries and their payment status"
+        />
 
         {/* Filter chips */}
         <ScrollView
@@ -230,9 +179,20 @@ export default function OrdersScreen() {
             paddingTop: spacing.md,
             paddingBottom: 120,
           }}
-          renderItem={({ item }) => (
-            <EntryCard entry={item} onPress={() => handlePressOrder(item.id)} />
-          )}
+          renderItem={({ item }) => {
+            const entryDate = new Date(item.created_at).toLocaleDateString("en-IN");
+            const subtitle = `${item.bill_number || "—"} • ${entryDate}`;
+
+            return (
+              <ListItem
+                title={item.customer?.name || "Unknown"}
+                subtitle={subtitle}
+                amount={item.total_amount}
+                status={item.status as "Paid" | "Pending" | "Overdue" | "Partially Paid"}
+                onPress={() => handlePressOrder(item.id)}
+              />
+            );
+          }}
           ListFooterComponent={
             isFetchingNextPage ? (
               <Text
@@ -281,6 +241,6 @@ export default function OrdersScreen() {
       />
 
       {/* ── Sort bottom sheet removed for Phase 1 ──────────────────────── */}
-    </SafeAreaView>
+    </ScreenLayout>
   );
 }

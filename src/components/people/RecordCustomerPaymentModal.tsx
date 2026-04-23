@@ -1,17 +1,14 @@
 import { useRecordPayment } from "@/src/hooks/usePayments";
 import { useAuthStore } from "@/src/store/authStore";
+import BaseBottomSheet from "@/src/components/layer2/BaseBottomSheet";
 import Avatar from "@/src/components/ui/Avatar";
 import Button from "@/src/components/ui/Button";
+import Input from "@/src/components/ui/Input";
 import MoneyAmount from "@/src/components/ui/MoneyAmount";
 import { colors, radius, spacing, typography } from "@/src/utils/theme";
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetScrollView,
-  BottomSheetTextInput,
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Check } from "lucide-react-native";
-import { forwardRef, useCallback, useEffect, useMemo, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 type PaymentMode = "Cash" | "UPI" | "NEFT" | "Draft" | "Cheque";
@@ -41,20 +38,6 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
       orderId,
       profile?.id,
       customerId,
-    );
-
-    const snapPoints = useMemo(() => ["75%", "90%"], []);
-
-    const renderBackdrop = useCallback(
-      (props: any) => (
-        <BottomSheetBackdrop
-          {...props}
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-          pressBehavior="close"
-        />
-      ),
-      [],
     );
 
     // Sync default amount when balanceDue changes (e.g. parent rerenders or loads)
@@ -88,38 +71,19 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
         if (ref && typeof ref !== "function" && ref.current) {
           ref.current.dismiss();
         }
-      } catch (e: any) {
-        Alert.alert("Error", e.message || "Failed to record payment.");
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to record payment.";
+        Alert.alert("Error", message);
       }
     };
 
     return (
-      <BottomSheetModal
+      <BaseBottomSheet
         ref={ref}
-        index={0}
-        snapPoints={snapPoints}
-        backdropComponent={renderBackdrop}
-        keyboardBehavior="interactive"
-        keyboardBlurBehavior="restore"
-        handleIndicatorStyle={{
-          backgroundColor: colors.border,
-          width: 40,
-        }}
-        backgroundStyle={{
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
-          backgroundColor: colors.surface,
-        }}
-        onDismiss={onDismiss}
+        onClose={() => onDismiss?.()}
+        snapPoints={["75%", "90%"]}
+        withScroll
       >
-        <BottomSheetScrollView
-          contentContainerStyle={{
-            paddingHorizontal: spacing.screenPadding,
-            paddingBottom: spacing["3xl"] + spacing.sm,
-            paddingTop: spacing.xs,
-          }}
-          keyboardShouldPersistTaps="handled"
-        >
           <Text style={typography.sectionTitle}>Record Payment</Text>
           <Text style={[typography.caption, { marginTop: spacing.xs, marginBottom: spacing.lg }]}>Balance due for this entry</Text>
 
@@ -160,17 +124,13 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
           </Text>
 
           {/* Large split amount row */}
-          <View className="flex-row items-center pb-3 mb-1 border-b-2 border-primary">
-            <Text className="text-3xl font-bold mr-2 text-textPrimary">₹</Text>
-            <BottomSheetTextInput
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="decimal-pad"
-              placeholder="0"
-              placeholderTextColor={colors.textSecondary}
-              className="flex-1 text-4xl font-extrabold text-textPrimary p-0"
-            />
-          </View>
+          <Input
+            placeholder="0"
+            value={amount}
+            onChangeText={(value) => setAmount(value.replace(/[^0-9.]/g, ""))}
+            keyboardType="decimal-pad"
+            icon={<Text className="text-textPrimary text-lg font-bold">₹</Text>}
+          />
 
           {/* Tap-to-fill full balance hint */}
           <TouchableOpacity
@@ -224,15 +184,10 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
           <Text className="text-[13px] font-semibold mb-2 text-textPrimary">
             Notes (optional)
           </Text>
-          <BottomSheetTextInput
+          <Input
+            placeholder="Write a note about this payment..."
             value={notes}
             onChangeText={setNotes}
-            placeholder="Write a note about this payment..."
-            placeholderTextColor={colors.textSecondary}
-            multiline
-            numberOfLines={3}
-            textAlignVertical="top"
-            className="rounded-xl px-4 py-3 text-sm mb-6 border border-border bg-background text-textPrimary min-h-[80px]"
           />
 
           {/* ── Dynamic Action Button ── */}
@@ -243,8 +198,7 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
             loading={isRecording}
             icon={!isRecording && isFullPaid ? <Check size={16} color={colors.surface} strokeWidth={3} /> : undefined}
           />
-        </BottomSheetScrollView>
-      </BottomSheetModal>
+      </BaseBottomSheet>
     );
   }
 );

@@ -1,13 +1,20 @@
-import { colors } from "@/src/utils/theme";
+import { colors, spacing, typography } from "@/src/utils/theme";
 import { clsx } from "clsx";
 import React, { memo } from "react";
-import { Text, TextInput, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  type TextInputProps,
+  View,
+} from "react-native";
 
 type Props = {
   label?: string;
   placeholder: string;
   value: string;
   onChangeText: (text: string) => void;
+  onBlur?: TextInputProps["onBlur"];
   secureTextEntry?: boolean;
   error?: string;
   icon?: React.ReactNode;
@@ -15,6 +22,15 @@ type Props = {
   variant?: "neutral" | "white";
   height?: number;
   keyboardType?: "default" | "decimal-pad" | "numeric" | "email-address";
+  multiline?: boolean;
+  numberOfLines?: number;
+  maxLength?: number;
+  autoCapitalize?: TextInputProps["autoCapitalize"];
+  autoFocus?: boolean;
+  returnKeyType?: TextInputProps["returnKeyType"];
+  onSubmitEditing?: TextInputProps["onSubmitEditing"];
+  editable?: boolean;
+  textAlign?: TextInputProps["textAlign"];
 };
 
 export default memo(function Input({
@@ -22,6 +38,7 @@ export default memo(function Input({
   placeholder,
   value,
   onChangeText,
+  onBlur,
   secureTextEntry,
   error,
   icon,
@@ -29,6 +46,15 @@ export default memo(function Input({
   variant = "neutral",
   height = 48,
   keyboardType = "default",
+  multiline = false,
+  numberOfLines,
+  maxLength,
+  autoCapitalize = "none",
+  autoFocus = false,
+  returnKeyType,
+  onSubmitEditing,
+  editable = true,
+  textAlign,
 }: Props) {
   const containerStyle = clsx(
     "flex-row items-center border rounded-xl px-4",
@@ -38,33 +64,49 @@ export default memo(function Input({
   return (
     <View className="w-full">
       {label && (
-        <Text className="mb-1 text-sm text-textSecondary font-medium">
+        <Text style={styles.label}>
           {label}
         </Text>
       )}
 
       <View
         className={containerStyle}
-        style={{ height, borderColor: error ? colors.danger : colors.border }}
+        style={[
+          styles.container,
+          {
+            minHeight: height,
+            borderColor: error ? colors.danger : colors.border,
+          },
+          multiline ? styles.multilineContainer : null,
+        ]}
       >
         {icon && iconPosition === "left" && (
           <View className="mr-2">{icon}</View>
         )}
 
-        <View style={{ flex: 1, justifyContent: "center", height: "100%" }}>
+        <View style={[styles.inputWrap, multiline ? styles.inputWrapMultiline : null]}>
           <TextInput
             placeholder={placeholder}
             value={value}
             onChangeText={onChangeText}
+            onBlur={onBlur}
             secureTextEntry={secureTextEntry}
             keyboardType={keyboardType}
             placeholderTextColor={colors.textSecondary}
-            style={{
-              flex: 1,
-              color: colors.textPrimary,
-              fontSize: 16,
-              paddingVertical: 0, // ✅ ensures true vertical centering
-            }}
+            multiline={multiline}
+            numberOfLines={numberOfLines}
+            maxLength={maxLength}
+            autoCapitalize={autoCapitalize}
+            autoFocus={autoFocus}
+            returnKeyType={returnKeyType}
+            onSubmitEditing={onSubmitEditing}
+            editable={editable}
+            textAlign={textAlign}
+            textAlignVertical={multiline ? "top" : "center"}
+            style={[
+              styles.input,
+              multiline ? styles.inputMultiline : null,
+            ]}
           />
         </View>
 
@@ -73,7 +115,46 @@ export default memo(function Input({
         )}
       </View>
 
-      {error && <Text className="text-danger text-xs mt-1">{error}</Text>}
+      {error && <Text style={styles.error}>{error}</Text>}
     </View>
   );
+});
+
+const styles = StyleSheet.create({
+  label: {
+    ...typography.label,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+  },
+  container: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+  },
+  multilineContainer: {
+    paddingVertical: spacing.sm,
+  },
+  inputWrap: {
+    flex: 1,
+    justifyContent: "center",
+    minHeight: 44,
+  },
+  inputWrapMultiline: {
+    justifyContent: "flex-start",
+  },
+  input: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    paddingVertical: 0,
+    minHeight: 24,
+  },
+  inputMultiline: {
+    paddingTop: spacing.xs,
+    minHeight: 72,
+  },
+  error: {
+    ...typography.small,
+    color: colors.danger,
+    marginTop: spacing.xs,
+  },
 });
