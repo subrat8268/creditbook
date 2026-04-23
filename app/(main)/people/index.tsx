@@ -1,8 +1,6 @@
 import { useToast } from "@/src/components/feedback/Toast";
 import CustomerList from "@/src/components/people/CustomerList";
 import NewCustomerModal from "@/src/components/people/NewCustomerModal";
-import Button from "@/src/components/ui/Button";
-import Input from "@/src/components/ui/Input";
 import SearchBar from "@/src/components/ui/SearchBar";
 import { useCreateOrder } from "@/src/hooks/useEntries";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
@@ -12,13 +10,7 @@ import { colors, spacing, typography } from "@/src/utils/theme";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { UserPlus } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CustomersScreen() {
@@ -30,8 +22,6 @@ export default function CustomersScreen() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [redirectAfterAdd, setRedirectAfterAdd] = useState(false);
-  const [inlineName, setInlineName] = useState("");
-  const [inlinePhone, setInlinePhone] = useState("");
 
   const {
     refetch,
@@ -72,9 +62,11 @@ export default function CustomersScreen() {
   }) => {
     try {
       const createdPerson = await addPersonMutation.mutateAsync({
-        ...values,
         phone: values.phone || "",
-      } as any);
+        name: values.name,
+        address: values.address,
+        openingBalance: values.openingBalance,
+      });
       if (values.entryAmount && values.entryAmount > 0) {
         await createOrderMutation.mutateAsync({
           customerId: createdPerson.id,
@@ -115,7 +107,7 @@ export default function CustomersScreen() {
         }
       }
       setRedirectAfterAdd(false);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to add customer:", err);
     }
   };
@@ -186,44 +178,6 @@ export default function CustomersScreen() {
           onChangeText={setSearch}
           placeholder="Search customers..."
         />
-      </View>
-
-      {/* ── Inline add customer (name + phone) ── */}
-      <View className="px-4 pb-3">
-        <View className="bg-surface border border-border rounded-2xl p-4">
-          <Text style={typography.sectionTitle}>Quick add customer</Text>
-          <Text style={[typography.caption, { marginTop: spacing.xs, marginBottom: spacing.lg }]}>Create a customer first, then add entries from the card or detail view.</Text>
-          <View className="gap-3">
-            <Input
-              label="Name"
-              placeholder="e.g. Mohit Sharma"
-              value={inlineName}
-              onChangeText={setInlineName}
-            />
-            <Input
-              label="Phone"
-              placeholder="9876543210"
-              value={inlinePhone}
-              onChangeText={setInlinePhone}
-              keyboardType="numeric"
-            />
-            <Button
-              title="Save Customer"
-              onPress={async () => {
-                if (!inlineName.trim()) return;
-                await handleAddPerson({
-                  name: inlineName.trim(),
-                  phone: inlinePhone.trim(),
-                  entryAmount: 0,
-                });
-                setInlineName("");
-                setInlinePhone("");
-              }}
-              loading={addPersonMutation.isPending}
-              disabled={!inlineName.trim()}
-            />
-          </View>
-        </View>
       </View>
 
       {/* ── People list (full-width) ── */}

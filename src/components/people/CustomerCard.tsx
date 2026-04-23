@@ -2,7 +2,7 @@ import { Image, Linking, Text, TouchableOpacity, View } from "react-native";
 import React, { memo } from "react";
 import { formatRelativeActivity } from "../../utils/helper";
 import { colors, radius, spacing, typography } from "../../utils/theme";
-import { ChevronRight, MessageCircle, Phone, Plus } from "lucide-react-native";
+import { ChevronRight, Phone, Plus } from "lucide-react-native";
 import Avatar from "../ui/Avatar";
 import MoneyAmount from "../ui/MoneyAmount";
 import StatusBadge from "../dashboard/StatusBadge";
@@ -27,8 +27,6 @@ function getStatus(isOverdue: boolean, balance: number): CustomerStatus {
   if (balance < 0) return "Advance";
   return "Paid";
 }
-
-const WHATSAPP_GREEN = "#25D366";
 
 // Design system status chip colors
 const STATUS_UIMAP: Record<CustomerStatus, { badgeBg: string; badgeText: string; amountText: string; textLabel: string }> = {
@@ -80,13 +78,6 @@ export default memo(function CustomerCard({
     if (phone) Linking.openURL(`tel:${phone}`);
   };
   
-  const handleWhatsApp = () => {
-    if (phone) {
-      const message = encodeURIComponent(`Hi ${name.split(' ')[0]}, this is a reminder about your outstanding balance of ₹${outstandingBalance?.toLocaleString('en-IN') || 0}. Please clear when convenient. - KredBook`);
-      Linking.openURL(`whatsapp://send?phone=${phone.replace(/\D/g, '')}&text=${message}`);
-    }
-  };
-
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -120,9 +111,6 @@ export default memo(function CustomerCard({
           <Text style={typography.cardTitle} numberOfLines={1}>
             {name}
           </Text>
-          <Text style={[typography.caption, { marginTop: 2 }]}>
-            {formatRelativeActivity(lastActiveAt)}
-          </Text>
         </View>
 
         <View className="items-end">
@@ -146,7 +134,7 @@ export default memo(function CustomerCard({
                   justifyContent: "center",
                 }}
               >
-                <Text style={[typography.caption, { fontSize: 11, fontWeight: "600", color: ui.badgeText }]}>
+                <Text style={[typography.caption, { fontSize: 11, fontWeight: "600", color: ui.badgeText }]}> 
                   {ui.textLabel}
                 </Text>
               </View>
@@ -154,6 +142,10 @@ export default memo(function CustomerCard({
           </View>
         </View>
       </View>
+
+      <Text style={[typography.caption, { marginTop: spacing.xs }]}> 
+        {formatRelativeActivity(lastActiveAt)}
+      </Text>
 
       <View
         className="flex-row items-center justify-between"
@@ -163,10 +155,11 @@ export default memo(function CustomerCard({
           <TouchableOpacity
             onPress={onAddEntry}
             activeOpacity={0.8}
-            className="flex-row items-center self-start px-3 py-1.5 rounded-full bg-primaryLight border border-primary"
+            className="flex-row items-center self-start px-3 py-1.5 rounded-full border border-border"
+            style={{ backgroundColor: colors.surfaceAlt }}
           >
-            <Plus size={12} color={colors.primary} strokeWidth={2.5} />
-            <Text className="ml-1 text-[11px] font-semibold text-primary">
+            <Plus size={12} color={colors.textSecondary} strokeWidth={2.5} />
+            <Text className="ml-1 text-[11px] font-semibold text-textSecondary">
               Add Entry
             </Text>
           </TouchableOpacity>
@@ -175,27 +168,15 @@ export default memo(function CustomerCard({
         )}
 
         {status === "Overdue" && phone ? (
-          <View className="flex-row items-center gap-2">
-            <TouchableOpacity
-              onPress={handleCall}
-              className="flex-row items-center bg-primaryLight rounded-full px-2.5 py-1.5"
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Phone size={12} color={colors.primary} strokeWidth={2} />
-              <Text className="text-[10px] font-semibold text-primary ml-1">Call</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleWhatsApp}
-              className="flex-row items-center rounded-full px-2.5 py-1.5"
-              style={{ backgroundColor: `${WHATSAPP_GREEN}1A` }}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <MessageCircle size={12} color={WHATSAPP_GREEN} strokeWidth={2} />
-              <Text className="text-[10px] font-semibold ml-1" style={{ color: WHATSAPP_GREEN }}>
-                Remind
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            onPress={handleCall}
+            className="flex-row items-center rounded-full px-2.5 py-1.5 self-start"
+            style={{ backgroundColor: colors.primaryLight }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Phone size={12} color={colors.primary} strokeWidth={2} />
+            <Text className="text-[10px] font-semibold text-primary ml-1">Call</Text>
+          </TouchableOpacity>
         ) : (
           <View className="flex-row items-center" style={{ gap: spacing.xs }}>
             <Text style={typography.caption}>View details</Text>

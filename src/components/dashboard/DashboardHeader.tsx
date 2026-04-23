@@ -1,15 +1,12 @@
 import { useAuthStore } from "@/src/store/authStore";
 import { colors, spacing } from "@/src/utils/theme";
 import { Bell, Settings } from "lucide-react-native";
-import React, { memo, useMemo } from "react";
+import { memo, useMemo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
-  /** default  = business avatar + name + greeting + settings (all modes)
-   *  both     = same as default (hamburger removed per spec) */
-  variant?: "default" | "both";
-  roleLabel?: string;
   overdueCount?: number;
+  showActions?: boolean;
   onPressNotifications?: () => void;
   onPressSettings?: () => void;
 };
@@ -27,8 +24,8 @@ const getGreeting = (): string => {
 };
 
 export default memo(function DashboardHeader({
-  variant = "default",
   overdueCount = 0,
+  showActions = true,
   onPressNotifications,
   onPressSettings,
 }: Props) {
@@ -99,49 +96,53 @@ export default memo(function DashboardHeader({
         </Text>
       </View>
 
-      {/* Bell */}
-      <TouchableOpacity
-        className="items-center justify-center rounded-full"
-        style={{
-          width: iconButtonSize,
-          height: iconButtonSize,
-          marginRight: spacing.sm,
-          backgroundColor: colors.surface,
-          ...iconButtonShadow,
-        }}
-        onPress={onPressNotifications}
-      >
-        <View style={{ position: "relative" }}>
-          <Bell size={22} color={colors.textPrimary} strokeWidth={1.75} />
-          {overdueCount > 0 && (
-            <View
-              style={{
-                position: "absolute",
-                top: -2,
-                right: -2,
-                width: 8,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: colors.danger,
-              }}
-            />
-          )}
-        </View>
-      </TouchableOpacity>
+      {showActions && (
+        <>
+          {/* Bell */}
+          <TouchableOpacity
+            className="items-center justify-center rounded-full"
+            style={{
+              width: iconButtonSize,
+              height: iconButtonSize,
+              marginRight: spacing.sm,
+              backgroundColor: colors.surface,
+              ...iconButtonShadow,
+            }}
+            onPress={onPressNotifications}
+          >
+            <View style={{ position: "relative" }}>
+              <Bell size={22} color={colors.textPrimary} strokeWidth={1.75} />
+              {overdueCount > 0 && (
+                <View
+                  style={{
+                    position: "absolute",
+                    top: -2,
+                    right: -2,
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: colors.danger,
+                  }}
+                />
+              )}
+            </View>
+          </TouchableOpacity>
 
-      {/* Settings */}
-      <TouchableOpacity
-        className="items-center justify-center rounded-full"
-        style={{
-          width: iconButtonSize,
-          height: iconButtonSize,
-          backgroundColor: colors.surface,
-          ...iconButtonShadow,
-        }}
-        onPress={onPressSettings}
-      >
-        <Settings size={20} color={colors.textPrimary} strokeWidth={1.8} />
-      </TouchableOpacity>
+          {/* Settings */}
+          <TouchableOpacity
+            className="items-center justify-center rounded-full"
+            style={{
+              width: iconButtonSize,
+              height: iconButtonSize,
+              backgroundColor: colors.surface,
+              ...iconButtonShadow,
+            }}
+            onPress={onPressSettings}
+          >
+            <Settings size={20} color={colors.textPrimary} strokeWidth={1.8} />
+          </TouchableOpacity>
+        </>
+      )}
     </View>
   );
 });
