@@ -1,3 +1,8 @@
+---
+name: ui-designer
+description: Apply the KredBook design system with **zero token drift**.
+---
+
 # UI Designer Skill (Token-first)
 
 > Apply the KredBook design system with **zero token drift**.

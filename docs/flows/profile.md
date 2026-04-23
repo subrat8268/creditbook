@@ -194,9 +194,9 @@ The **Profile** screen is the settings and account management screen. It's where
 |---------|-------|-------|
 | Title | #1C1C1E | textPrimary |
 | Secondary | #6B7280 | textSecondary |
-| Primary | #22C55E | primary |
-| Primary Light | #DCFCE7 | primaryLight |
-| Success | #22C55E | success |
+| Primary | #2563EB | primary |
+| Primary Light | #EFF6FF | primaryLight |
+| Success | #16A34A | success |
 | Success Light | #DCFCE7 | successLight |
 | Danger | #EF4444 | danger |
 | Surface | #FFFFFF | surface |

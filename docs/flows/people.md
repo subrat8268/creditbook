@@ -195,8 +195,8 @@ The **People** screen is the customer list view — where shopkeepers manage Cus
 | Secondary text | #6B7280 | textSecondary |
 | Surface | #FFFFFF | surface |
 | Border | #E2E8F0 | border |
-| Primary | #22C55E | primary |
-| Primary Light | #DCFCE7 | primaryLight |
+| Primary | #2563EB | primary |
+| Primary Light | #EFF6FF | primaryLight |
 | Danger | #EF4444 | danger |
 | Warning | #F59E0B | warning |
 

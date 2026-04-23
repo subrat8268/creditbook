@@ -1,3 +1,8 @@
+---
+name: ui-ux-pro-max
+description: AI-powered design intelligence toolkit with searchable databases and design system generation.
+---
+
 # UI UX Pro Max
 
 > AI-powered design intelligence toolkit with searchable databases and design system generation.

@@ -177,7 +177,7 @@ The **Record Payment** modal is a bottom sheet that appears when recording a pay
 |---------|-------|-------|
 | Title | #1C1C1E | textPrimary |
 | Secondary | #6B7280 | textSecondary |
-| Primary | #22C55E | primary |
+| Primary | #2563EB | primary |
 | Warning | #F59E0B | warning |
 | Danger | #EF4444 | danger |
 | Surface | #FFFFFF | surface |

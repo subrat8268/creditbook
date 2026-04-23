@@ -1,3 +1,8 @@
+---
+name: refactor-engineer
+description: Code reuse, cleanup, and reusability improvements for KredBook.
+---
+
 # Refactor Engineer Skill
 
 > Code reuse, cleanup, and reusability improvements for KredBook.

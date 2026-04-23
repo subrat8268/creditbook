@@ -173,8 +173,8 @@ Sign Up/Phone Setup → business.tsx (Step 1) → bank.tsx (Step 2) → ready.ts
 |---------|-------|-------|
 | Title | #1C1C1E | textPrimary/Dark |
 | Secondary | #6B7280 | textSecondary |
-| Primary | #22C55E | primary |
-| Primary Light | #DCFCE7 | primaryLight |
+| Primary | #2563EB | primary |
+| Primary Light | #EFF6FF | primaryLight |
 | Surface | #FFFFFF | surface |
 | Background | #F6F7F9 | background |
 | Border | #E2E8F0 | border |

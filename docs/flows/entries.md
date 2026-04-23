@@ -181,7 +181,7 @@ The **Entries** screen is the central ledger — showing all entries across all 
 | Surface | #FFFFFF | surface |
 | Background | #F6F7F9 | background |
 | Border | #E2E8F0 | border |
-| Primary | #22C55E | primary |
+| Primary | #2563EB | primary |
 | FAB | #2563EB | fab |
 | Success BG | #F0FDF4 | successBg |
 | Warning BG | #FFFBEB | warningBg |

@@ -35,7 +35,7 @@ These are the active semantic tokens to document and use:
 
 | Token | Value | Use |
 |---|---|---|
-| `primary` | `#22C55E` | Brand, active states, primary CTAs |
+| `primary` | `#2563EB` | Brand, active states, primary CTAs |
 | `danger` | `#EF4444` | Money owed / overdue |
 | `warning` | `#F59E0B` | Pending / action needed |
 | `background` | `#F6F7F9` | App canvas |
@@ -43,19 +43,17 @@ These are the active semantic tokens to document and use:
 | `textPrimary` | `#1C1C1E` | Main text |
 | `textSecondary` | `#6B7280` | Secondary text |
 | `border` | `#E2E8F0` | Borders, dividers |
-| `fabBg` | `#F59E0B` | Floating Action Button background (orange) |
+| `fabBg` | `#2563EB` | Floating Action Button background |
 
 ### Important implementation note
 
-The FAB background should come from `colors.fabBg` (orange). Avoid hardcoding `colors.warning` directly for FAB.
-
-`colors.fab` remains a semantic blue token for info accents (not the main FAB background).
+The FAB background should come from `colors.fabBg`. Avoid hardcoding color values.
 
 ## Status Colors
 
 | State | Background | Text |
 |---|---|---|
-| Paid | `#DCFCE7` | `#16A34A` |
+| Paid | `#DCFCE7` | `#15803D` |
 | Pending | `#FEF3C7` | `#D97706` |
 | Overdue | `#FEE2E2` | `#DC2626` |
 

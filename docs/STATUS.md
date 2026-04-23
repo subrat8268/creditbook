@@ -6,7 +6,7 @@
 
 | Area | Status | Notes |
 |---|---|---|
-| Authentication | Working | Email + Google OAuth |
+| Authentication | Working | Email + Google OAuth; post-login routing enforces phone setup + onboarding via `app/_layout.tsx` |
 | Dashboard | Working | Outstanding-focused summary |
 | People / Customers | Working | Add, list, search, detail |
 | Entries | Working | Create, list, detail |
@@ -51,7 +51,7 @@ The repo still contains legacy or transitional surfaces. These should be treated
 
 ### Transitional / legacy product/config surfaces still present
 - notifications permission in `app.json`
-- notifications route in app code
+- notifications setup code in `app/_layout.tsx` (permission + channels)
 - supplier/report-era token and type remnants
 
 ### Phase 1 cleanup status

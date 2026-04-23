@@ -137,7 +137,7 @@ The **Export** screen allows users to download a CSV backup of all their data. I
 |---------|-------|-------|
 | Title | #1C1C1E | textPrimary |
 | Secondary | #6B7280 | textSecondary |
-| Primary | #22C55E | primary |
+| Primary | #2563EB | primary |
 | Surface | #FFFFFF | surface |
 | Background | #F6F7F9 | background |
 | Border | #E2E8F0 | border |
@@ -179,7 +179,7 @@ The **Export** screen allows users to download a CSV backup of all their data. I
 
 1. User taps "Download CSV Backup"
 2. Show loading state
-3. Fetch all export rows via `fetchOrdersForExport(vendorId)`
+3. Fetch all export rows via `fetchOrdersForExport(vendorId)` (legacy naming: “orders”/“vendor”)
 4. Convert to CSV via `toCsv(rows)`
 5. If no data: Alert "No data", show "You have no entries to export."
 6. Generate filename: `creditbook_backup_{YYYY-MM-DD}.csv`

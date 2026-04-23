@@ -1,3 +1,8 @@
+---
+name: project-planner
+description: Task breakdown, work estimation, and project planning for KredBook.
+---
+
 # Project Planner Skill
 
 > Task breakdown, work estimation, and project planning for KredBook.

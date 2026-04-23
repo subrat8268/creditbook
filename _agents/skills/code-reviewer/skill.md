@@ -1,3 +1,8 @@
+---
+name: code-reviewer
+description: Bug detection, code quality, and best practice enforcement for KredBook.
+---
+
 # Code Reviewer Skill
 
 > Bug detection, code quality, and best practice enforcement for KredBook.

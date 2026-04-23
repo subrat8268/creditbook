@@ -1,3 +1,8 @@
+---
+name: supabase-expert
+description: Database design, RLS policies, migrations, and Supabase integration for KredBook.
+---
+
 # Supabase Expert Skill
 
 > Database design, RLS policies, migrations, and Supabase integration for KredBook.

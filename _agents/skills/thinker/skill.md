@@ -1,3 +1,8 @@
+---
+name: thinker
+description: Deep reasoning, complex problem solving, and architectural thinking for KredBook.
+---
+
 # Thinker Skill
 
 > Deep reasoning, complex problem solving, and architectural thinking for KredBook.

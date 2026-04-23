@@ -199,8 +199,8 @@ Use **Customer** as the product noun here. Current UI still shows some `Person`/
 |---------|-------|-------|
 | Title | #1C1C1E | textPrimary |
 | Secondary | #6B7280 | textSecondary |
-| Primary | #22C55E | primary |
-| Primary Light | #DCFCE7 | primaryLight |
+| Primary | #2563EB | primary |
+| Primary Light | #EFF6FF | primaryLight |
 | Surface | #FFFFFF | surface |
 | Border | #E2E8F0 | border |
 | Danger | #EF4444 | danger |

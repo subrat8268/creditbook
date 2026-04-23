@@ -1,3 +1,8 @@
+---
+name: tech-lead
+description: Architecture decisions, component patterns, and code organization for KredBook.
+---
+
 # Tech Lead Skill
 
 > Architecture decisions, component patterns, and code organization for KredBook.

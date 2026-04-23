@@ -84,8 +84,8 @@ The **Customer Detail** screen is the **most important screen** in the app. It's
 
 | Button | Style | Behavior |
 |--------|-------|----------|
-| Add Entry | Green (#22C55E), full-width | Opens create screen with customer pre-filled |
-| Record Payment | Red (#E74C3C) when due, gray when settled | Opens payment modal |
+| Add Entry | Primary (`colors.primary`), full-width | Opens create screen with customer pre-filled |
+| Record Payment | Danger (`colors.danger`) when due, gray when settled | Opens payment modal |
 
 **Row 2 — Quick Actions**
 
@@ -131,7 +131,7 @@ When no transactions:
 | State | Background | Text |
 |-------|------------|------|
 | Balance Due | `#DC2626 → #B91C1C` (red gradient) | White |
-| Balance Cleared | `#22C55E → #16A34A` (green gradient) | White |
+| Balance Cleared | `#16A34A → #15803D` (green gradient) | White |
 | Payment | Left border green | Amount green |
 | Entry | Left border red | Amount red |
 | Overdue badge | `rgba(255,255,255,0.18)` (white/18%) | White |

@@ -166,7 +166,7 @@ Divider with "or" centered.
 |---------|-------|-------|
 | Title | #1C1C1E | textPrimary |
 | Secondary | #6B7280 | textSecondary |
-| Primary | #22C55E | primary |
+| Primary | #2563EB | primary |
 | Danger | #EF4444 | danger |
 | Surface | #FFFFFF | surface |
 | Background | #F6F7F9 | background |

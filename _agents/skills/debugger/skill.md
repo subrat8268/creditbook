@@ -1,3 +1,8 @@
+---
+name: debugger
+description: Systematic debugging, issue diagnosis, and problem fixing for KredBook.
+---
+
 # Debugger Skill
 
 > Systematic debugging, issue diagnosis, and problem fixing for KredBook.

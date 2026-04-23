@@ -106,6 +106,4 @@ kredBook/
 
 ## Dev seeding
 
-To populate a **dev-only** Supabase project with realistic Customers / Entries / Payments, see:
-
-- `docs/dev-seed.md`
+No dev seeding guide is checked in yet.
