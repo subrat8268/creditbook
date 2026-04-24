@@ -57,6 +57,26 @@ The FAB background should come from `colors.fabBg`. Avoid hardcoding color value
 | Pending | `#FEF3C7` | `#D97706` |
 | Overdue | `#FEE2E2` | `#DC2626` |
 
+## Dashboard Hero Tokens
+
+For the Dashboard visual anchor card, use the dashboard-specific gradient and on-gradient text tokens:
+
+- `gradients.dashboardHero.start`
+- `gradients.dashboardHero.end`
+- `colors.dashboard.heroText`
+- `colors.dashboard.heroTextMuted`
+- `colors.dashboard.heroChipBg`
+- `colors.dashboard.heroChipBorder`
+- `colors.dashboard.heroOrb`
+
+NativeWind utility aliases (from `tailwind.config.js`):
+
+- `text-dashboard-hero-text`
+- `text-dashboard-hero-text-muted`
+- `bg-dashboard-hero-chip-bg`
+- `border-dashboard-hero-chip-border`
+- `bg-dashboard-hero-orb`
+
 ## Spacing and Layout
 
 Use the token system from `src/utils/theme.ts`.

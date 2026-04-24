@@ -19,6 +19,27 @@
 - “Needs action now” list (up to 3 overdue Customers).
 - “Collected this week” card (only when `weekDelta > 0`).
 
+## Visual Source Notes (Dashboard Fidelity Pass)
+
+Primary reference:
+- `designs/Seller Dashboard.png`
+
+Secondary references:
+- `designs/KredBook Dashboard - Both View.png`
+- `designs/Net Position Screen - When Clicked on Both View Dashboard.png`
+
+Reused from references:
+- One strong, rounded gradient hero card as the visual anchor.
+- Large amount-first hierarchy in the hero card (label -> amount -> trend/meta line).
+- Pill/chip styling on hero actions and status indicators.
+- Flat white secondary surfaces for lists/summary cards.
+- List-first overdue rows with separators instead of stacked card-heavy blocks.
+
+Ignored on purpose (out of current scope):
+- Supplier/distributor widgets and supplier payable sections.
+- Product/reporting modules not part of current Dashboard flow.
+- Extra dashboard stats beyond current truth (`total outstanding`, `needs action now`, `collected this week`).
+
 ## Key Interactions (Verified)
 
 - View all overdue Customers: navigates to `/(main)/people`.

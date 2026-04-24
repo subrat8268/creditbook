@@ -139,6 +139,15 @@ export const colors = {
     syncedBg: "#ECFDF5",    // Green-50 — Light green tint
     syncedText: "#16A34A",  // Green-600 (= success)
   },
+
+  // ─ Dashboard hero accents
+  dashboard: {
+    heroText: "rgba(255,255,255,0.96)",
+    heroTextMuted: "rgba(255,255,255,0.76)",
+    heroChipBg: "rgba(255,255,255,0.14)",
+    heroChipBorder: "rgba(255,255,255,0.28)",
+    heroOrb: "rgba(255,255,255,0.12)",
+  },
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -146,6 +155,12 @@ export const colors = {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const gradients = {
+  // Dashboard hero card — red gradient
+  dashboardHero: {
+    start: "#DC2626", // Red-600
+    end: "#B91C1C", // Red-700
+  },
+
   // Person balance card — red gradient
   customerHero: {
     start: "#DC2626", // Red-600

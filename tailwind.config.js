@@ -67,6 +67,13 @@ module.exports = {
         // ── Misc ─────────────────────────────────
         icon: theme.colors.iconBg,
         search: theme.colors.surfaceAlt,
+
+        // ── Dashboard hero accents ───────────────
+        "dashboard-hero-text": theme.colors.dashboard.heroText,
+        "dashboard-hero-text-muted": theme.colors.dashboard.heroTextMuted,
+        "dashboard-hero-chip-bg": theme.colors.dashboard.heroChipBg,
+        "dashboard-hero-chip-border": theme.colors.dashboard.heroChipBorder,
+        "dashboard-hero-orb": theme.colors.dashboard.heroOrb,
       },
       borderColor: {
         light: theme.colors.border,
