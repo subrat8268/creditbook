@@ -101,6 +101,7 @@ kredBook/
 
 - `src/utils/theme.ts` is the design-token source of truth.
 - Do not guess backend schema; use Supabase MCP.
+- Any behavior, flow, setup, or workflow change must include related updates in `docs/` and/or `README.md` in the same task.
 - Treat docs drift as a product and engineering risk.
 - Run `.agents/doc-sync-checklist.md` before closing non-trivial work.
 

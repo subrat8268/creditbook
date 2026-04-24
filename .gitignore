@@ -57,8 +57,8 @@ design-audit-results.txt
 # Tool-specific configs (Cursor/Gemini) are archived under /archive.
 
 #agents (legacy local tooling)
-.agents/*
-.agents
+# .agents/*
+# .agents
 .windsurf/*
 .windsurf
 .opencode/*

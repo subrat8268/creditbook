@@ -8,6 +8,7 @@ If any repo instruction conflicts, `SYSTEM_CONTEXT.md` wins.
 - Legacy/transitional terms exist in code (ex: `order`, `party`); label them `legacy`/`transitional` if you must mention them.
 - Design tokens: `src/utils/theme.ts` is source of truth (Tailwind/NativeWind derives from it via `tailwind.config.js`).
 - Database/schema: don't guess; use Supabase MCP and put DDL in `supabase/migrations/`.
+- Any code change that affects behavior, flows, setup, or developer workflow must update related docs in `docs/` and/or `README.md` in the same task.
 
 ## How To Run
 
@@ -33,12 +34,12 @@ If any repo instruction conflicts, `SYSTEM_CONTEXT.md` wins.
 
 ## OpenCode Workflow
 
-- Command-first prompts: `/plan`, `/build`, `/fix`, `/refactor`, `/audit` (reference: `.agents/commands.md`).
+- Command-first prompts: `/plan`, `/build`, `/fix`, `/refactor`, `/audit`, `/git-push` (reference: `.agents/commands.md`).
 - Deterministic pipelines: `.agents/orchestration.md`. Closeout gate for non-trivial changes: `.agents/doc-sync-checklist.md`.
 
 ## Skills
 
-See [the full guide](.agents/README.md) for details on our 11 specialized skills under `.agents/skills/`.
+See [the full guide](.agents/README.md) for details on our 12 specialized skills under `.agents/skills/`.
 
 <!-- context7 -->
 Use Context7 MCP to fetch current documentation whenever the user asks about a library, framework, SDK, API, CLI tool, or cloud service -- even well-known ones like React, Next.js, Prisma, Express, Tailwind, Django, or Spring Boot. This includes API syntax, configuration, version migration, library-specific debugging, setup instructions, and CLI tool usage. Use even when you think you know the answer -- your training data may not reflect recent changes. Prefer this over web search for library docs.
