@@ -1,6 +1,7 @@
-import React from "react";
-import { colors } from "@/src/utils/theme";
-import { Text, TextInput, View } from "react-native";
+import Input from "@/src/components/ui/Input";
+import { colors, spacing, typography } from "@/src/utils/theme";
+import { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 interface OrderSummaryProps {
   itemsTotal: number;
@@ -23,12 +24,10 @@ export default function OrderSummary({
   onLoadingChargeChange,
   onTaxChange,
 }: OrderSummaryProps) {
-  const [loadingInput, setLoadingInput] = React.useState(
-    loadingCharge > 0 ? loadingCharge.toString() : ""
+  const [loadingInput, setLoadingInput] = useState(
+    loadingCharge > 0 ? loadingCharge.toString() : "",
   );
-  const [taxInput, setTaxInput] = React.useState(
-    taxPercent > 0 ? taxPercent.toString() : ""
-  );
+  const [taxInput, setTaxInput] = useState(taxPercent > 0 ? taxPercent.toString() : "");
 
   const handleLoadingChange = (text: string) => {
     setLoadingInput(text);
@@ -44,131 +43,106 @@ export default function OrderSummary({
 
   return (
     <View>
-      {/* Subtotal */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          marginBottom: 8,
-        }}
-      >
-        <Text style={{ fontSize: 13, color: colors.textSecondary }}>Subtotal</Text>
-        <Text style={{ fontSize: 13, color: colors.textSecondary }}>
-          ₹{itemsTotal.toLocaleString("en-IN")}
-        </Text>
+      <View style={styles.row}>
+        <Text style={styles.label}>Subtotal</Text>
+        <Text style={styles.value}>₹{itemsTotal.toLocaleString("en-IN")}</Text>
       </View>
 
-      {/* Loading Charge */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 8,
-        }}
-      >
-        <Text style={{ fontSize: 13, color: colors.textSecondary }}>
-          Loading Charge
-        </Text>
-        <TextInput
-          style={{
-            fontSize: 13,
-            color: colors.textPrimary,
-            textAlign: "right",
-            minWidth: 80,
-            padding: 4,
-          }}
+      <View style={styles.inputRow}>
+        <Text style={styles.label}>Loading Charge</Text>
+        <Input
+          placeholder="0"
           value={loadingInput}
           onChangeText={handleLoadingChange}
           keyboardType="numeric"
-          placeholder="0"
-          placeholderTextColor={colors.textSecondary}
+          textAlign="right"
+          containerStyle={styles.smallInputContainer}
+          inputStyle={styles.smallInputText}
+          variant="white"
         />
       </View>
 
-      {/* GST Tax */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 8,
-        }}
-      >
-        <Text style={{ fontSize: 13, color: colors.textSecondary }}>GST (%)</Text>
-        <TextInput
-          style={{
-            fontSize: 13,
-            color: colors.textPrimary,
-            textAlign: "right",
-            minWidth: 80,
-            padding: 4,
-          }}
+      <View style={styles.inputRow}>
+        <Text style={styles.label}>GST (%)</Text>
+        <Input
+          placeholder="0"
           value={taxInput}
           onChangeText={handleTaxChange}
           keyboardType="numeric"
-          placeholder="0"
-          placeholderTextColor={colors.textSecondary}
+          textAlign="right"
+          containerStyle={styles.smallInputContainer}
+          inputStyle={styles.smallInputText}
+          variant="white"
         />
       </View>
 
-      {/* Tax Amount */}
-      {taxAmount > 0 && (
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginBottom: 8,
-          }}
-        >
-          <Text style={{ fontSize: 13, color: colors.textSecondary }}>Tax</Text>
-          <Text style={{ fontSize: 13, color: colors.textSecondary }}>
-            ₹{taxAmount.toLocaleString("en-IN")}
-          </Text>
+      {taxAmount > 0 ? (
+        <View style={styles.row}>
+          <Text style={styles.label}>Tax</Text>
+          <Text style={styles.value}>₹{taxAmount.toLocaleString("en-IN")}</Text>
         </View>
-      )}
+      ) : null}
 
-      {/* Previous Balance */}
-      {previousBalance > 0 && (
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginBottom: 8,
-          }}
-        >
-          <Text style={{ fontSize: 13, color: colors.textSecondary }}>
-            Previous Balance
-          </Text>
-          <Text style={{ fontSize: 13, color: colors.textSecondary }}>
-            ₹{previousBalance.toLocaleString("en-IN")}
-          </Text>
+      {previousBalance > 0 ? (
+        <View style={styles.row}>
+          <Text style={styles.label}>Previous Balance</Text>
+          <Text style={styles.value}>₹{previousBalance.toLocaleString("en-IN")}</Text>
         </View>
-      )}
+      ) : null}
 
-      {/* Divider */}
-      <View
-        style={{
-          height: 1,
-          backgroundColor: colors.border,
-          marginVertical: 8,
-        }}
-      />
+      <View style={styles.divider} />
 
-      {/* Grand Total */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-        }}
-      >
-        <Text style={{ fontSize: 15, fontWeight: "600", color: colors.textPrimary }}>
-          Grand Total
-        </Text>
-        <Text style={{ fontSize: 15, fontWeight: "600", color: colors.danger }}>
-          ₹{grandTotal.toLocaleString("en-IN")}
-        </Text>
+      <View style={styles.row}>
+        <Text style={styles.totalLabel}>Grand Total</Text>
+        <Text style={styles.totalValue}>₹{grandTotal.toLocaleString("en-IN")}</Text>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: spacing.sm,
+  },
+  label: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  value: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  smallInputContainer: {
+    minWidth: 100,
+    maxWidth: 120,
+    minHeight: 36,
+    paddingHorizontal: spacing.sm,
+  },
+  smallInputText: {
+    fontSize: 13,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginVertical: spacing.sm,
+  },
+  totalLabel: {
+    ...typography.body,
+    fontWeight: "600",
+    color: colors.textPrimary,
+  },
+  totalValue: {
+    ...typography.body,
+    fontWeight: "600",
+    color: colors.danger,
+  },
+});

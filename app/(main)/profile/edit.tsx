@@ -10,6 +10,8 @@
 
 import { uploadBusinessLogo } from "@/src/api/upload";
 import { useToast } from "@/src/components/feedback/Toast";
+import Button from "@/src/components/ui/Button";
+import Input from "@/src/components/ui/Input";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { pickImageFromLibrary } from "@/src/utils/imagePicker";
@@ -25,7 +27,6 @@ import {
   Platform,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -285,45 +286,36 @@ export default function ProfileEditScreen() {
 
             {expandedSection === "business" && (
               <View style={{ padding: spacing.md }}>
-                <Text style={styles.label}>Business Name *</Text>
-                <TextInput
-                  style={styles.input}
+                <Input
+                  label="Business Name *"
+                  placeholder="e.g. Sharma Traders"
                   value={businessName}
                   onChangeText={setBusinessName}
-                  placeholder="e.g. Sharma Traders"
-                  placeholderTextColor={colors.textSecondary}
                 />
 
-                <Text style={styles.label}>Billing Address</Text>
-                <TextInput
-                  style={[styles.input, { height: 80 }]}
+                <Input
+                  label="Billing Address"
+                  placeholder="Shop address for invoices"
                   value={billingAddress}
                   onChangeText={setBillingAddress}
-                  placeholder="Shop address for invoices"
-                  placeholderTextColor={colors.textSecondary}
                   multiline
                   numberOfLines={3}
-                  textAlignVertical="top"
                 />
 
-                <Text style={styles.label}>GSTIN (Optional)</Text>
-                <TextInput
-                  style={styles.input}
+                <Input
+                  label="GSTIN (Optional)"
+                  placeholder="29ABCDE1234F1Z5"
                   value={gstin}
                   onChangeText={(text) => setGstin(text.toUpperCase())}
-                  placeholder="29ABCDE1234F1Z5"
-                  placeholderTextColor={colors.textSecondary}
                   autoCapitalize="characters"
                   maxLength={15}
                 />
 
-                <Text style={styles.label}>Entry Number Prefix</Text>
-                <TextInput
-                  style={styles.input}
+                <Input
+                  label="Entry Number Prefix"
+                  placeholder="INV"
                   value={billPrefix}
                   onChangeText={(text) => setBillPrefix(text.toUpperCase())}
-                  placeholder="INV"
-                  placeholderTextColor={colors.textSecondary}
                   autoCapitalize="characters"
                   maxLength={10}
                 />
@@ -377,43 +369,35 @@ export default function ProfileEditScreen() {
 
             {expandedSection === "bank" && (
               <View style={{ padding: spacing.md }}>
-                <Text style={styles.label}>Bank Name</Text>
-                <TextInput
-                  style={styles.input}
+                <Input
+                  label="Bank Name"
+                  placeholder="e.g. State Bank of India"
                   value={bankName}
                   onChangeText={setBankName}
-                  placeholder="e.g. State Bank of India"
-                  placeholderTextColor={colors.textSecondary}
                 />
 
-                <Text style={styles.label}>Account Number</Text>
-                <TextInput
-                  style={styles.input}
+                <Input
+                  label="Account Number"
+                  placeholder="1234567890"
                   value={accountNumber}
                   onChangeText={setAccountNumber}
-                  placeholder="1234567890"
-                  placeholderTextColor={colors.textSecondary}
                   keyboardType="number-pad"
                 />
 
-                <Text style={styles.label}>IFSC Code</Text>
-                <TextInput
-                  style={styles.input}
+                <Input
+                  label="IFSC Code"
+                  placeholder="SBIN0001234"
                   value={ifscCode}
                   onChangeText={(text) => setIfscCode(text.toUpperCase())}
-                  placeholder="SBIN0001234"
-                  placeholderTextColor={colors.textSecondary}
                   autoCapitalize="characters"
                   maxLength={11}
                 />
 
-                <Text style={styles.label}>UPI ID</Text>
-                <TextInput
-                  style={styles.input}
+                <Input
+                  label="UPI ID"
+                  placeholder="yourname@paytm"
                   value={upiId}
                   onChangeText={setUpiId}
-                  placeholder="yourname@paytm"
-                  placeholderTextColor={colors.textSecondary}
                   autoCapitalize="none"
                   keyboardType="email-address"
                 />
@@ -530,54 +514,14 @@ export default function ProfileEditScreen() {
             borderTopColor: colors.border,
           }}
         >
-          <TouchableOpacity
+          <Button
+            title="Save Changes"
             onPress={handleSave}
             disabled={isSaving || !businessName.trim()}
-            style={{
-              backgroundColor:
-                isSaving || !businessName.trim()
-                  ? colors.border
-                  : colors.primary,
-              paddingVertical: spacing.md,
-              borderRadius: 8,
-              alignItems: "center",
-            }}
-          >
-            {isSaving ? (
-              <ActivityIndicator color={colors.surface} />
-            ) : (
-              <Text
-                style={{
-                  color: colors.surface,
-                  fontSize: 15,
-                  fontWeight: "600",
-                }}
-              >
-                Save Changes
-              </Text>
-            )}
-          </TouchableOpacity>
+            loading={isSaving}
+          />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
-
-const styles = {
-  label: {
-    fontSize: 12,
-    fontWeight: "500" as const,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-    marginTop: spacing.md,
-  },
-  input: {
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    padding: spacing.sm,
-    fontSize: 15,
-    color: colors.textPrimary,
-  },
-};

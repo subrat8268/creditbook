@@ -3,6 +3,7 @@ import { useToast } from "@/src/components/feedback/Toast";
 import BillFooter from "@/src/components/orders/BillFooter";
 import OrderSummary from "@/src/components/orders/OrderSummary";
 import OrderItemCard from "@/src/components/orders/OrderItemCard";
+import Input from "@/src/components/ui/Input";
 import { useOrderDetail, useUpdateOrder } from "@/src/hooks/useEntries";
 import { useAuthStore } from "@/src/store/authStore";
 import { useOrderStore, DraftOrderItem } from "@/src/store/orderStore";
@@ -23,8 +24,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -431,21 +432,15 @@ export default function EditOrderScreen() {
                 >
                   ₹
                 </Text>
-                <TextInput
-                  style={{
-                    flex: 1,
-                    fontSize: 32,
-                    fontWeight: "700",
-                    color: colors.textPrimary,
-                    padding: 0,
-                    marginLeft: 8,
-                  }}
+                <Input
+                  placeholder="0"
                   value={quickAmount}
                   onChangeText={setQuickAmount}
-                  placeholder="0"
-                  placeholderTextColor={colors.textSecondary}
                   keyboardType="numeric"
                   autoFocus
+                  variant="white"
+                  containerStyle={styles.quickAmountInputContainer}
+                  inputStyle={styles.quickAmountInput}
                 />
               </View>
             </View>
@@ -625,3 +620,17 @@ export default function EditOrderScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  quickAmountInputContainer: {
+    borderWidth: 0,
+    backgroundColor: "transparent",
+    paddingHorizontal: 0,
+    marginLeft: 8,
+  },
+  quickAmountInput: {
+    fontSize: 32,
+    fontWeight: "700",
+    color: colors.textPrimary,
+  },
+});

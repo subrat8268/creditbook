@@ -1,7 +1,8 @@
-import { colors } from "@/src/utils/theme";
+import Input from "@/src/components/ui/Input";
+import { colors, spacing, typography } from "@/src/utils/theme";
 import { Minus, Plus, Trash2 } from "lucide-react-native";
-import React from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 interface OrderItemCardProps {
   id: string;
@@ -23,17 +24,9 @@ export default function OrderItemCard({
   onUpdateRate,
   onRemove,
 }: OrderItemCardProps) {
-  const [rateInput, setRateInput] = React.useState(rate > 0 ? rate.toString() : "");
+  const [rateInput, setRateInput] = useState(rate > 0 ? rate.toString() : "");
 
-  const handleQuantityDecrease = () => {
-    if (quantity > 1) {
-      onUpdateQuantity(quantity - 1);
-    }
-  };
-
-  const handleQuantityIncrease = () => {
-    onUpdateQuantity(quantity + 1);
-  };
+  const subtotal = rate * quantity;
 
   const handleRateChange = (text: string) => {
     setRateInput(text);
@@ -41,114 +34,129 @@ export default function OrderItemCard({
     onUpdateRate(value);
   };
 
-  const subtotal = rate * quantity;
-
   return (
     <View>
-      {/* Item Name */}
-      <View style={{ marginBottom: 8 }}>
-        <Text
-          style={{
-            fontSize: 15,
-            fontWeight: "600",
-            color: colors.textPrimary,
-          }}
-        >
-          {name}
-        </Text>
-        {variantName && (
-          <Text style={{ fontSize: 13, color: colors.textSecondary }}>
-            {variantName}
-          </Text>
-        )}
+      <View style={styles.titleWrap}>
+        <Text style={styles.title}>{name}</Text>
+        {variantName ? <Text style={styles.subtitle}>{variantName}</Text> : null}
       </View>
 
-      {/* Rate and Quantity Row */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        {/* Rate Input */}
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 11, color: colors.textSecondary, marginBottom: 2 }}>
-            Rate (₹)
-          </Text>
-          <TextInput
-            style={{
-              fontSize: 14,
-              color: colors.textPrimary,
-              padding: 8,
-              backgroundColor: colors.background,
-              borderRadius: 6,
-              minWidth: 80,
-            }}
+      <View style={styles.row}>
+        <View style={styles.rateWrap}>
+          <Text style={styles.metaLabel}>Rate (₹)</Text>
+          <Input
+            placeholder="0"
             value={rateInput}
             onChangeText={handleRateChange}
             keyboardType="numeric"
-            placeholder="0"
-            placeholderTextColor={colors.textSecondary}
+            variant="neutral"
+            containerStyle={styles.rateInputContainer}
+            inputStyle={styles.rateInput}
           />
         </View>
 
-        {/* Quantity Controls */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: colors.background,
-            borderRadius: 6,
-            marginHorizontal: 12,
-          }}
-        >
-          <TouchableOpacity
-            onPress={handleQuantityDecrease}
+        <View style={styles.qtyWrap}>
+          <Pressable
+            onPress={() => quantity > 1 && onUpdateQuantity(quantity - 1)}
             disabled={quantity <= 1}
-            style={{
-              padding: 8,
-              opacity: quantity <= 1 ? 0.5 : 1,
-            }}
+            style={({ pressed }) => [
+              styles.qtyButton,
+              quantity <= 1 ? styles.disabled : null,
+              pressed ? styles.pressed : null,
+            ]}
           >
             <Minus size={16} color={colors.textPrimary} />
-          </TouchableOpacity>
+          </Pressable>
 
-          <Text
-            style={{
-              fontSize: 14,
-              fontWeight: "600",
-              color: colors.textPrimary,
-              minWidth: 30,
-              textAlign: "center",
-            }}
+          <Text style={styles.qtyText}>{quantity}</Text>
+
+          <Pressable
+            onPress={() => onUpdateQuantity(quantity + 1)}
+            style={({ pressed }) => [styles.qtyButton, pressed ? styles.pressed : null]}
           >
-            {quantity}
-          </Text>
-
-          <TouchableOpacity onPress={handleQuantityIncrease} style={{ padding: 8 }}>
             <Plus size={16} color={colors.primary} />
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
-        {/* Subtotal */}
-        <View style={{ alignItems: "flex-end", minWidth: 80 }}>
-          <Text style={{ fontSize: 11, color: colors.textSecondary, marginBottom: 2 }}>
-            Subtotal
-          </Text>
-          <Text style={{ fontSize: 15, fontWeight: "600", color: colors.textPrimary }}>
-            ₹{subtotal.toLocaleString("en-IN")}
-          </Text>
+        <View style={styles.subtotalWrap}>
+          <Text style={styles.metaLabel}>Subtotal</Text>
+          <Text style={styles.subtotalText}>₹{subtotal.toLocaleString("en-IN")}</Text>
         </View>
 
-        {/* Remove Button */}
-        <TouchableOpacity
-          onPress={onRemove}
-          style={{ padding: 8, marginLeft: 8 }}
-        >
+        <Pressable onPress={onRemove} style={({ pressed }) => [styles.removeButton, pressed ? styles.pressed : null]}>
           <Trash2 size={18} color={colors.danger} />
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  titleWrap: {
+    marginBottom: spacing.sm,
+  },
+  title: {
+    ...typography.body,
+    fontWeight: "600",
+    color: colors.textPrimary,
+  },
+  subtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  rateWrap: {
+    flex: 1,
+  },
+  metaLabel: {
+    ...typography.small,
+    color: colors.textSecondary,
+    marginBottom: 2,
+  },
+  rateInputContainer: {
+    minWidth: 84,
+  },
+  rateInput: {
+    fontSize: 14,
+  },
+  qtyWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.background,
+    borderRadius: 6,
+    marginHorizontal: spacing.md,
+  },
+  qtyButton: {
+    padding: spacing.sm,
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+  pressed: {
+    opacity: 0.75,
+  },
+  qtyText: {
+    ...typography.body,
+    fontWeight: "600",
+    color: colors.textPrimary,
+    minWidth: 30,
+    textAlign: "center",
+  },
+  subtotalWrap: {
+    alignItems: "flex-end",
+    minWidth: 80,
+  },
+  subtotalText: {
+    ...typography.body,
+    fontWeight: "600",
+    color: colors.textPrimary,
+  },
+  removeButton: {
+    padding: spacing.sm,
+    marginLeft: spacing.sm,
+  },
+});

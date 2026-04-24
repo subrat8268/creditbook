@@ -1,17 +1,52 @@
+import EmptyState from "@/src/components/feedback/EmptyState";
+import ErrorState from "@/src/components/feedback/ErrorState";
+import Loader from "@/src/components/feedback/Loader";
 import { useToast } from "@/src/components/feedback/Toast";
-import CustomerList from "@/src/components/people/CustomerList";
+import Header from "@/src/components/layer2/Header";
+import ListItem from "@/src/components/layer2/ListItem";
+import ScreenLayout from "@/src/components/layer2/ScreenLayout";
+import StatusBadge from "@/src/components/layer2/StatusBadge";
 import NewCustomerModal from "@/src/components/people/NewCustomerModal";
+import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import SearchBar from "@/src/components/ui/SearchBar";
+import Avatar from "@/src/components/ui/Avatar";
 import { useCreateOrder } from "@/src/hooks/useEntries";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useAddPerson, usePeople } from "@/src/hooks/usePeople";
 import { useAuthStore } from "@/src/store/authStore";
-import { colors, spacing, typography } from "@/src/utils/theme";
+import type { Person } from "@/src/types/customer";
+import { formatRelativeActivity } from "@/src/utils/helper";
+import { colors, radius, spacing, typography } from "@/src/utils/theme";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { UserPlus } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  FlatList,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
+type FilterOption = "All" | "Overdue" | "Pending" | "Paid";
+type CustomerStatus = "Overdue" | "Pending" | "Paid" | "Advance";
+
+const FILTER_OPTIONS: FilterOption[] = ["All", "Overdue", "Pending", "Paid"];
+
+function getCustomerStatus(balance: number, isOverdue?: boolean): CustomerStatus {
+  if (balance > 0 && isOverdue) return "Overdue";
+  if (balance > 0) return "Pending";
+  if (balance < 0) return "Advance";
+  return "Paid";
+}
+
+const AMOUNT_COLOR_MAP: Record<CustomerStatus, string> = {
+  Overdue: colors.danger,
+  Pending: colors.warning,
+  Paid: colors.success,
+  Advance: colors.primary,
+};
 
 export default function CustomersScreen() {
   const { profile } = useAuthStore();
@@ -19,6 +54,7 @@ export default function CustomersScreen() {
   const params = useLocalSearchParams<{ action?: string }>();
 
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<FilterOption>("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [redirectAfterAdd, setRedirectAfterAdd] = useState(false);
@@ -33,7 +69,7 @@ export default function CustomersScreen() {
     people,
   } = usePeople(profile?.id, search);
 
-  const addPersonMutation = useAddPerson(profile?.id ?? "");
+  const addCustomerMutation = useAddPerson(profile?.id ?? "");
   const createOrderMutation = useCreateOrder(profile?.id ?? "");
   const { show: showToast } = useToast();
 
@@ -45,13 +81,26 @@ export default function CustomersScreen() {
     }
   }, [params, router]);
 
-  // ── Sorted people (sorted before passing to list) ───────────────────────────
-  const sortedPeople = useMemo(() => {
+  const sortedCustomers = useMemo(() => {
     const list = [...people];
     return list.sort((a, b) => a.name.localeCompare(b.name));
   }, [people]);
 
-  const handleAddPerson = async (values: {
+  const filteredCustomers = useMemo(() => {
+    if (filter === "All") return sortedCustomers;
+
+    return sortedCustomers.filter((customer) => {
+      const status = getCustomerStatus(
+        customer.outstandingBalance ?? 0,
+        customer.isOverdue,
+      );
+
+      if (filter === "Paid") return status === "Paid" || status === "Advance";
+      return status === filter;
+    });
+  }, [filter, sortedCustomers]);
+
+  const handleAddCustomer = async (values: {
     name: string;
     phone?: string;
     address?: string;
@@ -61,15 +110,16 @@ export default function CustomersScreen() {
     redirectToEntry?: boolean;
   }) => {
     try {
-      const createdPerson = await addPersonMutation.mutateAsync({
+      const createdCustomer = await addCustomerMutation.mutateAsync({
         phone: values.phone || "",
         name: values.name,
         address: values.address,
         openingBalance: values.openingBalance,
       });
+
       if (values.entryAmount && values.entryAmount > 0) {
         await createOrderMutation.mutateAsync({
-          customerId: createdPerson.id,
+          customerId: createdCustomer.id,
           vendorId: profile?.id ?? "",
           items: [
             {
@@ -84,33 +134,55 @@ export default function CustomersScreen() {
           taxPercent: 0,
           billNumberPrefix: profile?.bill_number_prefix || "INV",
         });
-        showToast({
-          message: `Entry added for ${createdPerson.name}`,
-          type: "success",
-        });
+
+        showToast({ message: `Entry added for ${createdCustomer.name}`, type: "success" });
         router.push({
           pathname: "/(main)/people/[customerId]",
-          params: { customerId: createdPerson.id },
+          params: { customerId: createdCustomer.id },
         });
       }
+
       setIsModalOpen(false);
+
       if (!values.entryAmount || values.entryAmount <= 0) {
         const shouldRedirect = values.redirectToEntry ?? redirectAfterAdd;
         if (shouldRedirect) {
           router.push({
             pathname: "/(main)/entries/create",
             params: {
-              customer: JSON.stringify(createdPerson),
+              customer: JSON.stringify(createdCustomer),
               next: shouldRedirect ? "share" : undefined,
             },
           });
         }
       }
+
       setRedirectAfterAdd(false);
-    } catch (err) {
-      console.error("Failed to add customer:", err);
+    } catch (error) {
+      console.error("Failed to add customer:", error);
+      showToast({ message: "Failed to add customer", type: "error" });
     }
   };
+
+  const handleOpenCustomer = useCallback(
+    (customerId: string) => {
+      router.push({
+        pathname: "/(main)/people/[customerId]",
+        params: { customerId },
+      });
+    },
+    [router],
+  );
+
+  const handleAddEntry = useCallback(
+    (customer: Person) => {
+      router.push({
+        pathname: "/(main)/entries/create",
+        params: { customer: JSON.stringify(customer) },
+      });
+    },
+    [router],
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -127,71 +199,119 @@ export default function CustomersScreen() {
     isFetchingNextPage,
   ]);
 
-  const handlePressCustomer = (customerId: string) => {
-    router.push({
-      pathname: "/(main)/people/[customerId]",
-      params: { customerId },
-    });
-  };
-
-  const handleAddEntryForCustomer = (customerId: string) => {
-    const selected = people.find((c) => c.id === customerId);
-    if (!selected) return;
-    router.push({
-      pathname: "/(main)/entries/create",
-      params: { customer: JSON.stringify(selected) },
-    });
-  };
+  const activeFilterStatus =
+    filter === "All" ? undefined : (filter as "Overdue" | "Pending" | "Paid");
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor="transparent"
-        translucent={false}
-      />
+    <ScreenLayout>
+      <Header title="People" subtitle="Track customers and balances" />
 
-      {/* ── Screen header ── */}
-      <View className="px-4 pt-4 pb-3 flex-row justify-between items-start">
-        <View className="flex-1 pr-4">
-          <Text style={typography.screenTitle}>People</Text>
-          <Text style={[typography.caption, { marginTop: spacing.xs }]}>Track customers and balances</Text>
-        </View>
-        <TouchableOpacity
-          onPress={() => setIsModalOpen(true)}
-          activeOpacity={0.8}
-          className="flex-row items-center"
-        >
-          <View style={styles.inlineAddPill}>
-            <UserPlus size={16} color={colors.primary} strokeWidth={2} />
-            <Text style={styles.inlineAddText}>Add Customer</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-
-      {/* Summary Removed per design */}
-
-      {/* ── Search bar ── */}
-      <View className="px-4 pt-1 pb-2">
+      <View style={styles.controlsWrap}>
         <SearchBar
           value={search}
           onChangeText={setSearch}
           placeholder="Search customers..."
         />
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipsContainer}
+        >
+          {FILTER_OPTIONS.map((option) => {
+            const isActive = option === filter;
+            return (
+              <Pressable
+                key={option}
+                onPress={() => setFilter(option)}
+                style={[styles.chip, isActive ? styles.chipActive : null]}
+              >
+                <Text style={[styles.chipText, isActive ? styles.chipTextActive : null]}>
+                  {option}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+
+        {activeFilterStatus ? (
+          <View style={styles.activeFilterRow}>
+            <Text style={styles.activeFilterLabel}>Showing</Text>
+            <StatusBadge status={activeFilterStatus} align="left" />
+          </View>
+        ) : null}
       </View>
 
-      {/* ── People list (full-width) ── */}
-      <CustomerList
-        people={sortedPeople}
-        isLoading={isLoading}
-        error={error}
-        onRefresh={onRefresh}
-        refreshing={refreshing}
-        onEndReached={handleEndReached}
-        isFetchingNextPage={isFetchingNextPage}
-        onPressPerson={handlePressCustomer}
-        onAddPerson={() => setIsModalOpen(true)}
-        onAddEntry={handleAddEntryForCustomer}
+      {isLoading && filteredCustomers.length === 0 ? (
+        <Loader message="Loading customers" />
+      ) : error && filteredCustomers.length === 0 ? (
+        <ErrorState message="Failed to fetch customers" />
+      ) : (
+        <FlatList
+          data={filteredCustomers}
+          keyExtractor={(item) => item.id}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.4}
+          contentContainerStyle={styles.listContent}
+          renderItem={({ item, index }) => {
+            const status = getCustomerStatus(
+              item.outstandingBalance ?? 0,
+              item.isOverdue,
+            );
+
+            const displayBalance =
+              status === "Paid" ? 0 : Math.abs(item.outstandingBalance ?? 0);
+
+            return (
+              <ListItem
+                title={item.name}
+                subtitle={`Last activity: ${formatRelativeActivity(item.lastActiveAt)}`}
+                leftSlot={<Avatar name={item.name} size="md" />}
+                amount={displayBalance}
+                amountColor={AMOUNT_COLOR_MAP[status]}
+                status={status}
+                onPress={() => handleOpenCustomer(item.id)}
+                variant="row"
+                bordered={index < filteredCustomers.length - 1}
+                noMargin
+                secondaryAction={
+                  <Pressable
+                    onPress={() => handleAddEntry(item)}
+                    style={({ pressed }) => [styles.entryAction, pressed ? styles.entryActionPressed : null]}
+                  >
+                    <Text style={styles.entryActionText}>Add Entry</Text>
+                  </Pressable>
+                }
+              />
+            );
+          }}
+          ListFooterComponent={
+            isFetchingNextPage ? <Loader message="Loading more customers..." /> : null
+          }
+          ListEmptyComponent={
+            <EmptyState
+              title="Your customer list is empty"
+              description="Add your first customer to start tracking entries"
+              icon={
+                <View style={styles.emptyIconWrap}>
+                  <UserPlus size={30} color={colors.primary} strokeWidth={2} />
+                </View>
+              }
+              iconBgColor={colors.successBg}
+              iconSize={90}
+              cta="Add Customer"
+              onCta={() => setIsModalOpen(true)}
+            />
+          }
+        />
+      )}
+
+      <FloatingActionButton
+        onPress={() => setIsModalOpen(true)}
+        bottom={spacing.fabBottom}
+        right={spacing.fabMargin}
       />
 
       <NewCustomerModal
@@ -201,34 +321,84 @@ export default function CustomersScreen() {
           setRedirectAfterAdd(false);
         }}
         onSubmit={(values) =>
-          handleAddPerson({
+          handleAddCustomer({
             ...values,
             redirectToEntry: redirectAfterAdd,
           })
         }
-        loading={addPersonMutation.isPending}
-        errorMessage={addPersonMutation.error?.message}
-        entryFlow
+        loading={addCustomerMutation.isPending}
+        errorMessage={addCustomerMutation.error?.message}
       />
-    </SafeAreaView>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  inlineAddPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+  controlsWrap: {
+    paddingHorizontal: spacing.screenPadding,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.sm,
+  },
+  chipsContainer: {
+    paddingTop: spacing.md,
+    gap: spacing.sm,
+  },
+  chip: {
+    borderRadius: 999,
     borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  chipActive: {
     borderColor: colors.primary,
     backgroundColor: colors.primaryLight,
   },
-  inlineAddText: {
-    fontSize: 13,
-    fontWeight: "700",
+  chipText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: "600",
+  },
+  chipTextActive: {
     color: colors.primary,
+  },
+  activeFilterRow: {
+    marginTop: spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  activeFilterLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  listContent: {
+    paddingHorizontal: spacing.screenPadding,
+    paddingBottom: spacing.fabSize + spacing.fabBottom + spacing.xl,
+  },
+  entryAction: {
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceAlt,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  entryActionPressed: {
+    opacity: 0.8,
+  },
+  entryActionText: {
+    ...typography.small,
+    color: colors.textSecondary,
+    fontWeight: "600",
+  },
+  emptyIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surface,
   },
 });

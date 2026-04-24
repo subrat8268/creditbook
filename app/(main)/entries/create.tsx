@@ -5,6 +5,7 @@ import SyncStatus from "@/src/components/feedback/SyncStatus";
 import { useToast } from "@/src/components/feedback/Toast";
 import BillFooter from "@/src/components/orders/BillFooter";
 import CustomerPicker from "@/src/components/picker/CustomerPicker";
+import Input from "@/src/components/ui/Input";
 import { useCreateOrder } from "@/src/hooks/useEntries";
 import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 import { useAuthStore } from "@/src/store/authStore";
@@ -21,8 +22,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -426,23 +427,18 @@ export default function CreateOrderScreen() {
                   >
                     ₹
                   </Text>
-                  <TextInput
-                    ref={(input) => {
-                      // Auto-focus amount when no customer is preselected
-                      if (!selectedCustomerMeta && input) {
-                        setTimeout(() => input.focus(), 300);
-                      }
-                    }}
+                  <Input
+                    placeholder="0"
                     value={quickAmount}
                     onChangeText={setQuickAmount}
-                    placeholder="0"
                     placeholderTextColor={colors.border}
                     keyboardType="numeric"
-                    className="flex-1 text-[36px] font-extrabold"
-                    style={{ color: colors.textPrimary }}
                     autoFocus={!selectedCustomerMeta}
                     returnKeyType="done"
                     onSubmitEditing={handleSaveAndShare}
+                    variant="white"
+                    containerStyle={styles.quickAmountInputContainer}
+                    inputStyle={styles.quickAmountInput}
                   />
                 </View>
                 {hasItems && entryType === "bill" && (
@@ -459,18 +455,19 @@ export default function CreateOrderScreen() {
                 NOTE (OPTIONAL)
               </Text>
               <View className="rounded-2xl bg-surface border border-border px-4 py-3">
-                <TextInput
-                  value={note}
-                  onChangeText={setNote}
+                <Input
                   placeholder={
                     entryType === "payment"
                       ? "e.g., UPI payment"
                       : "e.g., Rice purchase, Monthly bill..."
                   }
-                  placeholderTextColor={colors.textSecondary}
-                  className="text-[15px]"
-                  style={{ color: colors.textPrimary }}
+                  value={note}
+                  onChangeText={setNote}
+                  variant="white"
                   multiline
+                  numberOfLines={3}
+                  containerStyle={styles.noteInputContainer}
+                  inputStyle={styles.noteInput}
                 />
               </View>
             </View>
@@ -560,3 +557,26 @@ export default function CreateOrderScreen() {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  quickAmountInputContainer: {
+    borderWidth: 0,
+    backgroundColor: "transparent",
+    paddingHorizontal: 0,
+    minHeight: 44,
+  },
+  quickAmountInput: {
+    fontSize: 36,
+    fontWeight: "800",
+    color: colors.textPrimary,
+  },
+  noteInputContainer: {
+    borderWidth: 0,
+    backgroundColor: "transparent",
+    paddingHorizontal: 0,
+  },
+  noteInput: {
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+});

@@ -5,13 +5,16 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  type StyleProp,
   type TextInputProps,
   View,
+  type ViewStyle,
 } from "react-native";
 
 type Props = {
   label?: string;
   placeholder: string;
+  placeholderTextColor?: string;
   value: string;
   onChangeText: (text: string) => void;
   onBlur?: TextInputProps["onBlur"];
@@ -21,7 +24,7 @@ type Props = {
   iconPosition?: "left" | "right";
   variant?: "neutral" | "white";
   height?: number;
-  keyboardType?: "default" | "decimal-pad" | "numeric" | "email-address";
+  keyboardType?: TextInputProps["keyboardType"];
   multiline?: boolean;
   numberOfLines?: number;
   maxLength?: number;
@@ -31,6 +34,8 @@ type Props = {
   onSubmitEditing?: TextInputProps["onSubmitEditing"];
   editable?: boolean;
   textAlign?: TextInputProps["textAlign"];
+  containerStyle?: StyleProp<ViewStyle>;
+  inputStyle?: TextInputProps["style"];
 };
 
 export default memo(function Input({
@@ -39,6 +44,7 @@ export default memo(function Input({
   value,
   onChangeText,
   onBlur,
+  placeholderTextColor,
   secureTextEntry,
   error,
   icon,
@@ -55,8 +61,10 @@ export default memo(function Input({
   onSubmitEditing,
   editable = true,
   textAlign,
+  containerStyle,
+  inputStyle,
 }: Props) {
-  const containerStyle = clsx(
+  const containerClassName = clsx(
     "flex-row items-center border rounded-xl px-4",
     variant === "neutral" ? "bg-background" : "bg-surface",
   );
@@ -70,7 +78,7 @@ export default memo(function Input({
       )}
 
       <View
-        className={containerStyle}
+        className={containerClassName}
         style={[
           styles.container,
           {
@@ -78,6 +86,7 @@ export default memo(function Input({
             borderColor: error ? colors.danger : colors.border,
           },
           multiline ? styles.multilineContainer : null,
+          containerStyle,
         ]}
       >
         {icon && iconPosition === "left" && (
@@ -92,7 +101,7 @@ export default memo(function Input({
             onBlur={onBlur}
             secureTextEntry={secureTextEntry}
             keyboardType={keyboardType}
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor={placeholderTextColor ?? colors.textSecondary}
             multiline={multiline}
             numberOfLines={numberOfLines}
             maxLength={maxLength}
@@ -106,6 +115,7 @@ export default memo(function Input({
             style={[
               styles.input,
               multiline ? styles.inputMultiline : null,
+              inputStyle,
             ]}
           />
         </View>
