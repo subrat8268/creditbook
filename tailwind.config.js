@@ -54,6 +54,7 @@ module.exports = {
 
         // ── Borders & dividers ────────────────────
         border: theme.colors.border, // #E5E7EB
+        "border-soft": theme.colors.borderLight, // softer inner dividers
         divider: theme.colors.border, // #E5E7EB
 
         // ── Status chips ──────────────────────────

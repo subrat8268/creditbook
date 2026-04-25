@@ -178,63 +178,66 @@ export default function DashboardScreen() {
             </View>
           </View>
 
-          <View className="mb-2 flex-row items-center justify-between">
+          <View className="mb-3 mt-1 flex-row items-center justify-between">
             <Text className="text-section-title text-textPrimary">Recent follow-ups</Text>
             <Pressable onPress={() => router.push("/(main)/people" as never)}>
               <Text className="text-caption font-inter-bold text-primary">See all</Text>
             </Pressable>
           </View>
 
-          <View className="overflow-hidden rounded-xl border border-soft bg-surface">
+          <View className="overflow-hidden rounded-2xl border border-soft bg-surface shadow-sm">
             {followUpPeople.length > 0 ? (
               followUpPeople.map((person, index) => {
-                const hasDivider = index !== followUpPeople.length - 1;
+                const isLast = index === followUpPeople.length - 1;
 
                 return (
-                  <View
-                    key={person.id}
-                    className={`flex-row items-center px-4 py-2 ${hasDivider ? "border-b border-light" : ""}`}
-                  >
-                    <Pressable
-                      onPress={() => openCustomer(person.id)}
-                      className="mr-2 flex-1 flex-row items-center"
-                    >
-                      <Avatar name={person.name} size="xs" />
-                      <View className="ml-2 flex-1">
-                        <Text className="text-body font-inter-medium text-textPrimary" numberOfLines={1}>
-                          {person.name}
-                        </Text>
-                        <Text className="mt-0.5 text-caption text-textSecondary">
-                          {person.daysSince}d overdue
-                        </Text>
-                      </View>
-                    </Pressable>
+                  <View key={person.id}>
+                    <View className="flex-row items-center px-5 py-3">
+                      <Pressable
+                        onPress={() => openCustomer(person.id)}
+                        className="flex-1 flex-row items-center"
+                      >
+                        <Avatar name={person.name} size="xs" />
 
-                    <View className="items-end">
-                      <MoneyAmount
-                        value={person.balance}
-                        variant="title"
-                        color={colors.dangerStrong}
-                        className="font-inter-semibold"
-                      />
-
-                      <View className="mt-0.5 flex-row items-center gap-1.5">
-                        <View className="rounded-full bg-danger-light px-2 py-0.5">
-                          <Text className="text-danger-text" style={typography.overline}>
-                            OVERDUE
+                        <View className="ml-3 flex-1">
+                          <Text className="text-body font-inter-semibold text-textPrimary" numberOfLines={1}>
+                            {person.name}
+                          </Text>
+                          <Text className="mt-0.5 text-caption text-textMuted">
+                            {person.daysSince}d overdue
                           </Text>
                         </View>
+                      </Pressable>
 
-                        <Pressable
-                          className="rounded-full bg-search px-2 py-0.5"
-                          onPress={() => recordPayment(person)}
-                        >
-                          <Text className="text-primary" style={typography.overline}>
-                            PAY
-                          </Text>
-                        </Pressable>
+                      <View className="w-36 items-end">
+                        <MoneyAmount
+                          value={person.balance}
+                          variant="title"
+                          color={colors.dangerStrong}
+                          className="font-inter-bold"
+                          style={{ fontVariant: ["tabular-nums"] }}
+                        />
+
+                        <View className="mt-1 flex-row items-center justify-end gap-1.5">
+                          <View className="rounded-full bg-danger-bg px-2 py-0.5">
+                            <Text className="text-danger-text" style={typography.overline}>
+                              OVERDUE
+                            </Text>
+                          </View>
+
+                          <Pressable
+                            className="rounded-full bg-search px-2 py-0.5"
+                            onPress={() => recordPayment(person)}
+                          >
+                            <Text className="text-primary" style={typography.overline}>
+                              PAY
+                            </Text>
+                          </Pressable>
+                        </View>
                       </View>
                     </View>
+
+                    {!isLast ? <View className="ml-16 mr-5 h-px bg-border-soft" /> : null}
                   </View>
                 );
               })
