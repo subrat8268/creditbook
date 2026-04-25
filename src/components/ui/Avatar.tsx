@@ -3,7 +3,7 @@ import React, { memo } from "react";
 import { Text, View } from "react-native";
 
 // Avatar size options
-export type AvatarSize = 'sm' | 'md' | 'lg';
+export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg';
 
 // Avatar color palette (consistent across app)
 const AVATAR_COLORS = [
@@ -35,6 +35,7 @@ export function getInitials(name: string | null | undefined): string {
 
 // Size configurations
 const SIZES: Record<AvatarSize, { container: number; text: number }> = {
+  xs: { container: spacing.avatarXs, text: 11 },
   sm: { container: spacing.avatarSm, text: 12 },
   md: { container: spacing.avatarMd, text: 15 },
   lg: { container: spacing.avatarLg, text: 18 },

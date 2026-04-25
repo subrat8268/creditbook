@@ -1,5 +1,4 @@
 import DashboardHeader from "@/src/components/dashboard/DashboardHeader";
-import StatusBadge from "@/src/components/dashboard/StatusBadge";
 import Loader from "@/src/components/feedback/Loader";
 import Avatar from "@/src/components/ui/Avatar";
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
@@ -11,8 +10,16 @@ import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { TrendingUp } from "lucide-react-native";
 import { useMemo } from "react";
-import { Pressable, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { Pressable, ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+type OverduePerson = {
+  id: string;
+  name: string;
+  phone?: string;
+  balance: number;
+  daysSince: number;
+};
 
 const currencyFormatter = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 0,
@@ -37,11 +44,11 @@ export default function DashboardScreen() {
 
   const totalOutstanding = useMemo(() => toReceive ?? 0, [toReceive]);
   const collectedThisWeek = weekDelta > 0 ? weekDelta : 0;
-  const topOverduePeople = useMemo(() => overduePeople.slice(0, 3), [overduePeople]);
+  const followUpPeople = useMemo(() => overduePeople.slice(0, 5), [overduePeople]);
 
-  const heroSubCopy = useMemo(() => {
+  const heroSupportText = useMemo(() => {
     if (collectedThisWeek > 0) {
-      return `${formatCurrency(collectedThisWeek)} collected this week`;
+      return `${formatCurrency(collectedThisWeek)} from last week`;
     }
 
     if (overdueTotalCount > 0) {
@@ -51,21 +58,40 @@ export default function DashboardScreen() {
     return "All customers are up to date";
   }, [collectedThisWeek, overdueTotalCount]);
 
+  const openCustomer = (customerId: string) => {
+    router.push({
+      pathname: "/(main)/people/[customerId]",
+      params: { customerId },
+    } as never);
+  };
+
+  const recordPayment = (person: OverduePerson) => {
+    router.push({
+      pathname: "/(main)/entries/create",
+      params: {
+        customer: JSON.stringify({
+          id: person.id,
+          name: person.name,
+          phone: person.phone,
+        }),
+        amount: String(person.balance),
+      },
+    } as never);
+  };
+
   if (isLoading || !profile) {
     return (
-      <View className="flex-1 justify-center items-center bg-background">
+      <View className="items-center justify-center bg-background" style={{ flex: 1 }}>
         <Loader message="Loading dashboard..." />
       </View>
     );
   }
 
+  const firstFollowUp = followUpPeople[0];
+
   return (
     <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor="transparent"
-        translucent={false}
-      />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent={false} />
 
       <ScrollView
         contentContainerStyle={{
@@ -75,7 +101,8 @@ export default function DashboardScreen() {
       >
         <DashboardHeader
           overdueCount={overdueTotalCount}
-          showActions={false}
+          showNotification
+          onPressNotifications={() => router.push("/(main)/people" as never)}
         />
 
         <View className="px-4">
@@ -83,141 +110,143 @@ export default function DashboardScreen() {
             colors={[gradients.dashboardHero.start, gradients.dashboardHero.end]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            className="relative mb-5 overflow-hidden rounded-xl px-5 py-5"
+            className="relative mb-4 overflow-hidden rounded-2xl px-6 pb-5 pt-6 shadow-lg"
           >
-            <View className="absolute -right-6 -top-8 h-32 w-32 rounded-full bg-dashboard-hero-orb" />
-            <View className="absolute -bottom-12 right-7 h-24 w-24 rounded-full bg-dashboard-hero-orb" />
+            <View className="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-dashboard-hero-orb" />
+            <View className="absolute -bottom-12 right-10 h-28 w-28 rounded-full bg-dashboard-hero-orb" />
 
-            <Text className="tracking-wider text-dashboard-hero-text-muted" style={typography.label}>
+            <Text
+              className="text-dashboard-hero-text-muted opacity-75"
+              style={typography.overline}
+            >
               CUSTOMERS OWE YOU
             </Text>
 
-            <MoneyAmount
-              value={totalOutstanding}
-              variant="hero"
-              color={colors.dashboard.heroText}
-              className="mt-1"
-            />
+            <MoneyAmount value={totalOutstanding} variant="hero" color={colors.dashboard.heroText} className="mt-1" />
 
-            <View className="mt-1 flex-row items-center gap-1">
+            <View className="mt-2 flex-row items-center">
               <TrendingUp size={14} color={colors.dashboard.heroText} strokeWidth={2.2} />
-              <Text className="text-body font-inter-semibold text-dashboard-hero-text">
-                {heroSubCopy}
+              <Text className="ml-1.5 text-caption font-inter-medium text-dashboard-hero-text-muted">
+                {heroSupportText}
               </Text>
             </View>
 
-            <View className="mt-4 flex-row items-center gap-2">
-              <View className="flex-1 rounded-full border border-dashboard-hero-chip-border bg-dashboard-hero-chip-bg px-3 py-2">
-                <Text className="text-center text-caption font-inter-semibold text-dashboard-hero-text">
-                  {overdueTotalCount > 0
-                    ? `${overdueTotalCount} ${overdueTotalCount === 1 ? "customer" : "customers"} need action`
-                    : "Nothing needs action now"}
-                </Text>
-              </View>
-              <TouchableOpacity
+            <View className="mt-5 flex-row gap-2">
+              <Pressable
+                className="flex-1 items-center rounded-full bg-dashboard-hero-chip-bg py-3"
                 onPress={() => router.push("/(main)/people" as never)}
-                className="rounded-full border border-dashboard-hero-chip-border bg-dashboard-hero-chip-bg px-4 py-2"
               >
-                <Text className="text-caption font-inter-bold text-dashboard-hero-text">View all</Text>
-              </TouchableOpacity>
+                <Text className="text-caption font-inter-semibold text-dashboard-hero-text">View Customers</Text>
+              </Pressable>
+
+              <Pressable
+                className={`flex-1 items-center rounded-full bg-dashboard-hero-chip-bg py-3 ${firstFollowUp ? "" : "opacity-50"}`}
+                onPress={() => (firstFollowUp ? recordPayment(firstFollowUp) : null)}
+                disabled={!firstFollowUp}
+              >
+                <Text className="text-caption font-inter-semibold text-dashboard-hero-text">Record Payment</Text>
+              </Pressable>
             </View>
           </LinearGradient>
 
-          <View className="mb-3 flex-row items-start justify-between gap-3">
-            <View className="flex-1">
-              <Text className="text-section-title text-textPrimary">Needs action now</Text>
-              <Text className="mt-1 text-caption text-textSecondary">
-                Start with the most overdue customers and record payments fast.
+          <View className="mb-4 flex-row gap-3">
+            <View className="flex-1 rounded-xl border border-soft bg-surface p-4 shadow-sm">
+              <Text className="text-textSecondary" style={typography.overline}>
+                NEEDS ACTION NOW
+              </Text>
+              <Text className="mt-2 text-h2 text-textPrimary">{overdueTotalCount}</Text>
+              <Text className="mt-0.5 text-caption text-textSecondary">
+                {overdueTotalCount === 1 ? "customer overdue" : "customers overdue"}
               </Text>
             </View>
-            <TouchableOpacity onPress={() => router.push("/(main)/people" as never)}>
-              <Text className="mt-0.5 text-caption font-inter-bold text-primary">View all</Text>
-            </TouchableOpacity>
-          </View>
 
-          <View className="mb-4 overflow-hidden rounded-xl border border-border bg-surface">
-            {topOverduePeople.length > 0 ? (
-              topOverduePeople.map((person, index) => (
-                <View
-                  key={person.id}
-                  className={`flex-row items-center gap-2 px-4 py-3 ${index !== topOverduePeople.length - 1 ? "border-b border-light" : ""}`}
-                >
-                  <Pressable
-                    onPress={() =>
-                      router.push({
-                        pathname: "/(main)/people/[customerId]",
-                        params: { customerId: person.id },
-                      } as never)
-                    }
-                    className="flex-1 flex-row items-center"
-                  >
-                    <Avatar name={person.name} size="sm" />
-                    <View className="ml-3 flex-1">
-                      <Text className="text-card-title text-textPrimary" numberOfLines={1}>
-                        {person.name}
-                      </Text>
-                      <Text className="mt-0.5 text-caption text-textSecondary">
-                        {person.daysSince}d overdue · Tap to open customer
-                      </Text>
-                    </View>
-                  </Pressable>
-
-                  <View className="ml-2 items-end gap-1">
-                    <MoneyAmount
-                      value={person.balance}
-                      variant="title"
-                      color={colors.dangerStrong}
-                      className="font-inter-bold"
-                    />
-                    <StatusBadge status="Overdue" />
-                    <TouchableOpacity
-                      className="rounded-full bg-primary px-3 py-1.5"
-                      onPress={() =>
-                        router.push({
-                          pathname: "/(main)/entries/create",
-                          params: {
-                            customer: JSON.stringify({
-                              id: person.id,
-                              name: person.name,
-                              phone: person.phone,
-                            }),
-                            amount: String(person.balance),
-                          },
-                        } as never)
-                      }
-                    >
-                      <Text className="text-caption font-inter-bold text-surface">Record payment</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))
-            ) : (
-              <View className="px-4 py-5">
-                <Text className="text-card-title text-textPrimary">Nothing needs action now</Text>
-                <Text className="mt-1 text-caption text-textSecondary">
-                  Your overdue customers list is clear. New overdue entries will appear here.
-                </Text>
-              </View>
-            )}
-          </View>
-
-          {collectedThisWeek > 0 ? (
-            <View className="mb-4 rounded-xl border border-border bg-surface px-4 py-3">
-              <Text className="text-textSecondary" style={typography.label}>
-                Collected this week
+            <View className="flex-1 rounded-xl border border-soft bg-surface p-4 shadow-sm">
+              <Text className="text-textSecondary" style={typography.overline}>
+                COLLECTED THIS WEEK
               </Text>
               <MoneyAmount
                 value={collectedThisWeek}
                 showPlusForPositive
                 variant="title"
-                color={colors.success}
-                className="mt-1 font-inter-bold"
+                color={collectedThisWeek > 0 ? colors.success : colors.textPrimary}
+                style={typography.h2}
+                className="mt-2"
               />
-              <Text className="mt-1 text-caption text-textSecondary">
-                Keep this momentum with timely payment follow-up.
+              <Text className="mt-0.5 text-caption text-textSecondary">
+                {collectedThisWeek > 0 ? "cashflow improved" : "no collections yet"}
               </Text>
             </View>
-          ) : null}
+          </View>
+
+          <View className="mb-2 flex-row items-center justify-between">
+            <Text className="text-section-title text-textPrimary">Recent follow-ups</Text>
+            <Pressable onPress={() => router.push("/(main)/people" as never)}>
+              <Text className="text-caption font-inter-bold text-primary">See all</Text>
+            </Pressable>
+          </View>
+
+          <View className="overflow-hidden rounded-xl border border-soft bg-surface">
+            {followUpPeople.length > 0 ? (
+              followUpPeople.map((person, index) => {
+                const hasDivider = index !== followUpPeople.length - 1;
+
+                return (
+                  <View
+                    key={person.id}
+                    className={`flex-row items-center px-4 py-2 ${hasDivider ? "border-b border-light" : ""}`}
+                  >
+                    <Pressable
+                      onPress={() => openCustomer(person.id)}
+                      className="mr-2 flex-1 flex-row items-center"
+                    >
+                      <Avatar name={person.name} size="xs" />
+                      <View className="ml-2 flex-1">
+                        <Text className="text-body font-inter-medium text-textPrimary" numberOfLines={1}>
+                          {person.name}
+                        </Text>
+                        <Text className="mt-0.5 text-caption text-textSecondary">
+                          {person.daysSince}d overdue
+                        </Text>
+                      </View>
+                    </Pressable>
+
+                    <View className="items-end">
+                      <MoneyAmount
+                        value={person.balance}
+                        variant="title"
+                        color={colors.dangerStrong}
+                        className="font-inter-semibold"
+                      />
+
+                      <View className="mt-0.5 flex-row items-center gap-1.5">
+                        <View className="rounded-full bg-danger-light px-2 py-0.5">
+                          <Text className="text-danger-text" style={typography.overline}>
+                            OVERDUE
+                          </Text>
+                        </View>
+
+                        <Pressable
+                          className="rounded-full bg-search px-2 py-0.5"
+                          onPress={() => recordPayment(person)}
+                        >
+                          <Text className="text-primary" style={typography.overline}>
+                            PAY
+                          </Text>
+                        </Pressable>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })
+            ) : (
+              <View className="px-4 py-5">
+                <Text className="text-card-title text-textPrimary">Nothing needs action now</Text>
+                <Text className="mt-1 text-caption text-textSecondary">
+                  Overdue follow-ups will appear here when customers miss payment timelines.
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
       </ScrollView>
 
@@ -225,6 +254,7 @@ export default function DashboardScreen() {
         onPress={() => router.push("/(main)/entries/create" as never)}
         bottom={spacing.fabBottom}
         right={spacing.fabMargin}
+        size={spacing.fabSizeCompact}
       />
     </SafeAreaView>
   );

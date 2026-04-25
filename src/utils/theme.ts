@@ -143,9 +143,18 @@ export const colors = {
   // ─ Dashboard hero accents
   dashboard: {
     heroText: "rgba(255,255,255,0.96)",
-    heroTextMuted: "rgba(255,255,255,0.76)",
-    heroChipBg: "rgba(255,255,255,0.14)",
-    heroChipBorder: "rgba(255,255,255,0.28)",
+    heroTextMuted: "rgba(255,255,255,0.70)",
+    heroChipBg: "rgba(255,255,255,0.10)",
+    heroChipBorder: "rgba(255,255,255,0.16)",
+    heroOrb: "rgba(255,255,255,0.06)",
+  },
+
+  // ─ Customer detail hero accents
+  customerDetail: {
+    heroText: "rgba(255,255,255,0.96)",
+    heroTextMuted: "rgba(255,255,255,0.74)",
+    heroChipBg: "rgba(255,255,255,0.15)",
+    heroChipBorder: "rgba(255,255,255,0.30)",
     heroOrb: "rgba(255,255,255,0.12)",
   },
 } as const;
@@ -157,8 +166,8 @@ export const colors = {
 export const gradients = {
   // Dashboard hero card — red gradient
   dashboardHero: {
-    start: "#DC2626", // Red-600
-    end: "#B91C1C", // Red-700
+    start: "#B91C1C", // Red-700
+    end: "#7F1D1D", // Red-900
   },
 
   // Person balance card — red gradient
@@ -240,12 +249,14 @@ export const spacing = {
   cardPadding: 16, // Internal padding in cards
 
   // ─ Avatar sizes
+  avatarXs: 32, // Quieter dense rows
   avatarSm: 36, // Compact rows, list indicators
   avatarMd: 44, // List cards (person, supplier)
   avatarLg: 64, // Full-screen profile section
 
   // ─ FAB
   fabSize: 56, // Diameter of floating action button
+  fabSizeCompact: 48, // Quieter FAB size for premium screens
   fabMargin: 20, // Distance from screen edge
   fabBottom: 24, // Distance above tab bar
 

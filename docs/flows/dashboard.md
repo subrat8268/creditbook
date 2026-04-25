@@ -16,8 +16,8 @@
 ## What It Shows
 
 - Total outstanding (amount to receive).
-- “Needs action now” list (up to 3 overdue Customers).
-- “Collected this week” card (only when `weekDelta > 0`).
+- Compact mini stat cards for `Needs action now` and `Collected this week`.
+- “Recent follow-ups” list (up to 5 overdue Customers).
 
 ## Visual Source Notes (Dashboard Fidelity Pass)
 
@@ -40,11 +40,24 @@ Ignored on purpose (out of current scope):
 - Product/reporting modules not part of current Dashboard flow.
 - Extra dashboard stats beyond current truth (`total outstanding`, `needs action now`, `collected this week`).
 
+## Visual Correction Pass Mapping
+
+How current dashboard scope maps into the old composition:
+- Old hero (`Customers owe you`) -> current `total outstanding` hero (single red gradient card).
+- Old compact summary cards -> `Needs action now` and `Collected this week` mini cards.
+- Old recent activity/follow-up block -> overdue customer follow-up list with compact rows and quick pay actions.
+
+What changed vs previous dashboard attempt:
+- Header now follows the legacy rhythm more closely (identity left, greeting, notification action right).
+- Hero actions are translucent pills (not heavy CTA buttons) and overlay treatment is softer.
+- Secondary layout now follows hero -> mini stat cards -> follow-up list (instead of a large standalone `Needs action now` section).
+- Follow-up rows are denser with smaller status/action chips and tighter right-side amount grouping.
+
 ## Key Interactions (Verified)
 
 - View all overdue Customers: navigates to `/(main)/people`.
 - Open a Customer: navigates to `/(main)/people/[customerId]`.
-- Record a Payment from an overdue row: navigates to `/(main)/entries/create` with params:
+- Record a Payment from hero or overdue row: navigates to `/(main)/entries/create` with params:
   - `customer`: JSON string (`{ id, name, phone }`)
   - `amount`: string (overdue balance)
 
@@ -55,5 +68,5 @@ Ignored on purpose (out of current scope):
 
 ## Notes / Gotchas
 
-- `DashboardHeader` supports bell/settings actions, but `DashboardScreen` currently renders it with `showActions={false}`.
+- Dashboard header now uses a single notification action (bell) to jump to People.
 - Use tokens from `src/utils/theme.ts` (do not hardcode colors).

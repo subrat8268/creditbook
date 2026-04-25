@@ -77,6 +77,28 @@ NativeWind utility aliases (from `tailwind.config.js`):
 - `border-dashboard-hero-chip-border`
 - `bg-dashboard-hero-orb`
 
+## Customer Detail Hero Tokens
+
+For the Customer Detail balance hero, use customer-detail hero tokens:
+
+- `gradients.customerHero.start`
+- `gradients.customerHero.end`
+- `gradients.zeroBalance.start`
+- `gradients.zeroBalance.end`
+- `colors.customerDetail.heroText`
+- `colors.customerDetail.heroTextMuted`
+- `colors.customerDetail.heroChipBg`
+- `colors.customerDetail.heroChipBorder`
+- `colors.customerDetail.heroOrb`
+
+NativeWind utility aliases (from `tailwind.config.js`):
+
+- `text-customer-hero-text`
+- `text-customer-hero-text-muted`
+- `bg-customer-hero-chip-bg`
+- `border-customer-hero-chip-border`
+- `bg-customer-hero-orb`
+
 ## Spacing and Layout
 
 Use the token system from `src/utils/theme.ts`.
@@ -86,7 +108,8 @@ Key active dimensions:
 - input height: `48`
 - button height in theme: `50`
 - card radius: `16`
-- FAB size: `56`
+- FAB size: `56` (default)
+- FAB compact size: `48` (premium screens)
 
 ### Current implementation note
 

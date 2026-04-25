@@ -11,6 +11,27 @@ The **Customer Detail** screen is the **most important screen** in the app. It's
 
 **Primary Goal**: Make the balance instantly visible and actions instantly accessible.
 
+## Visual Source Notes (Customer Detail Fidelity Pass)
+
+Primary reference:
+- `designs/Customer Detail Screen.png`
+
+Secondary references:
+- `designs/Customer Detail Empty Screen.png`
+- `designs/Seller Dashboard.png` (hero visual language only)
+
+Reused from references:
+- Strong rounded gradient balance hero with amount-first hierarchy.
+- Hero status pill styling and subtle decorative orbs.
+- White secondary surfaces for CTA cluster and transaction history section.
+- Dense, list-first transaction rows with compact icon, title/subtitle, amount, and running balance.
+- Segmented filter tabs (`All`, `Entries`, `Payments`) in a pill container.
+
+Ignored on purpose (outdated / out of scope):
+- Supplier/product/distributor widgets and flows.
+- Legacy reminder/report widgets not part of current Customer detail scope.
+- Any extra dashboard-style metrics beyond balance, actions, and transaction history.
+
 ---
 
 ## Layout Structure

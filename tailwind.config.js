@@ -74,11 +74,22 @@ module.exports = {
         "dashboard-hero-chip-bg": theme.colors.dashboard.heroChipBg,
         "dashboard-hero-chip-border": theme.colors.dashboard.heroChipBorder,
         "dashboard-hero-orb": theme.colors.dashboard.heroOrb,
+
+        // ── Customer detail hero accents ───────
+        "customer-hero-text": theme.colors.customerDetail.heroText,
+        "customer-hero-text-muted": theme.colors.customerDetail.heroTextMuted,
+        "customer-hero-chip-bg": theme.colors.customerDetail.heroChipBg,
+        "customer-hero-chip-border": theme.colors.customerDetail.heroChipBorder,
+        "customer-hero-orb": theme.colors.customerDetail.heroOrb,
+
+        // ── Specialized single-use surfaces ────
+        "net-position": theme.gradients.netPosition,
       },
       borderColor: {
         light: theme.colors.border,
         default: theme.colors.border,
         dark: theme.colors.textSecondary,
+        soft: theme.colors.borderLight,
       },
       fontFamily: {
         inter: [theme.fonts.regular],
@@ -100,6 +111,7 @@ module.exports = {
         md: theme.radius.md,
         lg: theme.radius.lg,
         xl: theme.radius.xl,
+        "2xl": theme.radius["2xl"],
         full: theme.radius.full,
       },
     },
