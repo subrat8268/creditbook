@@ -5,7 +5,7 @@ export interface RecentActivityItem {
   id: string;
   /** payment = money received from a person
    *  bill     = outstanding entry (invoice)
-   *  delivery = supplier goods received (both/distributor modes) */
+   *  delivery = legacy (supplier mode, out of strict single-mode) */
   type: "payment" | "bill" | "delivery";
   title: string;
   name: string;
@@ -346,12 +346,7 @@ export async function getNetPositionReport(
   rangeStart.setDate(rangeStart.getDate() - Math.max(rangeDays - 1, 0));
   rangeStart.setHours(0, 0, 0, 0);
 
-  const [
-    { data: orders },
-    { data: deliveries },
-    { data: paymentsReceived },
-    { data: paymentsMade },
-  ] = await Promise.all([
+  const [{ data: orders }, { data: paymentsReceived }] = await Promise.all([
     supabase
       .from("orders")
       .select("customer_id, balance_due, status, created_at, parties!inner(id, name)")
@@ -359,17 +354,7 @@ export async function getNetPositionReport(
       .gt("balance_due", 0)
       .gte("created_at", rangeStart.toISOString()),
     supabase
-      .from("supplier_deliveries")
-      .select("supplier_id, total_amount, created_at, parties!inner(id, name)")
-      .eq("vendor_id", vendorId)
-      .gte("created_at", rangeStart.toISOString()),
-    supabase
       .from("payments")
-      .select("amount, created_at")
-      .eq("vendor_id", vendorId)
-      .gte("created_at", rangeStart.toISOString()),
-    supabase
-      .from("payments_made")
       .select("amount, created_at")
       .eq("vendor_id", vendorId)
       .gte("created_at", rangeStart.toISOString()),
@@ -381,17 +366,9 @@ export async function getNetPositionReport(
     0,
   );
 
-  // Total payables (I owe suppliers)
-  const totalDeliveries = (deliveries ?? []).reduce(
-    (s, d) => s + Number(d.total_amount),
-    0,
-  );
-  const totalPaid = (paymentsMade ?? []).reduce(
-    (s, p) => s + Number(p.amount),
-    0,
-  );
-  const totalPayables = Math.max(0, totalDeliveries - totalPaid);
-  const netBalance = totalReceivables - totalPayables;
+  // Strict single-mode: supplier payables are out of scope.
+  const totalPayables = 0;
+  const netBalance = totalReceivables;
 
   // Top 5 people by balance owed
   const personMap = new Map<string, { name: string; balance: number }>();
@@ -417,38 +394,7 @@ export async function getNetPositionReport(
       balance,
     }));
 
-  // Top 5 suppliers by amount I owe
-  const supplierDeliveryMap = new Map<
-    string,
-    { name: string; total: number }
-  >();
-  const supplierPaidMap = new Map<string, number>();
-
-  for (const d of deliveries ?? []) {
-    const sid: string = (d as any).supplier_id;
-    const name: string = Array.isArray((d as any).parties)
-      ? (d as any).parties[0]?.name ?? "Supplier"
-      : (d as any).parties?.name ?? "Supplier";
-    const existing = supplierDeliveryMap.get(sid);
-    if (existing) {
-      existing.total += Number(d.total_amount);
-    } else {
-      supplierDeliveryMap.set(sid, { name, total: Number(d.total_amount) });
-    }
-  }
-
-  const topSuppliers: NetPositionSupplier[] = Array.from(
-    supplierDeliveryMap.entries(),
-  )
-    .map(([id, { name, total }]) => ({
-      id,
-      name,
-      initials: getInitials(name),
-      amountOwed: Math.max(0, total - (supplierPaidMap.get(id) ?? 0)),
-    }))
-    .filter((s) => s.amountOwed > 0)
-    .sort((a, b) => b.amountOwed - a.amountOwed)
-    .slice(0, 5);
+  const topSuppliers: NetPositionSupplier[] = [];
 
   const bucketCount = 6;
   const bucketSize = Math.max(1, Math.ceil(rangeDays / bucketCount));
@@ -468,12 +414,7 @@ export async function getNetPositionReport(
       })
       .reduce((s, p) => s + Number(p.amount), 0);
 
-    const outflow = (paymentsMade ?? [])
-      .filter((p) => {
-        const pd = new Date(p.created_at);
-        return pd >= bucketStart && pd < bucketEnd;
-      })
-      .reduce((s, p) => s + Number(p.amount), 0);
+    const outflow = 0;
 
     const label = bucketSize <= 1
       ? bucketStart.toLocaleDateString("en-IN", { day: "numeric", month: "short" })
@@ -496,9 +437,7 @@ export async function getNetPositionReport(
 
   const sevenDaysFromNow = new Date();
   sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-  const upcomingPayables = (deliveries ?? [])
-    .filter((d: any) => new Date(d.created_at ?? now) < sevenDaysFromNow)
-    .reduce((s: number, d: any) => s + Number(d.total_amount), 0);
+  const upcomingPayables = 0;
 
   return {
     totalReceivables,

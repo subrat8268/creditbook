@@ -1,37 +1,7 @@
 /**
- * useParties - Unified hook for managing business relationships
- * 
- * Replaces separate useCustomers and useSuppliers hooks with a single
- * unified interface for the parties table.
- * 
- * Features:
- * - Query parties by type (customer, supplier, or all)
- * - Create/update/delete parties
- * - Handle parties that are both customer AND supplier
- * - Automatic query invalidation on mutations
- * 
- * @example
- * // Get all customers
- * const { data: customers } = useParties(vendorId, 'customer');
- * 
- * // Get all suppliers
- * const { data: suppliers } = useParties(vendorId, 'supplier');
- * 
- * // Get ALL parties (customers + suppliers)
- * const { data: allParties } = useParties(vendorId, 'all');
- * 
- * // Get single party
- * const { data: party } = useParty(partyId);
- * 
- * // Create new customer
- * const createMutation = useCreateParty();
- * createMutation.mutate({
- *   vendor_id: vendorId,
- *   name: 'John Doe',
- *   phone: '+919876543210',
- *   is_customer: true,
- *   is_supplier: false,
- * });
+ * useParties - Customer-only hook for `parties`.
+ *
+ * Supplier/product catalog surfaces are legacy and are being removed.
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -42,7 +12,7 @@ import type { Party, PartyInsert, PartyUpdate, PartyType } from '../types/party'
  * Query all parties for a vendor, optionally filtered by type
  * 
  * @param vendorId - Profile ID of the vendor
- * @param type - Filter by 'customer', 'supplier', or 'all'
+ * @param type - Filter by 'customer' or 'all'
  * @returns React Query result with parties array
  */
 export function useParties(vendorId: string, type: PartyType = 'all') {
@@ -58,8 +28,6 @@ export function useParties(vendorId: string, type: PartyType = 'all') {
       // Filter by relationship type
       if (type === 'customer') {
         query = query.eq('is_customer', true);
-      } else if (type === 'supplier') {
-        query = query.eq('is_supplier', true);
       }
       // If type === 'all', no additional filter
 
@@ -120,8 +88,6 @@ export function useSearchParties(
       // Filter by type
       if (type === 'customer') {
         query = query.eq('is_customer', true);
-      } else if (type === 'supplier') {
-        query = query.eq('is_supplier', true);
       }
 
       // Search by name or phone
@@ -170,10 +136,8 @@ export function useCreateParty() {
 
   return useMutation({
     mutationFn: async (party: PartyInsert) => {
-      // Validate: must be at least customer OR supplier
-      if (!party.is_customer && !party.is_supplier) {
-        throw new Error('Party must be either a customer, supplier, or both');
-      }
+      // Strict single-mode: parties represent Customers.
+      if (!party.is_customer) throw new Error('Party must be a customer');
 
       const { data, error } = await supabase
         .from('parties')
@@ -273,32 +237,6 @@ export function useCustomerBalance(partyId: string | undefined) {
 }
 
 /**
- * Get supplier balance (amount vendor owes party)
- * 
- * @param partyId - UUID of the party
- * @returns React Query result with supplier balance
- */
-export function useSupplierBalance(partyId: string | undefined) {
-  return useQuery({
-    queryKey: ['parties', partyId, 'supplier-balance'],
-    queryFn: async () => {
-      if (!partyId) throw new Error('Party ID is required');
-
-      const { data, error } = await supabase
-        .from('parties')
-        .select('supplier_balance')
-        .eq('id', partyId)
-        .eq('is_supplier', true)
-        .single();
-
-      if (error) throw error;
-      return data.supplier_balance;
-    },
-    enabled: !!partyId,
-  });
-}
-
-/**
  * Helper function to check if a party is a customer
  */
 export function isCustomer(party: Party): boolean {
@@ -306,25 +244,9 @@ export function isCustomer(party: Party): boolean {
 }
 
 /**
- * Helper function to check if a party is a supplier
- */
-export function isSupplier(party: Party): boolean {
-  return party.is_supplier === true;
-}
-
-/**
- * Helper function to check if a party has both roles
- */
-export function isDualRole(party: Party): boolean {
-  return party.is_customer === true && party.is_supplier === true;
-}
-
-/**
  * Helper function to get party's role as human-readable string
  */
 export function getPartyRole(party: Party): string {
-  if (isDualRole(party)) return 'Customer & Supplier';
   if (isCustomer(party)) return 'Customer';
-  if (isSupplier(party)) return 'Supplier';
   return 'Unknown';
 }

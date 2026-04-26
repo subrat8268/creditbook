@@ -57,10 +57,11 @@ const uploadToBucket = async (
   return data.publicUrl;
 };
 
-export const uploadProductImage = async (uri: string): Promise<string> => {
+// Legacy helper (product catalog is out of scope). Kept as a generic image upload.
+export const uploadImage = async (uri: string): Promise<string> => {
   const fileExt = getFileExtension(uri);
-  const fileName = `product_${Date.now()}.${fileExt}`;
-  const filePath = `products/${fileName}`;
+  const fileName = `image_${Date.now()}.${fileExt}`;
+  const filePath = `images/${fileName}`;
   return uploadToBucket(uri, "product-images", filePath, false);
 };
 
@@ -71,8 +72,4 @@ export const uploadBusinessLogo = async (
   const fileExt = getFileExtension(uri);
   const filePath = `logos/${vendorId}/logo.${fileExt}`;
   return uploadToBucket(uri, "business-logos", filePath, true);
-};
-
-export const uploadImage = async (uri: string): Promise<string> => {
-  return uploadProductImage(uri);
 };

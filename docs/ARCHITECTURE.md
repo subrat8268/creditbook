@@ -1,169 +1,46 @@
-# KredBook Architecture
+# KredBook Architecture (Phase 2)
 
-> Phase 1 truth-reset version.
+KredBook is a strict single-mode digital khata: **Customers**, **Entries**, **Payments**.
 
-## Product Shape
-
-KredBook is a **strict single-mode digital khata**.
-
-Active product flow:
-
-```text
-Dashboard → People → Entries → Payments → Profile
-```
-
-## Active Scope
-
-- Customers
-- Entries
-- Payments
-- Dashboard
-- Profile
-- Offline-first sync
-- EN/HI localization
-- CSV export
-
-## Out of Scope
-
-The following are out of scope unless explicitly marked legacy or transitional:
-
-- Suppliers
-- Distributor mode
-- Party abstraction as primary product language
-- Product catalog
-- Reports
-- GST
-- Multi-user
-- Notifications/reminders as active product features
-
-## Technical Stack
+## Stack
 
 | Area | Choice |
 |---|---|
-| App | React Native + Expo |
-| Routing | Expo Router |
-| Server/backend | Supabase |
+| App | React Native + Expo + Expo Router |
 | Local state | Zustand |
 | Server state | TanStack Query |
-| Offline writes | MMKV-backed queue |
-| Styling | NativeWind + `src/utils/theme.ts` |
+| Offline writes | MMKV-backed mutation queue |
+| Backend | Supabase (Postgres + RLS + Storage + Edge Functions) |
+| Styling | NativeWind + `src/utils/theme.ts` tokens |
 
-## Route Model
+## Routes (active)
 
-### Active routes
+`(auth)` for login/onboarding; `(main)` for `dashboard`, `people`, `entries`, `profile`, plus hidden `export`.
 
-```text
-app/
-├── _layout.tsx
-├── l/
-│   └── [token].tsx
-├── (auth)/
-│   ├── login.tsx
-│   ├── signup.tsx
-│   ├── resetPassword.tsx
-│   ├── set-new-password.tsx
-│   ├── phone-setup.tsx
-│   └── onboarding/
-├── (main)/
-│   ├── dashboard/
-│   ├── people/
-│   ├── entries/
-│   ├── profile/
-│   ├── export/
-│   └── new-entry.tsx
-└── profile-error.tsx
-```
+## Data Model (product)
 
-### Limited public sharing route (transitional)
+- Customer, Entry, Payment are the canonical nouns.
+- Some internals may still use legacy names (for example `order`, `party`). Treat as transitional.
 
-- `app/l/[token].tsx` is a **limited, read-only, token-based** Customer ledger view.
-- It exists to support sharing a Customer’s ledger link.
-- It must not allow edits; anyone with the link can view the ledger.
+## Offline-First
 
-Implementation note (not product language): the link is backed by a Supabase RPC that validates the token and returns a read-only ledger payload.
+- Reads prefer React Query cache (persisted to MMKV).
+- Writes are queued when offline and replayed on reconnect.
+- Primary surfaces: `src/services/supabase.ts`, `src/lib/syncQueue.ts`.
 
-### Important notes
+## Sharing (WhatsApp-first)
 
-- Export exists as its own hidden route and is reached from the Profile area.
-- The repo should not describe a hidden **More sheet** as active architecture.
-- Some route identifiers still use legacy names such as `[orderId]`. Those are transitional implementation surfaces, not canonical product language.
-- A notifications route or permission may still exist in code/config. That should be treated as **legacy or transitional**, not active product scope.
+- Short-term: share a read-only Customer ledger link (token-based) and formatted WhatsApp text.
+- Phase 5: generate a PDF statement / Entry PDF and share via WhatsApp.
 
-## Screen Model
+Planned flow:
 
-| Screen | Purpose |
-|---|---|
-| Dashboard | Total outstanding and collection-focused overview |
-| People | Customer list and quick customer actions |
-| Entries | Entry list and entry detail flow |
-| Profile | Business/profile settings, language, export, sign out |
+1. App requests a share artifact (link/PDF) for a Customer/Entry.
+2. Supabase Edge Function builds payload, stores to Storage (if needed), returns URL + message text.
+3. App invokes WhatsApp share with the prepared content.
 
-## State Model
+## Planned AI Layer (Phase 4)
 
-### Zustand
-
-Used for local/app state such as:
-- auth/session state
-- language preference
-- draft entry state
-- preferences and local flags
-
-### TanStack Query
-
-Used for server-backed data such as:
-- customer lists and details
-- entry lists and details
-- payments and related mutations
-- dashboard summaries
-
-## Current Data-Layer Reality
-
-Canonical product nouns are **Customer / Entry / Payment**.
-
-The implementation still includes some transitional internals such as:
-- `orderStore`
-- `useCreateOrder`
-- `orderId`
-- `useParties`
-
-These are legacy or transitional surfaces. They should not be treated as the product contract.
-
-## Offline-First Model
-
-KredBook is expected to:
-- read from cache when offline
-- queue writes locally
-- sync automatically when connectivity returns
-- keep the UI responsive with optimistic updates where appropriate
-
-Primary implementation surfaces:
-- `src/lib/syncQueue.ts`
-- `src/hooks/useNetworkSync.ts`
-- sync-status UI components
-
-## Component Architecture
-
-Primary component domains:
-- `src/components/ui/`
-- `src/components/feedback/`
-- `src/components/people/`
-- `src/components/dashboard/`
-- `src/components/picker/`
-
-The repo also still contains `src/components/orders/` as a transitional/legacy folder tied to entry flows. Do not describe it as the active product-domain name.
-
-## Design-System Rule
-
-`src/utils/theme.ts` is the design-token source of truth.
-
-Documentation may explain token usage, but it must not override actual token values from:
-- `src/utils/theme.ts`
-- `tailwind.config.js`
-
-## Architecture Drift Rule
-
-If a concept exists in code but is out of scope, document it honestly as:
-- legacy
-- transitional
-
-Do not mark it removed unless it is actually removed.
+- Supabase Edge Functions as the AI boundary.
+- Functions call OpenAI (or equivalent) with strict prompts + allowlisted inputs.
+- Guardrails: rate limits, audit logs, opt-in UX, and safe fallbacks when offline.

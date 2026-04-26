@@ -1,12 +1,7 @@
 /**
- * useCustomer - Backward compatibility wrapper for useParties
+ * Customer/People hooks backed by `parties`.
  *
- * This hook wraps the new useParties hook and adapts the Party type
- * to the legacy Customer type (now aliased to Person), allowing existing UI
- * components to work without changes during the migration period.
- *
- * MIGRATION NOTE: This is a temporary compatibility layer.
- * New code should use useParties directly from '@/src/hooks/useParties'
+ * NOTE: `parties` is an internal table name; user-facing docs use Customer.
  */
 
 import {
@@ -167,7 +162,6 @@ export const useAddCustomer = (vendorId: string) => {
           phone: values.phone || null,
           address: values.address || null,
           is_customer: true,
-          is_supplier: false,
           customer_balance: (values as any).openingBalance || 0,
         })
         .select()

@@ -1,6 +1,6 @@
 # KredBook Naming Contract
 
-> Phase 1 truth reset for a strict single-mode product.
+> Phase 2 reality check for a strict single-mode product.
 
 ## Canonical Product Decision
 
@@ -71,9 +71,9 @@ These terms may still exist in code or old docs. They are not valid product-lang
 5. Do not describe out-of-scope features as active product capabilities.
 6. Do not claim legacy code is removed unless it is actually removed from the repo.
 
-## Implementation Rule for Phase 1
+## Implementation Rule (Current)
 
-Phase 1 is a **truth reset and operating-system cleanup**.
+Phases 1-2 are a **truth reset and operating-system cleanup**.
 
 - It aligns docs and agent guidance to the canonical product contract.
 - It may reference legacy code honestly.

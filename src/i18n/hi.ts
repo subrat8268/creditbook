@@ -25,8 +25,6 @@ const hi = {
     dashboard: "डैशबोर्ड",
     customers: "लोग",
     orders: "एंट्री",
-    products: "सामान",
-    suppliers: "सप्लायर",
     profile: "प्रोफाइल",
   },
 
@@ -117,47 +115,6 @@ const hi = {
     paymentAmount: "भुगतान राशि",
     paymentDate: "भुगतान तारीख",
     reference: "संदर्भ",
-  },
-
-  // Products
-  products: {
-    title: "सामान",
-    search: "सामान खोजें",
-    addProduct: "सामान जोड़ें",
-    editProduct: "सामान संपादित करें",
-    noProducts: "अभी तक कोई सामान नहीं",
-    name: "सामान का नाम",
-    basePrice: "मूल कीमत",
-    variant: "वेरिएंट",
-    variants: "वेरिएंट",
-    addVariant: "वेरिएंट जोड़ें",
-    variantName: "वेरिएंट का नाम",
-    variantPrice: "वेरिएंट की कीमत",
-    deleteProduct: "सामान हटाएं",
-    confirmDelete: "क्या आप इस सामान को हटाना चाहते हैं?",
-  },
-
-  // Suppliers
-  suppliers: {
-    title: "सप्लायर",
-    search: "सप्लायर खोजें",
-    addSupplier: "सप्लायर जोड़ें",
-    editSupplier: "सप्लायर संपादित करें",
-    noSuppliers: "अभी तक कोई सप्लायर नहीं",
-    name: "सप्लायर का नाम",
-    phone: "फोन",
-    address: "पता",
-    basketMark: "टोकरी मार्क",
-    bankAccounts: "बैंक खाते",
-    balance: "देय राशि",
-    deliveries: "डिलीवरी",
-    newDelivery: "डिलीवरी दर्ज करें",
-    addPayment: "सप्लायर को भुगतान",
-    deleteSupplier: "सप्लायर हटाएं",
-    confirmDelete: "क्या आप इस सप्लायर को हटाना चाहते हैं?",
-    deliveryDate: "डिलीवरी तारीख",
-    advancePaid: "अग्रिम भुगतान",
-    totalDelivery: "कुल डिलीवरी",
   },
 
   // Profile

@@ -82,17 +82,16 @@ export async function addPerson(
       if (openingBalance && openingBalance > 0) {
         payload.opening_balance = openingBalance;
       }
-      const { data, error } = await supabase
-        .from("parties")
-        .insert([
-          {
-            ...payload,
-            is_customer: true,
-            is_supplier: false,
-          },
-        ])
-        .select()
-        .single();
+       const { data, error } = await supabase
+         .from("parties")
+         .insert([
+           {
+             ...payload,
+             is_customer: true,
+           },
+         ])
+         .select()
+         .single();
       if (error) {
         if (error.code === "23505") {
           throw new Error(

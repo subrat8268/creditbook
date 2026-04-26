@@ -57,20 +57,11 @@ CREATE TABLE IF NOT EXISTS parties (
   phone TEXT,
   address TEXT,
   
-  -- Role flags (a party can be both)
+  -- Role flag
   is_customer BOOLEAN NOT NULL DEFAULT TRUE,
-  is_supplier BOOLEAN NOT NULL DEFAULT FALSE,
   
   -- Cached balances for performance
   customer_balance NUMERIC(15,2) NOT NULL DEFAULT 0,
-  supplier_balance NUMERIC(15,2) NOT NULL DEFAULT 0,
-  
-  -- Supplier specific details
-  basket_mark TEXT,
-  bank_name TEXT,
-  account_number TEXT,
-  ifsc_code TEXT,
-  upi_id TEXT,
   
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -102,36 +93,13 @@ COMMENT ON COLUMN access_tokens.customer_id IS 'References parties.id (is_custom
 -- -----------------------------------------------------------------------------
 
 -- Products table
-CREATE TABLE IF NOT EXISTS products (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  vendor_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-  name TEXT NOT NULL,
-  base_price NUMERIC(10,2),
-  variants JSONB,
-  image_url TEXT,
-  category TEXT NOT NULL DEFAULT 'General',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- -----------------------------------------------------------------------------
-
--- Product variants table
-CREATE TABLE IF NOT EXISTS product_variants (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id UUID REFERENCES products(id) ON DELETE CASCADE NOT NULL,
-  vendor_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-  variant_name TEXT NOT NULL,
-  price NUMERIC(10,2) NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- -----------------------------------------------------------------------------
+-- NOTE: Product catalog is out of scope (legacy). Product tables removed.
 
 -- Orders table
 CREATE TABLE IF NOT EXISTS orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   vendor_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-  customer_id UUID REFERENCES customers(id) ON DELETE CASCADE NOT NULL,
+  customer_id UUID REFERENCES parties(id) ON DELETE CASCADE NOT NULL,
 
   bill_number TEXT,
   total_amount NUMERIC(10,2) NOT NULL,
@@ -165,8 +133,8 @@ CREATE TABLE IF NOT EXISTS order_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id UUID REFERENCES orders(id) ON DELETE CASCADE NOT NULL,
   vendor_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-  product_id UUID REFERENCES products(id),
-  variant_id UUID REFERENCES product_variants(id) ON DELETE SET NULL,
+  product_id UUID,
+  variant_id UUID,
   product_name TEXT NOT NULL,
   variant_name TEXT,
   price NUMERIC(10,2) NOT NULL,
@@ -192,45 +160,7 @@ CREATE TABLE IF NOT EXISTS payments (
 
 -- -----------------------------------------------------------------------------
 
--- Supplier deliveries
-CREATE TABLE IF NOT EXISTS supplier_deliveries (
-  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  vendor_id        UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  supplier_id      UUID NOT NULL REFERENCES parties(id) ON DELETE CASCADE,
-  delivery_date    DATE NOT NULL DEFAULT CURRENT_DATE,
-  loading_charge   NUMERIC(10,2) NOT NULL DEFAULT 0,
-  advance_paid     NUMERIC(10,2) NOT NULL DEFAULT 0,
-  total_amount     NUMERIC(10,2) NOT NULL DEFAULT 0,
-  notes            TEXT,
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-COMMENT ON COLUMN supplier_deliveries.supplier_id IS 'References parties.id (is_supplier=true).';
-
--- Supplier delivery items
-CREATE TABLE IF NOT EXISTS supplier_delivery_items (
-  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  delivery_id      UUID NOT NULL REFERENCES supplier_deliveries(id) ON DELETE CASCADE,
-  vendor_id        UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  item_name        TEXT NOT NULL,
-  quantity         NUMERIC(10,3) NOT NULL DEFAULT 0,
-  rate             NUMERIC(10,2) NOT NULL DEFAULT 0,
-  subtotal         NUMERIC(10,2) GENERATED ALWAYS AS (quantity * rate) STORED,
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- Payments made to supplier
-CREATE TABLE IF NOT EXISTS payments_made (
-  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  vendor_id        UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  supplier_id      UUID NOT NULL REFERENCES parties(id) ON DELETE CASCADE,
-  delivery_id      UUID REFERENCES supplier_deliveries(id) ON DELETE SET NULL,
-  amount           NUMERIC(10,2) NOT NULL CHECK (amount > 0),
-  payment_mode     TEXT NOT NULL DEFAULT 'Cash'
-                     CHECK (payment_mode IN ('Cash', 'UPI', 'NEFT', 'Draft', 'Cheque')),
-  notes            TEXT,
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-COMMENT ON COLUMN payments_made.supplier_id IS 'References parties.id (is_supplier=true).';
+-- NOTE: Supplier-ledger tables removed (out of strict single-mode scope).
 
 
 -- =============================================================================
@@ -240,12 +170,12 @@ COMMENT ON COLUMN payments_made.supplier_id IS 'References parties.id (is_suppli
 -- parties
 CREATE INDEX IF NOT EXISTS idx_parties_vendor        ON parties(vendor_id);
 CREATE INDEX IF NOT EXISTS idx_parties_phone         ON parties(phone);
-CREATE INDEX IF NOT EXISTS idx_parties_roles         ON parties(is_customer, is_supplier);
+-- Role index retained for compatibility; parties are customer-only.
+CREATE INDEX IF NOT EXISTS idx_parties_roles         ON parties(is_customer);
 CREATE UNIQUE INDEX IF NOT EXISTS parties_vendor_phone_idx ON parties(vendor_id, phone);
 
 -- products
-CREATE INDEX IF NOT EXISTS idx_products_vendor            ON products(vendor_id);
-CREATE INDEX IF NOT EXISTS idx_products_vendor_category   ON products(vendor_id, category);
+-- (removed)
 
 -- access_tokens
 CREATE INDEX IF NOT EXISTS idx_access_tokens_token        ON access_tokens(token);
@@ -265,9 +195,7 @@ CREATE INDEX IF NOT EXISTS idx_order_items_order           ON order_items(order_
 CREATE INDEX IF NOT EXISTS idx_payments_order              ON payments(order_id);
 CREATE INDEX IF NOT EXISTS idx_payments_vendor             ON payments(vendor_id);
 
--- supplier domain
-CREATE INDEX IF NOT EXISTS idx_supplier_deliveries_supplier ON supplier_deliveries(supplier_id);
-CREATE INDEX IF NOT EXISTS idx_payments_made_supplier       ON payments_made(supplier_id);
+-- (removed)
 
 
 -- =============================================================================
@@ -276,14 +204,9 @@ CREATE INDEX IF NOT EXISTS idx_payments_made_supplier       ON payments_made(sup
 
 ALTER TABLE profiles                ENABLE ROW LEVEL SECURITY;
 ALTER TABLE parties                 ENABLE ROW LEVEL SECURITY;
-ALTER TABLE products                ENABLE ROW LEVEL SECURITY;
-ALTER TABLE product_variants        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders                  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_items             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payments                ENABLE ROW LEVEL SECURITY;
-ALTER TABLE payments_made           ENABLE ROW LEVEL SECURITY;
-ALTER TABLE supplier_deliveries     ENABLE ROW LEVEL SECURITY;
-ALTER TABLE supplier_delivery_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE access_tokens           ENABLE ROW LEVEL SECURITY;
 
 -- ------------ profiles -------------------------------------------------------

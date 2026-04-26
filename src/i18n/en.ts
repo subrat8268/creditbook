@@ -25,8 +25,6 @@ const en = {
     dashboard: "Dashboard",
     customers: "People",
     orders: "Entries",
-    products: "Products",
-    suppliers: "Suppliers",
     profile: "Profile",
   },
 
@@ -117,47 +115,6 @@ const en = {
     paymentAmount: "Payment Amount",
     paymentDate: "Payment Date",
     reference: "Reference",
-  },
-
-  // Products
-  products: {
-    title: "Products",
-    search: "Search products",
-    addProduct: "Add Product",
-    editProduct: "Edit Product",
-    noProducts: "No products yet",
-    name: "Product Name",
-    basePrice: "Base Price",
-    variant: "Variant",
-    variants: "Variants",
-    addVariant: "Add Variant",
-    variantName: "Variant Name",
-    variantPrice: "Variant Price",
-    deleteProduct: "Delete Product",
-    confirmDelete: "Are you sure you want to delete this product?",
-  },
-
-  // Suppliers
-  suppliers: {
-    title: "Suppliers",
-    search: "Search suppliers",
-    addSupplier: "Add Supplier",
-    editSupplier: "Edit Supplier",
-    noSuppliers: "No suppliers yet",
-    name: "Supplier Name",
-    phone: "Phone",
-    address: "Address",
-    basketMark: "Basket Mark",
-    bankAccounts: "Bank Accounts",
-    balance: "Balance Owed",
-    deliveries: "Deliveries",
-    newDelivery: "Record Delivery",
-    addPayment: "Pay Supplier",
-    deleteSupplier: "Delete Supplier",
-    confirmDelete: "Are you sure you want to delete this supplier?",
-    deliveryDate: "Delivery Date",
-    advancePaid: "Advance Paid",
-    totalDelivery: "Total Delivery",
   },
 
   // Profile
