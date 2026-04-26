@@ -399,10 +399,9 @@ if (balance === 0) → PAID → Green amount + "PAID" badge
 | Document | Purpose |
 |----------|---------|
 | `docs/design-system.md` | Color tokens, typography |
-| `docs/flows.md` | Navigation reference |
+| `docs/flows/` | Flow index |
 | `docs/STATUS.md` | What is implemented |
 | `docs/flows/customer-detail.md` | Customer detail flow |
-| `docs/components.md` | UI components |
 | `app/(main)/people/index.tsx` | Screen implementation |
 | `src/components/people/CustomerCard.tsx` | Card component |
 | `src/components/people/CustomerList.tsx` | List component |

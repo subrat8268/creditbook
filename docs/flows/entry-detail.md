@@ -380,7 +380,7 @@ On "Send Entry":
 | Document | Purpose |
 |----------|---------|
 | `docs/design-system.md` | Color tokens, typography |
-| `docs/flows.md` | Navigation reference |
+| `docs/flows/` | Flow index |
 | `docs/STATUS.md` | What is implemented |
 | `docs/flows/entries.md` | Entries list flow |
 | `docs/flows/add-entry.md` | Add entry flow |

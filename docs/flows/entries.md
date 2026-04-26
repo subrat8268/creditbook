@@ -341,7 +341,7 @@ From Entry Detail screen:
 | Document | Purpose |
 |----------|---------|
 | `docs/design-system.md` | Color tokens, typography |
-| `docs/flows.md` | Navigation reference |
+| `docs/flows/` | Flow index |
 | `docs/STATUS.md` | What is implemented |
 | `docs/flows/add-entry.md` | Add entry flow |
 | `docs/flows/customer-detail.md` | Customer detail flow |

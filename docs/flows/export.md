@@ -272,7 +272,7 @@ The **Export** screen allows users to download a CSV backup of all their data. I
 | Document | Purpose |
 |----------|---------|
 | `docs/design-system.md` | Color tokens |
-| `docs/flows.md` | Navigation reference |
+| `docs/flows/` | Flow index |
 | `docs/flows/profile.md` | Triggered from Profile |
 | `app/(main)/export/index.tsx` | Screen implementation |
 | `src/utils/exportCsv.ts` | CSV generation |

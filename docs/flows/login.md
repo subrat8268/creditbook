@@ -321,7 +321,7 @@ Uses Formik with **LoginSchema**:
 | Document | Purpose |
 |----------|---------|
 | `docs/design-system.md` | Color tokens |
-| `docs/flows.md` | Navigation reference |
+| `docs/flows/` | Flow index |
 | `app/(auth)/signup.tsx` | Sign up flow |
 | `app/(auth)/resetPassword.tsx` | Password reset |
 | `src/hooks/useAuth.ts` | Auth hooks |

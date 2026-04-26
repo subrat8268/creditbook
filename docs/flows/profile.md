@@ -374,7 +374,7 @@ Message: "KredBook v1.0.0\nBuilt for Indian kirana stores and small businesses."
 | Document | Purpose |
 |----------|---------|
 | `docs/design-system.md` | Color tokens |
-| `docs/flows.md` | Navigation reference |
+| `docs/flows/` | Flow index |
 | `app/(main)/profile/index.tsx` | Screen implementation |
 | `app/(main)/profile/edit.tsx` | Edit screen |
 | `app/(main)/export/index.tsx` | Export screen |

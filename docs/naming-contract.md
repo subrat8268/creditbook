@@ -86,8 +86,8 @@ Phases 1-2 are a **truth reset and operating-system cleanup**.
 3. `docs/prd.md` — product scope
 4. `docs/ARCHITECTURE.md` — technical architecture
 5. `src/utils/theme.ts` — design tokens
-6. `_agents/orchestration.md` — workflow pipelines
-7. `_agents/doc-sync-checklist.md` — change closeout gate
+6. `.agents/orchestration.md` — workflow pipelines
+7. `.agents/doc-sync-checklist.md` — change closeout gate
 8. `docs/STATUS.md` — current implementation state
 
 ## Decision Rule

@@ -63,10 +63,22 @@ Read in this order before non-trivial work:
 5. `.agents/doc-sync-checklist.md`
 
 Supporting references:
-- `docs/components.md`
 - `docs/design-system.md`
-- `docs/flows.md`
+- `docs/flows/`
 - `docs/STATUS.md`
+
+## Local Development
+
+1. Install dependencies: `npm ci`
+2. Set env vars:
+   - `EXPO_PUBLIC_SUPABASE_URL`
+   - `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+   - Optional: `EXPO_PUBLIC_SENTRY_DSN`
+3. Start: `npm run start`
+
+Other commands:
+- Lint: `npm run lint`
+- iOS/Android (generates gitignored `/ios` + `/android`): `npm run ios` / `npm run android`
 
 ## AI workflow (beginner-friendly)
 

@@ -337,7 +337,7 @@ The **Record Payment** modal is a bottom sheet that appears when recording a pay
 | Document | Purpose |
 |----------|---------|
 | `docs/design-system.md` | Color tokens, typography |
-| `docs/flows.md` | Navigation reference |
+| `docs/flows/` | Flow index |
 | `docs/STATUS.md` | What is implemented |
 | `docs/flows/entry-detail.md` | Triggered from entry detail |
 | `docs/flows/customer-detail.md` | Can also trigger |

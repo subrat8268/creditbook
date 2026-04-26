@@ -405,10 +405,9 @@ On "Record Payment":
 | Document | Purpose |
 |----------|---------|
 | `docs/design-system.md` | Color tokens, typography |
-| `docs/flows.md` | Navigation reference |
+| `docs/flows/` | Flow index |
 | `docs/STATUS.md` | What is implemented |
 | `docs/flows/people.md` | People flow |
-| `docs/components.md` | UI components |
 | `app/(main)/entries/create.tsx` | Screen implementation |
 | `src/components/picker/CustomerPicker.tsx` | Picker component |
 | `src/utils/generateBillPdf.ts` | PDF generation |

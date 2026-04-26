@@ -24,7 +24,7 @@
 | Localization | Working | EN/HI |
 | CSV export | Working | Profile-area export |
 
-## Phase 3 Scope (Not Started)
+## Phase 3 Scope (In Progress)
 
 - Dark mode (token-driven)
 - WhatsApp-first sharing polish (copy, formatting, previews)
@@ -34,4 +34,5 @@
 
 - Legacy internals may still use `order`/`party` naming.
 - `customers` and `suppliers` tables have been dropped; all data moved to `parties`.
+- Some legacy tables still exist (for example `products`, `supplier_*`). Treat as legacy unless explicitly brought back into scope.
 - Supplier/product surfaces are legacy and should not be described as active scope.
