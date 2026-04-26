@@ -5,8 +5,8 @@
 | Phase | Status | Summary |
 |---|---|---|
 | 1 | Done | Truth reset (Customer/Entry/Payment), core flows, offline-first baseline |
-| 2 | In Progress | Reliability + polish: overdue prioritization, sync UX, export correctness |
-| 3 | Not Started | Dark mode + stronger WhatsApp-first sharing surfaces |
+| 2 | Done | Reliability + polish: Drop legacy tables, overdue prioritization, sync UX |
+| 3 | In Progress | Dark mode + stronger WhatsApp-first sharing surfaces |
 | 4 | Not Started | AI assistance layer (opt-in) |
 | 5 | Not Started | PDF outputs + UPI collection |
 
@@ -33,4 +33,5 @@
 ## Drift Watchlist (keep honest)
 
 - Legacy internals may still use `order`/`party` naming.
+- `customers` and `suppliers` tables have been dropped; all data moved to `parties`.
 - Supplier/product surfaces are legacy and should not be described as active scope.
