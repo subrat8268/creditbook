@@ -292,7 +292,7 @@ Sign Up/Phone Setup → business.tsx (Step 1) → bank.tsx (Step 2) → ready.ts
 
 Features NOT in v3.0 scope:
 
-1. **Role selection** — Originally had role picker (vendor/customer)
+1. **Role selection** — Originally had a legacy role picker (vendor/customer); not part of the current single-mode product
 2. **Business logo upload** — Profile picture for business
 3. **Multiple businesses** — Handle multiple stores
 

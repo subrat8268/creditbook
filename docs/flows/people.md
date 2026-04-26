@@ -16,6 +16,8 @@ The **People** screen is the customer list view — where shopkeepers manage Cus
 2. **Find fast** — Search and locate any customer instantly
 3. **Quick actions** — Call or open WhatsApp for overdue customers with one tap
 
+`Remind` in current UI/docs should be treated as a WhatsApp-first follow-up shortcut, not as a standalone notifications/reminders product feature.
+
 **User Behavior**:
 - Tap "Add Person" → Enter name/phone → Done
 - Search by name → Find customer
@@ -48,7 +50,7 @@ The **People** screen is the customer list view — where shopkeepers manage Cus
 │ │ PENDING                        2h ago  │ │
 │ │ ─────────────────────────────────────  │ │
 │ │ 👤 Priya Patel           ₹25,000     │ │
-│ │ [Call] [Remind]  OVERDUE      15d ago │ │
+│ │ [Call] [WhatsApp] OVERDUE     15d ago │ │
 │ │ ─────────────────────────────────────  │ │
 │ │ 👤 Amit Kumar             ₹0 PAID    │ │
 │ │ Paid                            1d ago │ │
@@ -163,7 +165,7 @@ The **People** screen is the customer list view — where shopkeepers manage Cus
 **Info Section** (left, flex-1):
 - Name: 16px semibold, textPrimary, 1 line, ellipsis
 - Row 2: Days overdue badge (conditional) + Last active
-- Row 3: Call + Remind buttons (conditional on overdue + phone)
+- Row 3: Call + WhatsApp follow-up buttons (conditional on overdue + phone)
 
 **Amount + Badge Section** (right, items-end):
 - Amount: 16px bold, color varies by status
@@ -179,9 +181,9 @@ The **People** screen is the customer list view — where shopkeepers manage Cus
 - Call button: flex-row, bg-primaryLight, rounded-full, px-2 py-1
   - Icon: Phone, 12dp, primary
   - Text: "Call", 10dp semibold, primary
-- Remind button: flex-row, bg-#25D366/10, rounded-full, px-2 py-1
+- WhatsApp button: flex-row, bg-#25D366/10, rounded-full, px-2 py-1
   - Icon: MessageCircle, 12dp, #25D366
-  - Text: "Remind", 10dp semibold, #25D366
+  - Text: "WhatsApp", 10dp semibold, #25D366
 
 ---
 
@@ -285,7 +287,7 @@ The **People** screen is the customer list view — where shopkeepers manage Cus
 | State | Hero | List | Actions |
 |-------|------|------|---------|
 | Has people | - | Shows all | All enabled |
-| Has overdue | - | Shows overdue badge | Call/Remind visible |
+| Has overdue | - | Shows overdue badge | Call/WhatsApp visible |
 | Empty | - | Empty state | Add button enabled |
 | Offline | Shows cached | Shows cached | Disabled |
 
@@ -317,7 +319,7 @@ if (balance === 0) → PAID → Green amount + "PAID" badge
 
 ### No Phone Number
 - Hide Call button
-- Hide WhatsApp Remind button
+- Hide WhatsApp follow-up button
 - Card shows no quick actions
 
 ### Very Large Amount
@@ -381,7 +383,7 @@ if (balance === 0) → PAID → Green amount + "PAID" badge
 - [x] CustomerCard with avatar, name, amount, status
 - [x] Days overdue badge
 - [x] Quick Call button (on overdue + phone)
-- [x] Quick Remind button (on overdue + phone)
+- [x] Quick WhatsApp follow-up button (on overdue + phone)
 - [x] Status pills (PAID/PENDING/OVERDUE/ADVANCE)
 - [x] Empty state
 - [x] Loading states

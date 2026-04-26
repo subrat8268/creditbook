@@ -16,10 +16,12 @@ It helps one business owner:
 - Entries
 - Payments
 - Dashboard
+- People
 - Profile
 - Offline-first sync
 - EN/HI localization
 - CSV export
+- WhatsApp-first sharing
 
 ### Out of scope unless marked legacy
 - Suppliers
@@ -56,8 +58,8 @@ Do not use `Order`, `Party`, `Supplier`, `Vendor`, or `Distributor` as active pr
 ## Source of Truth
 
 Read in this order before non-trivial work:
-1. `docs/naming-contract.md`
-2. `SYSTEM_CONTEXT.md`
+1. `SYSTEM_CONTEXT.md`
+2. `docs/naming-contract.md`
 3. `.agents/commands.md`
 4. `.agents/orchestration.md`
 5. `.agents/doc-sync-checklist.md`
@@ -102,12 +104,12 @@ kredBook/
 └── AGENTS.md             # Short canonical operating guide
 ```
 
-## Important Truth-Reset Notes
+## Current Product Truth
 
 - The repo still contains some legacy/transitional names in code such as `order`, `orderId`, and supplier/distributor-era concepts.
-- Phase 1 does **not** pretend these are gone.
-- Phase 1 does **not** perform broad code renames.
-- Phase 1 aligns documentation and operating rules first.
+- Current product mode is still strict and single-purpose: `Customer`, `Entry`, `Payment`.
+- Phase 3 is in progress: dark mode, stronger WhatsApp-first sharing, and overdue badge consistency.
+- Legacy internals may remain, but docs and user-facing language should stay aligned to the active product truth.
 
 ## Development Rules
 

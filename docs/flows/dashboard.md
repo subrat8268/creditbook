@@ -49,7 +49,7 @@ How current dashboard scope maps into the old composition:
 - Old recent activity/follow-up block -> overdue customer follow-up list with compact rows and quick pay actions.
 
 What changed vs previous dashboard attempt:
-- Header now follows the legacy rhythm more closely (identity left, greeting, notification action right).
+- Header now follows the legacy rhythm more closely (identity left, greeting, people shortcut right).
 - Hero actions are translucent pills (not heavy CTA buttons) and overlay treatment is softer.
 - Secondary layout now follows hero -> mini stat cards -> follow-up list (instead of a large standalone `Needs action now` section).
 - Follow-up rows are denser with smaller status/action chips and tighter right-side amount grouping.
@@ -69,5 +69,5 @@ What changed vs previous dashboard attempt:
 
 ## Notes / Gotchas
 
-- Dashboard header now uses a single notification action (bell) to jump to People.
+- Dashboard header currently uses a bell-style icon as a shortcut into People; treat it as navigation, not a notifications product surface.
 - Use tokens from `src/utils/theme.ts` (do not hardcode colors).

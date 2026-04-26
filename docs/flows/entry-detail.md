@@ -259,13 +259,15 @@ Triggered by "Record Payment" button:
 - Pre-fills balance due
 - On success: refresh queries, show toast, close
 
-### Quick Remind Message
+### Quick WhatsApp Follow-Up
 
 **Call**:
 - Opens `tel:{phone}`
 
 **WhatsApp**:
-- Pre-filled message: "Hi {name}, this is a reminder about your entry #{bill_number} of ₹{balance_due}. Please clear when convenient. - KredBook"
+- Pre-filled message: "Hi {name}, sharing your entry #{bill_number} for ₹{balance_due}. Please review when convenient. - KredBook"
+
+This is a WhatsApp-first sharing shortcut, not a standalone reminders feature.
 
 ### PDF Generation
 
