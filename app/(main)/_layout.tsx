@@ -164,15 +164,17 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -(spacing.fabSize / 2) - 16,
     backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.xs,
     borderRadius: 20,
     borderWidth: 1,
+    // width: spacing.fabSize + 24,
     borderColor: colors.borderLight,
   },
   fabLabelText: {
     fontSize: typography.caption.fontSize,
     fontWeight: "800" as const,
+    textAlign: "center",
     color: colors.textPrimary,
   },
 });

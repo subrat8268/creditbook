@@ -23,6 +23,16 @@ import { Person, PersonDetail } from "../types/customer";
 import type { Party } from "../types/party";
 import { useDebounce } from "./useDebounce";
 
+function dedupeById<T extends { id: string }>(items: T[]): T[] {
+  const seen = new Set<string>();
+  // Infinite pagination + changing datasets can yield overlapping ranges; dedupe prevents duplicate keys in lists.
+  return items.filter((item) => {
+    if (seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
+}
+
 // Helper: Convert Party to Person type
 function partyToPerson(party: Party): Person {
   return {
@@ -120,7 +130,7 @@ export const useCustomers = (vendorId?: string, search?: string) => {
 
   return {
     ...query,
-    people: query.data?.pages.flat() ?? [],
+    people: dedupeById(query.data?.pages.flat() ?? []),
   };
 };
 

@@ -93,12 +93,12 @@ export const colors = {
 
   // ─ Avatar palette (deterministic, cycled by name hash)
   avatarPalette: [
-    "#4F9CFF",
-    "#9B59B6",
-    "#E91E8C",
-    "#00BCD4",
-    "#FF5722",
-    "#F59E0B",
+    "#5B7CFA", // calmer blue
+    "#7C5BD6", // calmer purple
+    "#C2417A", // muted magenta
+    "#0F9FA8", // muted teal
+    "#D97706", // muted amber
+    "#64748B", // slate (neutral)
   ] as string[],
 
   // ─ Supplier avatar palette (pastel bg + dark fg, 8 slots)

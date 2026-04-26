@@ -6,12 +6,8 @@ import { Text, View } from "react-native";
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg';
 
 // Avatar color palette (consistent across app)
-const AVATAR_COLORS = [
-  colors.danger,
-  colors.warning,
-  colors.primary,
-  ...colors.avatarPalette,
-] as const;
+// Keep avatars calmer and avoid neon/alert colors.
+const AVATAR_COLORS = [...colors.avatarPalette] as const;
 
 // Generate deterministic color from name
 export function getAvatarColor(name: string): string {

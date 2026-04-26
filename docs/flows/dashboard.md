@@ -16,8 +16,9 @@
 ## What It Shows
 
 - Total outstanding (amount to receive).
+- Action CTAs: `Collect Now`, `View Customers`.
+- Priority customers list (up to 3 overdue Customers).
 - Compact mini stat cards for `Needs action now` and `Collected this week`.
-- “Recent follow-ups” list (up to 5 overdue Customers).
 
 ## Visual Source Notes (Dashboard Fidelity Pass)
 
@@ -55,11 +56,11 @@ What changed vs previous dashboard attempt:
 
 ## Key Interactions (Verified)
 
-- View all overdue Customers: navigates to `/(main)/people`.
+- View all Customers: navigates to `/(main)/people`.
 - Open a Customer: navigates to `/(main)/people/[customerId]`.
-- Record a Payment from hero or overdue row: navigates to `/(main)/entries/create` with params:
-  - `customer`: JSON string (`{ id, name, phone }`)
-  - `amount`: string (overdue balance)
+- `Collect Now`: opens Record Payment for the top priority customer (prefilled).
+- If there are no overdue customers, `Collect Now` opens a customer picker.
+- `Collect` from a priority row opens Record Payment for that customer (prefilled).
 
 ## States
 
