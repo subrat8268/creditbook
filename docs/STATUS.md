@@ -3,7 +3,7 @@
 > **Source of truth for all phase tracking, task sequencing, and OpenCode execution.**
 > Stop referring to Notion. This file is the single tracker. Update it after every completed task.
 
-***
+---
 
 ## How to use this file
 
@@ -13,7 +13,7 @@
 4. **Never skip a task or reorder**. Tasks within a phase are sequenced for safety.
 5. This file is the only tracker. Do not use Notion or Google Sheets.
 
-***
+---
 
 ## Phase Overview
 
@@ -24,8 +24,9 @@
 | 3 | Experience Upgrades | 🔄 In Progress | Dark mode, WhatsApp-first sharing, overdue polish |
 | 4 | AI Assistance | ⏳ Not Started | Opt-in AI layer via Edge Functions |
 | 5 | Documents + Collection | ⏳ Not Started | PDF outputs, UPI collection |
+| 6 | UI/UX Redesign | ⏳ Not Started | Full design system overhaul — Vercel × Khatabook × Linear |
 
-***
+---
 
 ## Active Product Surface
 
@@ -41,19 +42,19 @@
 | Localization | ✅ Working | EN / HI |
 | CSV export | ✅ Working | Profile-area export |
 
-***
+---
 
 ## Drift Watchlist
 
 - Legacy internals still use `order` / `party` — label as `legacy/transitional` if referenced.
 - `customers` and `suppliers` tables dropped; all data now in `parties`.
-- Legacy supplier/product tables have been dropped from `public` (for example `products`, `supplier_*`).
+- Legacy supplier/product tables have been dropped from `public` (e.g., `products`, `supplier_*`).
 - `order_items.product_id` / `order_items.variant_id` remain as nullable legacy columns; treat them as transitional.
 - `parties` is customers-only now (`parties_is_customer_only`). Supplier fields have been removed.
 - `profiles.dashboard_mode` has been removed.
 - Supplier / product surfaces are out of scope and must not be described as active features.
 
-***
+---
 
 ## Phase 1 — Truth Reset ✅ Done
 
@@ -70,7 +71,7 @@
 | 1.7 | CSV export (Profile area) | ✅ Done | [0bb6587](https://github.com/subrat8268/kredBook/commit/0bb6587eb9d3735ab0aebcbcdfe6349df3637ce1) |
 | 1.8 | Align docs to product truth (PRD, ARCHITECTURE, flows) | ✅ Done | [22cbed5](https://github.com/subrat8268/kredBook/commit/22cbed521a992fe0d032fcbf74eace2f793956d2) |
 
-***
+---
 
 ## Phase 2 — DB Hardening ✅ Done
 
@@ -89,43 +90,7 @@
 | 2.9 | Rename storage bucket `product-images` → `avatars` | ✅ Done | `/refactor` | `refactor-engineer`, `supabase-expert` | — |
 | 2.10 | Add RPC `get_dashboard_summary` (single-query dashboard) | ✅ Done | `/build` | `project-planner`, `supabase-expert` | — |
 
-> **Note:** Tasks 2.9 and 2.10 are complete. Next Phase 2 work should start at Phase 3 tasks unless new DB hardening is added.
-
-### Phase 2 OpenCode Prompts
-
-#### 2.9 — Rename storage bucket
-
-```
-/refactor load_skills=["refactor-engineer","tech-lead","code-reviewer","supabase-expert"]
-
-Rename Supabase storage bucket from product-images to avatars.
-Update all code references in src/ and supabase/ accordingly.
-Use Supabase MCP to verify bucket state before and after.
-Do not guess — confirm bucket name from live Supabase first.
-Verification: bucket renamed, all code references updated, lint clean, diagnostics clean.
-
-Note: Supabase blocks direct SQL deletion from `storage.buckets`. If `product-images` remains, delete it via the Supabase Dashboard/Storage API after confirming it has no objects.
-```
-
-#### 2.10 — Add RPC get_dashboard_summary
-
-```
-/build load_skills=["project-planner","tech-lead","code-reviewer","supabase-expert"]
-
-Add a Postgres RPC function get_dashboard_summary that returns:
-- total outstanding (sum of unpaid entries)
-- total overdue (sum of entries past due_date)
-- top 5 overdue customers by outstanding amount
-- total customers count
-- total entries count
-
-Place DDL in supabase/migrations/.
-Wire the RPC call into the Dashboard data layer.
-Do not guess schema — use Supabase MCP to read current tables.
-Verification: RPC runs in Supabase SQL editor, Dashboard uses it, lint clean, types updated.
-```
-
-***
+---
 
 ## Phase 3 — Experience Upgrades 🔄 In Progress
 
@@ -144,7 +109,7 @@ Verification: RPC runs in Supabase SQL editor, Dashboard uses it, lint clean, ty
 | 3.9 | Entries + People filters | ⏳ Not Started | P2 | `/plan` | `project-planner`, `tech-lead` |
 | 3.10 | Export hardening — validate CSV totals, locale-safe formatting | ⏳ Not Started | P2 | `/audit` | `supabase-expert`, `code-reviewer` |
 
-### Phase 3 OpenCode Prompts (next up)
+### Phase 3 OpenCode Prompts
 
 #### 3.1 — Dark mode
 
@@ -173,7 +138,7 @@ No behavior change. Visual result must be identical to current state.
 Verification: component exists, used in all 3 surfaces, lint clean.
 ```
 
-***
+---
 
 ## Phase 4 — AI Assistance ⏳ Not Started
 
@@ -190,7 +155,7 @@ Verification: component exists, used in all 3 surfaces, lint clean.
 | 4.5 | Anomaly detection — flag customers with 45+ days no payment | ⏳ Not Started | P2 | `/plan` | `thinker`, `supabase-expert` |
 | 4.6 | Monthly insight card — collection trend summary | ⏳ Not Started | P2 | `/build` | `supabase-expert`, `tech-lead` |
 
-***
+---
 
 ## Phase 5 — Documents + Collection ⏳ Not Started
 
@@ -204,7 +169,199 @@ Verification: component exists, used in all 3 surfaces, lint clean.
 | 5.4 | Receipt-friendly sharing flow — polish and test end-to-end | ⏳ Not Started | P2 | `/plan` | `project-planner`, `tech-lead` |
 | 5.5 | Referral prompt after successful payment — lightweight share + deep link | ⏳ Not Started | P3 | `/build` | `ui-ux-pro-max`, `tech-lead` |
 
-***
+---
+
+## Phase 6 — UI/UX Redesign ⏳ Not Started
+
+**Goal:** Full design system overhaul and screen-by-screen redesign. Vercel × Khatabook × Linear aesthetic. Bharat-market ready.
+
+> **Depends On:** Phase 3 task 3.1 (dark mode tokens) must be ✅ Done first — Phase 6.0 builds on top of those token foundations.
+> **Rule:** Never start a screen redesign without 6.0 (design system) being ✅ Done. All tokens must be locked before touching any screen.
+
+---
+
+### Phase 6.0 — Design System Foundation (Blocks All Other 6.x Tasks)
+
+| # | Task | Status | Priority | Command | Skills | Depends On |
+|---|---|---|---|---|---|---|
+| 6.0.1 | Update `theme.ts` — new color tokens (green primary, amber accent, semantic palette) | ⏳ Not Started | P0 | `/refactor` | `ui-ux-pro-max`, `ui-designer`, `react-native-skills` | 3.1 ✅ |
+| 6.0.2 | Fix `tailwind.config.js` — replace CSS vars with literal token values | ⏳ Not Started | P0 | `/fix` | `refactor-engineer`, `react-native-skills` | 6.0.1 ✅ |
+| 6.0.3 | Add motion tokens — `duration-fast: 150ms`, `duration-base: 250ms`, easing curves | ⏳ Not Started | P0 | `/build` | `ui-ux-pro-max`, `react-native-skills` | 6.0.1 ✅ |
+| 6.0.4 | Unify icon system — migrate all icons to `lucide-react-native`, remove SVG + system mix | ⏳ Not Started | P0 | `/refactor` | `refactor-engineer`, `code-reviewer` | 6.0.1 ✅ |
+| 6.0.5 | Rebuild `StatusBadge` — filled pill + semantic color per status (Paid/Partial/Overdue/Advance) | ⏳ Not Started | P0 | `/build` | `ui-ux-pro-max`, `ui-designer` | 6.0.1 ✅ |
+| 6.0.6 | Rebuild `Button` variants — primary / secondary / ghost / danger with new tokens | ⏳ Not Started | P0 | `/build` | `ui-ux-pro-max`, `react-native-skills` | 6.0.1 ✅ |
+| 6.0.7 | Create `Skeleton` component — shimmer loading for all list/card surfaces | ⏳ Not Started | P0 | `/build` | `ui-ux-pro-max`, `react-native-skills` | 6.0.1 ✅ |
+| 6.0.8 | Create `SpeedDialFAB` component — expandable FAB (New Entry · New Customer · Record Payment) | ⏳ Not Started | P0 | `/build` | `ui-ux-pro-max`, `react-native-skills` | 6.0.3 ✅ |
+
+**New Brand Tokens (implement in 6.0.1):**
+
+```
+primary:    #16A34A  (green-600)   → trust, money, growth
+accent:     #F59E0B  (amber-500)   → overdue alerts, urgency
+surface:    #F9FAFB  (gray-50)     → card backgrounds
+ink:        #111827  (gray-900)    → primary text
+muted:      #6B7280  (gray-500)    → secondary text
+danger:     #DC2626  (red-600)     → errors, delete
+success:    #16A34A                → same as primary (paid status)
+warning:    #F59E0B                → overdue
+border:     #E5E7EB  (gray-200)    → dividers
+```
+
+**Typography:**
+- Body / numbers: **Inter**
+- Headings: **Manrope**
+
+**Dead code to kill in 6.0 (before redesign starts):**
+- Center FAB tab from `(main)/_layout.tsx` — replace with SpeedDialFAB
+- Standalone Export tab — move to Profile screen
+- `src/components/navigation/` (empty directory)
+- Stub product picker state in `create.tsx` lines 91–103
+- `role.tsx` unregistered route in onboarding `_layout.tsx`
+- Wired-but-unused i18n `t()` calls — either fully wire or remove
+
+---
+
+### Phase 6.1 — Core Loop Screens (Daily Driver)
+
+> Depends On: All of 6.0 ✅ Done
+
+| # | Task | Status | Priority | Command | Skills | Screen |
+|---|---|---|---|---|---|---|
+| 6.1.1 | Dashboard redesign — hero card, quick stats row, activity feed, SpeedDialFAB | ⏳ Not Started | P0 | `/build` | `ui-ux-pro-max`, `ui-designer`, `react-native-skills` | `(main)/dashboard/index.tsx` |
+| 6.1.2 | Tab navigation redesign — 4-tab layout, lucide icons, active pill indicator | ⏳ Not Started | P0 | `/refactor` | `ui-ux-pro-max`, `react-native-skills` | `(main)/_layout.tsx` |
+| 6.1.3 | Create Entry redesign — full-screen numpad, bottom sheet customer picker, quick due-date chips | ⏳ Not Started | P0 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `(main)/entries/create.tsx` |
+| 6.1.4 | Record Payment modal redesign — large numpad, partial toggle, payment method, WhatsApp receipt | ⏳ Not Started | P0 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `RecordPaymentModal` (shared) |
+| 6.1.5 | Customer Detail redesign — hero card, sticky balance bar, timeline view, swipe actions | ⏳ Not Started | P1 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `(main)/people/[customerId].tsx` |
+
+#### 6.1.1 — Dashboard Redesign OpenCode Prompt
+
+```
+/build load_skills=["ui-ux-pro-max","ui-designer","react-native-skills","code-reviewer"]
+
+Redesign the KredBook Dashboard screen. All tokens from src/utils/theme.ts (Phase 6.0 must be done first).
+
+Changes:
+1. Hero card: gradient green-600 → green-700, white text, "Collect Outstanding" total with animated
+   number counter on load, ↑/↓ week delta with color-coded arrow, "Record Payment" CTA in card footer
+2. Personalized greeting: "Good morning, [Name] 👋" using profile name from store
+3. Quick stats row: 3 mini-cards (Total Customers · Overdue Count · Collected This Month),
+   each tappable to filtered list
+4. Top follow-up: horizontal scroll cards (not vertical list), avatar/initials,
+   days-overdue amber badge, "Collect" action
+5. Recent activity feed: last 5 transactions (entry/payment) as a timeline
+6. Replace center FAB tab with SpeedDialFAB component (6.0.8)
+7. Skeleton loading on all cards (6.0.7 component)
+8. Empty state for overdue section: "All clear! No overdue customers 🎉"
+9. Pull-to-refresh: keep existing
+
+No new DB queries. Wire to existing hooks + get_dashboard_summary RPC.
+Verification: all sections render, skeleton shows on load, SpeedDialFAB expands/collapses, lint clean.
+```
+
+#### 6.1.3 — Create Entry Redesign OpenCode Prompt
+
+```
+/build load_skills=["ui-ux-pro-max","react-native-skills","code-reviewer"]
+
+Redesign Create Entry screen in (main)/entries/create.tsx.
+
+Changes:
+1. Amount input: full-screen large numpad (PhonePe/GPay style) — amount is the hero
+2. Customer selector: searchable bottom sheet (not full navigation), recently added customers first
+3. Description: optional, collapsed by default. Tap "+ Add note" to expand
+4. Due date: quick chips — Today · +7 days · +15 days · +30 days · Custom (no calendar scroll by default)
+5. Auto-save draft on exit (MMKV backed)
+6. Remove stub product picker state (lines 91–103) and all "// Stub state" comments
+
+Keep: PDF auto-generate + share, WhatsApp share as primary action in post-create modal.
+Verification: entry creates successfully, draft saves on exit, no dead code, lint clean.
+```
+
+---
+
+### Phase 6.2 — List Screens
+
+> Depends On: 6.0 ✅ Done, 6.1 ✅ Done
+
+| # | Task | Status | Priority | Command | Skills | Screen |
+|---|---|---|---|---|---|---|
+| 6.2.1 | Customer List redesign — filter chips, swipe actions, sort options, alphabetical headers, empty state | ⏳ Not Started | P1 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `(main)/people/index.tsx` |
+| 6.2.2 | Entry List redesign — filter chips, swipe actions, date section headers, summary banner | ⏳ Not Started | P1 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `(main)/entries/index.tsx` |
+| 6.2.3 | Entry Detail redesign — hero card, payment timeline, sticky "Record Payment" bar | ⏳ Not Started | P1 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `(main)/entries/[orderId].tsx` |
+| 6.2.4 | Edit Entry redesign — quick due-date chips, customer reassign, unsaved changes warning | ⏳ Not Started | P2 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `(main)/entries/[orderId]/edit.tsx` |
+
+#### 6.2.1 — Customer List OpenCode Prompt
+
+```
+/build load_skills=["ui-ux-pro-max","react-native-skills","code-reviewer"]
+
+Redesign the Customer List screen (main)/people/index.tsx.
+
+Changes:
+1. Sticky search bar at top, autofocus on tab press
+2. Filter chips (horizontal scroll, not dropdown): All · Overdue · Pending · Paid · Advance
+3. List items: Avatar/initials · Name · Balance · StatusBadge · Days overdue in single row
+4. Sort options: Highest balance · Most overdue · Alphabetical · Recently active
+5. Swipe left: Call + WhatsApp quick actions. Swipe right: Quick Payment
+6. Alphabetical section headers (A · B · C...)
+7. Floating + button bottom-right (remove from header)
+8. Empty state: illustration + "Add your first customer" with inline CTA + "Import from Contacts" button
+9. Consolidate duplicated filter logic — remove client-side duplicate between people.ts and usePeople.ts
+
+Verification: filters work, swipe actions fire correctly, empty state renders, lint clean.
+```
+
+---
+
+### Phase 6.3 — Auth + Onboarding
+
+> Depends On: 6.0 ✅ Done
+
+| # | Task | Status | Priority | Command | Skills | Screen |
+|---|---|---|---|---|---|---|
+| 6.3.1 | Welcome screen redesign — illustrated full-bleed, tagline, social proof, language toggle, Lottie animation | ⏳ Not Started | P1 | `/build` | `ui-ux-pro-max`, `ui-designer`, `react-native-skills` | `app/index.tsx` |
+| 6.3.2 | Login redesign — show/hide password, Google OAuth, inline field errors, keyboard avoidance | ⏳ Not Started | P1 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `(auth)/login.tsx` |
+| 6.3.3 | Signup redesign — remove confirm password, add name field + terms checkbox + progress pill | ⏳ Not Started | P1 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `(auth)/signup.tsx` |
+| 6.3.4 | Reset Password redesign — full-screen success illustration state | ⏳ Not Started | P2 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `(auth)/resetPassword.tsx` |
+| 6.3.5 | Phone Setup redesign — flag + country code input, inline OTP, skip option, progress bar | ⏳ Not Started | P1 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `(auth)/phone-setup.tsx` |
+| 6.3.6 | Onboarding business.tsx — business type selector, logo upload, skip option | ⏳ Not Started | P1 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `(auth)/onboarding/business.tsx` |
+| 6.3.7 | Onboarding bank.tsx — make optional, add UPI ID + QR preview, prominent skip | ⏳ Not Started | P1 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `(auth)/onboarding/bank.tsx` |
+| 6.3.8 | Onboarding ready.tsx — confetti Lottie, feature highlights, "Take a Tour" trigger | ⏳ Not Started | P1 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `(auth)/onboarding/ready.tsx` |
+
+---
+
+### Phase 6.4 — Profile, Export + Public Ledger
+
+> Depends On: 6.0 ✅ Done, 6.2 ✅ Done
+
+| # | Task | Status | Priority | Command | Skills | Screen |
+|---|---|---|---|---|---|---|
+| 6.4.1 | Profile screen redesign — editable header, UPI QR, app settings section, danger zone | ⏳ Not Started | P1 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `(main)/profile/index.tsx` |
+| 6.4.2 | Profile Edit redesign — logo upload, UPI ID, address, sticky save bar, inline validation | ⏳ Not Started | P2 | `/build` | `ui-ux-pro-max`, `react-native-skills` | `(main)/profile/edit.tsx` |
+| 6.4.3 | Export — move from standalone tab into Profile, add customer filter, email export, export history | ⏳ Not Started | P1 | `/refactor` | `refactor-engineer`, `react-native-skills` | `(main)/export/index.tsx` |
+| 6.4.4 | Public Ledger redesign — business logo, UPI Pay Now button, WhatsApp CTA, mobile-responsive, KredBook footer | ⏳ Not Started | P1 | `/build` | `ui-ux-pro-max`, `tech-lead` | `app/l/[token].tsx` |
+
+#### 6.4.4 — Public Ledger OpenCode Prompt
+
+```
+/build load_skills=["ui-ux-pro-max","tech-lead","code-reviewer"]
+
+Redesign the Public Ledger screen (app/l/[token].tsx). This is a B2C touchpoint — customers receive this link via WhatsApp.
+
+Changes:
+1. Show vendor business logo + name prominently at top
+2. Outstanding amount hero: large, clear, "₹2,400 is due" — no ambiguity
+3. Transaction timeline: clean, date-grouped
+4. UPI Pay Now button: if vendor has UPI ID, deep-link to UPI apps (upi://pay?pa=...)
+5. "Talk to Us" WhatsApp CTA linking to vendor phone
+6. Expiry warning if token has TTL: "Link valid for X days"
+7. Subtle "Powered by KredBook" footer
+8. Fully mobile-responsive — renders cleanly in mobile browsers (customers open from WhatsApp)
+
+Verification: renders on mobile viewport, UPI deep link fires, WhatsApp CTA works, lint clean.
+```
+
+---
 
 ## OpenCode Quick Reference
 
@@ -231,7 +388,7 @@ Before marking any task ✅ Done:
 - [ ] Doc-sync checklist (`.agents/doc-sync-checklist.md`) is completed
 - [ ] This STATUS.md is updated before closing the session
 
-***
+---
 
 ## Canonical Reference
 
