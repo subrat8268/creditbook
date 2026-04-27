@@ -1,8 +1,7 @@
 # KredBook Skill Router
 
-This file defines **skill routing rules** for all commands and keyword triggers.
-
-Manually load skills by adding `load_skills=["skill-name", ...]` to your request.
+Routing rules for all commands and keyword triggers.
+Load manually: `load_skills=["skill-name", ...]`
 
 ---
 
@@ -18,19 +17,22 @@ Implement features after a plan is approved.
 - `project-planner`
 - `code-reviewer`
 
-If the build touches UI:
-- add `ui-ux-pro-max`, `frontend-design`, `react-native-skills`
+If touches UI/screens:
+- add `ui-ux-pro-max`, `frontend-design`, `building-native-ui`, `sleek-design-mobile-apps`
 
-If the build touches design tokens or brand:
+If touches design tokens or brand:
 - add `brand-guidelines`, `extract-design-system`
 
-If the build touches mobile-specific UI:
-- add `sleek-design-mobile-apps`
+If touches NativeWind/Tailwind styles:
+- add `expo-tailwind-setup`
 
-If the build touches database/schema:
-- add `supabase-expert`, `supabase-postgres-best-practices`
+If touches data fetching / React Query / API calls:
+- add `native-data-fetching`
 
-If the build involves TypeScript types:
+If touches database / schema / RLS:
+- add `supabase`, `supabase-postgres-best-practices`
+
+If touches TypeScript types:
 - add `typescript-advanced-types`
 
 ### /fix
@@ -49,7 +51,7 @@ Analyze codebase for technical debt or design drift.
 - `verification-before-completion`
 
 ### /doc
-Write, update, or co-author documentation.
+Write, update, or co-author any documentation.
 - `doc-coauthoring`
 - `internal-comms`
 - `writing-plans`
@@ -60,20 +62,31 @@ Review, commit, and push completed changes safely.
 - `code-reviewer`
 - `verification-before-completion`
 
+### /upgrade
+Upgrade Expo SDK or major dependencies.
+- `upgrading-expo`
+- `react-native-skills`
+- `expo-tailwind-setup`
+- `verification-before-completion`
+
 ---
 
 ## Keyword Routing (Fallback)
 
-- UI / UX / design / component / screen → `ui-ux-pro-max`, `frontend-design`, `react-native-skills`
+- UI / screen / component / design → `ui-ux-pro-max`, `frontend-design`, `building-native-ui`
 - brand / color / typography / tokens → `brand-guidelines`, `extract-design-system`
 - mobile design / app polish → `sleek-design-mobile-apps`
+- NativeWind / tailwind / styles → `expo-tailwind-setup`
+- fetch / query / API / React Query / offline → `native-data-fetching`
 - bug / crash / error / fix → `systematic-debugging`, `code-reviewer`
-- schema / migration / RLS / Supabase / database → `supabase-expert`, `supabase-postgres-best-practices`
-- postgres / performance / query → `supabase-postgres-best-practices`
+- schema / migration / RLS / auth / storage / Supabase → `supabase`, `supabase-postgres-best-practices`
+- postgres / performance / query optimization → `supabase-postgres-best-practices`
 - refactor / cleanup / extract → `refactor-engineer`, `code-reviewer`
 - plan / estimate / break down / spec / PRD → `project-planner`, `writing-plans`
-- typescript / types / generics → `typescript-advanced-types`
+- typescript / types / generics / inference → `typescript-advanced-types`
 - commit / push / branch / PR → `finishing-a-development-branch`, `verification-before-completion`
 - write / document / changelog / announce → `doc-coauthoring`, `internal-comms`
-- docs / api / sdk / library → `context7-mcp`
-- skill / agent skill → `skill-creator`
+- docs / api / sdk / library / framework → `context7-mcp`
+- expo upgrade / SDK version → `upgrading-expo`, `react-native-skills`
+- react native / RN / expo → `react-native-skills`, `vercel-react-native-skills`
+- new skill / create skill / agent skill → `skill-creator`

@@ -1,37 +1,68 @@
-# KredBook Agent Skills
+# KredBook Agent Skills (26)
 
-This repo keeps a **high-signal** set of skills under `.agents/skills/`.
+High-signal skills under `.agents/skills/`. Routing rules → `.agents/skill-router.md`.
 
-If you want routing rules, see:
-- `.agents/skill-router.md`
+## Planning & Documentation
 
-## Active Skills (20 total)
-
-| Skill | Purpose | Typical Triggers |
+| Skill | Purpose | Triggers |
 |---|---|---|
 | `project-planner` | Scoped plans, task breakdowns | plan, break down, estimate |
-| `ui-ux-pro-max` | UI direction & aesthetic polish | UI, UX, design |
-| `react-native-skills` | RN/Expo best practices | React Native, Expo, mobile |
-| `code-reviewer` | Quality gates, bug detection | review, quality, audit |
-| `refactor-engineer` | Safe refactors & cleanup | refactor, extract, cleanup |
-| `supabase-expert` | Schema, RLS, migrations | Supabase, schema, RLS |
-| `context7-mcp` | Live framework docs | docs, api, sdk, library |
+| `writing-plans` | PRDs, specs, structured docs | spec, PRD, requirements |
 | `doc-coauthoring` | Writing & co-authoring docs | write, document, draft |
-| `internal-comms` | Changelogs, announcements, status updates | changelog, update, announce |
-| `writing-plans` | Structured planning docs (PRD, spec) | spec, PRD, requirements |
-| `frontend-design` | Frontend architecture & design | frontend, component, layout |
+| `internal-comms` | Changelogs, announcements, status | changelog, update, announce |
+
+## Design & Brand
+
+| Skill | Purpose | Triggers |
+|---|---|---|
+| `ui-ux-pro-max` | UI direction & aesthetic polish | UI, UX, design |
+| `frontend-design` | Frontend architecture & components | frontend, component, layout |
 | `brand-guidelines` | Brand identity, colors, typography | brand, color, typography |
-| `extract-design-system` | Extract tokens & components into a system | design system, tokens |
+| `extract-design-system` | Extract tokens & components | design system, tokens |
 | `sleek-design-mobile-apps` | Mobile-specific design polish | mobile design, app polish |
-| `supabase-postgres-best-practices` | Advanced Supabase/Postgres patterns | postgres, advanced, performance |
-| `typescript-advanced-types` | TypeScript advanced type patterns | typescript, types, generics |
-| `skill-creator` | Build & manage agent skills | skill, agent skill |
-| `verification-before-completion` | Agent verifies before marking done | verify, confirm, done |
-| `systematic-debugging` | Structured debugging methodology | bug, crash, error, fix |
-| `finishing-a-development-branch` | Clean branch/PR lifecycle | commit, push, branch, PR |
+
+## React Native & Expo
+
+| Skill | Purpose | Triggers |
+|---|---|---|
+| `react-native-skills` | RN/Expo best practices | React Native, Expo |
+| `vercel-react-native-skills` | RN best practices (Vercel) | react native, RN patterns |
+| `building-native-ui` | Native UI components (Expo) | native UI, component, screen |
+| `native-data-fetching` | Data fetching patterns (Expo) | fetch, query, API call |
+| `expo-tailwind-setup` | NativeWind/Tailwind in Expo | nativewind, tailwind, styles |
+| `upgrading-expo` | Expo SDK upgrades | upgrade, expo version, SDK |
+
+## TypeScript
+
+| Skill | Purpose | Triggers |
+|---|---|---|
+| `typescript-advanced-types` | Advanced TS patterns & generics | typescript, types, generics |
+
+## Backend & Database
+
+| Skill | Purpose | Triggers |
+|---|---|---|
+| `supabase` | Official Supabase skill | supabase, auth, storage |
+| `supabase-postgres-best-practices` | Advanced Postgres patterns | postgres, RLS, schema, migration |
+
+## Code Quality & Engineering
+
+| Skill | Purpose | Triggers |
+|---|---|---|
+| `code-reviewer` | Bug detection, best practices | review, quality, audit |
+| `refactor-engineer` | Safe refactors & cleanup | refactor, extract, cleanup |
+| `systematic-debugging` | Structured root-cause debugging | bug, crash, error, fix |
+| `verification-before-completion` | Verify output before done | verify, confirm, check |
+| `finishing-a-development-branch` | Branch/PR lifecycle & commits | commit, push, branch, PR |
+
+## Agent Infrastructure
+
+| Skill | Purpose | Triggers |
+|---|---|---|
+| `context7-mcp` | Live framework docs via MCP | docs, api, sdk, library |
+| `skill-creator` | Build & manage agent skills | new skill, create skill |
 
 ## Notes
-
-- The authoritative routing rules are in `.agents/skill-router.md`.
-- The authoritative product contract is `SYSTEM_CONTEXT.md`.
-- Skills are installed via: `npx skills install <owner>/<repo> <skill-name>`
+- Routing rules → `.agents/skill-router.md`
+- Product contract → `SYSTEM_CONTEXT.md`
+- Install: `npx skills install <owner>/<repo> <skill-name>`

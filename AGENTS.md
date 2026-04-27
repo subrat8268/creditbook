@@ -25,6 +25,8 @@ If any repo instruction conflicts, `SYSTEM_CONTEXT.md` wins.
 - Required runtime env vars (from code): `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`. Optional: `EXPO_PUBLIC_SENTRY_DSN`.
 - `.env*` is gitignored; never commit it.
 - `.github/` is gitignored in this repo; don't rely on CI workflows being present.
+- NativeWind styles must be routed through `src/utils/theme.ts` — never hardcode color/spacing values anywhere in components. Use `expo-tailwind-setup` skill when touching styles.
+- React Query + MMKV offline cache is critical infrastructure. Use `native-data-fetching` skill for any data-layer work.
 
 ## Toolchain Quirks
 
@@ -34,12 +36,12 @@ If any repo instruction conflicts, `SYSTEM_CONTEXT.md` wins.
 
 ## OpenCode Workflow
 
-- Command-first prompts: `/plan`, `/build`, `/fix`, `/refactor`, `/audit`, `/doc`, `/finish` (reference: `.agents/commands.md`).
+- Command-first prompts: `/plan`, `/build`, `/fix`, `/refactor`, `/audit`, `/doc`, `/finish`, `/upgrade` (reference: `.agents/commands.md`).
 - Deterministic pipelines: `.agents/orchestration.md`. Closeout gate for non-trivial changes: `.agents/doc-sync-checklist.md`.
 
 ## Skills
 
-See [the full guide](.agents/README.md) for details on our 20 specialized skills under `.agents/skills/`.
+See [the full guide](.agents/README.md) for details on our 26 specialized skills under `.agents/skills/`.
 
 <!-- context7 -->
 Use Context7 MCP to fetch current documentation whenever the user asks about a library, framework, SDK, API, CLI tool, or cloud service -- even well-known ones like React, Next.js, Prisma, Express, Tailwind, Django, or Spring Boot. This includes API syntax, configuration, version migration, library-specific debugging, setup instructions, and CLI tool usage. Use even when you think you know the answer -- your training data may not reflect recent changes. Prefer this over web search for library docs.
