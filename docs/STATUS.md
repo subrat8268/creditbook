@@ -49,6 +49,8 @@
 - `customers` and `suppliers` tables dropped; all data now in `parties`.
 - Legacy supplier/product tables have been dropped from `public` (for example `products`, `supplier_*`).
 - `order_items.product_id` / `order_items.variant_id` remain as nullable legacy columns; treat them as transitional.
+- `parties` is customers-only now (`parties_is_customer_only`). Supplier fields have been removed.
+- `profiles.dashboard_mode` has been removed.
 - Supplier / product surfaces are out of scope and must not be described as active features.
 
 ***

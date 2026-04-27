@@ -82,8 +82,7 @@ CREATE TABLE public.profiles (
   account_number text NOT NULL DEFAULT ''::text,
   ifsc_code text NOT NULL DEFAULT ''::text,
   bill_number_prefix text DEFAULT 'INV'::text,
-  onboarding_complete boolean NOT NULL DEFAULT false,
-  dashboard_mode text DEFAULT 'seller'::text
+  onboarding_complete boolean NOT NULL DEFAULT false
 );
 
 ALTER TABLE public.profiles ADD CONSTRAINT profiles_pkey PRIMARY KEY (id);
@@ -103,10 +102,7 @@ CREATE TABLE public.parties (
   phone text,
   address text,
   is_customer boolean NOT NULL DEFAULT false,
-  is_supplier boolean NOT NULL DEFAULT false,
   customer_balance numeric(10,2) NOT NULL DEFAULT 0,
-  supplier_balance numeric(10,2) NOT NULL DEFAULT 0,
-  basket_mark text,
   bank_name text,
   account_number text,
   ifsc_code text,
@@ -118,13 +114,12 @@ CREATE TABLE public.parties (
 ALTER TABLE public.parties ADD CONSTRAINT parties_pkey PRIMARY KEY (id);
 ALTER TABLE public.parties ADD CONSTRAINT parties_vendor_id_fkey FOREIGN KEY (vendor_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.parties ADD CONSTRAINT parties_vendor_phone_unique UNIQUE (vendor_id, phone);
-ALTER TABLE public.parties ADD CONSTRAINT parties_at_least_one_role CHECK ((is_customer = true OR is_supplier = true));
+ALTER TABLE public.parties ADD CONSTRAINT parties_is_customer_only CHECK (is_customer = true);
 
 CREATE UNIQUE INDEX parties_pkey ON public.parties USING btree (id);
 CREATE UNIQUE INDEX parties_vendor_phone_unique ON public.parties USING btree (vendor_id, phone);
 CREATE INDEX idx_parties_vendor ON public.parties USING btree (vendor_id);
 CREATE INDEX idx_parties_customer ON public.parties USING btree (vendor_id) WHERE (is_customer = true);
-CREATE INDEX idx_parties_supplier ON public.parties USING btree (vendor_id) WHERE (is_supplier = true);
 CREATE INDEX idx_parties_name ON public.parties USING btree (vendor_id, name);
 CREATE INDEX idx_parties_phone ON public.parties USING btree (phone);
 
@@ -156,6 +151,7 @@ ALTER TABLE public.orders ADD CONSTRAINT orders_total_amount_nonnegative CHECK (
 ALTER TABLE public.orders ADD CONSTRAINT orders_amount_paid_nonnegative CHECK ((amount_paid >= 0::numeric));
 ALTER TABLE public.orders ADD CONSTRAINT orders_amount_paid_lte_total CHECK ((amount_paid <= total_amount));
 ALTER TABLE public.orders ADD CONSTRAINT orders_status_check CHECK ((status = ANY (ARRAY['Pending'::text, 'Partially Paid'::text, 'Paid'::text])));
+ALTER TABLE public.orders ADD CONSTRAINT orders_due_date_reasonable CHECK (due_date IS NULL OR due_date >= created_at::date);
 
 CREATE UNIQUE INDEX orders_pkey ON public.orders USING btree (id);
 CREATE UNIQUE INDEX orders_id_vendor_unique ON public.orders USING btree (id, vendor_id);

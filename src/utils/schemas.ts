@@ -44,30 +44,4 @@ export const CustomerSchema = Yup.object().shape({
     .optional(),
 });
 
-export const ProductSchema = Yup.object().shape({
-  name: Yup.string().required("Name is required"),
-  base_price: Yup.number().positive("Must be positive").nullable(),
-  variants: Yup.array()
-    .of(
-      Yup.object().shape({
-        name: Yup.string().required("Variant name is required"),
-        price: Yup.number().positive("Must be positive").required("Required"),
-      }),
-    )
-    .optional(),
-});
-
-export const SupplierSchema = Yup.object().shape({
-  name: Yup.string()
-    .min(2, "Name too short")
-    .required("Supplier name is required"),
-  phone: Yup.string()
-    .matches(/^[0-9]{10}$/, "Enter a valid 10-digit number")
-    .optional(),
-  address: Yup.string().optional(),
-  basket_mark: Yup.string().optional(),
-  bank_name: Yup.string().optional(),
-  account_number: Yup.string().optional(),
-  ifsc_code: Yup.string().optional(),
-  upi: Yup.string().optional(),
-});
+// Product catalog and supplier mode are out of scope.

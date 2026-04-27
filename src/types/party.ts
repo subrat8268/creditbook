@@ -13,14 +13,12 @@ export interface Party {
   phone: string | null;
   address: string | null;
   
-  // Relationship type
+  // Relationship type (customers only)
   is_customer: boolean;
   
   // Cached balances
   customer_balance: number;  // positive = they owe vendor
   
-  // Supplier-specific fields
-  basket_mark: string | null;
   bank_name: string | null;
   account_number: string | null;
   ifsc_code: string | null;
@@ -39,7 +37,6 @@ export interface PartyInsert {
   address?: string | null;
   is_customer: boolean;
   customer_balance?: number;
-  basket_mark?: string | null;
   bank_name?: string | null;
   account_number?: string | null;
   ifsc_code?: string | null;
@@ -52,7 +49,6 @@ export interface PartyUpdate {
   address?: string | null;
   is_customer?: boolean;
   customer_balance?: number;
-  basket_mark?: string | null;
   bank_name?: string | null;
   account_number?: string | null;
   ifsc_code?: string | null;

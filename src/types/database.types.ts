@@ -196,16 +196,13 @@ export type Database = {
           account_number: string | null
           address: string | null
           bank_name: string | null
-          basket_mark: string | null
           created_at: string
           customer_balance: number
           id: string
           ifsc_code: string | null
           is_customer: boolean
-          is_supplier: boolean
           name: string
           phone: string | null
-          supplier_balance: number
           updated_at: string
           upi_id: string | null
           vendor_id: string
@@ -214,16 +211,13 @@ export type Database = {
           account_number?: string | null
           address?: string | null
           bank_name?: string | null
-          basket_mark?: string | null
           created_at?: string
           customer_balance?: number
           id?: string
           ifsc_code?: string | null
           is_customer?: boolean
-          is_supplier?: boolean
           name: string
           phone?: string | null
-          supplier_balance?: number
           updated_at?: string
           upi_id?: string | null
           vendor_id: string
@@ -232,16 +226,13 @@ export type Database = {
           account_number?: string | null
           address?: string | null
           bank_name?: string | null
-          basket_mark?: string | null
           created_at?: string
           customer_balance?: number
           id?: string
           ifsc_code?: string | null
           is_customer?: boolean
-          is_supplier?: boolean
           name?: string
           phone?: string | null
-          supplier_balance?: number
           updated_at?: string
           upi_id?: string | null
           vendor_id?: string
@@ -311,7 +302,6 @@ export type Database = {
           business_logo_url: string | null
           business_name: string | null
           created_at: string
-          dashboard_mode: string | null
           gstin: string | null
           id: string
           ifsc_code: string
@@ -332,7 +322,6 @@ export type Database = {
           business_logo_url?: string | null
           business_name?: string | null
           created_at?: string
-          dashboard_mode?: string | null
           gstin?: string | null
           id?: string
           ifsc_code?: string
@@ -353,7 +342,6 @@ export type Database = {
           business_logo_url?: string | null
           business_name?: string | null
           created_at?: string
-          dashboard_mode?: string | null
           gstin?: string | null
           id?: string
           ifsc_code?: string
