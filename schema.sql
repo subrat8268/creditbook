@@ -4,13 +4,13 @@
 -- Purpose: structural reference only, with no table data
 --
 -- Included:
--- 1. Full `public` table shape from the live database
--- 2. Current RLS policy snapshot for `public` and `storage`
--- 3. Public triggers that affect app behavior
--- 4. Inventory of Supabase-managed tables in non-public schemas
+-- - Full `public` schema table shape (tables, constraints, indexes)
+-- - RLS policy snapshot for `public` and `storage.objects`
+-- - Public triggers that affect app behavior
+-- - Inventory of Supabase-managed tables in non-public schemas
 
 -- =============================================================================
--- MANAGED SCHEMA INVENTORY
+-- MANAGED SCHEMA INVENTORY (NON-PUBLIC)
 -- =============================================================================
 -- auth
 --   audit_log_entries [rls: on]
@@ -64,27 +64,26 @@
 -- =============================================================================
 
 -- public.profiles
--- Active app table: business/user profile record
 CREATE TABLE public.profiles (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    user_id uuid NOT NULL,
-    name text NOT NULL,
-    phone text,
-    created_at timestamp with time zone NOT NULL DEFAULT now(),
-    subscription_plan text DEFAULT 'free'::text,
-    subscription_expiry date,
-    avatar_url text,
-    business_logo_url text,
-    business_name text,
-    billing_address text,
-    gstin text,
-    upi_id text,
-    bank_name text NOT NULL DEFAULT ''::text,
-    account_number text NOT NULL DEFAULT ''::text,
-    ifsc_code text NOT NULL DEFAULT ''::text,
-    bill_number_prefix text DEFAULT 'INV'::text,
-    onboarding_complete boolean NOT NULL DEFAULT false,
-    dashboard_mode text DEFAULT 'seller'::text
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  name text NOT NULL,
+  phone text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  subscription_plan text DEFAULT 'free'::text,
+  subscription_expiry date,
+  avatar_url text,
+  business_logo_url text,
+  business_name text,
+  billing_address text,
+  gstin text,
+  upi_id text,
+  bank_name text NOT NULL DEFAULT ''::text,
+  account_number text NOT NULL DEFAULT ''::text,
+  ifsc_code text NOT NULL DEFAULT ''::text,
+  bill_number_prefix text DEFAULT 'INV'::text,
+  onboarding_complete boolean NOT NULL DEFAULT false,
+  dashboard_mode text DEFAULT 'seller'::text
 );
 
 ALTER TABLE public.profiles ADD CONSTRAINT profiles_pkey PRIMARY KEY (id);
@@ -96,34 +95,24 @@ CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id);
 CREATE UNIQUE INDEX profiles_user_id_unique ON public.profiles USING btree (user_id);
 CREATE UNIQUE INDEX profiles_phone_unique ON public.profiles USING btree (phone);
 
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK ((auth.uid() = user_id));
-CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING ((auth.uid() = user_id));
-CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING ((auth.uid() = user_id));
-CREATE POLICY "Vendors can update own profile" ON public.profiles FOR UPDATE USING ((auth.uid() = user_id));
-CREATE POLICY "Vendors can view own profile" ON public.profiles FOR SELECT USING ((auth.uid() = user_id));
-CREATE POLICY "select_own_profile" ON public.profiles FOR SELECT USING ((auth.uid() = user_id));
-CREATE POLICY "update_own_profile" ON public.profiles FOR UPDATE USING ((auth.uid() = user_id)) WITH CHECK ((auth.uid() = user_id));
-
 -- public.parties
--- Transitional internal table: unified Customer/Supplier model
 CREATE TABLE public.parties (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    vendor_id uuid NOT NULL,
-    name text NOT NULL,
-    phone text,
-    address text,
-    is_customer boolean NOT NULL DEFAULT false,
-    is_supplier boolean NOT NULL DEFAULT false,
-    customer_balance numeric(10,2) NOT NULL DEFAULT 0,
-    supplier_balance numeric(10,2) NOT NULL DEFAULT 0,
-    basket_mark text,
-    bank_name text,
-    account_number text,
-    ifsc_code text,
-    upi_id text,
-    created_at timestamp with time zone NOT NULL DEFAULT now(),
-    updated_at timestamp with time zone NOT NULL DEFAULT now()
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  vendor_id uuid NOT NULL,
+  name text NOT NULL,
+  phone text,
+  address text,
+  is_customer boolean NOT NULL DEFAULT false,
+  is_supplier boolean NOT NULL DEFAULT false,
+  customer_balance numeric(10,2) NOT NULL DEFAULT 0,
+  supplier_balance numeric(10,2) NOT NULL DEFAULT 0,
+  basket_mark text,
+  bank_name text,
+  account_number text,
+  ifsc_code text,
+  upi_id text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now()
 );
 
 ALTER TABLE public.parties ADD CONSTRAINT parties_pkey PRIMARY KEY (id);
@@ -139,26 +128,22 @@ CREATE INDEX idx_parties_supplier ON public.parties USING btree (vendor_id) WHER
 CREATE INDEX idx_parties_name ON public.parties USING btree (vendor_id, name);
 CREATE INDEX idx_parties_phone ON public.parties USING btree (phone);
 
-ALTER TABLE public.parties ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Vendors can manage own parties" ON public.parties FOR ALL USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-
 -- public.orders
--- Transitional internal table: Entry records
 CREATE TABLE public.orders (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    vendor_id uuid NOT NULL,
-    customer_id uuid NOT NULL,
-    total_amount numeric(10,2) NOT NULL,
-    amount_paid numeric(10,2) NOT NULL DEFAULT 0,
-    balance_due numeric GENERATED ALWAYS AS ((total_amount - amount_paid)) STORED,
-    status text NOT NULL DEFAULT 'Pending'::text,
-    created_at timestamp with time zone NOT NULL DEFAULT now(),
-    bill_number text,
-    previous_balance numeric(10,2) NOT NULL DEFAULT 0,
-    loading_charge numeric(10,2) NOT NULL DEFAULT 0,
-    tax_percent numeric(5,2) NOT NULL DEFAULT 0,
-    edited_at timestamp with time zone,
-    edit_count integer NOT NULL DEFAULT 0
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  vendor_id uuid NOT NULL,
+  customer_id uuid NOT NULL,
+  total_amount numeric(10,2) NOT NULL,
+  amount_paid numeric(10,2) NOT NULL DEFAULT 0,
+  balance_due numeric GENERATED ALWAYS AS ((total_amount - amount_paid)) STORED,
+  status text NOT NULL DEFAULT 'Pending'::text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  bill_number text,
+  previous_balance numeric(10,2) NOT NULL DEFAULT 0,
+  loading_charge numeric(10,2) NOT NULL DEFAULT 0,
+  tax_percent numeric(5,2) NOT NULL DEFAULT 0,
+  edited_at timestamp with time zone,
+  edit_count integer NOT NULL DEFAULT 0
 );
 
 ALTER TABLE public.orders ADD CONSTRAINT orders_pkey PRIMARY KEY (id);
@@ -166,8 +151,8 @@ ALTER TABLE public.orders ADD CONSTRAINT orders_vendor_id_fkey FOREIGN KEY (vend
 ALTER TABLE public.orders ADD CONSTRAINT orders_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.parties(id) ON DELETE CASCADE;
 ALTER TABLE public.orders ADD CONSTRAINT orders_id_vendor_unique UNIQUE (id, vendor_id);
 ALTER TABLE public.orders ADD CONSTRAINT orders_vendor_bill_unique UNIQUE (vendor_id, bill_number);
-ALTER TABLE public.orders ADD CONSTRAINT orders_total_amount_nonnegative CHECK ((total_amount >= (0)::numeric));
-ALTER TABLE public.orders ADD CONSTRAINT orders_amount_paid_nonnegative CHECK ((amount_paid >= (0)::numeric));
+ALTER TABLE public.orders ADD CONSTRAINT orders_total_amount_nonnegative CHECK ((total_amount >= 0::numeric));
+ALTER TABLE public.orders ADD CONSTRAINT orders_amount_paid_nonnegative CHECK ((amount_paid >= 0::numeric));
 ALTER TABLE public.orders ADD CONSTRAINT orders_amount_paid_lte_total CHECK ((amount_paid <= total_amount));
 ALTER TABLE public.orders ADD CONSTRAINT orders_status_check CHECK ((status = ANY (ARRAY['Pending'::text, 'Partially Paid'::text, 'Paid'::text])));
 
@@ -181,36 +166,23 @@ CREATE INDEX idx_orders_created_at ON public.orders USING btree (created_at DESC
 CREATE INDEX idx_orders_vendor_balance_due ON public.orders USING btree (vendor_id, balance_due) WHERE (balance_due > (0)::numeric);
 CREATE INDEX orders_vendor_customer_idx ON public.orders USING btree (vendor_id, customer_id);
 
-ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Vendors can delete own orders" ON public.orders FOR DELETE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can insert own orders" ON public.orders FOR INSERT WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can update own orders" ON public.orders FOR UPDATE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can view own orders" ON public.orders FOR SELECT USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "delete_own_orders" ON public.orders FOR DELETE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "insert_own_orders" ON public.orders FOR INSERT WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "select_own_orders" ON public.orders FOR SELECT USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "update_own_orders" ON public.orders FOR UPDATE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid())))) WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-
 -- public.order_items
--- Transitional internal table: Entry line items
 CREATE TABLE public.order_items (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    order_id uuid NOT NULL,
-    product_id uuid,
-    product_name text NOT NULL,
-    variant_name text,
-    price numeric(10,2) NOT NULL,
-    quantity integer NOT NULL,
-    subtotal numeric(10,2) GENERATED ALWAYS AS ((price * (quantity)::numeric)) STORED,
-    vendor_id uuid NOT NULL,
-    created_at timestamp with time zone NOT NULL DEFAULT now(),
-    variant_id uuid
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  order_id uuid NOT NULL,
+  product_id uuid,
+  product_name text NOT NULL,
+  variant_name text,
+  price numeric(10,2) NOT NULL,
+  quantity integer NOT NULL,
+  subtotal numeric(10,2) GENERATED ALWAYS AS ((price * (quantity)::numeric)) STORED,
+  vendor_id uuid NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  variant_id uuid
 );
 
 ALTER TABLE public.order_items ADD CONSTRAINT order_items_pkey PRIMARY KEY (id);
 ALTER TABLE public.order_items ADD CONSTRAINT order_items_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id) ON DELETE CASCADE;
-ALTER TABLE public.order_items ADD CONSTRAINT order_items_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id) ON DELETE CASCADE;
-ALTER TABLE public.order_items ADD CONSTRAINT order_items_variant_id_fkey FOREIGN KEY (variant_id) REFERENCES public.product_variants(id) ON DELETE SET NULL;
 ALTER TABLE public.order_items ADD CONSTRAINT order_items_vendor_id_fkey FOREIGN KEY (vendor_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.order_items ADD CONSTRAINT order_items_quantity_check CHECK ((quantity > 0));
 
@@ -219,26 +191,15 @@ CREATE INDEX idx_order_items_order ON public.order_items USING btree (order_id);
 CREATE INDEX idx_order_items_variant ON public.order_items USING btree (variant_id);
 CREATE INDEX order_items_order_idx ON public.order_items USING btree (order_id);
 
-ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Vendors can delete own order items" ON public.order_items FOR DELETE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can insert own order items" ON public.order_items FOR INSERT WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can update own order items" ON public.order_items FOR UPDATE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can view own order items" ON public.order_items FOR SELECT USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "delete_own_order_items" ON public.order_items FOR DELETE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "insert_own_order_items" ON public.order_items FOR INSERT WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "select_own_order_items" ON public.order_items FOR SELECT USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "update_own_order_items" ON public.order_items FOR UPDATE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid())))) WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-
 -- public.payments
--- Active app table: Payments recorded against Entries
 CREATE TABLE public.payments (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    vendor_id uuid NOT NULL,
-    order_id uuid NOT NULL,
-    amount numeric(10,2) NOT NULL,
-    payment_date timestamp with time zone NOT NULL DEFAULT now(),
-    payment_mode text NOT NULL DEFAULT 'Cash'::text,
-    notes text
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  vendor_id uuid NOT NULL,
+  order_id uuid NOT NULL,
+  amount numeric(10,2) NOT NULL,
+  payment_date timestamp with time zone NOT NULL DEFAULT now(),
+  payment_mode text NOT NULL DEFAULT 'Cash'::text,
+  notes text
 );
 
 ALTER TABLE public.payments ADD CONSTRAINT payments_pkey PRIMARY KEY (id);
@@ -251,28 +212,17 @@ CREATE INDEX idx_payments_vendor ON public.payments USING btree (vendor_id);
 CREATE INDEX idx_payments_order ON public.payments USING btree (order_id);
 CREATE INDEX payments_order_idx ON public.payments USING btree (order_id);
 
-ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Vendors can delete own payments" ON public.payments FOR DELETE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can insert own payments" ON public.payments FOR INSERT WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can update own payments" ON public.payments FOR UPDATE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can view own payments" ON public.payments FOR SELECT USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "delete_own_payments" ON public.payments FOR DELETE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "insert_own_payments" ON public.payments FOR INSERT WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "select_own_payments" ON public.payments FOR SELECT USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "update_own_payments" ON public.payments FOR UPDATE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid())))) WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-
 -- public.access_tokens
--- Active app table: read-only Customer ledger share tokens
 CREATE TABLE public.access_tokens (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    token text NOT NULL,
-    vendor_id uuid NOT NULL,
-    customer_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now(),
-    last_accessed_at timestamp with time zone,
-    access_count integer DEFAULT 0,
-    expires_at timestamp with time zone,
-    is_revoked boolean DEFAULT false
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  token text NOT NULL,
+  vendor_id uuid NOT NULL,
+  customer_id uuid NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  last_accessed_at timestamp with time zone,
+  access_count integer DEFAULT 0,
+  expires_at timestamp with time zone,
+  is_revoked boolean DEFAULT false
 );
 
 ALTER TABLE public.access_tokens ADD CONSTRAINT access_tokens_pkey PRIMARY KEY (id);
@@ -286,144 +236,102 @@ CREATE INDEX idx_access_tokens_customer ON public.access_tokens USING btree (cus
 CREATE INDEX idx_access_tokens_token ON public.access_tokens USING btree (token) WHERE (is_revoked = false);
 CREATE INDEX idx_access_tokens_vendor ON public.access_tokens USING btree (vendor_id);
 
+-- =============================================================================
+-- RLS SNAPSHOT: PUBLIC
+-- =============================================================================
+
 ALTER TABLE public.access_tokens ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Vendors create own tokens" ON public.access_tokens FOR INSERT WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors delete own tokens" ON public.access_tokens FOR DELETE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors manage own tokens" ON public.access_tokens FOR UPDATE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid())))) WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.parties ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- public.products
--- Legacy/transitional table: not part of active product scope
-CREATE TABLE public.products (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    vendor_id uuid NOT NULL,
-    name text NOT NULL,
-    created_at timestamp with time zone NOT NULL DEFAULT now(),
-    base_price numeric,
-    variants jsonb,
-    image_url text,
-    category text NOT NULL DEFAULT 'General'::text
-);
+-- access_tokens
+CREATE POLICY "Vendors create own tokens" ON public.access_tokens FOR INSERT TO public
+  WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "Vendors delete own tokens" ON public.access_tokens FOR DELETE TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "Vendors manage own tokens" ON public.access_tokens FOR UPDATE TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))))
+  WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
 
-ALTER TABLE public.products ADD CONSTRAINT products_pkey PRIMARY KEY (id);
-ALTER TABLE public.products ADD CONSTRAINT products_vendor_id_fkey FOREIGN KEY (vendor_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
+-- order_items
+CREATE POLICY "Vendors can delete own order items" ON public.order_items FOR DELETE TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "Vendors can insert own order items" ON public.order_items FOR INSERT TO public
+  WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "Vendors can update own order items" ON public.order_items FOR UPDATE TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "Vendors can view own order items" ON public.order_items FOR SELECT TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "delete_own_order_items" ON public.order_items FOR DELETE TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "insert_own_order_items" ON public.order_items FOR INSERT TO public
+  WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "select_own_order_items" ON public.order_items FOR SELECT TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "update_own_order_items" ON public.order_items FOR UPDATE TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))))
+  WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
 
-CREATE UNIQUE INDEX products_pkey ON public.products USING btree (id);
-CREATE INDEX idx_products_vendor ON public.products USING btree (vendor_id);
-CREATE INDEX idx_products_vendor_category ON public.products USING btree (vendor_id, category);
-CREATE INDEX products_vendor_name_idx ON public.products USING btree (vendor_id, name);
+-- orders
+CREATE POLICY "Vendors can delete own orders" ON public.orders FOR DELETE TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "Vendors can insert own orders" ON public.orders FOR INSERT TO public
+  WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "Vendors can update own orders" ON public.orders FOR UPDATE TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "Vendors can view own orders" ON public.orders FOR SELECT TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "delete_own_orders" ON public.orders FOR DELETE TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "insert_own_orders" ON public.orders FOR INSERT TO public
+  WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "select_own_orders" ON public.orders FOR SELECT TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "update_own_orders" ON public.orders FOR UPDATE TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))))
+  WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
 
-ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Vendors can delete own products" ON public.products FOR DELETE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can insert own products" ON public.products FOR INSERT WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can update own products" ON public.products FOR UPDATE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can view own products" ON public.products FOR SELECT USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "delete_own_products" ON public.products FOR DELETE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "insert_own_products" ON public.products FOR INSERT WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "select_own_products" ON public.products FOR SELECT USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "update_own_products" ON public.products FOR UPDATE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid())))) WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+-- parties
+CREATE POLICY "Vendors can manage own parties" ON public.parties FOR ALL TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
 
--- public.product_variants
--- Legacy/transitional table: not part of active product scope
-CREATE TABLE public.product_variants (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    product_id uuid NOT NULL,
-    vendor_id uuid NOT NULL,
-    variant_name text NOT NULL,
-    price numeric(10,2) NOT NULL,
-    created_at timestamp with time zone DEFAULT now()
-);
+-- payments
+CREATE POLICY "Vendors can delete own payments" ON public.payments FOR DELETE TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "Vendors can insert own payments" ON public.payments FOR INSERT TO public
+  WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "Vendors can update own payments" ON public.payments FOR UPDATE TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "Vendors can view own payments" ON public.payments FOR SELECT TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "delete_own_payments" ON public.payments FOR DELETE TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "insert_own_payments" ON public.payments FOR INSERT TO public
+  WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "select_own_payments" ON public.payments FOR SELECT TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+CREATE POLICY "update_own_payments" ON public.payments FOR UPDATE TO public
+  USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))))
+  WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
 
-ALTER TABLE public.product_variants ADD CONSTRAINT product_variants_pkey PRIMARY KEY (id);
-ALTER TABLE public.product_variants ADD CONSTRAINT product_variants_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id) ON DELETE CASCADE;
-ALTER TABLE public.product_variants ADD CONSTRAINT product_variants_vendor_id_fkey FOREIGN KEY (vendor_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
-
-CREATE UNIQUE INDEX product_variants_pkey ON public.product_variants USING btree (id);
-CREATE INDEX idx_product_variants_product ON public.product_variants USING btree (product_id);
-
-ALTER TABLE public.product_variants ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Vendors can delete own product variants" ON public.product_variants FOR DELETE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can delete own variants" ON public.product_variants FOR DELETE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can insert own product variants" ON public.product_variants FOR INSERT WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can insert own variants" ON public.product_variants FOR INSERT WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can update own product variants" ON public.product_variants FOR UPDATE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can update own variants" ON public.product_variants FOR UPDATE USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can view own product variants" ON public.product_variants FOR SELECT USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors can view own variants" ON public.product_variants FOR SELECT USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-
--- public.supplier_deliveries
--- Legacy/transitional table: not part of active product scope
-CREATE TABLE public.supplier_deliveries (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    vendor_id uuid NOT NULL,
-    supplier_id uuid NOT NULL,
-    delivery_date date NOT NULL DEFAULT CURRENT_DATE,
-    loading_charge numeric(10,2) NOT NULL DEFAULT 0,
-    advance_paid numeric(10,2) NOT NULL DEFAULT 0,
-    total_amount numeric(10,2) NOT NULL DEFAULT 0,
-    notes text,
-    created_at timestamp with time zone NOT NULL DEFAULT now()
-);
-
-ALTER TABLE public.supplier_deliveries ADD CONSTRAINT supplier_deliveries_pkey PRIMARY KEY (id);
-ALTER TABLE public.supplier_deliveries ADD CONSTRAINT supplier_deliveries_supplier_id_fkey FOREIGN KEY (supplier_id) REFERENCES public.parties(id) ON DELETE CASCADE;
-ALTER TABLE public.supplier_deliveries ADD CONSTRAINT supplier_deliveries_vendor_id_fkey FOREIGN KEY (vendor_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
-
-CREATE UNIQUE INDEX supplier_deliveries_pkey ON public.supplier_deliveries USING btree (id);
-CREATE INDEX idx_supplier_deliveries_supplier ON public.supplier_deliveries USING btree (supplier_id);
-
-ALTER TABLE public.supplier_deliveries ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Vendors can manage own deliveries" ON public.supplier_deliveries FOR ALL USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors manage own deliveries" ON public.supplier_deliveries FOR ALL USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid())))) WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-
--- public.supplier_delivery_items
--- Legacy/transitional table: not part of active product scope
-CREATE TABLE public.supplier_delivery_items (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    delivery_id uuid NOT NULL,
-    vendor_id uuid NOT NULL,
-    item_name text NOT NULL,
-    quantity numeric(10,3) NOT NULL DEFAULT 0,
-    rate numeric(10,2) NOT NULL DEFAULT 0,
-    subtotal numeric(10,2) GENERATED ALWAYS AS ((quantity * rate)) STORED,
-    created_at timestamp with time zone NOT NULL DEFAULT now()
-);
-
-ALTER TABLE public.supplier_delivery_items ADD CONSTRAINT supplier_delivery_items_pkey PRIMARY KEY (id);
-ALTER TABLE public.supplier_delivery_items ADD CONSTRAINT supplier_delivery_items_delivery_id_fkey FOREIGN KEY (delivery_id) REFERENCES public.supplier_deliveries(id) ON DELETE CASCADE;
-ALTER TABLE public.supplier_delivery_items ADD CONSTRAINT supplier_delivery_items_vendor_id_fkey FOREIGN KEY (vendor_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
-
-CREATE UNIQUE INDEX supplier_delivery_items_pkey ON public.supplier_delivery_items USING btree (id);
-
-ALTER TABLE public.supplier_delivery_items ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Vendors can manage own delivery items" ON public.supplier_delivery_items FOR ALL USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors manage own delivery items" ON public.supplier_delivery_items FOR ALL USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid())))) WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-
--- public.payments_made
--- Legacy/transitional table: not part of active product scope
-CREATE TABLE public.payments_made (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    vendor_id uuid NOT NULL,
-    supplier_id uuid NOT NULL,
-    delivery_id uuid,
-    amount numeric(10,2) NOT NULL,
-    payment_mode text NOT NULL DEFAULT 'Cash'::text,
-    notes text,
-    created_at timestamp with time zone NOT NULL DEFAULT now()
-);
-
-ALTER TABLE public.payments_made ADD CONSTRAINT payments_made_pkey PRIMARY KEY (id);
-ALTER TABLE public.payments_made ADD CONSTRAINT payments_made_vendor_id_fkey FOREIGN KEY (vendor_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
-ALTER TABLE public.payments_made ADD CONSTRAINT payments_made_supplier_id_fkey FOREIGN KEY (supplier_id) REFERENCES public.parties(id) ON DELETE CASCADE;
-ALTER TABLE public.payments_made ADD CONSTRAINT payments_made_delivery_id_fkey FOREIGN KEY (delivery_id) REFERENCES public.supplier_deliveries(id) ON DELETE SET NULL;
-ALTER TABLE public.payments_made ADD CONSTRAINT payments_made_amount_check CHECK ((amount > (0)::numeric));
-ALTER TABLE public.payments_made ADD CONSTRAINT payments_made_payment_mode_check CHECK ((payment_mode = ANY (ARRAY['Cash'::text, 'UPI'::text, 'NEFT'::text, 'Draft'::text, 'Cheque'::text])));
-
-CREATE UNIQUE INDEX payments_made_pkey ON public.payments_made USING btree (id);
-CREATE INDEX idx_payments_made_supplier ON public.payments_made USING btree (supplier_id);
-
-ALTER TABLE public.payments_made ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Vendors can manage own payments made" ON public.payments_made FOR ALL USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
-CREATE POLICY "Vendors manage own payments made" ON public.payments_made FOR ALL USING ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid())))) WITH CHECK ((vendor_id IN ( SELECT profiles.id FROM public.profiles WHERE (profiles.user_id = auth.uid()))));
+-- profiles
+CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT TO public
+  WITH CHECK ((auth.uid() = user_id));
+CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE TO public
+  USING ((auth.uid() = user_id));
+CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT TO public
+  USING ((auth.uid() = user_id));
+CREATE POLICY "Vendors can update own profile" ON public.profiles FOR UPDATE TO public
+  USING ((auth.uid() = user_id));
+CREATE POLICY "Vendors can view own profile" ON public.profiles FOR SELECT TO public
+  USING ((auth.uid() = user_id));
+CREATE POLICY "select_own_profile" ON public.profiles FOR SELECT TO public
+  USING ((auth.uid() = user_id));
+CREATE POLICY "update_own_profile" ON public.profiles FOR UPDATE TO public
+  USING ((auth.uid() = user_id));
 
 -- =============================================================================
 -- PUBLIC TRIGGERS
@@ -433,24 +341,30 @@ CREATE TRIGGER parties_updated_at BEFORE UPDATE ON public.parties FOR EACH ROW E
 CREATE TRIGGER on_payment_upsert AFTER INSERT OR UPDATE ON public.payments FOR EACH ROW EXECUTE FUNCTION public.update_order_status();
 
 -- =============================================================================
--- STORAGE RLS SNAPSHOT
+-- STORAGE
 -- =============================================================================
--- RLS is enabled on:
---   storage.buckets
---   storage.buckets_analytics
---   storage.buckets_vectors
---   storage.migrations
---   storage.objects
---   storage.s3_multipart_uploads
---   storage.s3_multipart_uploads_parts
---   storage.vector_indexes
+
+-- Buckets currently present:
+-- - business-logos (public)
+-- - product-images (public)  -- Phase 2 task 2.9 tracks rename to avatars
 
 ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Business logos delete" ON storage.objects FOR DELETE TO authenticated USING ((bucket_id = 'business-logos'::text));
-CREATE POLICY "Business logos read" ON storage.objects FOR SELECT TO authenticated USING ((bucket_id = 'business-logos'::text));
-CREATE POLICY "Business logos update" ON storage.objects FOR UPDATE TO authenticated USING ((bucket_id = 'business-logos'::text));
-CREATE POLICY "Business logos upload" ON storage.objects FOR INSERT TO authenticated WITH CHECK ((bucket_id = 'business-logos'::text));
-CREATE POLICY "Product images delete" ON storage.objects FOR DELETE TO authenticated USING ((bucket_id = 'product-images'::text));
-CREATE POLICY "Product images read" ON storage.objects FOR SELECT TO authenticated USING ((bucket_id = 'product-images'::text));
-CREATE POLICY "Product images upload" ON storage.objects FOR INSERT TO authenticated WITH CHECK ((bucket_id = 'product-images'::text));
-CREATE POLICY "Public read for public buckets" ON storage.objects FOR SELECT TO public USING ((bucket_id = ANY (ARRAY['product-images'::text, 'business-logos'::text])));
+
+CREATE POLICY "Business logos delete" ON storage.objects FOR DELETE TO authenticated
+  USING ((bucket_id = 'business-logos'::text));
+CREATE POLICY "Business logos read" ON storage.objects FOR SELECT TO authenticated
+  USING ((bucket_id = 'business-logos'::text));
+CREATE POLICY "Business logos update" ON storage.objects FOR UPDATE TO authenticated
+  USING ((bucket_id = 'business-logos'::text));
+CREATE POLICY "Business logos upload" ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK ((bucket_id = 'business-logos'::text));
+
+CREATE POLICY "Product images delete" ON storage.objects FOR DELETE TO authenticated
+  USING ((bucket_id = 'product-images'::text));
+CREATE POLICY "Product images read" ON storage.objects FOR SELECT TO authenticated
+  USING ((bucket_id = 'product-images'::text));
+CREATE POLICY "Product images upload" ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK ((bucket_id = 'product-images'::text));
+
+CREATE POLICY "Public read for public buckets" ON storage.objects FOR SELECT TO public
+  USING ((bucket_id = ANY (ARRAY['product-images'::text, 'business-logos'::text])));
