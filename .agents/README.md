@@ -10,36 +10,54 @@ We use a command-first workflow to ensure safety and consistency. Use these comm
 
 | Command | Purpose | Default Skills Loaded |
 | :--- | :--- | :--- |
-| **`/plan`** | **Start here.** Turns a request into a scoped implementation plan. | `project-planner`, `tech-lead` |
-| **`/build`** | Implement features after a plan is approved. | `ui-ux-pro-max`, `ui-designer`, `react-native-skills` |
-| **`/fix`** | Debug and fix specific bugs with root-cause analysis. | `debugger`, `thinker` |
-| **`/refactor`** | Safe code structure improvements without behavior change. | `refactor-engineer` |
-| **`/audit`** | Analyze the codebase for technical debt or design drift. | `code-reviewer`, `tech-lead` |
-| **`/git-push`** | Review, commit, and push completed changes safely. | `code-reviewer`, `git-push` |
+| **`/plan`** | **Start here.** Turns a request into a scoped implementation plan. | `project-planner`, `writing-plans` |
+| **`/build`** | Implement features after a plan is approved. | `ui-ux-pro-max`, `frontend-design`, `react-native-skills` |
+| **`/fix`** | Debug and fix specific bugs with root-cause analysis. | `systematic-debugging`, `code-reviewer` |
+| **`/refactor`** | Safe code structure improvements without behavior change. | `refactor-engineer`, `code-reviewer` |
+| **`/audit`** | Analyze the codebase for technical debt or design drift. | `code-reviewer`, `verification-before-completion` |
+| **`/doc`** | Write, update, or co-author any documentation. | `doc-coauthoring`, `internal-comms`, `writing-plans` |
+| **`/finish`** | Review, commit, and push completed changes safely. | `finishing-a-development-branch`, `verification-before-completion` |
 
 > [!TIP]
 > You can manually load specific skills by adding `load_skills=["skill-name", ...]` to your request.
 
 ---
 
-## 🛠️ Specialized Skills
+## 🛠️ Specialized Skills (20)
 
 Our system discovers skills located in `.agents/skills/`. Each skill is a specialized persona with its own instructions and focus areas.
 
-### Available Skills:
+### Planning & Documentation
+1. **`project-planner`** — Scoped plans, task breakdowns, and risk assessment.
+2. **`writing-plans`** — Structured planning docs: PRDs, specs, requirements.
+3. **`doc-coauthoring`** — Writing assistance and co-authoring for any document.
+4. **`internal-comms`** — Changelogs, announcements, and status updates.
 
-1.  **`project-planner`**: Scoped plans, task breakdowns, and risk assessment.
-2.  **`tech-lead`**: Architecture decisions and component patterns.
-3.  **`ui-ux-pro-max`**: Design intelligence and aesthetic polish.
-4.  **`ui-designer`**: Enforces zero-token drift using `src/utils/theme.ts`.
-5.  **`react-native-skills`**: Best practices for Expo and React Native.
-6.  **`debugger`**: Systematic diagnosis and issue fixing.
-7.  **`thinker`**: Deep analysis for complex architectural problems.
-8.  **`code-reviewer`**: Bug detection and best practice enforcement.
-9.  **`refactor-engineer`**: Code reuse and cleanup.
-10. **`supabase-expert`**: Database schema, RLS, and migrations.
-11. **`context7-mcp`**: Real-time documentation for libraries and frameworks.
-12. **`git-push`**: Review-first commit message generation and safe push flow.
+### Design & Brand
+5. **`ui-ux-pro-max`** — Design intelligence and aesthetic polish.
+6. **`frontend-design`** — Frontend architecture and component design.
+7. **`brand-guidelines`** — Brand identity, colors, and typography consistency.
+8. **`extract-design-system`** — Extract design tokens and components into a system.
+9. **`sleek-design-mobile-apps`** — Mobile-specific design polish.
+
+### React Native & TypeScript
+10. **`react-native-skills`** — Best practices for Expo and React Native.
+11. **`typescript-advanced-types`** — Advanced TypeScript type patterns and generics.
+
+### Backend & Database
+12. **`supabase-expert`** — Database schema, RLS, and migrations.
+13. **`supabase-postgres-best-practices`** — Advanced Supabase/Postgres performance patterns.
+
+### Code Quality & Engineering
+14. **`code-reviewer`** — Bug detection and best practice enforcement.
+15. **`refactor-engineer`** — Code reuse and cleanup.
+16. **`systematic-debugging`** — Structured root-cause analysis and debugging.
+17. **`verification-before-completion`** — Agents verify output before marking a task done.
+18. **`finishing-a-development-branch`** — Clean branch/PR lifecycle and commit flow.
+
+### Agent Infrastructure
+19. **`context7-mcp`** — Real-time documentation for libraries and frameworks.
+20. **`skill-creator`** — Build and manage new agent skills.
 
 ---
 
