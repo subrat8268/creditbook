@@ -1,9 +1,10 @@
 import BaseBottomSheet from "@/src/components/layer2/BaseBottomSheet";
 import Button from "@/src/components/ui/Button";
 import Input from "@/src/components/ui/Input";
-import { colors, spacing } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
+import { lightColors } from "@/src/utils/theme";
 import { useEffect, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 interface NewCustomerModalProps {
   visible: boolean;
@@ -30,11 +31,12 @@ interface NewCustomerModalProps {
 }
 
 function getAvatarColor(name: string): string {
+  const palette = lightColors.avatarPalette;
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return colors.avatarPalette[Math.abs(hash) % colors.avatarPalette.length];
+  return palette[Math.abs(hash) % palette.length];
 }
 
 function getInitials(name: string): string {
@@ -53,6 +55,7 @@ export default function NewCustomerModal({
   initialValues,
   entryFlow = false,
 }: NewCustomerModalProps) {
+  const { colors, spacing } = useTheme();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -72,7 +75,10 @@ export default function NewCustomerModal({
     setNameError("");
   }, [visible, initialValues]);
 
-  const avatarColor = useMemo(() => (name.trim() ? getAvatarColor(name) : colors.primary), [name]);
+  const avatarColor = useMemo(
+    () => (name.trim() ? getAvatarColor(name) : colors.primary),
+    [name, colors.primary],
+  );
   const avatarLabel = useMemo(() => getInitials(name), [name]);
 
   const handleSave = async () => {
@@ -97,10 +103,10 @@ export default function NewCustomerModal({
   return (
     <BaseBottomSheet visible={visible} onClose={onClose} title="Add Customer" snapPoints={["90%"]}>
       <View className="items-center mb-2">
-        <View className="w-16 h-16 rounded-full items-center justify-center mb-2" style={[styles.avatar, { backgroundColor: avatarColor }]}>
+        <View className="h-16 w-16 items-center justify-center rounded-full mb-2" style={{ backgroundColor: avatarColor }}>
           <Text className="text-surface text-[22px] font-bold">{avatarLabel}</Text>
         </View>
-        <Text className="text-xs text-textSecondary">Avatar auto-generated from name</Text>
+        <Text className="text-xs text-textSecondary dark:text-textSecondary-dark">Avatar auto-generated from name</Text>
       </View>
 
       <View className="gap-3">
@@ -147,7 +153,7 @@ export default function NewCustomerModal({
 
         {errorMessage ? <Text className="text-xs text-danger">{errorMessage}</Text> : null}
 
-        <View style={styles.submitWrap}>
+        <View style={{ marginTop: spacing.sm }}>
           <Button
             title={entryFlow ? "Add Customer & Entry" : "Add Customer"}
             onPress={handleSave}
@@ -159,13 +165,3 @@ export default function NewCustomerModal({
     </BaseBottomSheet>
   );
 }
-
-const styles = StyleSheet.create({
-  avatar: {
-    width: 64,
-    height: 64,
-  },
-  submitWrap: {
-    marginTop: spacing.sm,
-  },
-});

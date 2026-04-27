@@ -1,4 +1,4 @@
-import { colors, typography } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import React, { memo } from "react";
 import { Text, TextProps } from "react-native";
 
@@ -50,6 +50,8 @@ export default memo(function MoneyAmount({
   style,
   ...props
 }: MoneyAmountProps) {
+  const { colors, typography } = useTheme();
+
   const textStyle =
     variant === "hero"
       ? typography.heroAmount

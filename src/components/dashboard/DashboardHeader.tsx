@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/src/store/authStore";
-import { colors } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { Bell } from "lucide-react-native";
 import { memo, useMemo } from "react";
 import { Pressable, Text, View } from "react-native";
@@ -28,25 +28,26 @@ export default memo(function DashboardHeader({
   onPressNotifications,
 }: Props) {
   const { profile } = useAuthStore();
+  const { colors } = useTheme();
   const businessName = profile?.business_name ?? profile?.name ?? "My Business";
   const initials = useMemo(() => getInitials(businessName), [businessName]);
 
   return (
-    <View className="flex-row items-center bg-background px-4 pb-3 pt-4">
+    <View className="flex-row items-center bg-background px-4 pb-3 pt-4 dark:bg-background-dark">
       <View className="h-10 w-10 items-center justify-center rounded-full bg-success">
         <Text className="text-caption font-inter-bold text-surface">{initials}</Text>
       </View>
 
       <View className="ml-3 flex-1">
-        <Text className="text-card-title font-inter-bold text-textPrimary" numberOfLines={1}>
+        <Text className="text-card-title font-inter-bold text-textPrimary dark:text-textPrimary-dark" numberOfLines={1}>
           {businessName}
         </Text>
-        <Text className="mt-0.5 text-caption text-textSecondary">{getGreeting()} 👋</Text>
+        <Text className="mt-0.5 text-caption text-textSecondary dark:text-textSecondary-dark">{getGreeting()} 👋</Text>
       </View>
 
       {showNotification ? (
         <Pressable
-          className="h-10 w-10 items-center justify-center rounded-full bg-surface"
+          className="h-10 w-10 items-center justify-center rounded-full bg-surface dark:bg-surface-dark"
           onPress={onPressNotifications}
         >
           <View className="relative">

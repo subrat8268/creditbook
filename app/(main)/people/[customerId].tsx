@@ -8,7 +8,7 @@ import { useWhatsAppShare } from "@/src/hooks/useWhatsAppShare";
 import { useAuthStore } from "@/src/store/authStore";
 import { usePreferencesStore } from "@/src/store/preferencesStore";
 import type { Transaction } from "@/src/types/customer";
-import { colors, gradients, spacing, typography } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Print from "expo-print";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -109,11 +109,12 @@ function buildStatementHtml(
   balance: number,
   transactions: Transaction[],
   businessName: string,
+  themeColors: ReturnType<typeof useTheme>["colors"],
 ): string {
   const rows = transactions
     .map((tx) => {
       const sign = tx.type === "payment" ? "+" : "";
-      const color = tx.type === "payment" ? colors.success : colors.danger;
+      const color = tx.type === "payment" ? themeColors.success : themeColors.danger;
       const label = tx.type === "bill" ? `Entry ${tx.billNumber ?? ""}` : `Payment (${tx.paymentMode ?? ""})`;
       return `<tr>
         <td>${new Date(tx.created_at).toLocaleDateString("en-IN")}</td>
@@ -126,12 +127,12 @@ function buildStatementHtml(
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/>
 <style>
-  body{font-family:Arial,sans-serif;padding:24px;color:${colors.textPrimary};}
+  body{font-family:Arial,sans-serif;padding:24px;color:${themeColors.textPrimary};}
   h1{font-size:22px;}
   table{width:100%;border-collapse:collapse;margin-top:20px;}
-  th{background:${colors.primary};color:white;padding:10px 8px;text-align:left;}
-  td{padding:10px 8px;border-bottom:1px solid ${colors.border};}
-  .balance{font-size:18px;font-weight:700;color:${colors.danger};}
+  th{background:${themeColors.primary};color:white;padding:10px 8px;text-align:left;}
+  td{padding:10px 8px;border-bottom:1px solid ${themeColors.border};}
+  .balance{font-size:18px;font-weight:700;color:${themeColors.danger};}
 </style></head><body>
  <h1>${businessName} — Customer Statement</h1>
  <p><b>Customer:</b> ${name}<br/><b>Phone:</b> ${phone || "-"}</p>
@@ -146,18 +147,21 @@ function QuickActionTile({ label, icon, onPress, disabled = false }: QuickAction
     <Pressable
       disabled={disabled}
       onPress={onPress}
-      className={`flex-1 items-center rounded-xl border border-border bg-surface px-3 py-3 ${disabled ? "opacity-50" : ""}`}
+      className={`flex-1 items-center rounded-xl border border-border bg-surface px-3 py-3 dark:border-border-dark dark:bg-surface-dark ${disabled ? "opacity-50" : ""}`}
     >
-      <View className="mb-2 h-10 w-10 items-center justify-center rounded-full bg-search">{icon}</View>
-      <Text className="text-caption font-inter-semibold text-textPrimary">{label}</Text>
+      <View className="mb-2 h-10 w-10 items-center justify-center rounded-full bg-search dark:bg-search-dark">{icon}</View>
+      <Text className="text-caption font-inter-semibold text-textPrimary dark:text-textPrimary-dark">{label}</Text>
     </Pressable>
   );
 }
 
 function TransactionRow({ tx, withBorder }: { tx: Transaction; withBorder: boolean }) {
+  const { colors } = useTheme();
   const isPayment = tx.type === "payment";
   const amountColorClass = isPayment ? "text-success" : "text-danger-strong";
-  const iconBgClass = isPayment ? "bg-success-bg" : "bg-danger-bg";
+  const iconBgClass = isPayment
+    ? "bg-success-bg dark:bg-success-bg-dark"
+    : "bg-danger-bg dark:bg-danger-bg-dark";
 
   const title = isPayment ? "Payment Received" : `Entry${tx.billNumber ? ` #${tx.billNumber}` : ""}`;
   const modeLabel = tx.paymentMode ? (MODE_LABEL[tx.paymentMode.toLowerCase()] ?? tx.paymentMode) : "";
@@ -168,7 +172,7 @@ function TransactionRow({ tx, withBorder }: { tx: Transaction; withBorder: boole
     : [tx.itemCount ? `${tx.itemCount} items` : "Entry", formatTime(tx.created_at)].join(" · ");
 
   return (
-    <View className={`px-4 py-3 ${withBorder ? "border-b border-light" : ""}`}>
+    <View className={`px-4 py-3 ${withBorder ? "border-b border-light dark:border-border-dark" : ""}`}>
       <View className="flex-row items-center">
         <View className={`mr-3 h-10 w-10 items-center justify-center rounded-full ${iconBgClass}`}>
           {isPayment ? (
@@ -179,10 +183,10 @@ function TransactionRow({ tx, withBorder }: { tx: Transaction; withBorder: boole
         </View>
 
         <View className="flex-1 pr-2">
-          <Text className="text-card-title font-inter-bold text-textPrimary" numberOfLines={1}>
+          <Text className="text-card-title font-inter-bold text-textPrimary dark:text-textPrimary-dark" numberOfLines={1}>
             {title}
           </Text>
-          <Text className="mt-0.5 text-caption text-textSecondary" numberOfLines={1}>
+          <Text className="mt-0.5 text-caption text-textSecondary dark:text-textSecondary-dark" numberOfLines={1}>
             {subtitle}
           </Text>
         </View>
@@ -192,7 +196,7 @@ function TransactionRow({ tx, withBorder }: { tx: Transaction; withBorder: boole
             {isPayment ? "+" : ""}
             {formatINR(tx.amount)}
           </Text>
-          <Text className="mt-0.5 text-caption text-textMuted">Bal: {formatINR(tx.runningBalance)}</Text>
+          <Text className="mt-0.5 text-caption text-textMuted dark:text-textMuted-dark">Bal: {formatINR(tx.runningBalance)}</Text>
         </View>
       </View>
     </View>
@@ -200,6 +204,7 @@ function TransactionRow({ tx, withBorder }: { tx: Transaction; withBorder: boole
 }
 
 export default function CustomerDetailScreen() {
+  const { colors, gradients, spacing, typography, isDark } = useTheme();
   const router = useRouter();
   const { customerId, focus } = useLocalSearchParams<{ customerId: string; focus?: string }>();
 
@@ -223,7 +228,13 @@ export default function CustomerDetailScreen() {
     if (!customer) return [gradients.customerHero.start, gradients.customerHero.end];
     if (customer.outstandingBalance > 0) return [gradients.customerHero.start, gradients.customerHero.end];
     return [gradients.zeroBalance.start, gradients.zeroBalance.end];
-  }, [customer]);
+  }, [
+    customer,
+    gradients.customerHero.start,
+    gradients.customerHero.end,
+    gradients.zeroBalance.start,
+    gradients.zeroBalance.end,
+  ]);
 
   const heroPillText = useMemo(() => {
     if (!customer) return "No outstanding balance";
@@ -348,6 +359,7 @@ export default function CustomerDetailScreen() {
         customer.outstandingBalance,
         customer.transactions,
         profile?.business_name || "KredBook",
+        colors,
       );
 
       const { uri } = await Print.printToFileAsync({ html });
@@ -379,24 +391,24 @@ export default function CustomerDetailScreen() {
   if (isError || !customer) return <EmptyState message="Customer not found" />;
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={["top", "left", "right"]}>
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={["top", "left", "right"]}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View className="flex-row items-center border-b border-border bg-surface px-4 py-3">
+      <View className="flex-row items-center border-b border-border bg-surface px-4 py-3 dark:border-border-dark dark:bg-surface-dark">
         <Pressable onPress={() => router.back()} className="mr-2 h-11 w-11 items-center justify-center rounded-full">
           <ArrowLeft size={24} color={colors.textPrimary} strokeWidth={2} />
         </Pressable>
 
         <View className="flex-1">
-          <Text className="text-card-title font-inter-bold text-textPrimary" numberOfLines={1}>
+          <Text className="text-card-title font-inter-bold text-textPrimary dark:text-textPrimary-dark" numberOfLines={1}>
             {customer.name}
           </Text>
-          <Text className="mt-0.5 text-caption text-textSecondary">{getLastActiveLabel(customer.lastActiveAt)}</Text>
+          <Text className="mt-0.5 text-caption text-textSecondary dark:text-textSecondary-dark">{getLastActiveLabel(customer.lastActiveAt)}</Text>
         </View>
 
         <View className="flex-row gap-2">
           <Pressable
-            className={`h-10 w-10 items-center justify-center rounded-full bg-search ${customer.transactions.length === 0 ? "opacity-50" : ""}`}
+            className={`h-10 w-10 items-center justify-center rounded-full bg-search dark:bg-search-dark ${customer.transactions.length === 0 ? "opacity-50" : ""}`}
             onPress={downloadStatement}
             disabled={customer.transactions.length === 0 || exporting}
           >
@@ -404,7 +416,7 @@ export default function CustomerDetailScreen() {
           </Pressable>
 
           {customer.phone ? (
-            <Pressable className="h-10 w-10 items-center justify-center rounded-full bg-search" onPress={callCustomer}>
+            <Pressable className="h-10 w-10 items-center justify-center rounded-full bg-search dark:bg-search-dark" onPress={callCustomer}>
               <Phone size={20} color={colors.primary} strokeWidth={2} />
             </Pressable>
           ) : null}
@@ -424,8 +436,8 @@ export default function CustomerDetailScreen() {
           end={{ x: 1, y: 1 }}
           className="mx-4 mt-4 overflow-hidden rounded-xl px-5 py-5"
         >
-          <View className="absolute -right-8 -top-9 h-32 w-32 rounded-full bg-customer-hero-orb" />
-          <View className="absolute bottom-[-40px] right-8 h-24 w-24 rounded-full bg-customer-hero-orb" />
+          <View className={`absolute -right-8 -top-9 h-32 w-32 rounded-full ${isDark ? "bg-customer-hero-orb-dark" : "bg-customer-hero-orb"}`} />
+          <View className={`absolute bottom-[-40px] right-8 h-24 w-24 rounded-full ${isDark ? "bg-customer-hero-orb-dark" : "bg-customer-hero-orb"}`} />
 
           <Text className="tracking-wider text-customer-hero-text-muted" style={typography.label}>
             TOTAL BALANCE DUE
@@ -445,7 +457,7 @@ export default function CustomerDetailScreen() {
           </View>
         </LinearGradient>
 
-        <View className="mx-4 mt-4 rounded-xl border border-border bg-surface p-3">
+        <View className="mx-4 mt-4 rounded-xl border border-border bg-surface p-3 dark:border-border-dark dark:bg-surface-dark">
           <View className="flex-row gap-3">
             <Pressable
               className="flex-1 flex-row items-center justify-center rounded-xl bg-primary py-3"
@@ -461,7 +473,7 @@ export default function CustomerDetailScreen() {
             </Pressable>
 
             <Pressable
-              className={`flex-1 flex-row items-center justify-center rounded-xl py-3 ${hasPendingPayment ? "bg-danger" : "bg-border"}`}
+              className={`flex-1 flex-row items-center justify-center rounded-xl py-3 ${hasPendingPayment ? "bg-danger" : "bg-border dark:bg-border-dark"}`}
               onPress={() => openPaymentFlow()}
               disabled={!hasPendingPayment}
             >
@@ -470,7 +482,7 @@ export default function CustomerDetailScreen() {
                 color={hasPendingPayment ? colors.surface : colors.textSecondary}
                 strokeWidth={2.4}
               />
-              <Text className={`ml-2 text-body font-inter-bold ${hasPendingPayment ? "text-surface" : "text-textSecondary"}`}>
+              <Text className={`ml-2 text-body font-inter-bold ${hasPendingPayment ? "text-surface" : "text-textSecondary dark:text-textSecondary-dark"}`}>
                 Record Payment
               </Text>
             </Pressable>
@@ -500,9 +512,9 @@ export default function CustomerDetailScreen() {
           </View>
         </View>
 
-        <View className="mx-4 mt-4 overflow-hidden rounded-xl border border-border bg-surface">
+        <View className="mx-4 mt-4 overflow-hidden rounded-xl border border-border bg-surface dark:border-border-dark dark:bg-surface-dark">
           <View className="px-3 pb-2 pt-3">
-            <View className="flex-row rounded-full bg-search p-1">
+            <View className="flex-row rounded-full bg-search p-1 dark:bg-search-dark">
               {(["All", "Entries", "Payments"] as TxFilter[]).map((tab) => {
                 const active = txFilter === tab;
                 return (
@@ -514,7 +526,7 @@ export default function CustomerDetailScreen() {
                     }}
                     className={`flex-1 rounded-full py-2 ${active ? "bg-primary" : ""}`}
                   >
-                    <Text className={`text-center text-body font-inter-semibold ${active ? "text-surface" : "text-textSecondary"}`}>
+                    <Text className={`text-center text-body font-inter-semibold ${active ? "text-surface" : "text-textSecondary dark:text-textSecondary-dark"}`}>
                       {tab}
                     </Text>
                   </Pressable>
@@ -529,12 +541,12 @@ export default function CustomerDetailScreen() {
 
           {listItems.length === 0 ? (
             <View className="items-center px-4 pb-4 pt-5">
-              <View className="h-20 w-20 items-center justify-center rounded-2xl border-2 border-dashed border-success bg-success-bg">
+              <View className="h-20 w-20 items-center justify-center rounded-2xl border-2 border-dashed border-success bg-success-bg dark:bg-success-bg-dark">
                 <Receipt size={30} color={colors.primary} strokeWidth={1.8} />
               </View>
 
-              <Text className="mt-4 text-section-title text-textPrimary">No transactions yet</Text>
-              <Text className="mt-1 text-center text-body text-textSecondary">
+              <Text className="mt-4 text-section-title text-textPrimary dark:text-textPrimary-dark">No transactions yet</Text>
+              <Text className="mt-1 text-center text-body text-textSecondary dark:text-textSecondary-dark">
                 Add an entry or record a payment to start this customer ledger.
               </Text>
 
@@ -552,11 +564,11 @@ export default function CustomerDetailScreen() {
                 </Pressable>
 
                 <Pressable
-                  className={`flex-1 rounded-xl py-3 ${hasPendingPayment ? "bg-primary" : "bg-border"}`}
+                  className={`flex-1 rounded-xl py-3 ${hasPendingPayment ? "bg-primary" : "bg-border dark:bg-border-dark"}`}
                   onPress={() => openPaymentFlow(customer.pendingOrderBalance ?? 0)}
                   disabled={!hasPendingPayment}
                 >
-                  <Text className={`text-center text-body font-inter-bold ${hasPendingPayment ? "text-surface" : "text-textSecondary"}`}>
+                  <Text className={`text-center text-body font-inter-bold ${hasPendingPayment ? "text-surface" : "text-textSecondary dark:text-textSecondary-dark"}`}>
                     Record Payment
                   </Text>
                 </Pressable>
@@ -569,7 +581,7 @@ export default function CustomerDetailScreen() {
                   return (
                     <Text
                       key={item.key}
-                      className="px-4 pb-2 pt-4 text-caption font-inter-bold uppercase tracking-widest text-textSecondary"
+                      className="px-4 pb-2 pt-4 text-caption font-inter-bold uppercase tracking-widest text-textSecondary dark:text-textSecondary-dark"
                     >
                       {item.label}
                     </Text>
@@ -591,10 +603,14 @@ export default function CustomerDetailScreen() {
         </View>
       </ScrollView>
 
-      <View className="flex-row gap-3 border-t border-border bg-surface px-4 py-4">
+      <View className="flex-row gap-3 border-t border-border bg-surface px-4 py-4 dark:border-border-dark dark:bg-surface-dark">
         <Pressable
           className={`flex-1 flex-row items-center justify-center rounded-full py-4 ${
-            customer.transactions.length === 0 ? "bg-border" : customer.outstandingBalance > 0 ? "bg-net-position" : "bg-search"
+            customer.transactions.length === 0
+              ? "bg-border dark:bg-border-dark"
+              : customer.outstandingBalance > 0
+                ? "bg-net-position dark:bg-net-position-dark"
+                : "bg-search dark:bg-search-dark"
           }`}
           onPress={downloadStatement}
           disabled={exporting || customer.transactions.length === 0}
@@ -626,7 +642,7 @@ export default function CustomerDetailScreen() {
         </Pressable>
 
         <Pressable
-          className={`flex-1 flex-row items-center justify-center rounded-full py-4 ${customer.phone ? "bg-success" : "bg-border"}`}
+          className={`flex-1 flex-row items-center justify-center rounded-full py-4 ${customer.phone ? "bg-success" : "bg-border dark:bg-border-dark"}`}
           onPress={sendWhatsAppReminder}
           disabled={!customer.phone}
         >
@@ -635,7 +651,7 @@ export default function CustomerDetailScreen() {
             color={customer.phone ? colors.surface : colors.textSecondary}
             strokeWidth={2}
           />
-          <Text className={`ml-2 text-body font-inter-bold ${customer.phone ? "text-surface" : "text-textSecondary"}`}>
+          <Text className={`ml-2 text-body font-inter-bold ${customer.phone ? "text-surface" : "text-textSecondary dark:text-textSecondary-dark"}`}>
             WhatsApp
           </Text>
         </Pressable>

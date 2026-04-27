@@ -1,12 +1,16 @@
 import { CustomerIcon, HomeIcon } from "@/assets/icons/main";
-import { colors, spacing, typography } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { Tabs, useRouter } from "expo-router";
 import { Plus, Receipt, UserRound } from "lucide-react-native";
+import { useMemo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function NewBillButton() {
   const router = useRouter();
+  const { colors, spacing, typography } = useTheme();
+  const styles = useMemo(() => createStyles(colors, spacing, typography), [colors, spacing, typography]);
+
   return (
     <TouchableOpacity
       onPress={() => router.push("/(main)/new-entry")}
@@ -30,6 +34,7 @@ function NewBillButton() {
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const { colors, spacing, typography } = useTheme();
 
   return (
     <Tabs
@@ -134,47 +139,51 @@ export default function TabLayout() {
   );
 }
 
-const styles = StyleSheet.create({
-  fabWrapper: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  fabContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  fab: {
-    width: spacing.fabSize,
-    height: spacing.fabSize,
-    borderRadius: spacing.fabSize / 2,
-    backgroundColor: colors.fabBg, // orange — FAB source of truth
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 4,
-    borderColor: colors.surface,
-    marginTop: -(spacing.fabSize / 2),
-    shadowColor: colors.textPrimary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  labelBadge: {
-    position: "absolute",
-    top: -(spacing.fabSize / 2) - 16,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xs,
-    borderRadius: 20,
-    borderWidth: 1,
-    // width: spacing.fabSize + 24,
-    borderColor: colors.borderLight,
-  },
-  fabLabelText: {
-    fontSize: typography.caption.fontSize,
-    fontWeight: "800" as const,
-    textAlign: "center",
-    color: colors.textPrimary,
-  },
-});
+const createStyles = (
+  colors: ReturnType<typeof useTheme>["colors"],
+  spacing: ReturnType<typeof useTheme>["spacing"],
+  typography: ReturnType<typeof useTheme>["typography"],
+) =>
+  StyleSheet.create({
+    fabWrapper: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    fabContainer: {
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    fab: {
+      width: spacing.fabSize,
+      height: spacing.fabSize,
+      borderRadius: spacing.fabSize / 2,
+      backgroundColor: colors.fabBg,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 4,
+      borderColor: colors.surface,
+      marginTop: -(spacing.fabSize / 2),
+      shadowColor: colors.textPrimary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 10,
+      elevation: 5,
+    },
+    labelBadge: {
+      position: "absolute",
+      top: -(spacing.fabSize / 2) - 16,
+      backgroundColor: colors.surface,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.xs,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: colors.borderLight,
+    },
+    fabLabelText: {
+      fontSize: typography.caption.fontSize,
+      fontWeight: "800" as const,
+      textAlign: "center",
+      color: colors.textPrimary,
+    },
+  });

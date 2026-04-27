@@ -1,8 +1,10 @@
-import { colors } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
 export default function Loader({ message }: { message?: string }) {
+  const { colors } = useTheme();
+
   // Show a fallback hint after 2 s so users aren't left staring at a blank
   // spinner during slow profile fetches or network delays.
   const [showHint, setShowHint] = useState(false);
@@ -18,7 +20,7 @@ export default function Loader({ message }: { message?: string }) {
     <View className="flex-1 items-center justify-center mt-6">
       <ActivityIndicator size="large" color={colors.primaryDark} />
       {displayText ? (
-        <Text className="mt-3 text-neutral-500">{displayText}</Text>
+        <Text className="mt-3" style={{ color: colors.textSecondary }}>{displayText}</Text>
       ) : null}
     </View>
   );

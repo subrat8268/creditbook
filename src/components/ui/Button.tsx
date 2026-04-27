@@ -1,4 +1,4 @@
-import { colors, radius, spacing, typography } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { clsx } from "clsx";
 import React, { memo, useRef } from "react";
 import { ActivityIndicator, Animated, Text, TouchableOpacity, View } from "react-native";
@@ -24,6 +24,7 @@ export default memo(function Button({
   icon,
   iconPosition = "left",
 }: Props) {
+  const { colors, radius, spacing, typography } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
@@ -51,7 +52,7 @@ export default memo(function Button({
   });
 
   const textStyle = clsx("text-base font-bold", {
-    "text-white": variant !== "outline" && variant !== "secondary" && !disabled,
+    "text-surface": variant !== "outline" && variant !== "secondary" && !disabled,
     "text-primary": variant === "outline" && !disabled,
     "text-textPrimary": variant === "secondary" && !disabled,
   });

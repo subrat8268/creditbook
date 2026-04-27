@@ -4,6 +4,7 @@ const theme = require("./src/utils/theme");
 module.exports = {
   content: ["./app/**/*.{js,ts,jsx,tsx}", "./src/**/*.{js,ts,jsx,tsx}"],
   presets: [require("nativewind/preset")],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
@@ -11,10 +12,12 @@ module.exports = {
         primary: theme.colors.primary,
         "primary-dark": theme.colors.primaryDark,
         "primary-light": theme.colors.primaryLight,
+        "primary-soft-dark": theme.darkColors.primaryLight,
 
         // ── Success ──────────────────────────────
         success: theme.colors.success,
         "success-bg": theme.colors.successBg,
+        "success-bg-dark": theme.darkColors.successBg,
         "success-light": theme.colors.successLight,
         "success-dark": theme.colors.successDark,
         "success-text": theme.colors.paid.text,
@@ -22,6 +25,7 @@ module.exports = {
         // ── Danger / Red ─────────────────────────
         danger: theme.colors.danger, // #EF4444
         "danger-bg": theme.colors.dangerBg, // #FEF2F2 — panel bg
+        "danger-bg-dark": theme.darkColors.dangerBg,
         "danger-light": theme.colors.overdue.bg, // #FEE2E2
         "danger-dark": theme.colors.dangerStrong,
         "danger-text": theme.colors.overdue.text, // #DC2626
@@ -30,6 +34,7 @@ module.exports = {
         // ── Warning / Amber ───────────────────────
         warning: theme.colors.warning, // #F59E0B
         "warning-bg": theme.colors.warningBg, // #FFFBEB — panel bg
+        "warning-bg-dark": theme.darkColors.warningBg,
         "warning-light": theme.colors.pending.bg, // #FEF3C7
         "warning-dark": theme.colors.pending.text, // #D97706
         "warning-text": theme.colors.pending.text,
@@ -43,18 +48,25 @@ module.exports = {
 
         // ── Layout surfaces ───────────────────────
         background: theme.colors.background, // #F6F7F9 — app bg
+        "background-dark": theme.darkColors.background,
         surface: theme.colors.surface, // #FFFFFF — cards / modals
+        "surface-dark": theme.darkColors.surface,
         fab: theme.colors.fabBg,
 
         // ── Typography ────────────────────────────
         textDark: theme.colors.textPrimary, // #1C1C1E — headings
         textPrimary: theme.colors.textPrimary, // #1C1C1E — body
+        "textPrimary-dark": theme.darkColors.textPrimary,
         textSecondary: theme.colors.textSecondary, // #6B7280 — labels / captions
+        "textSecondary-dark": theme.darkColors.textSecondary,
         textMuted: theme.colors.textMuted, // placeholder / muted
+        "textMuted-dark": theme.darkColors.textMuted,
 
         // ── Borders & dividers ────────────────────
         border: theme.colors.border, // #E5E7EB
+        "border-dark": theme.darkColors.border,
         "border-soft": theme.colors.borderLight, // softer inner dividers
+        "border-soft-dark": theme.darkColors.borderLight,
         divider: theme.colors.border, // #E5E7EB
 
         // ── Status chips ──────────────────────────
@@ -67,7 +79,9 @@ module.exports = {
 
         // ── Misc ─────────────────────────────────
         icon: theme.colors.iconBg,
+        "icon-dark": theme.darkColors.iconBg,
         search: theme.colors.surfaceAlt,
+        "search-dark": theme.darkColors.surfaceAlt,
 
         // ── Dashboard hero accents ───────────────
         "dashboard-hero-text": theme.colors.dashboard.heroText,
@@ -75,6 +89,7 @@ module.exports = {
         "dashboard-hero-chip-bg": theme.colors.dashboard.heroChipBg,
         "dashboard-hero-chip-border": theme.colors.dashboard.heroChipBorder,
         "dashboard-hero-orb": theme.colors.dashboard.heroOrb,
+        "dashboard-hero-orb-dark": theme.darkColors.dashboard.heroOrb,
 
         // ── Customer detail hero accents ───────
         "customer-hero-text": theme.colors.customerDetail.heroText,
@@ -82,9 +97,11 @@ module.exports = {
         "customer-hero-chip-bg": theme.colors.customerDetail.heroChipBg,
         "customer-hero-chip-border": theme.colors.customerDetail.heroChipBorder,
         "customer-hero-orb": theme.colors.customerDetail.heroOrb,
+        "customer-hero-orb-dark": theme.darkColors.customerDetail.heroOrb,
 
         // ── Specialized single-use surfaces ────
         "net-position": theme.gradients.netPosition,
+        "net-position-dark": theme.darkGradients.netPosition,
       },
       borderColor: {
         light: theme.colors.border,

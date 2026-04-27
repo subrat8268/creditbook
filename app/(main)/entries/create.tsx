@@ -10,13 +10,13 @@ import { useCreateOrder } from "@/src/hooks/useEntries";
 import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 import { useAuthStore } from "@/src/store/authStore";
 import { useOrderStore } from "@/src/store/orderStore";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { BillItem, generateBillPdf } from "@/src/utils/generateBillPdf";
-import { colors } from "@/src/utils/theme";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { ArrowLeft, Pencil } from "lucide-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -29,28 +29,28 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const AVATAR_COLORS = [
-  colors.danger,
-  colors.warning,
-  colors.primary,
-  ...colors.avatarPalette,
-];
-
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
-function getAvatarColor(name: string): string {
+function getAvatarColor(name: string, palette: readonly string[]): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  return palette[Math.abs(hash) % palette.length] as string;
 }
 
 export default function CreateOrderScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const avatarColors = useMemo(
+    () => [colors.danger, colors.warning, colors.primary, ...colors.avatarPalette],
+    [colors],
+  );
+
   const {
     customer: customerParams,
     amount: amountParam,
@@ -67,6 +67,7 @@ export default function CreateOrderScreen() {
   // Zustand Draft Entry Store
   const setCustomer = useOrderStore((state) => state.setCustomer);
   const selectedCustomerId = useOrderStore((state) => state.selectedCustomerId);
+  const draftItems = useOrderStore((state) => state.items);
   const clearOrder = useOrderStore((state) => state.clearOrder);
 
   // Local ephemeral layout/picker states
@@ -125,6 +126,7 @@ export default function CreateOrderScreen() {
   const { show: showToast } = useToast();
   const createOrderMutation = useCreateOrder(vendorId!);
   const { queueLength } = useNetworkSync();
+  const hasItems = draftItems.length > 0;
 
   // Calculate effective total (amount-first flow only)
   const entryAmount = parseFloat(quickAmount) || 0;
@@ -299,13 +301,13 @@ export default function CreateOrderScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           className="flex-1"
         >
           {/* Header */}
-          <View className="flex-row items-center px-4 py-3 bg-surface border-b border-border">
+          <View className="flex-row items-center border-b border-border bg-surface px-4 py-3 dark:border-border-dark dark:bg-surface-dark">
             <TouchableOpacity
               onPress={() => router.back()}
               className="mr-3 p-1"
@@ -316,13 +318,13 @@ export default function CreateOrderScreen() {
                 strokeWidth={2.2}
               />
             </TouchableOpacity>
-            <Text className="flex-1 text-[18px] font-bold text-textPrimary">
+            <Text className="flex-1 text-[18px] font-bold text-textPrimary dark:text-textPrimary-dark">
               Add Entry
             </Text>
             <View className="mr-2">
               <SyncStatus />
             </View>
-            <View className="px-3 py-1 rounded-full border border-primary bg-primaryLight">
+            <View className="rounded-full border border-primary bg-primary-light px-3 py-1 dark:bg-primary-soft-dark">
               <Text className="text-[13px] font-bold text-primary">
                 {entryType === "payment" ? "PAYMENT" : invoiceRef}
               </Text>
@@ -337,15 +339,15 @@ export default function CreateOrderScreen() {
           >
 
             {/* Person picker (inline, amount-first flow) */}
-            <View className="rounded-2xl overflow-hidden bg-surface border border-border">
-              <View className="flex-row items-center px-4 py-4 border-b border-border">
+            <View className="overflow-hidden rounded-2xl border border-border bg-surface dark:border-border-dark dark:bg-surface-dark">
+              <View className="flex-row items-center border-b border-border px-4 py-4 dark:border-border-dark">
                 <View
                   className="rounded-full items-center justify-center mr-3 w-[52px] h-[52px]"
-                  style={{
-                    backgroundColor: selectedCustomerMeta
-                      ? getAvatarColor(selectedCustomerMeta.name)
-                      : colors.border,
-                  }}
+                    style={{
+                      backgroundColor: selectedCustomerMeta
+                        ? getAvatarColor(selectedCustomerMeta.name, avatarColors)
+                        : colors.border,
+                    }}
                 >
                   <Text className="font-bold text-surface text-[17px]">
                     {selectedCustomerMeta
@@ -356,7 +358,7 @@ export default function CreateOrderScreen() {
 
                 <View className="flex-1">
                   <Text
-                    className="text-[17px] font-bold text-textPrimary"
+                    className="text-[17px] font-bold text-textPrimary dark:text-textPrimary-dark"
                     numberOfLines={1}
                   >
                     {selectedCustomerMeta
@@ -364,7 +366,7 @@ export default function CreateOrderScreen() {
                       : "Select Person"}
                   </Text>
                   {!selectedCustomerMeta && (
-                    <Text className="text-[14px] text-textSecondary mt-0.5">
+                    <Text className="mt-0.5 text-[14px] text-textSecondary dark:text-textSecondary-dark">
                       Choose from your people list below
                     </Text>
                   )}
@@ -376,7 +378,10 @@ export default function CreateOrderScreen() {
               {selectedCustomerMeta &&
                 previousBalance > 0 &&
                 !isFetchingBalance && (
-                  <View className="flex-row items-center gap-2 px-4 py-3 bg-dangerBg border-t border-border">
+                  <View
+                    className="flex-row items-center gap-2 border-t border-border px-4 py-3 dark:border-border-dark"
+                    style={{ backgroundColor: colors.dangerBg }}
+                  >
                     <Text className="text-[13px] font-bold text-danger">
                       ⚠️ Previous Balance: ₹
                       {previousBalance.toLocaleString("en-IN")}
@@ -396,10 +401,10 @@ export default function CreateOrderScreen() {
 
             {/* QUICK AMOUNT INPUT (amount-first) */}
             <View className="mt-2">
-              <Text className="text-[11px] font-bold text-textSecondary tracking-widest mb-2">
+              <Text className="mb-2 text-[11px] font-bold tracking-widest text-textSecondary dark:text-textSecondary-dark">
                 AMOUNT
               </Text>
-              <View className="rounded-2xl bg-surface border-2 border-primary px-5 py-6">
+              <View className="rounded-2xl border-2 border-primary bg-surface px-5 py-6 dark:bg-surface-dark">
                 <View className="flex-row items-center">
                   <Text
                     className="text-[40px] font-extrabold mr-1"
@@ -422,7 +427,7 @@ export default function CreateOrderScreen() {
                   />
                 </View>
                 {hasItems && entryType === "bill" && (
-                  <Text className="text-[11px] text-textSecondary mt-2">
+                  <Text className="mt-2 text-[11px] text-textSecondary dark:text-textSecondary-dark">
                     Amount calculated from items below
                   </Text>
                 )}
@@ -431,10 +436,10 @@ export default function CreateOrderScreen() {
 
             {/* OPTIONAL NOTE */}
             <View>
-              <Text className="text-[11px] font-bold text-textSecondary tracking-widest mb-2">
+              <Text className="mb-2 text-[11px] font-bold tracking-widest text-textSecondary dark:text-textSecondary-dark">
                 NOTE (OPTIONAL)
               </Text>
-              <View className="rounded-2xl bg-surface border border-border px-4 py-3">
+              <View className="rounded-2xl border border-border bg-surface px-4 py-3 dark:border-border-dark dark:bg-surface-dark">
                 <Input
                   placeholder={
                     entryType === "payment"
@@ -454,19 +459,19 @@ export default function CreateOrderScreen() {
 
             {/* SUMMARY (Always visible) */}
             {entryType === "bill" && (quickAmount || hasItems) && (
-              <View className="rounded-2xl bg-surface border border-border p-4 mt-2">
+              <View className="mt-2 rounded-2xl border border-border bg-surface p-4 dark:border-border-dark dark:bg-surface-dark">
                 <View className="flex-row justify-between items-center mb-2">
-                  <Text className="text-[14px] text-textSecondary">
+                  <Text className="text-[14px] text-textSecondary dark:text-textSecondary-dark">
                     Entry Amount
                   </Text>
-                  <Text className="text-[16px] font-bold text-textPrimary">
+                  <Text className="text-[16px] font-bold text-textPrimary dark:text-textPrimary-dark">
                     ₹{entryAmount.toFixed(2)}
                   </Text>
                 </View>
 
                 {previousBalance > 0 && (
                   <View className="flex-row justify-between items-center mb-2">
-                    <Text className="text-[14px] text-textSecondary">
+                    <Text className="text-[14px] text-textSecondary dark:text-textSecondary-dark">
                       Previous Balance
                     </Text>
                     <Text className="text-[16px] font-bold text-danger">
@@ -481,7 +486,7 @@ export default function CreateOrderScreen() {
                 />
 
                 <View className="flex-row justify-between items-center">
-                  <Text className="text-[16px] font-bold text-textPrimary">
+                  <Text className="text-[16px] font-bold text-textPrimary dark:text-textPrimary-dark">
                     Grand Total
                   </Text>
                   <Text
@@ -538,25 +543,26 @@ export default function CreateOrderScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  quickAmountInputContainer: {
-    borderWidth: 0,
-    backgroundColor: "transparent",
-    paddingHorizontal: 0,
-    minHeight: 44,
-  },
-  quickAmountInput: {
-    fontSize: 36,
-    fontWeight: "800",
-    color: colors.textPrimary,
-  },
-  noteInputContainer: {
-    borderWidth: 0,
-    backgroundColor: "transparent",
-    paddingHorizontal: 0,
-  },
-  noteInput: {
-    fontSize: 15,
-    color: colors.textPrimary,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useTheme>["colors"]) =>
+  StyleSheet.create({
+    quickAmountInputContainer: {
+      borderWidth: 0,
+      backgroundColor: "transparent",
+      paddingHorizontal: 0,
+      minHeight: 44,
+    },
+    quickAmountInput: {
+      fontSize: 36,
+      fontWeight: "800",
+      color: colors.textPrimary,
+    },
+    noteInputContainer: {
+      borderWidth: 0,
+      backgroundColor: "transparent",
+      paddingHorizontal: 0,
+    },
+    noteInput: {
+      fontSize: 15,
+      color: colors.textPrimary,
+    },
+  });

@@ -1,5 +1,5 @@
 import { useNetworkSync } from "@/src/hooks/useNetworkSync";
-import { colors } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { AlertCircle, Check, RefreshCw, WifiOff } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
@@ -13,6 +13,7 @@ interface SyncStatusProps {
 
 // Unified SyncStatus component - replaces 3 separate components
 export default function SyncStatus({ variant = 'inline', className }: SyncStatusProps) {
+  const { colors } = useTheme();
   const { syncStatus, isConnected, queueLength, hasSyncError, triggerSync } =
     useNetworkSync();
 

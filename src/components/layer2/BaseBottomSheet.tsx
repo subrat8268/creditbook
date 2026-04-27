@@ -1,4 +1,4 @@
-import { colors, spacing } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -41,8 +41,43 @@ const BaseBottomSheet = forwardRef<BottomSheetModal, Props>(function BaseBottomS
   },
   ref,
 ) {
+  const { colors, spacing } = useTheme();
   const modalRef = useRef<BottomSheetModal>(null);
   const resolvedSnapPoints = useMemo(() => snapPoints ?? ["90%"], [snapPoints]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        indicator: {
+          backgroundColor: colors.border,
+          width: 40,
+        },
+        background: {
+          backgroundColor: colors.surface,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+        },
+        content: {
+          paddingHorizontal: spacing.screenPadding,
+          paddingBottom: spacing["3xl"],
+        },
+        header: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingVertical: spacing.sm,
+          marginBottom: spacing.sm,
+        },
+        title: {
+          fontSize: 20,
+          fontWeight: "600",
+          color: colors.textPrimary,
+        },
+        closeButton: {
+          padding: spacing.xs,
+        },
+      }),
+    [colors, spacing],
+  );
 
   useImperativeHandle(ref, () => modalRef.current as BottomSheetModal, []);
 
@@ -115,34 +150,3 @@ const BaseBottomSheet = forwardRef<BottomSheetModal, Props>(function BaseBottomS
 });
 
 export default memo(BaseBottomSheet);
-
-const styles = StyleSheet.create({
-  indicator: {
-    backgroundColor: colors.border,
-    width: 40,
-  },
-  background: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-  },
-  content: {
-    paddingHorizontal: spacing.screenPadding,
-    paddingBottom: spacing["3xl"],
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: colors.textPrimary,
-  },
-  closeButton: {
-    padding: spacing.xs,
-  },
-});

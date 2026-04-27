@@ -5,7 +5,7 @@ import Avatar from "@/src/components/ui/Avatar";
 import Button from "@/src/components/ui/Button";
 import Input from "@/src/components/ui/Input";
 import MoneyAmount from "@/src/components/ui/MoneyAmount";
-import { colors, radius, spacing, typography } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Check } from "lucide-react-native";
 import { forwardRef, useEffect, useState } from "react";
@@ -30,6 +30,7 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
     { onSuccess, orderId, balanceDue, customerId, customerName, onDismiss, initialAmount },
     ref,
   ) => {
+    const { colors, radius, spacing, typography } = useTheme();
     const [amount, setAmount] = useState(String(initialAmount ?? balanceDue));
     const [mode, setMode] = useState<PaymentMode>("Cash");
     const [notes, setNotes] = useState("");

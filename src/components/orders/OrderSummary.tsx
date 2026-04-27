@@ -1,6 +1,6 @@
 import Input from "@/src/components/ui/Input";
-import { colors, spacing, typography } from "@/src/utils/theme";
-import { useState } from "react";
+import { useTheme } from "@/src/utils/ThemeProvider";
+import { useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 interface OrderSummaryProps {
@@ -24,10 +24,61 @@ export default function OrderSummary({
   onLoadingChargeChange,
   onTaxChange,
 }: OrderSummaryProps) {
+  const { colors, spacing, typography } = useTheme();
   const [loadingInput, setLoadingInput] = useState(
     loadingCharge > 0 ? loadingCharge.toString() : "",
   );
   const [taxInput, setTaxInput] = useState(taxPercent > 0 ? taxPercent.toString() : "");
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        row: {
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: spacing.sm,
+        },
+        inputRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: spacing.sm,
+        },
+        label: {
+          ...typography.caption,
+          color: colors.textSecondary,
+        },
+        value: {
+          ...typography.caption,
+          color: colors.textSecondary,
+        },
+        smallInputContainer: {
+          minWidth: 100,
+          maxWidth: 120,
+          minHeight: 36,
+          paddingHorizontal: spacing.sm,
+        },
+        smallInputText: {
+          fontSize: 13,
+        },
+        divider: {
+          height: 1,
+          backgroundColor: colors.border,
+          marginVertical: spacing.sm,
+        },
+        totalLabel: {
+          ...typography.body,
+          fontWeight: "600",
+          color: colors.textPrimary,
+        },
+        totalValue: {
+          ...typography.body,
+          fontWeight: "600",
+          color: colors.danger,
+        },
+      }),
+    [colors, spacing, typography],
+  );
 
   const handleLoadingChange = (text: string) => {
     setLoadingInput(text);
@@ -99,50 +150,3 @@ export default function OrderSummary({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: spacing.sm,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: spacing.sm,
-  },
-  label: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  value: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  smallInputContainer: {
-    minWidth: 100,
-    maxWidth: 120,
-    minHeight: 36,
-    paddingHorizontal: spacing.sm,
-  },
-  smallInputText: {
-    fontSize: 13,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: spacing.sm,
-  },
-  totalLabel: {
-    ...typography.body,
-    fontWeight: "600",
-    color: colors.textPrimary,
-  },
-  totalValue: {
-    ...typography.body,
-    fontWeight: "600",
-    color: colors.danger,
-  },
-});

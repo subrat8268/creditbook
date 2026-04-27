@@ -4,11 +4,11 @@ import Button from "@/src/components/ui/Button";
 import Header from "@/src/components/layer2/Header";
 import ListItem from "@/src/components/layer2/ListItem";
 import ScreenLayout from "@/src/components/layer2/ScreenLayout";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { useOrders } from "@/src/hooks/useEntries";
 import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 import { useAuthStore } from "@/src/store/authStore";
-import { colors, spacing } from "@/src/utils/theme";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
@@ -19,20 +19,13 @@ import {
   View,
 } from "react-native";
 
-// Filter chips
-const FILTER_OPTIONS: { label: StatusFilter; color: string; bg: string }[] = [
-  { label: "All", color: colors.textPrimary, bg: colors.surface },
-  { label: "Paid", color: colors.primary, bg: colors.successBg },
-  { label: "Pending", color: colors.warning, bg: colors.warningBg },
-  { label: "Overdue", color: colors.danger, bg: colors.dangerBg },
-];
-
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 // Filter type
 type StatusFilter = "All" | "Paid" | "Pending" | "Overdue";
 
 export default function OrdersScreen() {
+  const { colors, spacing } = useTheme();
   const { profile } = useAuthStore();
   const router = useRouter();
 
@@ -52,6 +45,13 @@ export default function OrdersScreen() {
 
   const { isConnected } = useNetworkSync();
 
+  const FILTER_OPTIONS: { label: StatusFilter; color: string; bg: string }[] = [
+    { label: "All", color: colors.textPrimary, bg: colors.surface },
+    { label: "Paid", color: colors.primary, bg: colors.successBg },
+    { label: "Pending", color: colors.warning, bg: colors.warningBg },
+    { label: "Overdue", color: colors.danger, bg: colors.dangerBg },
+  ];
+
   // Filter orders by status (client-side)
   const orders = useMemo(() => {
     if (!rawOrders) return [];
@@ -61,9 +61,16 @@ export default function OrdersScreen() {
       if (filter === "Paid") return order.status === "Paid";
       if (filter === "Pending") return order.status === "Pending" || order.status === "Partially Paid";
       if (filter === "Overdue") {
-        // Overdue if pending for 30+ days
-        const days = Math.floor((Date.now() - new Date(order.created_at).getTime()) / (1000 * 60 * 60 * 24));
-        return order.status === "Pending" && days > 30;
+        const dueDateValue =
+          "due_date" in order && typeof order.due_date === "string"
+            ? order.due_date
+            : null;
+        if (!dueDateValue) return false;
+        const dueDate = new Date(dueDateValue);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        dueDate.setHours(0, 0, 0, 0);
+        return order.status !== "Paid" && dueDate < today;
       }
       return true;
     });
@@ -100,7 +107,7 @@ export default function OrdersScreen() {
 
       {/* ── Header ────────────────────────────────────────────────────── */}
       <View
-        className="bg-surface border-b border-border"
+        className="bg-surface border-b border-border dark:bg-surface-dark dark:border-border-dark"
         style={{
           paddingHorizontal: spacing.screenPadding,
           paddingTop: spacing.sm,
@@ -153,13 +160,13 @@ export default function OrdersScreen() {
       {/* ── Entry list ────────────────────────────────────────────────── */}
       {isLoading && orders.length === 0 ? (
         <View className="flex-1 items-center justify-center">
-          <Text className="text-textSecondary text-[14px]">
+          <Text className="text-textSecondary dark:text-textSecondary-dark text-[14px]">
             Loading entries…
           </Text>
         </View>
       ) : error ? (
         <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-danger text-[14px] text-center">
+          <Text className="text-danger dark:text-danger-light text-[14px] text-center">
             Could not load entries. Pull down to retry.
           </Text>
         </View>
@@ -195,10 +202,10 @@ export default function OrdersScreen() {
           }}
           ListFooterComponent={
             isFetchingNextPage ? (
-              <Text
-                className="text-center text-textSecondary text-[13px]"
-                style={{ padding: spacing.lg }}
-              >
+                <Text
+                  className="text-center text-textSecondary dark:text-textSecondary-dark text-[13px]"
+                  style={{ padding: spacing.lg }}
+                >
                 Loading more…
               </Text>
             ) : null
@@ -215,10 +222,10 @@ export default function OrdersScreen() {
               >
                 <Text style={{ fontSize: 36 }}>📋</Text>
               </View>
-                <Text className="text-textPrimary text-[18px] font-bold mb-2 text-center">
+                <Text className="text-textPrimary dark:text-textPrimary-dark text-[18px] font-bold mb-2 text-center">
                   {isConnected ? "No entries yet" : "You’re offline"}
                 </Text>
-              <Text className="text-textSecondary text-[14px] text-center leading-6">
+              <Text className="text-textSecondary dark:text-textSecondary-dark text-[14px] text-center leading-6">
                 {isConnected
                   ? "Add your first entry to start tracking."
                   : "Connect to the internet to load entries."}

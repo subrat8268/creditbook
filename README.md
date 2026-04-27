@@ -108,7 +108,7 @@ kredBook/
 
 - The repo still contains some legacy/transitional names in code such as `order`, `orderId`, and supplier/distributor-era concepts.
 - Current product mode is still strict and single-purpose: `Customer`, `Entry`, `Payment`.
-- Phase 3 is in progress: dark mode, stronger WhatsApp-first sharing, and overdue badge consistency.
+- Phase 3 is in progress: dark mode is now live (Profile toggle), with WhatsApp-first sharing and overdue badge consistency still underway.
 - Legacy internals may remain, but docs and user-facing language should stay aligned to the active product truth.
 
 ## Development Rules

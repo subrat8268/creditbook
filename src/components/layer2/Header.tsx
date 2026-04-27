@@ -1,6 +1,6 @@
-import { colors, spacing, typography } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { ArrowLeft } from "lucide-react-native";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 type Props = {
@@ -11,6 +11,42 @@ type Props = {
 };
 
 export default memo(function Header({ title, subtitle, onBack, rightAction }: Props) {
+  const { colors, spacing, typography } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flexDirection: "row",
+          alignItems: "center",
+          backgroundColor: colors.surface,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+          paddingHorizontal: spacing.screenPadding,
+          paddingVertical: spacing.sm,
+        },
+        leading: {
+          width: 36,
+          alignItems: "flex-start",
+          justifyContent: "center",
+        },
+        center: {
+          flex: 1,
+        },
+        trailing: {
+          minWidth: 36,
+          alignItems: "flex-end",
+        },
+        backButton: {
+          paddingVertical: spacing.xs,
+          paddingRight: spacing.xs,
+        },
+        subtitle: {
+          marginTop: spacing.xs,
+        },
+      }),
+    [colors, spacing],
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.leading}>
@@ -35,35 +71,4 @@ export default memo(function Header({ title, subtitle, onBack, rightAction }: Pr
       <View style={styles.trailing}>{rightAction}</View>
     </View>
   );
-});
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingHorizontal: spacing.screenPadding,
-    paddingVertical: spacing.sm,
-  },
-  leading: {
-    width: 36,
-    alignItems: "flex-start",
-    justifyContent: "center",
-  },
-  center: {
-    flex: 1,
-  },
-  trailing: {
-    minWidth: 36,
-    alignItems: "flex-end",
-  },
-  backButton: {
-    paddingVertical: spacing.xs,
-    paddingRight: spacing.xs,
-  },
-  subtitle: {
-    marginTop: spacing.xs,
-  },
 });

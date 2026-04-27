@@ -1,10 +1,10 @@
 import BaseBottomSheet from "@/src/components/layer2/BaseBottomSheet";
 import Loader from "@/src/components/feedback/Loader";
 import SearchBar from "@/src/components/ui/SearchBar";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
-import { type ReactElement } from "react";
+import { type ReactElement, useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { colors, spacing, typography } from "@/src/utils/theme";
 
 interface BottomSheetPickerProps {
   visible: boolean;
@@ -33,6 +33,36 @@ export default function BottomSheetPicker({
   keyExtractor,
   renderItem,
 }: BottomSheetPickerProps) {
+  const { colors, spacing, typography } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        sheetContent: {
+          paddingHorizontal: spacing.screenPadding,
+          paddingBottom: spacing["3xl"],
+          flex: 1,
+        },
+        searchWrap: {
+          marginBottom: spacing.md,
+        },
+        loaderWrap: {
+          paddingVertical: spacing.lg,
+        },
+        emptyWrap: {
+          paddingVertical: spacing.xl,
+          alignItems: "center",
+        },
+        emptyText: {
+          ...typography.caption,
+          color: colors.textSecondary,
+        },
+        listContent: {
+          paddingBottom: spacing["3xl"],
+        },
+      }),
+    [colors, spacing, typography],
+  );
+
   return (
     <BaseBottomSheet
       visible={visible}
@@ -74,7 +104,7 @@ export default function BottomSheetPicker({
         ListEmptyComponent={
           !isLoading ? (
             <View style={styles.emptyWrap}>
-              <Text style={[typography.caption, styles.emptyText]}>No items found</Text>
+              <Text style={styles.emptyText}>No items found</Text>
             </View>
           ) : null
         }
@@ -83,27 +113,3 @@ export default function BottomSheetPicker({
     </BaseBottomSheet>
   );
 }
-
-const styles = StyleSheet.create({
-  sheetContent: {
-    paddingHorizontal: spacing.screenPadding,
-    paddingBottom: spacing["3xl"],
-    flex: 1,
-  },
-  searchWrap: {
-    marginBottom: spacing.md,
-  },
-  loaderWrap: {
-    paddingVertical: spacing.lg,
-  },
-  emptyWrap: {
-    paddingVertical: spacing.xl,
-    alignItems: "center",
-  },
-  emptyText: {
-    color: colors.textSecondary,
-  },
-  listContent: {
-    paddingBottom: spacing["3xl"],
-  },
-});

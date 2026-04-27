@@ -11,6 +11,7 @@ import {
   Languages,
   LogOut,
   Receipt,
+  Moon,
   Smartphone,
   Store,
 } from "lucide-react-native";
@@ -19,6 +20,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -31,7 +33,8 @@ import ListItem from "@/src/components/layer2/ListItem";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { useLanguageStore } from "@/src/store/languageStore";
-import { colors, spacing, typography } from "@/src/utils/theme";
+import { usePreferencesStore } from "@/src/store/preferencesStore";
+import { useTheme } from "@/src/utils/ThemeProvider";
 
 function maskAccount(acc?: string | null): string {
   if (!acc) return "—";
@@ -48,12 +51,17 @@ interface SectionCardProps {
 }
 
 function SectionCard({ title, children }: SectionCardProps) {
+  const { spacing, typography } = useTheme();
+
   return (
     <View
-      className="mb-4 bg-surface rounded-2xl border border-border"
+      className="mb-4 rounded-2xl border border-border bg-surface dark:border-border-dark dark:bg-surface-dark"
       style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: spacing.sm }}
     >
-      <Text style={[typography.caption, { marginBottom: spacing.md, textTransform: "uppercase", letterSpacing: 0.8 }]}>
+      <Text
+        className="dark:text-textSecondary-dark"
+        style={[typography.caption, { marginBottom: spacing.md, textTransform: "uppercase", letterSpacing: 0.8 }]}
+      >
         {title}
       </Text>
       {children}
@@ -72,8 +80,10 @@ interface DetailRowProps {
 }
 
 function DetailRow({ Icon, label, value, last, onPress }: DetailRowProps) {
+  const { colors } = useTheme();
+
   const iconSlot = (
-    <View className="items-center justify-center w-10 h-10 rounded-xl bg-primaryLight">
+    <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary-light dark:bg-primary-soft-dark">
       <Icon size={20} color={colors.primary} strokeWidth={2} />
     </View>
   );
@@ -95,11 +105,14 @@ function DetailRow({ Icon, label, value, last, onPress }: DetailRowProps) {
 export default function ProfileScreen() {
   const { user, profile, logout } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
+  const colorMode = usePreferencesStore((s) => s.colorMode);
+  const toggleColorMode = usePreferencesStore((s) => s.toggleColorMode);
+  const { colors, spacing, typography } = useTheme();
   const router = useRouter();
 
   if (!profile) {
     return (
-      <SafeAreaView className="items-center justify-center flex-1 bg-background">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background dark:bg-background-dark">
         <ActivityIndicator size="large" />
       </SafeAreaView>
     );
@@ -123,11 +136,11 @@ export default function ProfileScreen() {
   const email = user?.email ?? user?.phone ?? "";
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={["top", "bottom"]}>
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* ── Header ── */}
-      <View className="flex-row items-center px-4 py-3 border-b bg-surface border-border">
+      <View className="flex-row items-center border-b border-border bg-surface px-4 py-3 dark:border-border-dark dark:bg-surface-dark">
         <TouchableOpacity
           onPress={() => router.back()}
           hitSlop={8}
@@ -135,7 +148,7 @@ export default function ProfileScreen() {
         >
           <ArrowLeft size={24} color={colors.textPrimary} strokeWidth={2} />
         </TouchableOpacity>
-        <Text style={[typography.sectionTitle, { flex: 1, textAlign: "center" }]}>Profile</Text>
+        <Text className="dark:text-textPrimary-dark" style={[typography.sectionTitle, { flex: 1, textAlign: "center" }]}>Profile</Text>
         <View className="w-10" />
       </View>
 
@@ -147,11 +160,11 @@ export default function ProfileScreen() {
         {/* ── Avatar ── */}
         <View className="items-center py-4 mb-4">
           <Avatar name={profile.business_name || "Your Business"} size="lg" />
-          <Text style={[typography.screenTitle, { marginTop: spacing.md }]}> 
+          <Text className="dark:text-textPrimary-dark" style={[typography.screenTitle, { marginTop: spacing.md }]}> 
             {profile.business_name || "Your Business"}
           </Text>
           {!!email && (
-            <Text style={[typography.caption, { marginTop: spacing.xs }]}> 
+            <Text className="dark:text-textSecondary-dark" style={[typography.caption, { marginTop: spacing.xs }]}> 
               {email}
             </Text>
           )}
@@ -200,14 +213,14 @@ export default function ProfileScreen() {
         {/* ── App Preferences ── */}
         <SectionCard title="APP PREFERENCES">
             <View className="flex-row items-center justify-between py-2 mb-2">
-              <View className="flex-row items-center gap-3">
+            <View className="flex-row items-center gap-3">
               <View
                 className="items-center justify-center w-10 h-10 rounded-xl"
                 style={{ backgroundColor: colors.primaryLight }}
               >
                 <Languages size={20} color={colors.primary} strokeWidth={2} />
               </View>
-                <Text style={typography.body}>
+                <Text className="dark:text-textPrimary-dark" style={typography.body}>
                   Language
                 </Text>
               </View>
@@ -218,11 +231,11 @@ export default function ProfileScreen() {
                 className={`py-2 px-4 rounded-xl border ${
                   language === "en"
                     ? "bg-primary border-primary"
-                    : "bg-background border-border"
+                    : "bg-background border-border dark:bg-background-dark dark:border-border-dark"
                 }`}
               >
                 <Text
-                  className={`text-[13px] font-extrabold ${language === "en" ? "text-surface" : "text-textSecondary"}`}
+                  className={`text-[13px] font-extrabold ${language === "en" ? "text-surface" : "text-textSecondary dark:text-textSecondary-dark"}`}
                 >
                   EN
                 </Text>
@@ -233,16 +246,31 @@ export default function ProfileScreen() {
                 className={`py-2 px-3 rounded-xl border ${
                   language === "hi"
                     ? "bg-primary border-primary"
-                    : "bg-background border-border"
+                    : "bg-background border-border dark:bg-background-dark dark:border-border-dark"
                 }`}
               >
                 <Text
-                  className={`text-[13px] font-extrabold ${language === "hi" ? "text-surface" : "text-textSecondary"}`}
+                  className={`text-[13px] font-extrabold ${language === "hi" ? "text-surface" : "text-textSecondary dark:text-textSecondary-dark"}`}
                 >
                   🇮🇳
                 </Text>
               </TouchableOpacity>
             </View>
+          </View>
+
+          <View className="mb-2 mt-1 flex-row items-center justify-between py-2">
+            <View className="flex-row items-center gap-3">
+              <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary-light dark:bg-primary-soft-dark">
+                <Moon size={20} color={colors.primary} strokeWidth={2} />
+              </View>
+              <Text className="dark:text-textPrimary-dark" style={typography.body}>Dark mode</Text>
+            </View>
+            <Switch
+              value={colorMode === "dark"}
+              onValueChange={toggleColorMode}
+              trackColor={{ false: colors.border, true: colors.primaryLight }}
+              thumbColor={colorMode === "dark" ? colors.primary : colors.surface}
+            />
           </View>
         </SectionCard>
 
@@ -290,7 +318,10 @@ export default function ProfileScreen() {
           />
         </View>
 
-        <Text style={[typography.caption, { textAlign: "center", marginTop: spacing.sm, marginBottom: spacing.md, opacity: 0.6 }]}> 
+        <Text
+          className="dark:text-textSecondary-dark"
+          style={[typography.caption, { textAlign: "center", marginTop: spacing.sm, marginBottom: spacing.md, opacity: 0.6 }]}
+        >
           KredBook Systems • v1.0.0
         </Text>
       </ScrollView>

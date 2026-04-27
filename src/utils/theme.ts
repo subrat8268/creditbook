@@ -159,6 +159,104 @@ export const colors = {
   },
 } as const;
 
+export type ThemeMode = "light" | "dark";
+
+type WidenLiterals<T> = T extends string
+  ? string
+  : T extends readonly (infer U)[]
+    ? readonly WidenLiterals<U>[]
+    : T extends object
+      ? { [K in keyof T]: WidenLiterals<T[K]> }
+      : T;
+
+export type ColorTokens = WidenLiterals<typeof colors>;
+
+export const lightColors: ColorTokens = colors;
+
+export const darkColors: ColorTokens = {
+  ...colors,
+  primary: "#3B82F6",
+  primaryDark: "#2563EB",
+  primaryLight: "#1E3A8A",
+  fab: "#3B82F6",
+  fabBg: "#3B82F6",
+  danger: "#F87171",
+  dangerStrong: "#EF4444",
+  supplierPrimary: "#EC4899",
+  warning: "#F59E0B",
+  success: "#22C55E",
+  successDark: "#16A34A",
+  successLight: "#14532D",
+  background: "#0B1220",
+  surface: "#111A2B",
+  textPrimary: "#E5E7EB",
+  textSecondary: "#94A3B8",
+  border: "#25324A",
+  borderLight: "#1B2538",
+  primaryBlue: "#3B82F6",
+  primaryBlueBg: "#172554",
+  successBg: "#0F2A1A",
+  dangerBg: "#3A1118",
+  warningBg: "#3A2A0E",
+  warningBadgeBg: "#4A3411",
+  surfaceAlt: "#172033",
+  textMuted: "#9CA3AF",
+  paid: {
+    bg: "#14532D",
+    text: "#86EFAC",
+  },
+  partial: {
+    bg: "#1E3A8A",
+    text: "#93C5FD",
+  },
+  pending: {
+    bg: "#4A3411",
+    text: "#FCD34D",
+  },
+  overdue: {
+    bg: "#4C1D1D",
+    text: "#FCA5A5",
+  },
+  reports: {
+    bg: "#312E81",
+    text: "#C4B5FD",
+  },
+  export: {
+    bg: "#1F2937",
+    text: "#D1D5DB",
+  },
+  orange: {
+    bg: "#3A220C",
+    border: "#5A3412",
+    text: "#FDBA74",
+  },
+  supplierBg: "#3B0D2A",
+  supplierBadgeBg: "#5B1237",
+  iconBg: "#1E293B",
+  sync: {
+    offlineBg: "#4A3411",
+    offlineText: "#FCD34D",
+    syncingBg: "#1E3A8A",
+    syncingText: "#93C5FD",
+    syncedBg: "#14532D",
+    syncedText: "#86EFAC",
+  },
+  dashboard: {
+    heroText: "rgba(255,255,255,0.96)",
+    heroTextMuted: "rgba(255,255,255,0.72)",
+    heroChipBg: "rgba(255,255,255,0.12)",
+    heroChipBorder: "rgba(255,255,255,0.20)",
+    heroOrb: "rgba(255,255,255,0.08)",
+  },
+  customerDetail: {
+    heroText: "rgba(255,255,255,0.96)",
+    heroTextMuted: "rgba(255,255,255,0.74)",
+    heroChipBg: "rgba(255,255,255,0.15)",
+    heroChipBorder: "rgba(255,255,255,0.30)",
+    heroOrb: "rgba(255,255,255,0.12)",
+  },
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // GRADIENT TOKENS (Hero Cards Only)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -220,6 +318,62 @@ export const gradients = {
     end: "#DC2626", // Red-600
   },
 } as const;
+
+export type GradientTokens = WidenLiterals<typeof gradients>;
+
+export const lightGradients: GradientTokens = gradients;
+
+export const darkGradients: GradientTokens = {
+  ...gradients,
+  dashboardHero: {
+    start: "#7F1D1D",
+    end: "#450A0A",
+  },
+  customerHero: {
+    start: "#991B1B",
+    end: "#450A0A",
+  },
+  peopleHero: {
+    start: "#991B1B",
+    end: "#450A0A",
+  },
+  supplierHero: {
+    start: "#9D174D",
+    end: "#500724",
+  },
+  supplierDetailHero: {
+    start: "#881337",
+    end: "#BE185D",
+  },
+  netPosition: "#020617",
+  zeroBalance: {
+    start: "#166534",
+    end: "#14532D",
+  },
+  orderPaid: {
+    start: "#15803D",
+    end: "#14532D",
+  },
+  orderPartial: {
+    start: "#D97706",
+    end: "#92400E",
+  },
+  orderPending: {
+    start: "#4B5563",
+    end: "#374151",
+  },
+  orderOverdue: {
+    start: "#B91C1C",
+    end: "#7F1D1D",
+  },
+};
+
+export function getThemeTokens(mode: ThemeMode) {
+  return {
+    colors: mode === "dark" ? darkColors : lightColors,
+    gradients: mode === "dark" ? darkGradients : lightGradients,
+  };
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SPACING TOKENS (Component Sizes & Padding)

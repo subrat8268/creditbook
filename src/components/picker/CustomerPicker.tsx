@@ -58,12 +58,12 @@ export default function CustomerPicker({
   const renderItem = (item: any) => (
     <TouchableOpacity
       key={item.id}
-      className="p-4 mb-3 bg-white border border-gray-200 rounded-2xl shadow-sm"
+      className="p-4 mb-3 rounded-2xl border border-border bg-surface shadow-sm dark:border-border-dark dark:bg-surface-dark"
       onPress={() => handleSelect(item)}
     >
-      <Text className="text-gray-900 font-medium">{item.name}</Text>
+      <Text className="font-medium text-textPrimary dark:text-textPrimary-dark">{item.name}</Text>
       {item.phone && (
-        <Text className="text-gray-500 text-sm">{item.phone}</Text>
+        <Text className="text-sm text-textSecondary dark:text-textSecondary-dark">{item.phone}</Text>
       )}
     </TouchableOpacity>
   );
@@ -74,9 +74,9 @@ export default function CustomerPicker({
   if (variant === "inline") {
     const inlinePeople = people ?? [];
     return (
-      <View className="rounded-2xl bg-surface border border-border overflow-hidden">
-        <View className="px-4 py-3 border-b border-border">
-          <Text className="text-[12px] font-bold text-textSecondary tracking-widest">
+      <View className="rounded-2xl bg-surface border border-border overflow-hidden dark:bg-surface-dark dark:border-border-dark">
+        <View className="px-4 py-3 border-b border-border dark:border-border-dark">
+          <Text className="text-[12px] font-bold text-textSecondary tracking-widest dark:text-textSecondary-dark">
             SELECT PERSON
           </Text>
           <View className="mt-2">
@@ -87,7 +87,7 @@ export default function CustomerPicker({
             />
           </View>
           {!isConnected && (
-            <Text className="text-[12px] text-textSecondary mt-2">
+            <Text className="mt-2 text-[12px] text-textSecondary dark:text-textSecondary-dark">
               You’re offline. People will load when back online.
             </Text>
           )}
@@ -99,17 +99,17 @@ export default function CustomerPicker({
             <TouchableOpacity
               className={`px-4 py-3 border-b border-border ${
                 selectedPerson?.id === item.id
-                  ? "bg-primaryLight"
-                  : "bg-surface"
+                  ? "bg-primary-light dark:bg-primary-soft-dark"
+                  : "bg-surface dark:bg-surface-dark"
               }`}
               onPress={() => handleSelect(item)}
               activeOpacity={0.8}
             >
-              <Text className="text-[15px] font-semibold text-textPrimary">
+              <Text className="text-[15px] font-semibold text-textPrimary dark:text-textPrimary-dark">
                 {item.name}
               </Text>
               {item.phone ? (
-                <Text className="text-[12px] text-textSecondary mt-0.5">
+                <Text className="mt-0.5 text-[12px] text-textSecondary dark:text-textSecondary-dark">
                   {item.phone}
                 </Text>
               ) : null}
@@ -135,7 +135,7 @@ export default function CustomerPicker({
           }
           ListEmptyComponent={
             <View className="py-6 items-center">
-              <Text className="text-textSecondary">
+              <Text className="text-textSecondary dark:text-textSecondary-dark">
                 {isLoading
                   ? "Loading people..."
                   : !isConnected

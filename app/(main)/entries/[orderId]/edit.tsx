@@ -7,8 +7,8 @@ import Input from "@/src/components/ui/Input";
 import { useOrderDetail, useUpdateOrder } from "@/src/hooks/useEntries";
 import { useAuthStore } from "@/src/store/authStore";
 import { useOrderStore, DraftOrderItem } from "@/src/store/orderStore";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { generateBillPdf } from "@/src/utils/generateBillPdf";
-import { colors } from "@/src/utils/theme";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import {
@@ -31,28 +31,27 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const AVATAR_COLORS = [
-  colors.danger,
-  colors.warning,
-  colors.primary,
-  ...colors.avatarPalette,
-];
-
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
-function getAvatarColor(name: string): string {
+function getAvatarColor(name: string, palette: readonly string[]): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  return palette[Math.abs(hash) % palette.length] as string;
 }
 
 export default function EditOrderScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const avatarColors = useMemo(
+    () => [colors.danger, colors.warning, colors.primary, ...colors.avatarPalette],
+    [colors],
+  );
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
   const router = useRouter();
   const { profile, isFetchingProfile } = useAuthStore();
@@ -276,7 +275,7 @@ export default function EditOrderScreen() {
 
   const customerName = order.customer?.name || "Unknown Person";
   const customerInitials = getInitials(customerName);
-  const avatarColor = getAvatarColor(customerName);
+  const avatarColor = getAvatarColor(customerName, avatarColors);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
@@ -381,7 +380,7 @@ export default function EditOrderScreen() {
                 }}
               >
                 <Text
-                  style={{ color: "#FFF", fontWeight: "700", fontSize: 14 }}
+                  style={{ color: colors.surface, fontWeight: "700", fontSize: 14 }}
                 >
                   {customerInitials}
                 </Text>
@@ -620,16 +619,17 @@ export default function EditOrderScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  quickAmountInputContainer: {
-    borderWidth: 0,
-    backgroundColor: "transparent",
-    paddingHorizontal: 0,
-    marginLeft: 8,
-  },
-  quickAmountInput: {
-    fontSize: 32,
-    fontWeight: "700",
-    color: colors.textPrimary,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useTheme>["colors"]) =>
+  StyleSheet.create({
+    quickAmountInputContainer: {
+      borderWidth: 0,
+      backgroundColor: "transparent",
+      paddingHorizontal: 0,
+      marginLeft: 8,
+    },
+    quickAmountInput: {
+      fontSize: 32,
+      fontWeight: "700",
+      color: colors.textPrimary,
+    },
+  });

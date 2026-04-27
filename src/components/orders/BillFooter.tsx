@@ -1,4 +1,4 @@
-import { colors } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { Share2 } from "lucide-react-native";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
@@ -23,6 +23,8 @@ export default function BillFooter({
   offlineQueueCount = 0,
   disabled = false,
 }: BillFooterProps) {
+  const { colors } = useTheme();
+
   return (
     <View
       style={{

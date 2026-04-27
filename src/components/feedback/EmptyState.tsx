@@ -1,7 +1,7 @@
 import { CircleOff } from "lucide-react-native";
 import React, { memo, useEffect, useRef } from "react";
 import { Animated, Text, TouchableOpacity, View } from "react-native";
-import { colors, spacing } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 
 interface EmptyStateProps {
   /** Legacy single-line message (falls back to subtitle when no title is set) */
@@ -34,6 +34,7 @@ export default memo(function EmptyState({
   iconSize,
   ctaIcon,
 }: EmptyStateProps) {
+  const { colors, spacing } = useTheme();
   const heading = title ?? message ?? "Nothing here yet";
   const sub = title ? (description ?? message) : undefined;
   const containerSize = iconSize ?? 72;
@@ -69,12 +70,12 @@ export default memo(function EmptyState({
         )}
       </View>
 
-      <Text className="text-[17px] font-bold text-textDark text-center mb-2">
+      <Text className="text-[17px] font-bold text-center mb-2" style={{ color: colors.textPrimary }}>
         {heading}
       </Text>
 
       {sub ? (
-        <Text className="text-[14px] text-textSecondary text-center leading-[22px] mb-6">
+        <Text className="text-[14px] text-center leading-[22px] mb-6" style={{ color: colors.textSecondary }}>
           {sub}
         </Text>
       ) : null}
@@ -87,7 +88,7 @@ export default memo(function EmptyState({
           activeOpacity={0.8}
         >
           {ctaIcon ?? null}
-          <Text className="text-white text-[15px] font-bold">{cta}</Text>
+          <Text className="text-[15px] font-bold" style={{ color: colors.surface }}>{cta}</Text>
         </TouchableOpacity>
       ) : null}
     </Animated.View>

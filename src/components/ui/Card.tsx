@@ -1,4 +1,4 @@
-import { colors, radius, spacing, typography } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { clsx } from "clsx";
 import React, { memo } from "react";
 import { Text, View } from "react-native";
@@ -11,6 +11,8 @@ interface CardProps {
 }
 
 const Card = memo(function Card({ title, value, icon, className }: CardProps) {
+  const { colors, radius, spacing, typography } = useTheme();
+
   return (
     <View
       className={clsx("flex-row justify-between items-center", className)}

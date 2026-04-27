@@ -15,8 +15,8 @@ import { useInfiniteScroll } from "@/src/hooks/useInfiniteScroll";
 import { useAddPerson, usePeople } from "@/src/hooks/usePeople";
 import { useAuthStore } from "@/src/store/authStore";
 import type { Person } from "@/src/types/customer";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { formatRelativeActivity } from "@/src/utils/helper";
-import { colors, radius, spacing, typography } from "@/src/utils/theme";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { UserPlus } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -41,14 +41,8 @@ function getCustomerStatus(balance: number, isOverdue?: boolean): CustomerStatus
   return "Paid";
 }
 
-const AMOUNT_COLOR_MAP: Record<CustomerStatus, string> = {
-  Overdue: colors.danger,
-  Pending: colors.warning,
-  Paid: colors.success,
-  Advance: colors.primary,
-};
-
 export default function CustomersScreen() {
+  const { colors, radius, spacing, typography } = useTheme();
   const { profile } = useAuthStore();
   const router = useRouter();
   const params = useLocalSearchParams<{ action?: string }>();
@@ -58,6 +52,10 @@ export default function CustomersScreen() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [redirectAfterAdd, setRedirectAfterAdd] = useState(false);
+  const styles = useMemo(
+    () => createStyles(colors, spacing, typography, radius),
+    [colors, spacing, typography, radius],
+  );
 
   const {
     refetch,
@@ -202,6 +200,13 @@ export default function CustomersScreen() {
   const activeFilterStatus =
     filter === "All" ? undefined : (filter as "Overdue" | "Pending" | "Paid");
 
+  const amountColorMap: Record<CustomerStatus, string> = {
+    Overdue: colors.danger,
+    Pending: colors.warning,
+    Paid: colors.success,
+    Advance: colors.primary,
+  };
+
   return (
     <ScreenLayout>
       <Header title="People" subtitle="Track customers and balances" />
@@ -270,7 +275,7 @@ export default function CustomersScreen() {
                 subtitle={`Last activity: ${formatRelativeActivity(item.lastActiveAt)}`}
                 leftSlot={<Avatar name={item.name} size="md" />}
                 amount={displayBalance}
-                amountColor={AMOUNT_COLOR_MAP[status]}
+                amountColor={amountColorMap[status]}
                 status={status}
                 onPress={() => handleOpenCustomer(item.id)}
                 variant="row"
@@ -333,72 +338,78 @@ export default function CustomersScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  controlsWrap: {
-    paddingHorizontal: spacing.screenPadding,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.sm,
-  },
-  chipsContainer: {
-    paddingTop: spacing.md,
-    gap: spacing.sm,
-  },
-  chip: {
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-  },
-  chipActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primaryLight,
-  },
-  chipText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontWeight: "600",
-  },
-  chipTextActive: {
-    color: colors.primary,
-  },
-  activeFilterRow: {
-    marginTop: spacing.sm,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-  },
-  activeFilterLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  listContent: {
-    paddingHorizontal: spacing.screenPadding,
-    paddingBottom: spacing.fabSize + spacing.fabBottom + spacing.xl,
-  },
-  entryAction: {
-    borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surfaceAlt,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-  },
-  entryActionPressed: {
-    opacity: 0.8,
-  },
-  entryActionText: {
-    ...typography.small,
-    color: colors.textSecondary,
-    fontWeight: "600",
-  },
-  emptyIconWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.surface,
-  },
-});
+const createStyles = (
+  colors: ReturnType<typeof useTheme>["colors"],
+  spacing: ReturnType<typeof useTheme>["spacing"],
+  typography: ReturnType<typeof useTheme>["typography"],
+  radius: ReturnType<typeof useTheme>["radius"],
+) =>
+  StyleSheet.create({
+    controlsWrap: {
+      paddingHorizontal: spacing.screenPadding,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.sm,
+    },
+    chipsContainer: {
+      paddingTop: spacing.md,
+      gap: spacing.sm,
+    },
+    chip: {
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+    },
+    chipActive: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primaryLight,
+    },
+    chipText: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      fontWeight: "600",
+    },
+    chipTextActive: {
+      color: colors.primary,
+    },
+    activeFilterRow: {
+      marginTop: spacing.sm,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+    },
+    activeFilterLabel: {
+      ...typography.caption,
+      color: colors.textSecondary,
+    },
+    listContent: {
+      paddingHorizontal: spacing.screenPadding,
+      paddingBottom: spacing.fabSize + spacing.fabBottom + spacing.xl,
+    },
+    entryAction: {
+      borderRadius: radius.full,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceAlt,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+    },
+    entryActionPressed: {
+      opacity: 0.8,
+    },
+    entryActionText: {
+      ...typography.small,
+      color: colors.textSecondary,
+      fontWeight: "600",
+    },
+    emptyIconWrap: {
+      width: 52,
+      height: 52,
+      borderRadius: 26,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.surface,
+    },
+  });

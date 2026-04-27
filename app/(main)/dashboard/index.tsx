@@ -10,7 +10,7 @@ import { fetchPersonDetail } from "@/src/api/people";
 import { useDashboard } from "@/src/hooks/useDashboard";
 import { usePeople } from "@/src/hooks/usePeople";
 import { useAuthStore } from "@/src/store/authStore";
-import { colors, gradients, spacing, typography } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -38,6 +38,7 @@ const formatCurrency = (value: number) => {
 };
 
 export default function DashboardScreen() {
+  const { colors, gradients, spacing, typography, statusBarStyle, isDark } = useTheme();
   const router = useRouter();
   const { profile } = useAuthStore();
   const { show: showToast } = useToast();
@@ -145,15 +146,15 @@ export default function DashboardScreen() {
 
   if (isLoading || !profile) {
     return (
-      <View className="items-center justify-center bg-background" style={{ flex: 1 }}>
+      <View className="items-center justify-center bg-background dark:bg-background-dark" style={{ flex: 1 }}>
         <Loader message="Loading dashboard..." />
       </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent={false} />
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={["top"]}>
+      <StatusBar barStyle={statusBarStyle} backgroundColor={colors.background} translucent={false} />
 
       <ScrollView
         contentContainerStyle={{
@@ -174,8 +175,8 @@ export default function DashboardScreen() {
             end={{ x: 1, y: 1 }}
             className="relative mb-4 overflow-hidden rounded-2xl px-6 pb-5 pt-6 shadow-lg"
           >
-            <View className="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-dashboard-hero-orb" />
-            <View className="absolute -bottom-12 right-10 h-28 w-28 rounded-full bg-dashboard-hero-orb" />
+            <View className={`absolute -right-10 -top-12 h-36 w-36 rounded-full ${isDark ? "bg-dashboard-hero-orb-dark" : "bg-dashboard-hero-orb"}`} />
+            <View className={`absolute -bottom-12 right-10 h-28 w-28 rounded-full ${isDark ? "bg-dashboard-hero-orb-dark" : "bg-dashboard-hero-orb"}`} />
 
             <Text className="text-dashboard-hero-text-muted opacity-75" style={typography.overline}>
               COLLECT OUTSTANDING
@@ -202,7 +203,7 @@ export default function DashboardScreen() {
             </Pressable>
 
             <Pressable
-              className="flex-1 flex-row items-center justify-center rounded-full border border-soft bg-surface py-3"
+              className="flex-1 flex-row items-center justify-center rounded-full border border-soft bg-surface py-3 dark:border-border-soft-dark dark:bg-surface-dark"
               onPress={() => router.push("/(main)/people" as never)}
             >
               <Users size={18} color={colors.primary} strokeWidth={2.1} />
@@ -211,13 +212,13 @@ export default function DashboardScreen() {
           </View>
 
           <View className="mb-4 mt-1 flex-row items-center justify-between">
-            <Text className="text-section-title text-textPrimary">Start collecting</Text>
+            <Text className="text-section-title text-textPrimary dark:text-textPrimary-dark">Start collecting</Text>
             <Pressable onPress={() => router.push("/(main)/people" as never)}>
               <Text className="text-caption font-inter-bold text-primary">See all</Text>
             </Pressable>
           </View>
 
-          <View className="overflow-hidden rounded-2xl border border-soft bg-surface shadow-sm">
+          <View className="overflow-hidden rounded-2xl border border-soft bg-surface shadow-sm dark:border-border-soft-dark dark:bg-surface-dark">
             {followUpPeople.length > 0 ? (
               followUpPeople.map((person, index) => {
                 const isLast = index === followUpPeople.length - 1;
@@ -232,10 +233,10 @@ export default function DashboardScreen() {
                         <Avatar name={person.name} size="xs" />
 
                         <View className="ml-3 flex-1">
-                          <Text className="text-body font-inter-semibold text-textPrimary" numberOfLines={1}>
+                          <Text className="text-body font-inter-semibold text-textPrimary dark:text-textPrimary-dark" numberOfLines={1}>
                             {person.name}
                           </Text>
-                          <Text className="mt-0.5 text-caption text-textMuted">
+                          <Text className="mt-0.5 text-caption text-textMuted dark:text-textMuted-dark">
                             {person.daysSince}d overdue
                           </Text>
                         </View>
@@ -251,7 +252,7 @@ export default function DashboardScreen() {
                         />
 
                         <Pressable
-                          className="mt-1 rounded-full bg-search px-3 py-1"
+                          className="mt-1 rounded-full bg-search px-3 py-1 dark:bg-search-dark"
                           onPress={() => openRecordPaymentForCustomer(person.id, person.name)}
                         >
                           <Text className="text-primary" style={typography.overline}>
@@ -261,33 +262,33 @@ export default function DashboardScreen() {
                       </View>
                     </View>
 
-                    {!isLast ? <View className="ml-16 mr-5 h-px bg-border-soft" /> : null}
+                    {!isLast ? <View className="ml-16 mr-5 h-px bg-border-soft dark:bg-border-soft-dark" /> : null}
                   </View>
                 );
               })
             ) : (
               <View className="px-4 py-5">
-                <Text className="text-card-title text-textPrimary">Nothing needs action now</Text>
-                <Text className="mt-1 text-caption text-textSecondary">
-                  Overdue follow-ups will appear here when customers miss payment timelines.
-                </Text>
-              </View>
-            )}
+                  <Text className="text-card-title text-textPrimary dark:text-textPrimary-dark">Nothing needs action now</Text>
+                  <Text className="mt-1 text-caption text-textSecondary dark:text-textSecondary-dark">
+                    Overdue follow-ups will appear here when customers miss payment timelines.
+                  </Text>
+                </View>
+              )}
           </View>
 
           <View className="mt-4 flex-row gap-3">
-            <View className="flex-1 rounded-xl border border-soft bg-surface p-4">
-              <Text className="text-textSecondary" style={typography.overline}>
+            <View className="flex-1 rounded-xl border border-soft bg-surface p-4 dark:border-border-soft-dark dark:bg-surface-dark">
+              <Text className="text-textSecondary dark:text-textSecondary-dark" style={typography.overline}>
                 NEEDS ACTION NOW
               </Text>
-              <Text className="mt-2 text-h2 text-textPrimary">{overdueTotalCount}</Text>
-              <Text className="mt-0.5 text-caption text-textSecondary">
+              <Text className="mt-2 text-h2 text-textPrimary dark:text-textPrimary-dark">{overdueTotalCount}</Text>
+              <Text className="mt-0.5 text-caption text-textSecondary dark:text-textSecondary-dark">
                 {overdueTotalCount === 1 ? "customer overdue" : "customers overdue"}
               </Text>
             </View>
 
-            <View className="flex-1 rounded-xl border border-soft bg-surface p-4">
-              <Text className="text-textSecondary" style={typography.overline}>
+            <View className="flex-1 rounded-xl border border-soft bg-surface p-4 dark:border-border-soft-dark dark:bg-surface-dark">
+              <Text className="text-textSecondary dark:text-textSecondary-dark" style={typography.overline}>
                 COLLECTED THIS WEEK
               </Text>
               <MoneyAmount
@@ -298,7 +299,7 @@ export default function DashboardScreen() {
                 style={typography.h2}
                 className="mt-2"
               />
-              <Text className="mt-0.5 text-caption text-textSecondary">
+              <Text className="mt-0.5 text-caption text-textSecondary dark:text-textSecondary-dark">
                 {collectedThisWeek > 0 ? "cashflow improved" : "no collections yet"}
               </Text>
             </View>
@@ -328,7 +329,7 @@ export default function DashboardScreen() {
         keyExtractor={(item) => item.id}
         renderItem={(item) => (
           <Pressable
-            className="flex-row items-center rounded-xl border border-soft bg-surface px-4 py-3"
+            className="flex-row items-center rounded-xl border border-soft bg-surface px-4 py-3 dark:border-border-soft-dark dark:bg-surface-dark"
             onPress={() => {
               setIsCustomerPickerOpen(false);
               openRecordPaymentForCustomer(item.id, item.name);
@@ -336,10 +337,10 @@ export default function DashboardScreen() {
           >
             <Avatar name={item.name} size="sm" />
             <View className="ml-3 flex-1">
-              <Text className="text-body font-inter-semibold text-textPrimary" numberOfLines={1}>
+              <Text className="text-body font-inter-semibold text-textPrimary dark:text-textPrimary-dark" numberOfLines={1}>
                 {item.name}
               </Text>
-              <Text className="mt-0.5 text-caption text-textSecondary" numberOfLines={1}>
+              <Text className="mt-0.5 text-caption text-textSecondary dark:text-textSecondary-dark" numberOfLines={1}>
                 Open to record a payment
               </Text>
             </View>

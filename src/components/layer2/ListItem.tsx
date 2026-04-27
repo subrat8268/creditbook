@@ -1,7 +1,7 @@
 import MoneyAmount from "@/src/components/ui/MoneyAmount";
-import { colors, radius, spacing, typography } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { ChevronRight } from "lucide-react-native";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -50,6 +50,86 @@ export default memo(function ListItem({
   variant = "card",
   bordered = false,
 }: Props) {
+  const { colors, radius, spacing, typography } = useTheme();
+  const styles = useMemo(() => {
+    const shadowStyle: ViewStyle = {
+      shadowColor: colors.textPrimary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.04,
+      shadowRadius: 8,
+      elevation: 2,
+    };
+
+    return StyleSheet.create({
+      container: {
+        backgroundColor: colors.surface,
+        borderRadius: radius.xl,
+        borderWidth: 1,
+        borderColor: colors.border,
+        padding: spacing.cardPadding,
+        marginBottom: spacing.md,
+        ...shadowStyle,
+      },
+      rowContainer: {
+        backgroundColor: "transparent",
+        borderWidth: 0,
+        borderRadius: 0,
+        paddingHorizontal: 0,
+        paddingVertical: spacing.md,
+        marginBottom: 0,
+        shadowColor: "transparent",
+        elevation: 0,
+      },
+      compactContainer: {
+        paddingVertical: spacing.md,
+      },
+      noMargin: {
+        marginBottom: 0,
+      },
+      borderedBottom: {
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
+      },
+      mainRow: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+      },
+      leftSlot: {
+        marginRight: spacing.md,
+      },
+      content: {
+        flex: 1,
+        marginRight: spacing.md,
+      },
+      subtitle: {
+        marginTop: 2,
+      },
+      trailing: {
+        alignItems: "flex-end",
+        justifyContent: "flex-start",
+        minWidth: 72,
+        gap: spacing.xs,
+      },
+      amount: {
+        fontWeight: "800",
+      },
+      footerRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginTop: spacing.lg,
+      },
+      footerRight: {
+        alignItems: "flex-end",
+      },
+      detailsRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.xs,
+      },
+    });
+  }, [colors, radius, spacing]);
+
   const Container = onPress ? Pressable : View;
 
   return (
@@ -107,81 +187,4 @@ export default memo(function ListItem({
       ) : null}
     </Container>
   );
-});
-
-const shadowStyle: ViewStyle = {
-  shadowColor: colors.textPrimary,
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.04,
-  shadowRadius: 8,
-  elevation: 2,
-};
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.cardPadding,
-    marginBottom: spacing.md,
-    ...shadowStyle,
-  },
-  rowContainer: {
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    borderRadius: 0,
-    paddingHorizontal: 0,
-    paddingVertical: spacing.md,
-    marginBottom: 0,
-    shadowColor: "transparent",
-    elevation: 0,
-  },
-  compactContainer: {
-    paddingVertical: spacing.md,
-  },
-  noMargin: {
-    marginBottom: 0,
-  },
-  borderedBottom: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  mainRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-  },
-  leftSlot: {
-    marginRight: spacing.md,
-  },
-  content: {
-    flex: 1,
-    marginRight: spacing.md,
-  },
-  subtitle: {
-    marginTop: 2,
-  },
-  trailing: {
-    alignItems: "flex-end",
-    justifyContent: "flex-start",
-    minWidth: 72,
-    gap: spacing.xs,
-  },
-  amount: {
-    fontWeight: "800",
-  },
-  footerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: spacing.lg,
-  },
-  footerRight: {
-    alignItems: "flex-end",
-  },
-  detailsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-  },
 });

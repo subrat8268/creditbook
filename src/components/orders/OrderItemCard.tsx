@@ -1,7 +1,7 @@
 import Input from "@/src/components/ui/Input";
-import { colors, spacing, typography } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { Minus, Plus, Trash2 } from "lucide-react-native";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 interface OrderItemCardProps {
@@ -24,7 +24,81 @@ export default function OrderItemCard({
   onUpdateRate,
   onRemove,
 }: OrderItemCardProps) {
+  const { colors, spacing, typography } = useTheme();
   const [rateInput, setRateInput] = useState(rate > 0 ? rate.toString() : "");
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        titleWrap: {
+          marginBottom: spacing.sm,
+        },
+        title: {
+          ...typography.body,
+          fontWeight: "600",
+          color: colors.textPrimary,
+        },
+        subtitle: {
+          ...typography.caption,
+          color: colors.textSecondary,
+        },
+        row: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        },
+        rateWrap: {
+          flex: 1,
+        },
+        metaLabel: {
+          ...typography.small,
+          color: colors.textSecondary,
+          marginBottom: 2,
+        },
+        rateInputContainer: {
+          minWidth: 84,
+        },
+        rateInput: {
+          fontSize: 14,
+        },
+        qtyWrap: {
+          flexDirection: "row",
+          alignItems: "center",
+          backgroundColor: colors.background,
+          borderRadius: 6,
+          marginHorizontal: spacing.md,
+        },
+        qtyButton: {
+          padding: spacing.sm,
+        },
+        disabled: {
+          opacity: 0.5,
+        },
+        pressed: {
+          opacity: 0.75,
+        },
+        qtyText: {
+          ...typography.body,
+          fontWeight: "600",
+          color: colors.textPrimary,
+          minWidth: 30,
+          textAlign: "center",
+        },
+        subtotalWrap: {
+          alignItems: "flex-end",
+          minWidth: 80,
+        },
+        subtotalText: {
+          ...typography.body,
+          fontWeight: "600",
+          color: colors.textPrimary,
+        },
+        removeButton: {
+          padding: spacing.sm,
+          marginLeft: spacing.sm,
+        },
+      }),
+    [colors, spacing, typography],
+  );
 
   const subtotal = rate * quantity;
 
@@ -90,73 +164,3 @@ export default function OrderItemCard({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  titleWrap: {
-    marginBottom: spacing.sm,
-  },
-  title: {
-    ...typography.body,
-    fontWeight: "600",
-    color: colors.textPrimary,
-  },
-  subtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  rateWrap: {
-    flex: 1,
-  },
-  metaLabel: {
-    ...typography.small,
-    color: colors.textSecondary,
-    marginBottom: 2,
-  },
-  rateInputContainer: {
-    minWidth: 84,
-  },
-  rateInput: {
-    fontSize: 14,
-  },
-  qtyWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.background,
-    borderRadius: 6,
-    marginHorizontal: spacing.md,
-  },
-  qtyButton: {
-    padding: spacing.sm,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  pressed: {
-    opacity: 0.75,
-  },
-  qtyText: {
-    ...typography.body,
-    fontWeight: "600",
-    color: colors.textPrimary,
-    minWidth: 30,
-    textAlign: "center",
-  },
-  subtotalWrap: {
-    alignItems: "flex-end",
-    minWidth: 80,
-  },
-  subtotalText: {
-    ...typography.body,
-    fontWeight: "600",
-    color: colors.textPrimary,
-  },
-  removeButton: {
-    padding: spacing.sm,
-    marginLeft: spacing.sm,
-  },
-});

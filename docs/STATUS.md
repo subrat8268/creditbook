@@ -98,7 +98,7 @@
 
 | # | Task | Status | Priority | Command | Skills |
 |---|---|---|---|---|---|
-| 3.1 | Dark mode — semantic tokens in `theme.ts` + settings toggle | 🔄 In Progress | P0 | `/build` | `ui-ux-pro-max`, `ui-designer`, `react-native-skills` |
+| 3.1 | Dark mode — semantic tokens in `theme.ts` + settings toggle | ✅ Done | P0 | `/build` | `ui-ux-pro-max`, `ui-designer`, `react-native-skills` |
 | 3.2 | Overdue badge consistency — token + component across Dashboard / People / Entries | ⏳ Not Started | P0 | `/refactor` | `ui-ux-pro-max`, `refactor-engineer` |
 | 3.3 | WhatsApp share polish — consistent message template (amounts, dates, customer name) | ⏳ Not Started | P1 | `/build` | `tech-lead`, `react-native-skills` |
 | 3.4 | Indian number format — ₹1,20,000 everywhere | ⏳ Not Started | P1 | `/fix` | `debugger`, `react-native-skills` |

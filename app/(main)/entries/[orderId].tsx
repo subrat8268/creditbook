@@ -11,9 +11,9 @@ import { orderKeys, useOrderDetail } from "@/src/hooks/useEntries";
 
 import { usePayments } from "@/src/hooks/usePayments";
 import { useAuthStore } from "@/src/store/authStore";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { generateBillPdf } from "@/src/utils/generateBillPdf";
-import { daysSince, formatDate } from "@/src/utils/helper";
-import { colors, radius, spacing, typography } from "@/src/utils/theme";
+import { formatDate } from "@/src/utils/helper";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
@@ -29,30 +29,28 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const WHATSAPP_GREEN = "#25D366";
-
-const PAYMENT_MODE_COLORS: Record<string, { bg: string; text: string }> = {
-  Cash: { bg: colors.paid.bg, text: colors.paid.text },
-  UPI: { bg: colors.partial.bg, text: colors.partial.text },
-  NEFT: { bg: colors.overdue.bg, text: colors.warning },
-  Draft: { bg: colors.pending.bg, text: colors.pending.text },
-  Cheque: { bg: colors.successBg, text: colors.primaryDark },
-};
-
 function fmt(n: number) {
   return n.toLocaleString("en-IN");
 }
 
-// ── Card shadow style ─────────────────────────────────────────────────
-const SHADOW = {
-  shadowColor: colors.textPrimary,
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.06,
-  shadowRadius: 4,
-  elevation: 2,
-};
-
 export default function OrderDetailScreen() {
+  const { colors, radius, spacing, typography } = useTheme();
+  const PAYMENT_MODE_COLORS: Record<string, { bg: string; text: string }> = {
+    Cash: { bg: colors.paid.bg, text: colors.paid.text },
+    UPI: { bg: colors.partial.bg, text: colors.partial.text },
+    NEFT: { bg: colors.overdue.bg, text: colors.warning },
+    Draft: { bg: colors.pending.bg, text: colors.pending.text },
+    Cheque: { bg: colors.successBg, text: colors.primaryDark },
+  };
+
+  const SHADOW = {
+    shadowColor: colors.textPrimary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  };
+
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
   const router = useRouter();
   const { profile } = useAuthStore();
@@ -73,8 +71,15 @@ export default function OrderDetailScreen() {
   const customerName = order?.customer?.name ?? "Unknown Person";
   const customerPhone = order?.customer?.phone ?? "";
 
+  const dueDateValue =
+    order && "due_date" in order && typeof order.due_date === "string"
+      ? order.due_date
+      : null;
   const isOverdue =
-    order?.status === "Pending" && daysSince(order?.created_at ?? "") > 30;
+    !!order &&
+    order.status !== "Paid" &&
+    !!dueDateValue &&
+    new Date(dueDateValue) < new Date(new Date().setHours(0, 0, 0, 0));
   const statusKey = isOverdue ? "Overdue" : (order?.status ?? "Pending");
 
   const itemsSubtotal = useMemo(
@@ -279,7 +284,7 @@ export default function OrderDetailScreen() {
   const isPaid = order.status === "Paid";
 
   return (
-    <SafeAreaView edges={["top", "bottom"]} className="flex-1 bg-background">
+    <SafeAreaView edges={["top", "bottom"]} className="flex-1 bg-background dark:bg-background-dark">
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* ── Custom header ─────────────────────────── */}
@@ -342,7 +347,7 @@ export default function OrderDetailScreen() {
                 onPress={handleWhatsApp}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <MessageCircle size={20} color={WHATSAPP_GREEN} strokeWidth={2} />
+                <MessageCircle size={20} color={colors.success} strokeWidth={2} />
               </TouchableOpacity>
             </>
           )}

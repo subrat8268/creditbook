@@ -1,4 +1,4 @@
-import { colors, spacing } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { Plus } from "lucide-react-native";
 import { TouchableOpacity, type ViewStyle } from "react-native";
 
@@ -14,14 +14,17 @@ export default function FloatingActionButton({
   onPress,
   bottom = 24,
   right = 20,
-  size = spacing.fabSize,
+  size,
   style,
 }: FABProps) {
+  const { colors, spacing } = useTheme();
+  const resolvedSize = size ?? spacing.fabSize;
+
   const fabStyle: ViewStyle = {
     position: "absolute",
-    width: size,
-    height: size,
-    borderRadius: size / 2,
+    width: resolvedSize,
+    height: resolvedSize,
+    borderRadius: resolvedSize / 2,
     backgroundColor: colors.fabBg,
     alignItems: "center",
     justifyContent: "center",
@@ -39,7 +42,7 @@ export default function FloatingActionButton({
       accessibilityLabel="Add"
       style={[fabStyle, { bottom, right }, style]}
     >
-      <Plus size={size <= spacing.fabSizeCompact ? 22 : 24} color={colors.surface} strokeWidth={2.5} />
+      <Plus size={resolvedSize <= spacing.fabSizeCompact ? 22 : 24} color={colors.surface} strokeWidth={2.5} />
     </TouchableOpacity>
   );
 }

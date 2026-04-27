@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 export type NetPositionRange = 7 | 30 | 90;
+export type ColorMode = "light" | "dark";
 
 export type ReminderLogEntry = {
   id: string;
@@ -25,6 +26,11 @@ export const NET_POSITION_RANGE_OPTIONS: {
 ];
 
 type PreferencesState = {
+  // Appearance
+  colorMode: ColorMode;
+  setColorMode: (value: ColorMode) => void;
+  toggleColorMode: () => void;
+
   // Net position dashboard range
   netPositionRange: NetPositionRange;
   setNetPositionRange: (value: NetPositionRange) => void;
@@ -46,6 +52,13 @@ type PreferencesState = {
 export const usePreferencesStore = create<PreferencesState>()(
   persist(
     (set) => ({
+      colorMode: "light",
+      setColorMode: (value) => set({ colorMode: value }),
+      toggleColorMode: () =>
+        set((state) => ({
+          colorMode: state.colorMode === "dark" ? "light" : "dark",
+        })),
+
       netPositionRange: 30,
       setNetPositionRange: (value) => set({ netPositionRange: value }),
 
@@ -100,6 +113,7 @@ export const usePreferencesStore = create<PreferencesState>()(
       name: "preferences-store",
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
+        colorMode: state.colorMode,
         netPositionRange: state.netPositionRange,
         overdueRemindersEnabled: state.overdueRemindersEnabled,
         overdueReminderHour: state.overdueReminderHour,

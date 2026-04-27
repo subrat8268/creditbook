@@ -26,8 +26,10 @@ import "../global.css";
 import "../src/i18n";
 import { useAuthStore } from "../src/store/authStore";
 import { useLanguageStore } from "../src/store/languageStore";
+import { usePreferencesStore } from "../src/store/preferencesStore";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { initSentry, wrap } from "@/src/services/sentry";
+import { getThemeTokens } from "@/src/utils/theme";
 
 initSentry();
 
@@ -60,6 +62,7 @@ function RootLayout() {
   const { user, profile, isInitialized, isFetchingProfile, isRecoveryMode } =
     useAuthStore();
   const loadLanguage = useLanguageStore((s) => s.loadLanguage);
+  const colorMode = usePreferencesStore((s) => s.colorMode);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
   const [ready, setReady] = useState(false);
@@ -106,6 +109,8 @@ function RootLayout() {
       setReady(true);
     }
   }, [fontsLoaded, loading]);
+
+  const activeColors = getThemeTokens(colorMode).colors;
 
   // Single Source of Truth for Routing
   useEffect(() => {
@@ -175,7 +180,10 @@ function RootLayout() {
                   <Stack.Screen name="l/[token]" options={{ presentation: 'modal' }} />
                   <Stack.Screen name="profile-error" />
                 </Stack>
-                <StatusBar barStyle="dark-content" />
+                <StatusBar
+                  barStyle={colorMode === "dark" ? "light-content" : "dark-content"}
+                  backgroundColor={activeColors.background}
+                />
               </ToastProvider>
             </BottomSheetModalProvider>
           </GestureHandlerRootView>

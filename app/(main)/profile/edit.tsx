@@ -14,8 +14,8 @@ import Button from "@/src/components/ui/Button";
 import Input from "@/src/components/ui/Input";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { pickImageFromLibrary } from "@/src/utils/imagePicker";
-import { colors, spacing } from "@/src/utils/theme";
 import { Stack, useRouter } from "expo-router";
 import { ArrowLeft, Building2, Upload, Wallet } from "lucide-react-native";
 import { useState } from "react";
@@ -34,6 +34,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileEditScreen() {
   const router = useRouter();
+  const { colors, spacing } = useTheme();
   const { profile, setProfile } = useAuthStore();
   const { show: showToast } = useToast();
 

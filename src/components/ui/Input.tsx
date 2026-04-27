@@ -1,6 +1,6 @@
-import { colors, spacing, typography } from "@/src/utils/theme";
+import { useTheme } from "@/src/utils/ThemeProvider";
 import { clsx } from "clsx";
-import React, { memo } from "react";
+import React, { memo, useMemo } from "react";
 import {
   StyleSheet,
   Text,
@@ -64,9 +64,53 @@ export default memo(function Input({
   containerStyle,
   inputStyle,
 }: Props) {
+  const { colors, spacing, typography } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        label: {
+          ...typography.label,
+          color: colors.textSecondary,
+          marginBottom: spacing.xs,
+        },
+        container: {
+          borderWidth: 1,
+          borderRadius: 12,
+          paddingHorizontal: spacing.md,
+        },
+        multilineContainer: {
+          paddingVertical: spacing.sm,
+        },
+        inputWrap: {
+          flex: 1,
+          justifyContent: "center",
+          minHeight: 44,
+        },
+        inputWrapMultiline: {
+          justifyContent: "flex-start",
+        },
+        input: {
+          color: colors.textPrimary,
+          fontSize: 16,
+          paddingVertical: 0,
+          minHeight: 24,
+        },
+        inputMultiline: {
+          paddingTop: spacing.xs,
+          minHeight: 72,
+        },
+        error: {
+          ...typography.small,
+          color: colors.danger,
+          marginTop: spacing.xs,
+        },
+      }),
+    [colors, spacing, typography],
+  );
+
   const containerClassName = clsx(
     "flex-row items-center border rounded-xl px-4",
-    variant === "neutral" ? "bg-background" : "bg-surface",
+    variant === "neutral" ? "bg-background dark:bg-background-dark" : "bg-surface dark:bg-surface-dark",
   );
 
   return (
@@ -128,43 +172,4 @@ export default memo(function Input({
       {error && <Text style={styles.error}>{error}</Text>}
     </View>
   );
-});
-
-const styles = StyleSheet.create({
-  label: {
-    ...typography.label,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-  },
-  container: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-  },
-  multilineContainer: {
-    paddingVertical: spacing.sm,
-  },
-  inputWrap: {
-    flex: 1,
-    justifyContent: "center",
-    minHeight: 44,
-  },
-  inputWrapMultiline: {
-    justifyContent: "flex-start",
-  },
-  input: {
-    color: colors.textPrimary,
-    fontSize: 16,
-    paddingVertical: 0,
-    minHeight: 24,
-  },
-  inputMultiline: {
-    paddingTop: spacing.xs,
-    minHeight: 72,
-  },
-  error: {
-    ...typography.small,
-    color: colors.danger,
-    marginTop: spacing.xs,
-  },
 });

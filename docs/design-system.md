@@ -34,7 +34,9 @@ Use the existing hero gradients and on-hero text tokens (see `theme.ts`):
 
 ## Dark Mode (Phase 3)
 
-Phase 3 target:
+Implemented:
 
-- Add dark-mode semantic tokens (background/surface/text/border + hero variants) in `theme.ts`.
-- Ensure all screens render using semantic tokens (no “light-only” hardcodes).
+- Semantic light/dark token pairs now exist in `src/utils/theme.ts` (`lightColors`/`darkColors`, `lightGradients`/`darkGradients`).
+- App-level `ThemeProvider` drives mode and NativeWind color scheme.
+- Profile includes a persisted dark mode toggle.
+- Active surfaces (Dashboard, People, Entries, Profile) consume semantic tokens in both modes.
