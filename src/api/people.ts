@@ -26,16 +26,13 @@ export async function fetchPeople(
   if (error) throw toApiError(error);
   const people = (data ?? []) as Person[];
 
-  // Determine overdue: balance_due > 0 AND last order > 30 days ago
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
+  // Determine overdue: balance_due > 0 AND due_date < today
   const { data: overdueOrders } = await supabase
     .from("orders")
     .select("customer_id")
     .eq("vendor_id", vendorId)
     .gt("balance_due", 0)
-    .lt("created_at", thirtyDaysAgo.toISOString());
+    .lt("due_date", new Date().toISOString());
 
   const overdueIds = new Set(
     (overdueOrders ?? []).map((o: any) => o.customer_id),

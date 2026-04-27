@@ -1,7 +1,7 @@
 import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 import { colors } from "@/src/utils/theme";
 import { AlertCircle, Check, RefreshCw, WifiOff } from "lucide-react-native";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 // Variant options: inline, banner, compact
 export type SyncStatusVariant = 'inline' | 'banner' | 'compact';

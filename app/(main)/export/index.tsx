@@ -17,10 +17,6 @@ import { useAuthStore } from "@/src/store/authStore";
 import { shareCsv, toCsv } from "@/src/utils/exportCsv";
 import { colors, spacing, typography } from "@/src/utils/theme";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type DatePreset = "all";
-
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function ExportScreen() {

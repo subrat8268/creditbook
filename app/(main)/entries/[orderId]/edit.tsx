@@ -69,7 +69,6 @@ export default function EditOrderScreen() {
   const loadingCharge = useOrderStore((state) => state.loadingCharge);
   const taxPercent = useOrderStore((state) => state.gstPercent);
 
-  const addItem = useOrderStore((state) => state.addItem);
   const removeItem = useOrderStore((state) => state.removeItem);
   const updateItemQuantity = useOrderStore((state) => state.updateItemQuantity);
   const updateItemRate = useOrderStore((state) => state.updateItemRate);

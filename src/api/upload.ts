@@ -57,12 +57,12 @@ const uploadToBucket = async (
   return data.publicUrl;
 };
 
-// Legacy helper (product catalog is out of scope). Kept as a generic image upload.
+// Generic image upload (avatars bucket). Product catalog is out of scope.
 export const uploadImage = async (uri: string): Promise<string> => {
   const fileExt = getFileExtension(uri);
   const fileName = `image_${Date.now()}.${fileExt}`;
   const filePath = `images/${fileName}`;
-  return uploadToBucket(uri, "product-images", filePath, false);
+  return uploadToBucket(uri, "avatars", filePath, false);
 };
 
 export const uploadBusinessLogo = async (

@@ -138,6 +138,7 @@ CREATE TABLE public.orders (
   balance_due numeric GENERATED ALWAYS AS ((total_amount - amount_paid)) STORED,
   status text NOT NULL DEFAULT 'Pending'::text,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  due_date date DEFAULT (CURRENT_DATE + 30),
   bill_number text,
   previous_balance numeric(10,2) NOT NULL DEFAULT 0,
   loading_charge numeric(10,2) NOT NULL DEFAULT 0,
@@ -164,6 +165,7 @@ CREATE INDEX idx_orders_customer ON public.orders USING btree (customer_id);
 CREATE INDEX idx_orders_status ON public.orders USING btree (status);
 CREATE INDEX idx_orders_created_at ON public.orders USING btree (created_at DESC);
 CREATE INDEX idx_orders_vendor_balance_due ON public.orders USING btree (vendor_id, balance_due) WHERE (balance_due > (0)::numeric);
+CREATE INDEX idx_orders_vendor_due_date ON public.orders USING btree (vendor_id, due_date) WHERE (balance_due > 0);
 CREATE INDEX orders_vendor_customer_idx ON public.orders USING btree (vendor_id, customer_id);
 
 -- public.order_items
@@ -346,7 +348,8 @@ CREATE TRIGGER on_payment_upsert AFTER INSERT OR UPDATE ON public.payments FOR E
 
 -- Buckets currently present:
 -- - business-logos (public)
--- - product-images (public)  -- Phase 2 task 2.9 tracks rename to avatars
+-- - avatars (public)
+
 
 ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 
@@ -359,12 +362,12 @@ CREATE POLICY "Business logos update" ON storage.objects FOR UPDATE TO authentic
 CREATE POLICY "Business logos upload" ON storage.objects FOR INSERT TO authenticated
   WITH CHECK ((bucket_id = 'business-logos'::text));
 
-CREATE POLICY "Product images delete" ON storage.objects FOR DELETE TO authenticated
-  USING ((bucket_id = 'product-images'::text));
-CREATE POLICY "Product images read" ON storage.objects FOR SELECT TO authenticated
-  USING ((bucket_id = 'product-images'::text));
-CREATE POLICY "Product images upload" ON storage.objects FOR INSERT TO authenticated
-  WITH CHECK ((bucket_id = 'product-images'::text));
+CREATE POLICY "Avatars delete" ON storage.objects FOR DELETE TO authenticated
+  USING ((bucket_id = 'avatars'::text));
+CREATE POLICY "Avatars read" ON storage.objects FOR SELECT TO authenticated
+  USING ((bucket_id = 'avatars'::text));
+CREATE POLICY "Avatars upload" ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK ((bucket_id = 'avatars'::text));
 
 CREATE POLICY "Public read for public buckets" ON storage.objects FOR SELECT TO public
-  USING ((bucket_id = ANY (ARRAY['product-images'::text, 'business-logos'::text])));
+  USING ((bucket_id = ANY (ARRAY['avatars'::text, 'business-logos'::text])));

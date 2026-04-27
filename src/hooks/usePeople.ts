@@ -80,16 +80,13 @@ async function fetchCustomersFromParties(
   // Convert parties to people
   const people = parties.map(partyToPerson);
 
-  // Determine overdue status (same logic as before)
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
+  // Determine overdue status: balance_due > 0 AND due_date < today
   const { data: overdueOrders } = await supabase
     .from("orders")
     .select("customer_id")
     .eq("vendor_id", vendorId)
     .gt("balance_due", 0)
-    .lt("created_at", thirtyDaysAgo.toISOString());
+    .lt("due_date", new Date().toISOString());
 
   const overdueIds = new Set(
     (overdueOrders ?? []).map((o: any) => o.customer_id),

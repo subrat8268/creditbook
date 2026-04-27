@@ -8,7 +8,7 @@
 
 import { colors } from '@/src/utils/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -21,7 +21,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/src/services/supabase';
-import { ArrowLeft, Building2, Phone, MapPin, FileText, Calendar } from 'lucide-react-native';
+import { Building2, Phone, MapPin, FileText, Calendar } from 'lucide-react-native';
 import { format } from 'date-fns';
 
 interface Transaction {
@@ -31,13 +31,13 @@ interface Transaction {
   bill_number: string;
   amount: number;
   payment_method?: string;
-  items?: Array<{
+  items?: {
     product_name: string;
     variant_name?: string;
     quantity: number;
     rate: number;
     total: number;
-  }>;
+  }[];
 }
 
 interface LedgerData {
@@ -67,7 +67,7 @@ export default function PublicLedgerView() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchLedger = async (isRefresh = false) => {
+  const fetchLedger = useCallback(async (isRefresh = false) => {
     try {
       if (isRefresh) setRefreshing(true);
       else setLoading(true);
@@ -102,7 +102,7 @@ export default function PublicLedgerView() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     if (token) {
@@ -111,7 +111,7 @@ export default function PublicLedgerView() {
       setError('Invalid link');
       setLoading(false);
     }
-  }, [token]);
+  }, [token, fetchLedger]);
 
   const onRefresh = () => {
     fetchLedger(true);
@@ -372,8 +372,11 @@ export default function PublicLedgerView() {
                       {/* Transaction items */}
                       {txn.items && txn.items.length > 0 && (
                         <View className="mt-2 space-y-1">
-                          {txn.items.map((item, idx) => (
-                            <Text key={idx} className="text-xs text-textSecondary">
+                          {txn.items.map((item) => (
+                            <Text
+                              key={`${txn.id}:${item.product_name}:${item.variant_name ?? ''}:${item.quantity}:${item.rate}`}
+                              className="text-xs text-textSecondary"
+                            >
                               • {item.product_name}
                               {item.variant_name && ` (${item.variant_name})`} - {item.quantity}{' '}
                               × {formatAmount(item.rate)}

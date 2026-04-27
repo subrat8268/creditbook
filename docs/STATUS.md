@@ -84,10 +84,10 @@
 | 2.6 | Add CHECK constraint `parties.is_customer = TRUE` | ✅ Done | `/fix` | `debugger`, `supabase-expert` | [bee19a9](https://github.com/subrat8268/kredBook/commit/bee19a931aa49080026cbab9efb51c5d2a06a62a) |
 | 2.7 | Regenerate `database.types.ts` from live Supabase | ✅ Done | `/fix` | `supabase-expert`, `tech-lead` | [22cbed5](https://github.com/subrat8268/kredBook/commit/22cbed521a992fe0d032fcbf74eace2f793956d2) |
 | 2.8 | Refresh `schema.sql` from live Supabase (no-data ref) | ✅ Done | `/audit` | `supabase-expert` | [22cbed5](https://github.com/subrat8268/kredBook/commit/22cbed521a992fe0d032fcbf74eace2f793956d2) |
-| 2.9 | Rename storage bucket `product-images` → `avatars` | ⏳ Not Started | `/refactor` | `refactor-engineer`, `supabase-expert` | — |
-| 2.10 | Add RPC `get_dashboard_summary` (single-query dashboard) | ⏳ Not Started | `/build` | `project-planner`, `supabase-expert` | — |
+| 2.9 | Rename storage bucket `product-images` → `avatars` | ✅ Done | `/refactor` | `refactor-engineer`, `supabase-expert` | — |
+| 2.10 | Add RPC `get_dashboard_summary` (single-query dashboard) | ✅ Done | `/build` | `project-planner`, `supabase-expert` | — |
 
-> **Note:** Tasks 2.9 and 2.10 are sequenced here but not yet executed. Start with 2.9 then 2.10. Both depend on 2.8 being done.
+> **Note:** Tasks 2.9 and 2.10 are complete. Next Phase 2 work should start at Phase 3 tasks unless new DB hardening is added.
 
 ### Phase 2 OpenCode Prompts
 
@@ -101,6 +101,8 @@ Update all code references in src/ and supabase/ accordingly.
 Use Supabase MCP to verify bucket state before and after.
 Do not guess — confirm bucket name from live Supabase first.
 Verification: bucket renamed, all code references updated, lint clean, diagnostics clean.
+
+Note: Supabase blocks direct SQL deletion from `storage.buckets`. If `product-images` remains, delete it via the Supabase Dashboard/Storage API after confirming it has no objects.
 ```
 
 #### 2.10 — Add RPC get_dashboard_summary

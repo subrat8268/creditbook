@@ -17,6 +17,8 @@ export interface RecentActivityItem {
 export interface DashboardData {
   totalRevenue: number;
   outstandingAmount: number;
+  /** Sum(balance_due) for entries past due_date */
+  overdueOutstandingAmount: number;
   unpaidOrders: number;
   partialOrders: number;
   overdueCustomers: number;
@@ -49,11 +51,37 @@ export interface DashboardData {
     daysSince: number;
   }[];
   recentActivity: RecentActivityItem[];
+  totalCustomersCount?: number;
+  totalEntriesCount?: number;
+}
+
+type DashboardSummaryRow = {
+  total_outstanding: number | string;
+  total_overdue: number | string;
+  overdue_customers_count: number;
+  top_overdue_customers: {
+    id: string;
+    name: string;
+    phone: string;
+    balance: number;
+    daysSince: number;
+  }[];
+  total_customers_count: number;
+  total_entries_count: number;
+};
+
+async function getDashboardSummary(): Promise<DashboardSummaryRow | null> {
+  const { data, error } = await supabase.rpc("get_dashboard_summary");
+  if (error) throw toApiError(error);
+  const row = Array.isArray(data) ? (data[0] as DashboardSummaryRow | undefined) : null;
+  return row ?? null;
 }
 
 export async function getDashboardData(
   vendorId: string,
 ): Promise<DashboardData> {
+  const summary = await getDashboardSummary();
+
   // Payments
   const { data: payments, error: payErr } = await supabase
     .from("payments")
@@ -76,11 +104,12 @@ export async function getDashboardData(
   if (!orders)
     return {
       totalRevenue,
-      outstandingAmount: 0,
+      outstandingAmount: Number(summary?.total_outstanding ?? 0),
+      overdueOutstandingAmount: Number(summary?.total_overdue ?? 0),
       unpaidOrders: 0,
       partialOrders: 0,
-      overdueCustomers: 0,
-      overdueCustomersList: [],
+      overdueCustomers: summary?.overdue_customers_count ?? 0,
+      overdueCustomersList: summary?.top_overdue_customers ?? [],
       customersOweMe: 0,
       iOweSuppliers: 0,
       netPosition: 0,
@@ -91,6 +120,8 @@ export async function getDashboardData(
       overduePayments: 0,
       overdueSuppliersList: [],
       recentActivity: [],
+      totalCustomersCount: summary?.total_customers_count ?? 0,
+      totalEntriesCount: summary?.total_entries_count ?? 0,
     };
 
   const unpaidStatuses = ["pending", "unpaid"];
@@ -110,65 +141,8 @@ export async function getDashboardData(
   // Active buyers = unique people with at least one order
   const activeBuyers = new Set(orders.map((o: any) => o.customer_id)).size;
 
-  // Overdue
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-  const { data: overdueOrdersWithCustomers } = await supabase
-    .from("orders")
-    .select("customer_id, balance_due, created_at, parties!inner(id, name, phone)")
-    .eq("vendor_id", vendorId)
-    .gt("balance_due", 0)
-    .lt("created_at", thirtyDaysAgo.toISOString());
-
-  const overdueCustomers = new Set(
-    (overdueOrdersWithCustomers ?? []).map((o: any) => o.customer_id),
-  ).size;
-
-  // Build overdueCustomersList — group by person, sum balance, find oldest order date
-  const personOverdueMap = new Map<
-    string,
-    {
-      id: string;
-      name: string;
-      phone: string;
-      balance: number;
-      oldestDate: Date;
-    }
-  >();
-  for (const order of overdueOrdersWithCustomers ?? []) {
-    const cid: string = (order as any).customer_id;
-    const person = Array.isArray((order as any).parties)
-      ? (order as any).parties[0]
-      : (order as any).parties;
-    const orderDate = new Date((order as any).created_at);
-    const existing = personOverdueMap.get(cid);
-    if (existing) {
-      existing.balance += Number((order as any).balance_due);
-      if (orderDate < existing.oldestDate) existing.oldestDate = orderDate;
-    } else {
-      personOverdueMap.set(cid, {
-        id: cid,
-        name: person?.name ?? "Unknown",
-        phone: person?.phone ?? "",
-        balance: Number((order as any).balance_due),
-        oldestDate: orderDate,
-      });
-    }
-  }
-  const now = new Date();
-  const overdueCustomersList = Array.from(personOverdueMap.values())
-    .sort((a, b) => b.balance - a.balance)
-    .slice(0, 5)
-    .map((c) => ({
-      id: c.id,
-      name: c.name,
-      phone: c.phone,
-      balance: c.balance,
-      daysSince: Math.floor(
-        (now.getTime() - c.oldestDate.getTime()) / (1000 * 60 * 60 * 24),
-      ),
-    }));
+  const overdueCustomers = summary?.overdue_customers_count ?? 0;
+  const overdueCustomersList = summary?.top_overdue_customers ?? [];
 
   // Net Position — people owe me
   const peopleOweMe = orders
@@ -187,7 +161,7 @@ export async function getDashboardData(
   const { data: recentOrders } = await supabase
     .from("orders")
     .select(
-      "id, bill_number, total_amount, amount_paid, balance_due, status, created_at, parties(name)",
+      "id, bill_number, total_amount, amount_paid, balance_due, status, created_at, due_date, parties(name)",
     )
     .eq("vendor_id", vendorId)
     .order("created_at", { ascending: false })
@@ -200,12 +174,11 @@ export async function getDashboardData(
         (o.status ?? "").toLowerCase() === "paid" ||
         Number(o.balance_due) === 0;
       const isPartial = (o.status ?? "").toLowerCase().includes("partial");
-      const thirtyDaysAgoTs = new Date();
-      thirtyDaysAgoTs.setDate(thirtyDaysAgoTs.getDate() - 30);
       const isOverdue =
         !isPaid &&
         Number(o.balance_due) > 0 &&
-        new Date(o.created_at) < thirtyDaysAgoTs;
+        o.due_date &&
+        new Date(o.due_date) < new Date();
 
       const resolvedStatus: RecentActivityItem["status"] = isPaid
         ? "Paid"
@@ -275,7 +248,8 @@ export async function getDashboardData(
 
   return {
     totalRevenue,
-    outstandingAmount,
+    outstandingAmount: Number(summary?.total_outstanding ?? outstandingAmount),
+    overdueOutstandingAmount: Number(summary?.total_overdue ?? 0),
     unpaidOrders,
     partialOrders,
     overdueCustomers,
@@ -290,6 +264,8 @@ export async function getDashboardData(
     overduePayments,
     overdueSuppliersList,
     recentActivity,
+    totalCustomersCount: summary?.total_customers_count ?? 0,
+    totalEntriesCount: summary?.total_entries_count ?? 0,
   };
 }
 

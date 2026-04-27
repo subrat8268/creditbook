@@ -140,6 +140,7 @@ function RootLayout() {
     profile,
     isFetchingProfile,
     showWelcome,
+    segments,
     router,
   ]);
 

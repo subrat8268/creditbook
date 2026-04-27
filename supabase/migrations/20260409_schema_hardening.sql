@@ -34,13 +34,13 @@ ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public read for public buckets" ON storage.objects;
 CREATE POLICY "Public read for public buckets"
 ON storage.objects FOR SELECT TO public
-USING (bucket_id IN ('product-images', 'business-logos'));
+USING (bucket_id IN ('avatars', 'business-logos'));
 
 -- Refresh Authenticated Read Policies (Optional redundancy)
-DROP POLICY IF EXISTS "Product images read" ON storage.objects;
-CREATE POLICY "Product images read"
+DROP POLICY IF EXISTS "Avatars read" ON storage.objects;
+CREATE POLICY "Avatars read"
 ON storage.objects FOR SELECT TO authenticated
-USING (bucket_id = 'product-images');
+USING (bucket_id = 'avatars');
 
 DROP POLICY IF EXISTS "Business logos read" ON storage.objects;
 CREATE POLICY "Business logos read"
@@ -53,5 +53,5 @@ BEGIN
   RAISE NOTICE '=== SCHEMA HARDENING COMPLETE ===';
   RAISE NOTICE 'Orders status: Unpaid -> Pending';
   RAISE NOTICE 'Performance indexes: Added for orders, items, and payments';
-  RAISE NOTICE 'Storage: Public read policy enabled for product-images and business-logos';
+  RAISE NOTICE 'Storage: Public read policy enabled for avatars and business-logos';
 END $$;

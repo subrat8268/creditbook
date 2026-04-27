@@ -50,20 +50,13 @@ function getAvatarColor(name: string): string {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
-// Format amount for display
-function formatAmount(amount: number): string {
-  return amount.toLocaleString("en-IN", { maximumFractionDigits: 0 });
-}
-
 export default function CreateOrderScreen() {
   const {
     customer: customerParams,
     amount: amountParam,
-    next: nextParam,
   } = useLocalSearchParams<{
     customer?: string;
     amount?: string;
-    next?: string;
   }>();
 
   const { profile, isFetchingProfile } = useAuthStore();
@@ -87,19 +80,6 @@ export default function CreateOrderScreen() {
   const [quickAmount, setQuickAmount] = useState<string>("");
   const [note, setNote] = useState<string>("");
   const [entryType, setEntryType] = useState<"bill" | "payment">("bill");
-
-  // Stub state for product picker feature (removed in Phase 1A)
-  // These are no longer used but retained to prevent rendering errors until UI is cleaned
-  const [isItemsExpanded, setIsItemsExpanded] = useState(false);
-  const items: any[] = []; // Always empty (product picker removed)
-  const itemsTotal = 0; // Always 0
-  const hasItems = false; // Always false
-  const loadingCharge = 0; // Always 0
-  const taxPercent = 0; // Always 0
-  const getSubtotal = () => 0; // Always 0
-  const getTaxAmount = () => 0; // Always 0
-  const removeItem = () => {}; // No-op
-  const updateItemQuantity = () => {}; // No-op
 
   const fetchPreviousBalance = useCallback(
     async (customerId: string) => {

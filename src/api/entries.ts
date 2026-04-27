@@ -446,7 +446,7 @@ export async function updateOrder(
         p_quick_amount: safeQuickAmount,
       };
 
-      const { data: rpcData, error: rpcError } = await supabase.rpc(
+      const { error: rpcError } = await supabase.rpc(
         "update_order_transaction",
         rpcPayload,
       );

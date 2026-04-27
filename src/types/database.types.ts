@@ -14,34 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
-      customers: {
+      access_tokens: {
         Row: {
-          address: string | null
-          created_at: string
+          access_count: number | null
+          created_at: string | null
+          customer_id: string
+          expires_at: string | null
           id: string
-          name: string
-          phone: string
+          is_revoked: boolean | null
+          last_accessed_at: string | null
+          token: string
           vendor_id: string
         }
         Insert: {
-          address?: string | null
-          created_at?: string
+          access_count?: number | null
+          created_at?: string | null
+          customer_id: string
+          expires_at?: string | null
           id?: string
-          name: string
-          phone: string
+          is_revoked?: boolean | null
+          last_accessed_at?: string | null
+          token: string
           vendor_id: string
         }
         Update: {
-          address?: string | null
-          created_at?: string
+          access_count?: number | null
+          created_at?: string | null
+          customer_id?: string
+          expires_at?: string | null
           id?: string
-          name?: string
-          phone?: string
+          is_revoked?: boolean | null
+          last_accessed_at?: string | null
+          token?: string
           vendor_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "customers_vendor_id_fkey"
+            foreignKeyName: "access_tokens_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "parties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_tokens_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -98,20 +114,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "order_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "order_items_variant_id_fkey"
-            columns: ["variant_id"]
-            isOneToOne: false
-            referencedRelation: "product_variants"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "order_items_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false
@@ -127,6 +129,9 @@ export type Database = {
           bill_number: string | null
           created_at: string
           customer_id: string
+          due_date: string | null
+          edit_count: number
+          edited_at: string | null
           id: string
           loading_charge: number
           previous_balance: number
@@ -141,6 +146,9 @@ export type Database = {
           bill_number?: string | null
           created_at?: string
           customer_id: string
+          due_date?: string | null
+          edit_count?: number
+          edited_at?: string | null
           id?: string
           loading_charge?: number
           previous_balance?: number
@@ -155,6 +163,9 @@ export type Database = {
           bill_number?: string | null
           created_at?: string
           customer_id?: string
+          due_date?: string | null
+          edit_count?: number
+          edited_at?: string | null
           id?: string
           loading_charge?: number
           previous_balance?: number
@@ -168,11 +179,76 @@ export type Database = {
             foreignKeyName: "orders_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
-            referencedRelation: "customers"
+            referencedRelation: "parties"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "orders_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parties: {
+        Row: {
+          account_number: string | null
+          address: string | null
+          bank_name: string | null
+          basket_mark: string | null
+          created_at: string
+          customer_balance: number
+          id: string
+          ifsc_code: string | null
+          is_customer: boolean
+          is_supplier: boolean
+          name: string
+          phone: string | null
+          supplier_balance: number
+          updated_at: string
+          upi_id: string | null
+          vendor_id: string
+        }
+        Insert: {
+          account_number?: string | null
+          address?: string | null
+          bank_name?: string | null
+          basket_mark?: string | null
+          created_at?: string
+          customer_balance?: number
+          id?: string
+          ifsc_code?: string | null
+          is_customer?: boolean
+          is_supplier?: boolean
+          name: string
+          phone?: string | null
+          supplier_balance?: number
+          updated_at?: string
+          upi_id?: string | null
+          vendor_id: string
+        }
+        Update: {
+          account_number?: string | null
+          address?: string | null
+          bank_name?: string | null
+          basket_mark?: string | null
+          created_at?: string
+          customer_balance?: number
+          id?: string
+          ifsc_code?: string | null
+          is_customer?: boolean
+          is_supplier?: boolean
+          name?: string
+          phone?: string | null
+          supplier_balance?: number
+          updated_at?: string
+          upi_id?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parties_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -210,152 +286,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "payments_order_id_fkey"
-            columns: ["order_id"]
+            foreignKeyName: "payments_order_vendor_fkey"
+            columns: ["order_id", "vendor_id"]
             isOneToOne: false
             referencedRelation: "orders"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "vendor_id"]
           },
           {
             foreignKeyName: "payments_vendor_id_fkey"
-            columns: ["vendor_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      payments_made: {
-        Row: {
-          amount: number
-          created_at: string
-          delivery_id: string | null
-          id: string
-          notes: string | null
-          payment_mode: string
-          supplier_id: string
-          vendor_id: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          delivery_id?: string | null
-          id?: string
-          notes?: string | null
-          payment_mode?: string
-          supplier_id: string
-          vendor_id: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          delivery_id?: string | null
-          id?: string
-          notes?: string | null
-          payment_mode?: string
-          supplier_id?: string
-          vendor_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "payments_made_delivery_id_fkey"
-            columns: ["delivery_id"]
-            isOneToOne: false
-            referencedRelation: "supplier_deliveries"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payments_made_supplier_id_fkey"
-            columns: ["supplier_id"]
-            isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payments_made_vendor_id_fkey"
-            columns: ["vendor_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      product_variants: {
-        Row: {
-          created_at: string | null
-          id: string
-          price: number
-          product_id: string
-          variant_name: string
-          vendor_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          price: number
-          product_id: string
-          variant_name: string
-          vendor_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          price?: number
-          product_id?: string
-          variant_name?: string
-          vendor_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "product_variants_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_variants_vendor_id_fkey"
-            columns: ["vendor_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      products: {
-        Row: {
-          base_price: number | null
-          category: string
-          created_at: string
-          id: string
-          image_url: string | null
-          name: string
-          variants: Json | null
-          vendor_id: string
-        }
-        Insert: {
-          base_price?: number | null
-          category?: string
-          created_at?: string
-          id?: string
-          image_url?: string | null
-          name: string
-          variants?: Json | null
-          vendor_id: string
-        }
-        Update: {
-          base_price?: number | null
-          category?: string
-          created_at?: string
-          id?: string
-          image_url?: string | null
-          name?: string
-          variants?: Json | null
-          vendor_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "products_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -429,167 +367,110 @@ export type Database = {
         }
         Relationships: []
       }
-      supplier_deliveries: {
-        Row: {
-          advance_paid: number
-          created_at: string
-          delivery_date: string
-          id: string
-          loading_charge: number
-          notes: string | null
-          supplier_id: string
-          total_amount: number
-          vendor_id: string
-        }
-        Insert: {
-          advance_paid?: number
-          created_at?: string
-          delivery_date?: string
-          id?: string
-          loading_charge?: number
-          notes?: string | null
-          supplier_id: string
-          total_amount?: number
-          vendor_id: string
-        }
-        Update: {
-          advance_paid?: number
-          created_at?: string
-          delivery_date?: string
-          id?: string
-          loading_charge?: number
-          notes?: string | null
-          supplier_id?: string
-          total_amount?: number
-          vendor_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "supplier_deliveries_supplier_id_fkey"
-            columns: ["supplier_id"]
-            isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "supplier_deliveries_vendor_id_fkey"
-            columns: ["vendor_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      supplier_delivery_items: {
-        Row: {
-          created_at: string
-          delivery_id: string
-          id: string
-          item_name: string
-          quantity: number
-          rate: number
-          subtotal: number | null
-          vendor_id: string
-        }
-        Insert: {
-          created_at?: string
-          delivery_id: string
-          id?: string
-          item_name: string
-          quantity?: number
-          rate?: number
-          subtotal?: number | null
-          vendor_id: string
-        }
-        Update: {
-          created_at?: string
-          delivery_id?: string
-          id?: string
-          item_name?: string
-          quantity?: number
-          rate?: number
-          subtotal?: number | null
-          vendor_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "supplier_delivery_items_delivery_id_fkey"
-            columns: ["delivery_id"]
-            isOneToOne: false
-            referencedRelation: "supplier_deliveries"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "supplier_delivery_items_vendor_id_fkey"
-            columns: ["vendor_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      suppliers: {
-        Row: {
-          account_number: string | null
-          address: string | null
-          bank_name: string | null
-          basket_mark: string | null
-          created_at: string
-          id: string
-          ifsc_code: string | null
-          name: string
-          phone: string | null
-          upi: string | null
-          vendor_id: string
-        }
-        Insert: {
-          account_number?: string | null
-          address?: string | null
-          bank_name?: string | null
-          basket_mark?: string | null
-          created_at?: string
-          id?: string
-          ifsc_code?: string | null
-          name: string
-          phone?: string | null
-          upi?: string | null
-          vendor_id: string
-        }
-        Update: {
-          account_number?: string | null
-          address?: string | null
-          bank_name?: string | null
-          basket_mark?: string | null
-          created_at?: string
-          id?: string
-          ifsc_code?: string | null
-          name?: string
-          phone?: string | null
-          upi?: string | null
-          vendor_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "suppliers_vendor_id_fkey"
-            columns: ["vendor_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      auto_link_customer_ledgers: {
+        Args: { p_customer_id: string; p_phone: string }
+        Returns: number
+      }
+      create_order_transaction: {
+        Args: {
+          p_amount_paid: number
+          p_bill_prefix: string
+          p_customer_id: string
+          p_items: Json
+          p_loading_charge: number
+          p_payment_mode: string
+          p_tax_percent: number
+          p_vendor_id: string
+        }
+        Returns: Json
+      }
+      find_ledgers_by_phone: {
+        Args: { p_phone: string }
+        Returns: {
+          access_token: string
+          balance: number
+          customer_id: string
+          customer_name: string
+          ledger_url: string
+          vendor_business_name: string
+          vendor_id: string
+          vendor_name: string
+        }[]
+      }
+      generate_access_token: { Args: never; Returns: string }
       get_customer_previous_balance: {
         Args: { customer_uuid: string; vendor_uuid: string }
         Returns: number
       }
+      get_customer_statement: {
+        Args: { p_customer_id: string }
+        Returns: {
+          amount: number
+          bill_number: string
+          created_at: string
+          id: string
+          item_count: number
+          order_bill_number: string
+          payment_mode: string
+          running_balance: number
+          status: string
+          type: string
+        }[]
+      }
+      get_dashboard_summary: {
+        Args: never
+        Returns: {
+          overdue_customers_count: number
+          top_overdue_customers: Json
+          total_customers_count: number
+          total_entries_count: number
+          total_outstanding: number
+          total_overdue: number
+        }[]
+      }
+      get_ledger_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          current_balance: number
+          customer_address: string
+          customer_name: string
+          customer_phone: string
+          last_transaction_date: string
+          total_payments: number
+          total_sales: number
+          transactions: Json
+          vendor_address: string
+          vendor_business_name: string
+          vendor_gstin: string
+          vendor_logo_url: string
+          vendor_name: string
+          vendor_phone: string
+        }[]
+      }
       get_next_bill_number:
         | { Args: { vendor_uuid: string }; Returns: string }
         | { Args: { prefix?: string; vendor_uuid: string }; Returns: string }
+      get_or_create_access_token: {
+        Args: { p_customer_id: string; p_vendor_id: string }
+        Returns: string
+      }
+      track_token_access: { Args: { p_token: string }; Returns: undefined }
+      update_order_transaction: {
+        Args: {
+          p_items: Json
+          p_loading_charge: number
+          p_order_id: string
+          p_quick_amount: number
+          p_tax_percent: number
+          p_vendor_id: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
@@ -722,4 +603,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
