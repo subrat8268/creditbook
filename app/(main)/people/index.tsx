@@ -201,7 +201,7 @@ export default function CustomersScreen() {
     filter === "All" ? undefined : (filter as "Overdue" | "Pending" | "Paid");
 
   const amountColorMap: Record<CustomerStatus, string> = {
-    Overdue: colors.danger,
+    Overdue: colors.overdue.text,
     Pending: colors.warning,
     Paid: colors.success,
     Advance: colors.primary,

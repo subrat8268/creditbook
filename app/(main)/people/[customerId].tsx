@@ -3,6 +3,7 @@ import Loader from "@/src/components/feedback/Loader";
 import SyncStatus from "@/src/components/feedback/SyncStatus";
 import { useToast } from "@/src/components/feedback/Toast";
 import RecordCustomerPaymentModal from "@/src/components/people/RecordCustomerPaymentModal";
+import OverdueChip from "@/src/components/ui/OverdueChip";
 import { usePersonDetail } from "@/src/hooks/usePeople";
 import { useWhatsAppShare } from "@/src/hooks/useWhatsAppShare";
 import { useAuthStore } from "@/src/store/authStore";
@@ -449,7 +450,9 @@ export default function CustomerDetailScreen() {
 
           <View className="mt-3 flex-row items-center justify-between gap-2">
             <View className="rounded-full border border-customer-hero-chip-border bg-customer-hero-chip-bg px-3 py-1.5">
-              <Text className="text-caption font-inter-bold uppercase text-customer-hero-text">{heroPillText}</Text>
+              <Text style={[typography.caption, { color: colors.overdue.text, fontWeight: "700", letterSpacing: 0.3 }]}>
+                  {heroPillText.toUpperCase()}
+                </Text>
             </View>
             <Text className="text-caption text-customer-hero-text-muted" numberOfLines={1}>
               {heroMetaText}

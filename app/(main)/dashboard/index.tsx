@@ -6,6 +6,7 @@ import BottomSheetPicker from "@/src/components/picker/BottomSheetPicker";
 import Avatar from "@/src/components/ui/Avatar";
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import MoneyAmount from "@/src/components/ui/MoneyAmount";
+import OverdueChip from "@/src/components/ui/OverdueChip";
 import { fetchPersonDetail } from "@/src/api/people";
 import { useDashboard } from "@/src/hooks/useDashboard";
 import { usePeople } from "@/src/hooks/usePeople";
@@ -237,7 +238,9 @@ export default function DashboardScreen() {
                             {person.name}
                           </Text>
                           <Text className="mt-0.5 text-caption text-textMuted dark:text-textMuted-dark">
+                            <Text className="mt-0.5 text-caption" style={{ color: colors.overdue.text }}>
                             {person.daysSince}d overdue
+                          </Text>
                           </Text>
                         </View>
                       </Pressable>

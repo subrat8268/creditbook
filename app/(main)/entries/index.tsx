@@ -49,7 +49,7 @@ export default function OrdersScreen() {
     { label: "All", color: colors.textPrimary, bg: colors.surface },
     { label: "Paid", color: colors.primary, bg: colors.successBg },
     { label: "Pending", color: colors.warning, bg: colors.warningBg },
-    { label: "Overdue", color: colors.danger, bg: colors.dangerBg },
+    { label: "Overdue", color: colors.overdue.text, bg: colors.overdue.bg },
   ];
 
   // Filter orders by status (client-side)

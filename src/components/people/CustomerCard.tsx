@@ -1,10 +1,10 @@
-import { Linking, Pressable, Text } from "react-native";
-import { memo } from "react";
+import { Linking, Pressable, StyleSheet, Text } from "react-native";
+import { memo, useMemo } from "react";
 import { formatRelativeActivity } from "../../utils/helper";
-import { colors } from "../../utils/theme";
 import { Phone, Plus } from "lucide-react-native";
 import Avatar from "../ui/Avatar";
 import ListItem from "@/src/components/layer2/ListItem";
+import { useTheme } from "@/src/utils/ThemeProvider";
 
 type CustomerStatus = "Overdue" | "Pending" | "Paid" | "Advance";
 
@@ -27,13 +27,6 @@ function getStatus(isOverdue: boolean, balance: number): CustomerStatus {
   return "Paid";
 }
 
-const STATUS_UIMAP: Record<CustomerStatus, { amountText: string; status: CustomerStatus }> = {
-  Overdue: { amountText: colors.danger, status: "Overdue" },
-  Pending: { amountText: colors.warning, status: "Pending" },
-  Paid: { amountText: colors.success, status: "Paid" },
-  Advance: { amountText: colors.primary, status: "Advance" },
-};
-
 export default memo(function CustomerCard({
   name,
   phone,
@@ -45,35 +38,69 @@ export default memo(function CustomerCard({
   onLongPress,
   onAddEntry,
 }: Props) {
+  const { colors } = useTheme();
   const status = getStatus(isOverdue, outstandingBalance);
+
+  const STATUS_UIMAP: Record<CustomerStatus, { amountText: string; status: CustomerStatus }> = {
+    Overdue: { amountText: colors.overdue.text, status: "Overdue" },
+    Pending: { amountText: colors.warning, status: "Pending" },
+    Paid: { amountText: colors.success, status: "Paid" },
+    Advance: { amountText: colors.primary, status: "Advance" },
+  };
   const ui = STATUS_UIMAP[status];
 
   const displayBalance = status === "Paid" ? 0 : Math.abs(outstandingBalance);
 
-  // Quick action handlers
   const handleCall = () => {
     if (phone) Linking.openURL(`tel:${phone}`);
   };
-  
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        addEntryBtn: {
+          borderColor: colors.border,
+          backgroundColor: colors.surfaceAlt,
+        },
+        addEntryText: {
+          marginLeft: 4,
+          fontSize: 11,
+          fontWeight: "600",
+          color: colors.textSecondary,
+        },
+        callBtn: {
+          flexDirection: "row",
+          alignItems: "center",
+          backgroundColor: colors.primaryBlueBg,
+          paddingHorizontal: 10,
+          paddingVertical: 6,
+          borderRadius: 999,
+          alignSelf: "flex-start",
+        },
+        callText: {
+          marginLeft: 4,
+          fontSize: 10,
+          fontWeight: "600",
+          color: colors.primary,
+        },
+      }),
+    [colors],
+  );
+
   const secondaryAction = onAddEntry ? (
     <Pressable
       onPress={onAddEntry}
-      style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
-      className="flex-row items-center self-start px-3 py-1.5 rounded-full border border-border bg-surfaceAlt"
+      style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }, styles.addEntryBtn]}
     >
       <Plus size={12} color={colors.textSecondary} strokeWidth={2.5} />
-      <Text className="ml-1 text-[11px] font-semibold text-textSecondary">Add Entry</Text>
+      <Text style={styles.addEntryText}>Add Entry</Text>
     </Pressable>
   ) : undefined;
 
   const footerRight = status === "Overdue" && phone ? (
-    <Pressable
-      onPress={handleCall}
-      className="flex-row items-center rounded-full px-2.5 py-1.5 self-start bg-primaryLight"
-      hitSlop={8}
-    >
+    <Pressable onPress={handleCall} style={styles.callBtn} hitSlop={8}>
       <Phone size={12} color={colors.primary} strokeWidth={2} />
-      <Text className="text-[10px] font-semibold text-primary ml-1">Call</Text>
+      <Text style={styles.callText}>Call</Text>
     </Pressable>
   ) : undefined;
 

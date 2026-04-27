@@ -100,7 +100,7 @@
 | # | Task | Status | Priority | Command | Skills |
 |---|---|---|---|---|---|
 | 3.1 | Dark mode — semantic tokens in `theme.ts` + settings toggle | ✅ Done | P0 | `/build` | `ui-ux-pro-max`, `building-native-ui`, `react-native-skills` |
-| 3.2 | Overdue badge consistency — token + component across Dashboard / People / Entries | ⏳ Not Started | P0 | `/refactor` | `ui-ux-pro-max`, `refactor-engineer` |
+| 3.2 | Overdue badge consistency — token + component across Dashboard / People / Entries | ✅ Done | P0 | `/refactor` | `ui-ux-pro-max`, `refactor-engineer` |
 | 3.3 | WhatsApp share polish — consistent message template (amounts, dates, customer name) | ⏳ Not Started | P1 | `/build` | `project-planner`, `react-native-skills` |
 | 3.4 | Indian number format — ₹1,20,000 everywhere | ⏳ Not Started | P1 | `/fix` | `systematic-debugging`, `react-native-skills` |
 | 3.5 | Entry note field — optional short text per Entry | ⏳ Not Started | P1 | `/build` | `project-planner`, `supabase` |
@@ -126,18 +126,16 @@ Implement dark mode for KredBook.
 Verification: toggle works, all 4 screens render correctly in both modes, lint clean, diagnostics clean.
 ```
 
-#### 3.2 — Overdue badge ← **NEXT TASK**
+#### 3.2 — Overdue badge ✅ Done
 
-```
-/refactor load_skills=["ui-ux-pro-max","refactor-engineer","code-reviewer"]
-
-Standardize the overdue badge across Dashboard, People, and Entries.
-- Create a single shared OverdueBadge component
-- Use theme tokens for the overdue red color (no hardcoded hex)
-- Replace any existing ad-hoc overdue chips with this component
-No behavior change. Visual result must be identical to current state.
-Verification: component exists, used in all 3 surfaces, lint clean.
-```
+- Created `src/components/ui/OverdueChip.tsx` with `badge` (pill) and `inline` (text) variants
+- Replaced hardcoded `colors.danger` overdue refs with `colors.overdue.text`/`bg` across all surfaces:
+  - Dashboard: inline text colored with theme token
+  - People list: filter chip text color
+  - Entries list: filter chip text + bg color
+  - People detail: hero chip text (container preserved)
+  - CustomerCard: amount text + Call button bg (`primaryBlueBg`)
+- No behavior change; visual result identical to current state.
 
 #### 3.3 — WhatsApp share polish
 
