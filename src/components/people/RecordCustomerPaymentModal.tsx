@@ -6,10 +6,12 @@ import Button from "@/src/components/ui/Button";
 import Input from "@/src/components/ui/Input";
 import MoneyAmount from "@/src/components/ui/MoneyAmount";
 import { useTheme } from "@/src/utils/ThemeProvider";
+import { buildPaymentShareMessage } from "@/src/utils/shareTemplates";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Check } from "lucide-react-native";
 import { forwardRef, useEffect, useState } from "react";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, Share, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 type PaymentMode = "Cash" | "UPI" | "NEFT" | "Draft" | "Cheque";
 
@@ -31,6 +33,7 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
     ref,
   ) => {
     const { colors, radius, spacing, typography } = useTheme();
+    const { i18n } = useTranslation();
     const [amount, setAmount] = useState(String(initialAmount ?? balanceDue));
     const [mode, setMode] = useState<PaymentMode>("Cash");
     const [notes, setNotes] = useState("");
@@ -63,6 +66,19 @@ const RecordCustomerPaymentModal = forwardRef<BottomSheetModal, Props>(
           mode,
           notes: notes.trim() || undefined,
         });
+
+        const locale = i18n.language?.toLowerCase().startsWith("hi") ? "hi" : "en";
+        await Share.share({
+          message: buildPaymentShareMessage({
+            locale,
+            customerName,
+            amount: payAmount,
+            paymentDate: new Date(),
+            remainingBalance: Math.max(0, balanceDue - payAmount),
+            businessName: profile?.business_name || profile?.name || "KredBook",
+          }),
+        });
+
         setAmount(String(balanceDue));
         setMode("Cash");
         setNotes("");

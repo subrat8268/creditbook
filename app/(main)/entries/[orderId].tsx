@@ -16,9 +16,11 @@ import { useTheme } from "@/src/utils/ThemeProvider";
 import { generateBillPdf } from "@/src/utils/generateBillPdf";
 import { formatDate } from "@/src/utils/helper";
 import { formatINR } from "@/src/utils/format";
+import { buildEntryShareMessage } from "@/src/utils/shareTemplates";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
+import { useTranslation } from "react-i18next";
 import { MessageCircle, Pencil, Phone, Receipt, Share2, Wallet } from "lucide-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
@@ -35,6 +37,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function OrderDetailScreen() {
   const { colors, radius, spacing, typography } = useTheme();
+  const { i18n } = useTranslation();
+  const shareLocale = useMemo(
+    () => (i18n.language?.toLowerCase().startsWith("hi") ? "hi" : "en"),
+    [i18n.language],
+  );
   const PAYMENT_MODE_COLORS: Record<string, { bg: string; text: string }> = {
     Cash: { bg: colors.paid.bg, text: colors.paid.text },
     UPI: { bg: colors.partial.bg, text: colors.partial.text },
@@ -207,10 +214,14 @@ export default function OrderDetailScreen() {
       // Fallback: pre-filled WhatsApp message
       const cleanPhone = customerPhone.replace(/\D/g, "");
       const msg = encodeURIComponent(
-        `Hi ${customerName}, your entry *${order.bill_number}* of *${formatINR(order.total_amount)}* is ready.` +
-          (order.balance_due > 0
-            ? ` Remaining balance: *${formatINR(order.balance_due)}*. Please arrange payment at your earliest convenience.`
-            : " The entry has been fully paid. Thank you!"),
+        buildEntryShareMessage({
+          locale: shareLocale,
+          customerName,
+          amount: order.total_amount,
+          entryDate: order.created_at,
+          dueDate: (order as any).due_date ?? null,
+          businessName: profile?.business_name || profile?.name || "KredBook",
+        }),
       );
       const wa = `https://wa.me/91${cleanPhone}?text=${msg}`;
       showToast({
@@ -241,6 +252,7 @@ export default function OrderDetailScreen() {
     showToast,
     itemsSubtotal,
     taxAmount,
+    shareLocale,
   ]);
 
   // ── Payment success ─────────────────────────────────────────────

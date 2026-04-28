@@ -12,17 +12,20 @@ import { useAuthStore } from "@/src/store/authStore";
 import { useOrderStore } from "@/src/store/orderStore";
 import { useTheme } from "@/src/utils/ThemeProvider";
 import { formatINR } from "@/src/utils/format";
+import { buildEntryShareMessage } from "@/src/utils/shareTemplates";
 import { BillItem, generateBillPdf } from "@/src/utils/generateBillPdf";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { ArrowLeft, Pencil } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -46,6 +49,7 @@ function getAvatarColor(name: string, palette: readonly string[]): string {
 
 export default function CreateOrderScreen() {
   const { colors } = useTheme();
+  const { i18n } = useTranslation();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const avatarColors = useMemo(
     () => [colors.danger, colors.warning, colors.primary, ...colors.avatarPalette],
@@ -225,6 +229,18 @@ export default function CreateOrderScreen() {
       const canShare = await Sharing.isAvailableAsync();
       if (canShare) {
         await Sharing.shareAsync(localPdfPath, { mimeType: "application/pdf" });
+      } else {
+        const locale = i18n.language?.toLowerCase().startsWith("hi") ? "hi" : "en";
+        await Share.share({
+          message: buildEntryShareMessage({
+            locale,
+            customerName: selectedCustomerMeta?.name || "Customer",
+            amount: entryAmount,
+            entryDate: savedOrder.created_at ?? new Date(),
+            dueDate: (savedOrder as any).due_date ?? null,
+            businessName: profile?.business_name || profile?.name || "KredBook",
+          }),
+        });
       }
 
       // Cleanup Draft on success and go to the created detail screen.

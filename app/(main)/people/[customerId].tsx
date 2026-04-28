@@ -11,6 +11,7 @@ import { usePreferencesStore } from "@/src/store/preferencesStore";
 import type { Transaction } from "@/src/types/customer";
 import { useTheme } from "@/src/utils/ThemeProvider";
 import { formatINR } from "@/src/utils/format";
+import { buildLedgerShareMessage } from "@/src/utils/shareTemplates";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Print from "expo-print";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -28,6 +29,7 @@ import {
   Share2,
 } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Linking, Pressable, ScrollView, Share, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -200,6 +202,7 @@ function TransactionRow({ tx, withBorder }: { tx: Transaction; withBorder: boole
 
 export default function CustomerDetailScreen() {
   const { colors, gradients, spacing, typography, isDark } = useTheme();
+  const { i18n } = useTranslation();
   const router = useRouter();
   const { customerId, focus } = useLocalSearchParams<{ customerId: string; focus?: string }>();
 
@@ -293,13 +296,22 @@ export default function CustomerDetailScreen() {
       }
 
       const url = `https://kredbook.app/l/${token}`;
-      await Share.share({ message: `View your ledger: ${url}` });
+      const locale = i18n.language?.toLowerCase().startsWith("hi") ? "hi" : "en";
+      await Share.share({
+        message: buildLedgerShareMessage({
+          locale,
+          customerName: customer.name,
+          balance: customer.outstandingBalance,
+          businessName: profile?.business_name || profile?.name || "KredBook",
+          publicLedgerUrl: url,
+        }),
+      });
     } catch {
       showToast({ message: "Could not create share link.", type: "error" });
     } finally {
       setIsSharingLedgerLink(false);
     }
-  }, [customer, showToast]);
+  }, [customer, profile?.business_name, profile?.name, i18n.language, showToast]);
 
   useEffect(() => {
     if (focus === "share") {
