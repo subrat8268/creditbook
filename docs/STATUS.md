@@ -104,7 +104,7 @@
 | 3.3 | WhatsApp share polish — consistent message template (amounts, dates, customer name) | ⏳ Not Started | P1 | `/build` | `project-planner`, `react-native-skills` |
 | 3.4 | Overdue push notifications — grouped local reminders + Profile toggle + People deep-link | ✅ Done | P1 | `/build` | `building-native-ui`, `native-data-fetching` |
 | 3.5 | Indian number format — ₹1,20,000 everywhere | ✅ Done | P1 | `/fix` | `systematic-debugging`, `react-native-skills` |
-| 3.6 | Public ledger share link | ⏳ Not Started | P1 | `/build` | `project-planner`, `react-native-skills` |
+| 3.6 | Public ledger share link | ✅ Done | P1 | `/build` | `building-native-ui`, `native-data-fetching`, `supabase` |
 | 3.7 | Entry note field — optional short text per Entry | ⏳ Not Started | P1 | `/build` | `project-planner`, `supabase` |
 | 3.8 | Collect shortcut on Dashboard hero — deep-link to top overdue Customer | ⏳ Not Started | P2 | `/build` | `react-native-skills`, `project-planner` |
 | 3.9 | Offline sync indicator — green (synced) / amber (pending) dot in header | ⏳ Not Started | P2 | `/build` | `react-native-skills`, `building-native-ui` |

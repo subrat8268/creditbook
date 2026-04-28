@@ -5,7 +5,7 @@ import { useToast } from "@/src/components/feedback/Toast";
 import RecordCustomerPaymentModal from "@/src/components/people/RecordCustomerPaymentModal";
 import OverdueChip from "@/src/components/ui/OverdueChip";
 import { usePersonDetail } from "@/src/hooks/usePeople";
-import { useWhatsAppShare } from "@/src/hooks/useWhatsAppShare";
+import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { usePreferencesStore } from "@/src/store/preferencesStore";
 import type { Transaction } from "@/src/types/customer";
@@ -28,7 +28,7 @@ import {
   Share2,
 } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Linking, Pressable, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Linking, Pressable, ScrollView, Share, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type TxFilter = "All" | "Entries" | "Payments";
@@ -207,7 +207,6 @@ export default function CustomerDetailScreen() {
   const profile = useAuthStore((s) => s.profile);
 
   const { show: showToast } = useToast();
-  const { shareLedger, isSharing } = useWhatsAppShare();
   const logReminderSent = usePreferencesStore((s) => s.logReminderSent);
 
   const [txFilter, setTxFilter] = useState<TxFilter>("All");
@@ -216,6 +215,7 @@ export default function CustomerDetailScreen() {
   const paymentModalRef = useRef<any>(null);
   const [quickPaymentAmount, setQuickPaymentAmount] = useState<string>("");
   const [shareQueued, setShareQueued] = useState(false);
+  const [isSharingLedgerLink, setIsSharingLedgerLink] = useState(false);
 
   const hasPendingPayment = !!customer?.pendingOrderId && (customer.pendingOrderBalance ?? 0) > 0;
 
@@ -277,16 +277,29 @@ export default function CustomerDetailScreen() {
   );
 
   const handleShareLedger = useCallback(async () => {
-    if (!customer || !profile) return;
+    if (!customer) return;
 
-    await shareLedger(
-      profile.id,
-      customer.id,
-      customer.name,
-      customer.phone,
-      profile.business_name || profile.name || "KredBook",
-    );
-  }, [customer, profile, shareLedger]);
+    setIsSharingLedgerLink(true);
+    try {
+      const { data, error } = await supabase.rpc("upsert_access_token", {
+        p_party_id: customer.id,
+      });
+
+      if (error) throw error;
+
+      const token = typeof data === "string" ? data : (data as { token?: string } | null)?.token;
+      if (!token) {
+        throw new Error("Token generation failed");
+      }
+
+      const url = `https://kredbook.app/l/${token}`;
+      await Share.share({ message: `View your ledger: ${url}` });
+    } catch {
+      showToast({ message: "Could not create share link.", type: "error" });
+    } finally {
+      setIsSharingLedgerLink(false);
+    }
+  }, [customer, showToast]);
 
   useEffect(() => {
     if (focus === "share") {
@@ -402,6 +415,18 @@ export default function CustomerDetailScreen() {
 
         <View className="flex-row gap-2">
           <Pressable
+            className="h-10 w-10 items-center justify-center rounded-full bg-search dark:bg-search-dark"
+            onPress={handleShareLedger}
+            disabled={isSharingLedgerLink}
+          >
+            {isSharingLedgerLink ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <Share2 size={20} color={colors.primary} strokeWidth={2} />
+            )}
+          </Pressable>
+
+          <Pressable
             className={`h-10 w-10 items-center justify-center rounded-full bg-search dark:bg-search-dark ${customer.transactions.length === 0 ? "opacity-50" : ""}`}
             onPress={downloadStatement}
             disabled={customer.transactions.length === 0 || exporting}
@@ -486,10 +511,16 @@ export default function CustomerDetailScreen() {
 
           <View className="mt-3 flex-row gap-3">
             <QuickActionTile
-              label="Share"
-              icon={<Share2 size={18} color={colors.primary} strokeWidth={2} />}
+              label={isSharingLedgerLink ? "Sharing" : "Share"}
+              icon={
+                isSharingLedgerLink ? (
+                  <ActivityIndicator size="small" color={colors.primary} />
+                ) : (
+                  <Share2 size={18} color={colors.primary} strokeWidth={2} />
+                )
+              }
               onPress={handleShareLedger}
-              disabled={isSharing}
+              disabled={isSharingLedgerLink}
             />
 
             <QuickActionTile

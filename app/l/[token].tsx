@@ -1,420 +1,225 @@
-/**
- * Public Ledger View - Shared via WhatsApp link
- * Route: /l/[token]
- * 
- * Shows customer their ledger with a specific vendor without requiring login
- * Accessible via shareable token (e.g., https://kredbook.app/l/a8f3k2m9p1)
- */
+import { supabase } from "@/src/services/supabase";
+import { useTheme } from "@/src/utils/ThemeProvider";
+import { formatINR } from "@/src/utils/format";
+import { useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { colors } from '@/src/utils/theme';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  ActivityIndicator,
-  Image,
-  RefreshControl,
-  TouchableOpacity,
-  Linking,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { supabase } from '@/src/services/supabase';
-import { Building2, Phone, MapPin, FileText, Calendar } from 'lucide-react-native';
-import { format } from 'date-fns';
-import { formatINR } from '@/src/utils/format';
-
-interface Transaction {
+type LedgerTxn = {
   id: string;
   date: string;
-  type: 'sale' | 'payment_received';
-  bill_number: string;
+  type: "sale" | "payment_received";
+  bill_number?: string | null;
   amount: number;
-  payment_method?: string;
-  items?: {
-    product_name: string;
-    variant_name?: string;
-    quantity: number;
-    rate: number;
-    total: number;
-  }[];
-}
+};
 
-interface LedgerData {
-  customer_name: string;
-  customer_phone: string;
-  customer_address: string;
-  vendor_business_name: string;
-  vendor_name: string;
-  vendor_phone: string;
-  vendor_address: string;
-  vendor_gstin: string;
-  vendor_logo_url: string;
-  total_sales: number;
-  total_payments: number;
-  current_balance: number;
-  last_transaction_date: string;
-  transactions: Transaction[];
-}
+type LedgerData = {
+  vendor_business_name?: string | null;
+  vendor_name?: string | null;
+  vendor_phone?: string | null;
+  current_balance?: number;
+  transactions?: LedgerTxn[];
+};
 
 export default function PublicLedgerView() {
   const { token } = useLocalSearchParams<{ token: string }>();
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const { colors, spacing, typography } = useTheme();
 
-  const [ledgerData, setLedgerData] = useState<LedgerData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [ledger, setLedger] = useState<LedgerData | null>(null);
 
-  const fetchLedger = useCallback(async (isRefresh = false) => {
+  const loadLedger = useCallback(async () => {
+    if (!token) {
+      setError("This link is invalid or has expired");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
     try {
-      if (isRefresh) setRefreshing(true);
-      else setLoading(true);
-
-      setError(null);
-
-      const { data, error: fetchError } = await supabase.rpc('get_ledger_by_token', {
+      const { data, error: rpcError } = await supabase.rpc("get_ledger_by_token", {
         p_token: token,
       });
 
-      if (fetchError) {
-        console.error('[PublicLedger] Error fetching ledger:', fetchError);
-        setError('Failed to load ledger');
-        return;
-      }
+      if (rpcError) throw rpcError;
 
-      if (!data || data.length === 0) {
-        setError('Invalid or expired link');
-        return;
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row) {
+        setError("This link is invalid or has expired");
+        setLedger(null);
+      } else {
+        setLedger({
+          ...row,
+          transactions: (row.transactions ?? []) as LedgerTxn[],
+        });
       }
-
-      // Parse the result (RPC returns array with single row)
-      const ledger = data[0];
-      setLedgerData({
-        ...ledger,
-        transactions: ledger.transactions || [],
-      });
-    } catch (err) {
-      console.error('[PublicLedger] Unexpected error:', err);
-      setError('Something went wrong');
+    } catch {
+      setError("This link is invalid or has expired");
+      setLedger(null);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   }, [token]);
 
   useEffect(() => {
-    if (token) {
-      fetchLedger();
-    } else {
-      setError('Invalid link');
-      setLoading(false);
-    }
-  }, [token, fetchLedger]);
+    loadLedger();
+  }, [loadLedger]);
 
-  const onRefresh = () => {
-    fetchLedger(true);
-  };
+  const transactions = useMemo(() => {
+    const items = ledger?.transactions ?? [];
+    return items
+      .slice()
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [ledger?.transactions]);
 
-  // Format currency (Indian Rupees)
-  const formatAmount = (amount: number) => formatINR(amount);
-
-  // Loading state
   if (loading) {
     return (
-      <View className="items-center justify-center flex-1 bg-gray-50">
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text className="mt-4 text-sm text-textSecondary">Loading ledger...</Text>
-      </View>
-    );
-  }
-
-  // Error state
-  if (error || !ledgerData) {
-    return (
-      <View
-        className="items-center justify-center flex-1 px-6 bg-gray-50"
-        style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-      >
-        <View className="items-center p-8 bg-white rounded-2xl">
-          <Text className="mb-2 text-4xl">🔒</Text>
-          <Text className="mb-2 text-lg font-bold text-textPrimary">
-            {error || 'Ledger not found'}
-          </Text>
-          <Text className="mb-6 text-sm text-center text-textSecondary">
-            This link may be invalid, expired, or revoked
-          </Text>
-          <TouchableOpacity
-            className="px-6 py-3 rounded-lg bg-primary"
-            onPress={() => router.back()}
-          >
-            <Text className="font-semibold text-white">Go Back</Text>
-          </TouchableOpacity>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ flex: 1, padding: spacing.lg, gap: spacing.md }}>
+          <View style={{ backgroundColor: colors.surface, borderRadius: spacing.cardRadius, padding: spacing.lg }}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <Text style={[typography.caption, { color: colors.textSecondary, marginTop: spacing.sm }]}>Loading ledger...</Text>
+          </View>
+          <View style={{ backgroundColor: colors.surface, borderRadius: spacing.cardRadius, padding: spacing.lg, height: 96 }} />
+          <View style={{ backgroundColor: colors.surface, borderRadius: spacing.cardRadius, padding: spacing.lg, height: 96 }} />
+          <View style={{ backgroundColor: colors.surface, borderRadius: spacing.cardRadius, padding: spacing.lg, height: 96 }} />
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
-   const { transactions } = ledgerData;
-   const lastUpdatedLabel = ledgerData.last_transaction_date
-     ? format(new Date(ledgerData.last_transaction_date), 'dd MMM yyyy, hh:mm a')
-     : 'Not available';
-   const vendorName = ledgerData.vendor_business_name || ledgerData.vendor_name;
-   const vendorPhone = ledgerData.vendor_phone?.trim();
+  if (error || !ledger) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ flex: 1, justifyContent: "center", padding: spacing.xl }}>
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: spacing.cardRadius,
+              borderWidth: spacing.dividerHeight,
+              borderColor: colors.border,
+              padding: spacing.xl,
+            }}
+          >
+            <Text style={[typography.cardTitle, { color: colors.textPrimary }]}>Link unavailable</Text>
+            <Text style={[typography.body, { color: colors.textSecondary, marginTop: spacing.sm }]}>
+              This link is invalid or has expired
+            </Text>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-   const openPhone = () => {
-     if (!vendorPhone) return;
-     Linking.openURL(`tel:${vendorPhone}`).catch(() => {});
-   };
-
-   const openWhatsApp = () => {
-     if (!vendorPhone) return;
-     const digits = vendorPhone.replace(/\D/g, '');
-     if (!digits) return;
-     const number = digits.startsWith('91') ? digits : `91${digits}`;
-     const message = encodeURIComponent(
-       `Hi ${vendorName}, I have a question about my ledger.`,
-     );
-     Linking.openURL(`https://wa.me/${number}?text=${message}`).catch(() => {});
-   };
-  const balanceColor =
-    ledgerData.current_balance > 0
-      ? colors.danger
-      : ledgerData.current_balance < 0
-      ? colors.primaryDark
-      : colors.textSecondary;
+  const businessName = ledger.vendor_business_name || ledger.vendor_name || "Business";
+  const totalDue = Number(ledger.current_balance ?? 0);
 
   return (
-    <View className="flex-1 bg-gray-50" style={{ paddingTop: insets.top }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing["2xl"], gap: spacing.md }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header Card - Vendor Info */}
-        <View className="p-5 mx-4 mt-4 bg-white rounded-2xl">
-          <View className="flex-row items-center mb-4">
-            {ledgerData.vendor_logo_url ? (
-              <Image
-                source={{ uri: ledgerData.vendor_logo_url }}
-                className="w-12 h-12 mr-3 rounded-full bg-gray-100"
-              />
-            ) : (
-              <View className="items-center justify-center w-12 h-12 mr-3 rounded-full bg-primary-light">
-                <Building2 size={20} color={colors.primary} />
-              </View>
-            )}
-            <View className="flex-1">
-              <Text className="text-lg font-bold text-textPrimary">
-                {vendorName}
-              </Text>
-              {ledgerData.vendor_gstin && (
-                <Text className="text-xs text-textSecondary">
-                  GSTIN: {ledgerData.vendor_gstin}
-                </Text>
-              )}
-            </View>
-          </View>
-
-          {/* Vendor Contact */}
-          <View className="pt-3 space-y-2 border-t border-gray-100">
-            {ledgerData.vendor_phone && (
-              <View className="flex-row items-center">
-                <Phone size={14} color={colors.textSecondary} />
-                <Text className="ml-2 text-sm text-textSecondary">
-                  {ledgerData.vendor_phone}
-                </Text>
-              </View>
-            )}
-            {ledgerData.vendor_address && (
-              <View className="flex-row items-start">
-                <MapPin size={14} color={colors.textSecondary} className="mt-0.5" />
-                <Text className="flex-1 ml-2 text-sm text-textSecondary">
-                  {ledgerData.vendor_address}
-                </Text>
-              </View>
-              )}
-            <View className="flex-row gap-3 mt-3">
-              <TouchableOpacity
-                className={`flex-1 py-2 rounded-lg border ${
-                  vendorPhone ? 'border-primary' : 'border-gray-200'
-                }`}
-                onPress={openPhone}
-                disabled={!vendorPhone}
-              >
-                <Text
-                  className={`text-center text-sm font-semibold ${
-                    vendorPhone ? 'text-primary' : 'text-textSecondary'
-                  }`}
-                >
-                  Call Business
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className={`flex-1 py-2 rounded-lg border ${
-                  vendorPhone ? 'border-primary' : 'border-gray-200'
-                }`}
-                onPress={openWhatsApp}
-                disabled={!vendorPhone}
-              >
-                <Text
-                  className={`text-center text-sm font-semibold ${
-                    vendorPhone ? 'text-primary' : 'text-textSecondary'
-                  }`}
-                >
-                  WhatsApp
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+        <View
+          style={{
+            backgroundColor: colors.surface,
+            borderRadius: spacing.cardRadius,
+            borderWidth: spacing.dividerHeight,
+            borderColor: colors.border,
+            padding: spacing.lg,
+            gap: spacing.xs,
+          }}
+        >
+          <Text style={[typography.sectionTitle, { color: colors.textPrimary }]}>{businessName}</Text>
+          <Text style={[typography.body, { color: colors.textSecondary }]}>{ledger.vendor_phone || "Phone unavailable"}</Text>
         </View>
 
-        {/* Balance Summary Card */}
-        <View className="p-5 mx-4 mt-4 bg-white rounded-2xl">
-          <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-sm font-medium text-textSecondary">
-              Your Account with {vendorName}
-            </Text>
-            <View className="px-2 py-1 rounded-full bg-gray-50">
-              <Text className="text-[11px] text-textSecondary">
-                Updated {lastUpdatedLabel}
-              </Text>
-            </View>
-          </View>
-
-          <View className="flex-row items-center justify-between pb-4 mb-4 border-b border-gray-100">
-            <View>
-              <Text className="text-xs text-textSecondary">Total Sales</Text>
-              <Text className="text-base font-semibold text-textPrimary">
-                {formatAmount(ledgerData.total_sales)}
-              </Text>
-            </View>
-            <View>
-              <Text className="text-xs text-right text-textSecondary">Total Payments</Text>
-              <Text className="text-base font-semibold text-right text-textPrimary">
-                {formatAmount(ledgerData.total_payments)}
-              </Text>
-            </View>
-          </View>
-
-          <View className="items-center py-4 rounded-xl bg-gray-50">
-            <Text className="mb-1 text-xs font-medium text-textSecondary">
-              Current Balance
-            </Text>
-            <Text className="text-3xl font-bold" style={{ color: balanceColor }}>
-              {formatAmount(Math.abs(ledgerData.current_balance))}
-            </Text>
-            <Text className="mt-1 text-xs text-textSecondary">
-              {ledgerData.current_balance > 0
-                ? 'You owe'
-                : ledgerData.current_balance < 0
-                ? 'To receive'
-                : 'Settled'}
-            </Text>
-            <Text className="mt-2 text-[11px] text-textSecondary text-center">
-              Balance reflects all bills and payments listed below.
-            </Text>
-          </View>
-        </View>
-
-        {/* Transactions List */}
-        <View className="p-5 mx-4 mt-4 mb-4 bg-white rounded-2xl">
-          <Text className="mb-4 text-base font-bold text-textPrimary">
-            Transaction History
+        <View
+          style={{
+            backgroundColor: colors.surface,
+            borderRadius: spacing.cardRadius,
+            borderWidth: spacing.dividerHeight,
+            borderColor: colors.border,
+            padding: spacing.lg,
+          }}
+        >
+          <Text style={[typography.caption, { color: colors.textSecondary }]}>Total due</Text>
+          <Text style={[typography.heroAmount, { color: totalDue > 0 ? colors.danger : colors.success, marginTop: spacing.xs }]}>
+            {formatINR(Math.abs(totalDue))}
           </Text>
+        </View>
+
+        <View
+          style={{
+            backgroundColor: colors.surface,
+            borderRadius: spacing.cardRadius,
+            borderWidth: spacing.dividerHeight,
+            borderColor: colors.border,
+            overflow: "hidden",
+          }}
+        >
+          <View style={{ padding: spacing.lg, borderBottomWidth: spacing.dividerHeight, borderBottomColor: colors.border }}>
+            <Text style={[typography.cardTitle, { color: colors.textPrimary }]}>Transactions</Text>
+          </View>
 
           {transactions.length === 0 ? (
-            <View className="items-center py-8">
-              <FileText size={32} color={colors.textSecondary} />
-              <Text className="mt-2 text-sm text-textSecondary">No transactions yet</Text>
+            <View style={{ padding: spacing.lg }}>
+              <Text style={[typography.body, { color: colors.textSecondary }]}>No transactions found</Text>
             </View>
           ) : (
-            <View className="space-y-3">
-              {transactions.map((txn, index) => (
+            transactions.map((txn, index) => {
+              const isSale = txn.type === "sale";
+              return (
                 <View
                   key={txn.id}
-                  className={`pb-3 ${
-                    index < transactions.length - 1 ? 'border-b border-gray-100' : ''
-                  }`}
+                  style={{
+                    padding: spacing.lg,
+                    borderBottomWidth:
+                      index === transactions.length - 1 ? 0 : spacing.dividerHeight,
+                    borderBottomColor: colors.border,
+                    gap: spacing.xs,
+                  }}
                 >
-                  <View className="flex-row items-start justify-between mb-1">
-                    <View className="flex-1">
-                      <View className="flex-row items-center mb-1">
-                        <Text
-                          className={`text-xs font-semibold px-2 py-0.5 rounded ${
-                            txn.type === 'sale'
-                              ? 'bg-dangerBg text-danger'
-                              : 'bg-successBg text-primaryDark'
-                          }`}
-                        >
-                          {txn.type === 'sale' ? 'Sale' : 'Payment'}
-                        </Text>
-                        {txn.bill_number && (
-                          <Text className="ml-2 text-xs text-textSecondary">
-                            #{txn.bill_number}
-                          </Text>
-                        )}
-                      </View>
-
-                      <View className="flex-row items-center mt-1">
-                        <Calendar size={12} color={colors.textSecondary} />
-                        <Text className="ml-1 text-xs text-textSecondary">
-                          {format(new Date(txn.date), 'dd MMM yyyy, hh:mm a')}
-                        </Text>
-                      </View>
-
-                      {/* Transaction items */}
-                      {txn.items && txn.items.length > 0 && (
-                        <View className="mt-2 space-y-1">
-                          {txn.items.map((item) => (
-                            <Text
-                              key={`${txn.id}:${item.product_name}:${item.variant_name ?? ''}:${item.quantity}:${item.rate}`}
-                              className="text-xs text-textSecondary"
-                            >
-                              • {item.product_name}
-                              {item.variant_name && ` (${item.variant_name})`} - {item.quantity}{' '}
-                              × {formatAmount(item.rate)}
-                            </Text>
-                          ))}
-                        </View>
-                      )}
-                    </View>
-
-                    <View className="items-end ml-3">
-                      <Text
-                        className="text-base font-bold"
-                        style={{
-                          color: txn.type === 'sale' ? colors.danger : colors.primaryDark,
-                        }}
-                      >
-                        {txn.type === 'sale' ? '+' : '-'}
-                        {formatAmount(txn.amount)}
-                      </Text>
-                      {txn.payment_method && (
-                        <Text className="mt-1 text-xs text-textSecondary">
-                          {txn.payment_method}
-                        </Text>
-                      )}
-                    </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                    <Text style={[typography.body, { color: colors.textPrimary }]}>
+                      {isSale ? "Sale" : "Payment"}
+                      {txn.bill_number ? ` #${txn.bill_number}` : ""}
+                    </Text>
+                    <Text style={[typography.body, { color: isSale ? colors.danger : colors.success, fontWeight: "700" }]}>
+                      {isSale ? "+" : "-"}
+                      {formatINR(Number(txn.amount || 0))}
+                    </Text>
+                  </View>
+                  <Text style={[typography.caption, { color: colors.textSecondary }]}>
+                    {new Date(txn.date).toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </Text>
+                  <View
+                    style={{
+                      alignSelf: "flex-start",
+                      borderRadius: 999,
+                      backgroundColor: isSale ? colors.dangerBg : colors.successBg,
+                      paddingHorizontal: spacing.sm,
+                      paddingVertical: spacing.xs,
+                    }}
+                  >
+                    <Text style={[typography.caption, { color: isSale ? colors.danger : colors.success }]}> 
+                      {isSale ? "Sale" : "Payment"}
+                    </Text>
                   </View>
                 </View>
-              ))}
-            </View>
+              );
+            })
           )}
         </View>
-
-        {/* Footer */}
-        <View className="items-center px-6 pb-6">
-          <Text className="text-xs text-center text-textSecondary">
-            Powered by{' '}
-            <Text className="font-bold text-primary">KredBook</Text>
-          </Text>
-          <Text className="mt-1 text-xs text-center text-textSecondary">
-            Track credit. Get paid faster.
-          </Text>
-        </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

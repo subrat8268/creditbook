@@ -96,5 +96,5 @@ Minimum quality gates for any non-trivial change:
 
 ## Current State
 
-- Last completed: 3.5 (Indian number format - Rs1,20,000 everywhere)
-- Next: 3.6 (public ledger share link)
+- Last completed: 3.6 (public ledger share link)
+- Next: 3.7 (entry note field)
