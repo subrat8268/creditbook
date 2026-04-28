@@ -36,6 +36,12 @@ type PreferencesState = {
   setNetPositionRange: (value: NetPositionRange) => void;
 
   // Reminders
+  remindersEnabled: boolean;
+  remindersPermissionAsked: boolean;
+  remindersPermissionDenied: boolean;
+  setRemindersEnabled: (value: boolean) => void;
+  setRemindersPermissionAsked: (value: boolean) => void;
+  setRemindersPermissionDenied: (value: boolean) => void;
   overdueRemindersEnabled: boolean;
   overdueReminderHour: number;
   overdueReminderMinute: number;
@@ -61,6 +67,15 @@ export const usePreferencesStore = create<PreferencesState>()(
 
       netPositionRange: 30,
       setNetPositionRange: (value) => set({ netPositionRange: value }),
+
+      remindersEnabled: true,
+      remindersPermissionAsked: false,
+      remindersPermissionDenied: false,
+      setRemindersEnabled: (value) => set({ remindersEnabled: value }),
+      setRemindersPermissionAsked: (value) =>
+        set({ remindersPermissionAsked: value }),
+      setRemindersPermissionDenied: (value) =>
+        set({ remindersPermissionDenied: value }),
 
       overdueRemindersEnabled: true,
       overdueReminderHour: 9,
@@ -115,6 +130,9 @@ export const usePreferencesStore = create<PreferencesState>()(
       partialize: (state) => ({
         colorMode: state.colorMode,
         netPositionRange: state.netPositionRange,
+        remindersEnabled: state.remindersEnabled,
+        remindersPermissionAsked: state.remindersPermissionAsked,
+        remindersPermissionDenied: state.remindersPermissionDenied,
         overdueRemindersEnabled: state.overdueRemindersEnabled,
         overdueReminderHour: state.overdueReminderHour,
         overdueReminderMinute: state.overdueReminderMinute,

@@ -4,7 +4,7 @@ import OfflineToastListener from "@/src/components/feedback/OfflineToastListener
 import { SyncStatusBanner } from "@/src/components/ui/SyncStatusBanner";
 import { useAuth } from "@/src/hooks/useAuth";
 import { useFontsLoader } from "@/src/hooks/useFontsLoader";
-import { useOverdueReminders } from "@/src/hooks/useOverdueReminders";
+import { useOverdueNotifications } from "@/src/hooks/useOverdueNotifications";
 import { ThemeProvider } from "@/src/utils/ThemeProvider";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient } from "@tanstack/react-query";
@@ -15,12 +15,11 @@ import { initializeSyncQueue } from "@/src/lib/syncQueue";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as WebBrowser from "expo-web-browser";
-import { useEffect, useState, useCallback } from "react";
-import { AppState, AppStateStatus } from "react-native";
+import { useEffect, useState } from "react";
 import { StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { configureNotificationChannels, ensureNotificationPermission } from "@/src/lib/notifications";
+import { configureNotificationChannels } from "@/src/lib/notifications";
 import "../global.css";
 import "../src/i18n";
 import { useAuthStore } from "../src/store/authStore";
@@ -60,7 +59,6 @@ function RootLayout() {
     useAuthStore();
   const loadLanguage = useLanguageStore((s) => s.loadLanguage);
   const colorMode = usePreferencesStore((s) => s.colorMode);
-  const overdueRemindersEnabled = usePreferencesStore((s) => s.overdueRemindersEnabled);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
   const [ready, setReady] = useState(false);
@@ -69,7 +67,7 @@ function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
 
-  const { syncReminders, refetch } = useOverdueReminders();
+  useOverdueNotifications();
 
   useEffect(() => {
     const init = async () => {
@@ -95,19 +93,9 @@ function RootLayout() {
   useEffect(() => {
     const setupNotifications = async () => {
       await configureNotificationChannels();
-      await ensureNotificationPermission();
     };
     setupNotifications();
   }, []);
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener("change", (nextState: AppStateStatus) => {
-      if (nextState === "active" && overdueRemindersEnabled && profile?.id) {
-        refetch().then(() => syncReminders());
-      }
-    });
-    return () => subscription.remove();
-  }, [overdueRemindersEnabled, profile?.id, syncReminders, refetch]);
 
   useEffect(() => {
     if (fontsLoaded && !loading) {
@@ -115,12 +103,6 @@ function RootLayout() {
       setReady(true);
     }
   }, [fontsLoaded, loading]);
-
-  useEffect(() => {
-    if (overdueRemindersEnabled && profile?.id) {
-      refetch().then(() => syncReminders());
-    }
-  }, [overdueRemindersEnabled, profile?.id, syncReminders, refetch]);
 
   const activeColors = getThemeTokens(colorMode).colors;
 

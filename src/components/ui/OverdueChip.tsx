@@ -42,4 +42,6 @@ const OverdueChip = memo(({ days, variant = "badge" }: Props) => {
   );
 });
 
+OverdueChip.displayName = "OverdueChip";
+
 export default OverdueChip;

@@ -35,6 +35,7 @@ import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { useLanguageStore } from "@/src/store/languageStore";
 import { usePreferencesStore } from "@/src/store/preferencesStore";
+import { useOverdueNotifications } from "@/src/hooks/useOverdueNotifications";
 import { useTheme } from "@/src/utils/ThemeProvider";
 
 function maskAccount(acc?: string | null): string {
@@ -108,8 +109,8 @@ export default function ProfileScreen() {
   const { language, setLanguage } = useLanguageStore();
   const colorMode = usePreferencesStore((s) => s.colorMode);
   const toggleColorMode = usePreferencesStore((s) => s.toggleColorMode);
-  const overdueRemindersEnabled = usePreferencesStore((s) => s.overdueRemindersEnabled);
-  const setOverdueRemindersEnabled = usePreferencesStore((s) => s.setOverdueRemindersEnabled);
+  const remindersEnabled = usePreferencesStore((s) => s.remindersEnabled);
+  const { remindersPermissionDenied, setReminderToggle } = useOverdueNotifications();
   const { colors, spacing, typography } = useTheme();
   const router = useRouter();
 
@@ -284,12 +285,21 @@ export default function ProfileScreen() {
               <Text className="dark:text-textPrimary-dark" style={typography.body}>Overdue reminders</Text>
             </View>
             <Switch
-              value={overdueRemindersEnabled}
-              onValueChange={setOverdueRemindersEnabled}
+              value={remindersEnabled}
+              onValueChange={setReminderToggle}
               trackColor={{ false: colors.border, true: colors.primaryLight }}
-              thumbColor={overdueRemindersEnabled ? colors.primary : colors.surface}
+              thumbColor={remindersEnabled ? colors.primary : colors.surface}
             />
           </View>
+
+          {remindersPermissionDenied ? (
+            <Text
+              className="dark:text-textSecondary-dark"
+              style={[typography.caption, { color: colors.warning, marginTop: spacing.xs, marginLeft: spacing.sm }]}
+            >
+              Notifications are disabled in system settings. Enable permission to use overdue reminders.
+            </Text>
+          ) : null}
         </SectionCard>
 
         {/* ── Support ── */}

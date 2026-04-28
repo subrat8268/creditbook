@@ -93,3 +93,8 @@ Minimum quality gates for any non-trivial change:
 - `docs/flows/` (per-screen behavior specs — read only the relevant screen file)
 - `.agents/orchestration.md` (pipelines)
 - `.agents/doc-sync-checklist.md` (closeout)
+
+## Current State
+
+- Last completed: 3.4 (overdue push notifications)
+- Next: 3.5 (Indian number format - Rs1,20,000 everywhere)

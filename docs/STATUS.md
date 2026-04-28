@@ -102,13 +102,15 @@
 | 3.1 | Dark mode — semantic tokens in `theme.ts` + settings toggle | ✅ Done | P0 | `/build` | `ui-ux-pro-max`, `building-native-ui`, `react-native-skills` |
 | 3.2 | Overdue badge consistency — token + component across Dashboard / People / Entries | ✅ Done | P0 | `/refactor` | `ui-ux-pro-max`, `refactor-engineer` |
 | 3.3 | WhatsApp share polish — consistent message template (amounts, dates, customer name) | ⏳ Not Started | P1 | `/build` | `project-planner`, `react-native-skills` |
-| 3.4 | Indian number format — ₹1,20,000 everywhere | ⏳ Not Started | P1 | `/fix` | `systematic-debugging`, `react-native-skills` |
-| 3.5 | Entry note field — optional short text per Entry | ⏳ Not Started | P1 | `/build` | `project-planner`, `supabase` |
-| 3.6 | Collect shortcut on Dashboard hero — deep-link to top overdue Customer | ⏳ Not Started | P2 | `/build` | `react-native-skills`, `project-planner` |
-| 3.7 | Offline sync indicator — green (synced) / amber (pending) dot in header | ⏳ Not Started | P2 | `/build` | `react-native-skills`, `building-native-ui` |
-| 3.8 | Customer search improvements — speed + relevance | ⏳ Not Started | P2 | `/build` | `react-native-skills`, `project-planner` |
-| 3.9 | Entries + People filters | ⏳ Not Started | P2 | `/plan` | `project-planner`, `writing-plans` |
-| 3.10 | Export hardening — validate CSV totals, locale-safe formatting | ⏳ Not Started | P2 | `/audit` | `supabase`, `code-reviewer` |
+| 3.4 | Overdue push notifications — grouped local reminders + Profile toggle + People deep-link | ✅ Done | P1 | `/build` | `building-native-ui`, `native-data-fetching` |
+| 3.5 | Indian number format — ₹1,20,000 everywhere | ⏳ Not Started | P1 | `/fix` | `systematic-debugging`, `react-native-skills` |
+| 3.6 | Public ledger share link | ⏳ Not Started | P1 | `/build` | `project-planner`, `react-native-skills` |
+| 3.7 | Entry note field — optional short text per Entry | ⏳ Not Started | P1 | `/build` | `project-planner`, `supabase` |
+| 3.8 | Collect shortcut on Dashboard hero — deep-link to top overdue Customer | ⏳ Not Started | P2 | `/build` | `react-native-skills`, `project-planner` |
+| 3.9 | Offline sync indicator — green (synced) / amber (pending) dot in header | ⏳ Not Started | P2 | `/build` | `react-native-skills`, `building-native-ui` |
+| 3.10 | Customer search improvements — speed + relevance | ⏳ Not Started | P2 | `/build` | `react-native-skills`, `project-planner` |
+| 3.11 | Entries + People filters | ⏳ Not Started | P2 | `/plan` | `project-planner`, `writing-plans` |
+| 3.12 | Export hardening — validate CSV totals, locale-safe formatting | ⏳ Not Started | P2 | `/audit` | `supabase`, `code-reviewer` |
 
 ### Phase 3 OpenCode Prompts
 
@@ -150,7 +152,15 @@ Polish WhatsApp share message template across KredBook.
 Verification: share fires correctly from all 3 surfaces, correct amount/date format, lint clean.
 ```
 
-#### 3.4 — Indian number format
+#### 3.4 — Overdue push notifications ✅ Done
+
+- Added local notification scheduling on app launch + foreground active transition.
+- Query is based on overdue unpaid `orders`, grouped by Customer (`customer_id`, legacy/transitional party reference), with one notification per Customer.
+- Added Profile toggle `Overdue reminders` backed by persisted `preferencesStore.remindersEnabled`.
+- First toggle-on requests permission once; denied state renders inline warning in Profile.
+- Notification tap deep-links to People (`/people`), and scheduler cancels + reschedules to avoid duplicate stacks.
+
+#### 3.5 — Indian number format
 
 ```
 /fix load_skills=["systematic-debugging","react-native-skills","code-reviewer"]
@@ -162,7 +172,7 @@ Enforce Indian number format (₹1,20,000) everywhere amounts are displayed.
 Verification: ₹1,20,000 renders correctly in all surfaces, lint clean, no hardcoded Intl calls scattered around.
 ```
 
-#### 3.5 — Entry note field
+#### 3.7 — Entry note field
 
 ```
 /build load_skills=["project-planner","supabase","react-native-skills","code-reviewer"]
