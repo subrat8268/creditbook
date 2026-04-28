@@ -23,6 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/src/services/supabase';
 import { Building2, Phone, MapPin, FileText, Calendar } from 'lucide-react-native';
 import { format } from 'date-fns';
+import { formatINR } from '@/src/utils/format';
 
 interface Transaction {
   id: string;
@@ -118,13 +119,7 @@ export default function PublicLedgerView() {
   };
 
   // Format currency (Indian Rupees)
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  const formatAmount = (amount: number) => formatINR(amount);
 
   // Loading state
   if (loading) {

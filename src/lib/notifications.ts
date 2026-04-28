@@ -1,5 +1,6 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import { formatINR } from "@/src/utils/format";
 
 export type OverdueReminder = {
   customerId: string;
@@ -51,8 +52,8 @@ export async function scheduleOverdueReminder(
 ) {
   return Notifications.scheduleNotificationAsync({
     identifier: `overdue-${reminder.customerId}`,
-    content: {
-      title: `📋 ${reminder.customerName} owes ₹${Math.round(reminder.balance).toLocaleString("en-IN")}`,
+      content: {
+      title: `📋 ${reminder.customerName} owes ${formatINR(reminder.balance)}`,
       body: `${reminder.daysSince} day${reminder.daysSince === 1 ? "" : "s"} overdue`,
       data: { type: "overdue", customerId: reminder.customerId },
       sound: false,

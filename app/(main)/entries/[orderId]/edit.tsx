@@ -8,6 +8,7 @@ import { useOrderDetail, useUpdateOrder } from "@/src/hooks/useEntries";
 import { useAuthStore } from "@/src/store/authStore";
 import { useOrderStore, DraftOrderItem } from "@/src/store/orderStore";
 import { useTheme } from "@/src/utils/ThemeProvider";
+import { formatINR } from "@/src/utils/format";
 import { generateBillPdf } from "@/src/utils/generateBillPdf";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
@@ -541,7 +542,7 @@ export default function EditOrderScreen() {
                 Previous Balance
               </Text>
               <Text style={{ fontSize: 13, color: colors.textSecondary }}>
-                ₹{Number(order.previous_balance || 0).toLocaleString("en-IN")}
+                {formatINR(Number(order.previous_balance || 0))}
               </Text>
             </View>
 
@@ -568,7 +569,7 @@ export default function EditOrderScreen() {
                   color: colors.textPrimary,
                 }}
               >
-                ₹{finalTotal.toLocaleString("en-IN")}
+                {formatINR(finalTotal)}
               </Text>
             </View>
 
@@ -598,10 +599,7 @@ export default function EditOrderScreen() {
                   color: colors.danger,
                 }}
               >
-                ₹
-                {(
-                  Number(order.previous_balance || 0) + finalTotal
-                ).toLocaleString("en-IN")}
+                {formatINR(Number(order.previous_balance || 0) + finalTotal)}
               </Text>
             </View>
           </View>

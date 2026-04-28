@@ -96,5 +96,5 @@ Minimum quality gates for any non-trivial change:
 
 ## Current State
 
-- Last completed: 3.4 (overdue push notifications)
-- Next: 3.5 (Indian number format - Rs1,20,000 everywhere)
+- Last completed: 3.5 (Indian number format - Rs1,20,000 everywhere)
+- Next: 3.6 (public ledger share link)

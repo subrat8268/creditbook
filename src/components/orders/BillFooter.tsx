@@ -1,4 +1,5 @@
 import { useTheme } from "@/src/utils/ThemeProvider";
+import { formatINR } from "@/src/utils/format";
 import { Share2 } from "lucide-react-native";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
@@ -55,7 +56,7 @@ export default function BillFooter({
           <Text
             style={{ fontSize: 18, fontWeight: "700", color: colors.textPrimary }}
           >
-            ₹{totalAmount.toLocaleString("en-IN")}
+            {formatINR(totalAmount)}
           </Text>
         </View>
       )}

@@ -3,12 +3,7 @@
 // definition lives in theme.ts alongside all other app tokens.
 export { dashboardPalette } from "./theme";
 
-export function formatINR(val: number) {
-  return `₹${val.toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
+export { formatINR } from "./format";
 
 export function formatDashboardDate(iso: string) {
   const d = new Date(iso);

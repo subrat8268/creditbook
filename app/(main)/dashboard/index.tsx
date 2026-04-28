@@ -6,12 +6,12 @@ import BottomSheetPicker from "@/src/components/picker/BottomSheetPicker";
 import Avatar from "@/src/components/ui/Avatar";
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import MoneyAmount from "@/src/components/ui/MoneyAmount";
-import OverdueChip from "@/src/components/ui/OverdueChip";
 import { fetchPersonDetail } from "@/src/api/people";
 import { useDashboard } from "@/src/hooks/useDashboard";
 import { usePeople } from "@/src/hooks/usePeople";
 import { useAuthStore } from "@/src/store/authStore";
 import { useTheme } from "@/src/utils/ThemeProvider";
+import { formatINR } from "@/src/utils/format";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -26,16 +26,6 @@ type PaymentContext = {
   customerId: string;
   customerName: string;
   initialAmount?: number;
-};
-
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  maximumFractionDigits: 0,
-});
-
-const formatCurrency = (value: number) => {
-  const isNegative = value < 0;
-  const absolute = Math.abs(value);
-  return `${isNegative ? "-" : ""}₹${currencyFormatter.format(absolute)}`;
 };
 
 export default function DashboardScreen() {
@@ -73,7 +63,7 @@ export default function DashboardScreen() {
 
   const heroSupportText = useMemo(() => {
     if (collectedThisWeek > 0) {
-      return `${formatCurrency(collectedThisWeek)} collected this week`;
+      return `${formatINR(collectedThisWeek)} collected this week`;
     }
 
     if (overdueTotalCount > 0) {

@@ -1,4 +1,5 @@
 import { useTheme } from "@/src/utils/ThemeProvider";
+import { formatINR } from "@/src/utils/format";
 import React, { memo } from "react";
 import { Text, TextProps } from "react-native";
 
@@ -17,27 +18,18 @@ export type MoneyAmountProps = {
   color?: string;
 } & Omit<TextProps, "children">;
 
-const inrFormatter = new Intl.NumberFormat("en-IN", {
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
-
 function fmtAmount(
   value: number,
   maximumFractionDigits: number,
   currencySymbol: string,
   showPlusForPositive: boolean,
 ) {
-  const sign = value < 0 ? "-" : showPlusForPositive && value > 0 ? "+" : "";
-  const abs = Math.abs(value);
-  const formatter =
-    maximumFractionDigits === 0
-      ? inrFormatter
-      : new Intl.NumberFormat("en-IN", {
-          minimumFractionDigits: 0,
-          maximumFractionDigits,
-        });
-  return `${sign}${currencySymbol}${formatter.format(abs)}`;
+  return formatINR(value, {
+    currencySymbol,
+    maximumFractionDigits,
+    minimumFractionDigits: 0,
+    showPlusForPositive,
+  });
 }
 
 export default memo(function MoneyAmount({

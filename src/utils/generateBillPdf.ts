@@ -1,4 +1,5 @@
 import * as Print from 'expo-print';
+import { formatINR } from "@/src/utils/format";
 
 export interface BillItem {
   name: string;
@@ -43,8 +44,8 @@ export async function generateBillPdf(
       <td class="text-center">${index + 1}</td>
       <td>${item.name}</td>
       <td class="text-center">${item.quantity}</td>
-      <td class="text-right">₹${item.rate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-      <td class="text-right">₹${item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+      <td class="text-right">${formatINR(item.rate, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+      <td class="text-right">${formatINR(item.amount, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
     </tr>
   `
     )
@@ -214,14 +215,14 @@ export async function generateBillPdf(
       <div class="totals-section">
         <div class="total-row">
           <span>Subtotal:</span>
-          <span>₹${meta.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+          <span>${formatINR(meta.subtotal, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
         ${
           meta.taxAmount > 0
             ? `
         <div class="total-row">
           <span>Tax Amount:</span>
-          <span>₹${meta.taxAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+          <span>${formatINR(meta.taxAmount, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>`
             : ''
         }
@@ -230,13 +231,13 @@ export async function generateBillPdf(
             ? `
         <div class="total-row">
           <span>Loading/Handling:</span>
-          <span>₹${meta.loadingCharge.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+          <span>${formatINR(meta.loadingCharge, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>`
             : ''
         }
         <div class="total-row grand-total">
           <span>Grand Total:</span>
-          <span>₹${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+          <span>${formatINR(grandTotal, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
       </div>
 

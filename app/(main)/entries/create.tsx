@@ -11,6 +11,7 @@ import { useNetworkSync } from "@/src/hooks/useNetworkSync";
 import { useAuthStore } from "@/src/store/authStore";
 import { useOrderStore } from "@/src/store/orderStore";
 import { useTheme } from "@/src/utils/ThemeProvider";
+import { formatINR } from "@/src/utils/format";
 import { BillItem, generateBillPdf } from "@/src/utils/generateBillPdf";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -262,7 +263,7 @@ export default function CreateOrderScreen() {
       if (paymentAmount > (detail.pendingOrderBalance ?? 0)) {
         Alert.alert(
           "Amount too high",
-          `Payment exceeds the pending balance of ₹${(detail.pendingOrderBalance ?? 0).toLocaleString("en-IN")}.`,
+          `Payment exceeds the pending balance of ${formatINR(detail.pendingOrderBalance ?? 0)}.`,
         );
         return;
       }
@@ -384,7 +385,7 @@ export default function CreateOrderScreen() {
                   >
                     <Text className="text-[13px] font-bold text-danger">
                       ⚠️ Previous Balance: ₹
-                      {previousBalance.toLocaleString("en-IN")}
+                      {formatINR(previousBalance, { currencySymbol: "" })}
                     </Text>
                   </View>
                 )}

@@ -1,5 +1,6 @@
 import Input from "@/src/components/ui/Input";
 import { useTheme } from "@/src/utils/ThemeProvider";
+import { formatINR } from "@/src/utils/format";
 import { Minus, Plus, Trash2 } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -154,7 +155,7 @@ export default function OrderItemCard({
 
         <View style={styles.subtotalWrap}>
           <Text style={styles.metaLabel}>Subtotal</Text>
-          <Text style={styles.subtotalText}>₹{subtotal.toLocaleString("en-IN")}</Text>
+          <Text style={styles.subtotalText}>{formatINR(subtotal)}</Text>
         </View>
 
         <Pressable onPress={onRemove} style={({ pressed }) => [styles.removeButton, pressed ? styles.pressed : null]}>

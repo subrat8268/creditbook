@@ -14,6 +14,7 @@ import { useAuthStore } from "@/src/store/authStore";
 import { useTheme } from "@/src/utils/ThemeProvider";
 import { generateBillPdf } from "@/src/utils/generateBillPdf";
 import { formatDate } from "@/src/utils/helper";
+import { formatINR } from "@/src/utils/format";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
@@ -28,10 +29,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-function fmt(n: number) {
-  return n.toLocaleString("en-IN");
-}
 
 export default function OrderDetailScreen() {
   const { colors, radius, spacing, typography } = useTheme();
@@ -121,7 +118,7 @@ export default function OrderDetailScreen() {
   const handleWhatsApp = () => {
     if (customerPhone) {
       const message = encodeURIComponent(
-        `Hi ${customerName.split(' ')[0]}, this is a reminder about your outstanding entry #${order?.bill_number} of ₹${order?.balance_due?.toLocaleString('en-IN') || 0}. Please clear when convenient. - KredBook`
+        `Hi ${customerName.split(" ")[0]}, this is a reminder about your outstanding entry #${order?.bill_number} of ${formatINR(order?.balance_due ?? 0)}. Please clear when convenient. - KredBook`
       );
       Linking.openURL(`whatsapp://send?phone=${customerPhone.replace(/\D/g, '')}&text=${message}`);
     }
@@ -184,9 +181,9 @@ export default function OrderDetailScreen() {
       // Fallback: pre-filled WhatsApp message
       const cleanPhone = customerPhone.replace(/\D/g, "");
       const msg = encodeURIComponent(
-        `Hi ${customerName}, your entry *${order.bill_number}* of *₹${fmt(order.total_amount)}* is ready.` +
+        `Hi ${customerName}, your entry *${order.bill_number}* of *${formatINR(order.total_amount)}* is ready.` +
           (order.balance_due > 0
-            ? ` Remaining balance: *₹${fmt(order.balance_due)}*. Please arrange payment at your earliest convenience.`
+            ? ` Remaining balance: *${formatINR(order.balance_due)}*. Please arrange payment at your earliest convenience.`
             : " The entry has been fully paid. Thank you!"),
       );
       const wa = `https://wa.me/91${cleanPhone}?text=${msg}`;

@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { supabase } from "@/src/services/supabase";
 import { useAuthStore } from "@/src/store/authStore";
 import { usePreferencesStore } from "@/src/store/preferencesStore";
+import { formatINR } from "@/src/utils/format";
 
 type OverdueGroup = {
   customerId: string;
@@ -120,9 +121,7 @@ export function useOverdueNotifications() {
     for (const group of groups) {
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: `📋 ${group.customerName} owes ₹${Math.round(
-            group.totalOverdueAmount,
-          ).toLocaleString("en-IN")}`,
+          title: `📋 ${group.customerName} owes ${formatINR(group.totalOverdueAmount)}`,
           body: `${group.overdueCount} overdue entr${
             group.overdueCount === 1 ? "y" : "ies"
           } · tap to view`,

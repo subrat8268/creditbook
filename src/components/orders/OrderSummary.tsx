@@ -1,5 +1,6 @@
 import Input from "@/src/components/ui/Input";
 import { useTheme } from "@/src/utils/ThemeProvider";
+import { formatINR } from "@/src/utils/format";
 import { useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -96,7 +97,7 @@ export default function OrderSummary({
     <View>
       <View style={styles.row}>
         <Text style={styles.label}>Subtotal</Text>
-        <Text style={styles.value}>₹{itemsTotal.toLocaleString("en-IN")}</Text>
+        <Text style={styles.value}>{formatINR(itemsTotal)}</Text>
       </View>
 
       <View style={styles.inputRow}>
@@ -130,14 +131,14 @@ export default function OrderSummary({
       {taxAmount > 0 ? (
         <View style={styles.row}>
           <Text style={styles.label}>Tax</Text>
-          <Text style={styles.value}>₹{taxAmount.toLocaleString("en-IN")}</Text>
+          <Text style={styles.value}>{formatINR(taxAmount)}</Text>
         </View>
       ) : null}
 
       {previousBalance > 0 ? (
         <View style={styles.row}>
           <Text style={styles.label}>Previous Balance</Text>
-          <Text style={styles.value}>₹{previousBalance.toLocaleString("en-IN")}</Text>
+          <Text style={styles.value}>{formatINR(previousBalance)}</Text>
         </View>
       ) : null}
 
@@ -145,7 +146,7 @@ export default function OrderSummary({
 
       <View style={styles.row}>
         <Text style={styles.totalLabel}>Grand Total</Text>
-        <Text style={styles.totalValue}>₹{grandTotal.toLocaleString("en-IN")}</Text>
+        <Text style={styles.totalValue}>{formatINR(grandTotal)}</Text>
       </View>
     </View>
   );

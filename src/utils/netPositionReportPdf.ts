@@ -1,4 +1,5 @@
 import { NetPositionCustomer, NetPositionReport, NetPositionSupplier } from "@/src/api/dashboard";
+import { formatINR } from "@/src/utils/format";
 
 export function buildNetPositionReportHtml(
   report: Pick<
@@ -11,7 +12,7 @@ export function buildNetPositionReportHtml(
     items
       .map(
         (i) =>
-          `<tr><td>${i.name}</td><td style="text-align:right;font-weight:700">₹${i.amount.toLocaleString("en-IN")}</td></tr>`,
+          `<tr><td>${i.name}</td><td style="text-align:right;font-weight:700">${formatINR(i.amount)}</td></tr>`,
       )
       .join("");
 
@@ -24,9 +25,9 @@ export function buildNetPositionReportHtml(
   <h1>${businessName} — Net Position Report</h1>
   <p style="color:#6B7280;font-size:13px">Generated on ${new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</p>
   <table><tr><th>Metric</th><th style="text-align:right">Amount</th></tr>
-  <tr><td>Total Receivables</td><td style="text-align:right;color:#2563EB">+₹${report.totalReceivables.toLocaleString("en-IN")}</td></tr>
-  <tr><td>Total Payables</td><td style="text-align:right;color:#DC2626">−₹${report.totalPayables.toLocaleString("en-IN")}</td></tr>
-  <tr><td style="font-weight:700">Net Balance</td><td style="text-align:right;font-weight:800">₹${report.netBalance.toLocaleString("en-IN")}</td></tr>
+  <tr><td>Total Receivables</td><td style="text-align:right;color:#2563EB">${formatINR(report.totalReceivables, { showPlusForPositive: true })}</td></tr>
+  <tr><td>Total Payables</td><td style="text-align:right;color:#DC2626">${formatINR(-Math.abs(report.totalPayables))}</td></tr>
+  <tr><td style="font-weight:700">Net Balance</td><td style="text-align:right;font-weight:800">${formatINR(report.netBalance)}</td></tr>
   </table>
   ${
     report.topCustomers.length > 0

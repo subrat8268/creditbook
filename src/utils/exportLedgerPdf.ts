@@ -2,6 +2,7 @@ import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
 import type { LedgerExport } from "../api/exportCustomer";
+import { formatINR } from "@/src/utils/format";
 
 function formatDate(iso: string): string {
   if (!iso) return "—";
@@ -13,17 +14,10 @@ function formatDate(iso: string): string {
   });
 }
 
-function formatINR(val: number): string {
-  return `₹${Math.abs(val).toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
-
 function signAmount(entry: { type: "bill" | "payment"; amount: number }): string {
   return entry.type === "bill"
-    ? `+${formatINR(entry.amount)}`
-    : `-${formatINR(entry.amount)}`;
+    ? `+${formatINR(entry.amount, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : `-${formatINR(entry.amount, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function statusColor(status: string): string {
@@ -49,17 +43,17 @@ function entryRow(entry: {
     <td class="desc">${entry.description}</td>
     <td class="amount ${entry.type === "bill" ? "cr" : "dr"}">${signAmount(entry)}</td>
     <td class="status" style="color:${statusColor(entry.status)}">${entry.status}</td>
-    <td class="balance">${formatINR(entry.balance_after)}</td>
+    <td class="balance">${formatINR(entry.balance_after, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
   </tr>`);
 
   if (entry.type === "bill" && entry.items && entry.items.length > 0) {
     for (const item of entry.items) {
       rows.push(`<tr class="item-row">
         <td></td>
-        <td class="item-desc">${item.quantity} × ${item.product_name} @ ${formatINR(item.rate)}</td>
+        <td class="item-desc">${item.quantity} × ${item.product_name} @ ${formatINR(item.rate, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
         <td></td>
         <td></td>
-        <td class="item-subtotal">${formatINR(item.subtotal)}</td>
+        <td class="item-subtotal">${formatINR(item.subtotal, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
       </tr>`);
     }
   }
@@ -166,7 +160,7 @@ export async function generateLedgerPdf(ledger: LedgerExport): Promise<string> {
     </div>
     <div class="summary-card">
       <div class="summary-label">Balance Due</div>
-      <div class="summary-value ${ledger.closing_balance > 0 ? "dr" : "cr"}">${formatINR(ledger.closing_balance)}</div>
+      <div class="summary-value ${ledger.closing_balance > 0 ? "dr" : "cr"}">${formatINR(ledger.closing_balance, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
     </div>
   </div>
 

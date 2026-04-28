@@ -10,6 +10,7 @@ import { useAuthStore } from "@/src/store/authStore";
 import { usePreferencesStore } from "@/src/store/preferencesStore";
 import type { Transaction } from "@/src/types/customer";
 import { useTheme } from "@/src/utils/ThemeProvider";
+import { formatINR } from "@/src/utils/format";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Print from "expo-print";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -53,13 +54,6 @@ const MODE_LABEL: Record<string, string> = {
 };
 
 const INITIAL_TX_COUNT = 10;
-
-function formatINR(n: number) {
-  return `\u20B9${n.toLocaleString("en-IN", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  })}`;
-}
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString("en-IN", {
@@ -120,8 +114,8 @@ function buildStatementHtml(
       return `<tr>
         <td>${new Date(tx.created_at).toLocaleDateString("en-IN")}</td>
         <td>${label}</td>
-        <td style="color:${color};font-weight:700;">${sign}${formatINR(tx.amount)}</td>
-        <td>${formatINR(tx.runningBalance)}</td>
+        <td style="color:${color};font-weight:700;">${sign}${formatINR(tx.amount, { maximumFractionDigits: 2 })}</td>
+        <td>${formatINR(tx.runningBalance, { maximumFractionDigits: 2 })}</td>
       </tr>`;
     })
     .join("");
@@ -137,7 +131,7 @@ function buildStatementHtml(
 </style></head><body>
  <h1>${businessName} — Customer Statement</h1>
  <p><b>Customer:</b> ${name}<br/><b>Phone:</b> ${phone || "-"}</p>
-<p class="balance">Outstanding Balance: ${formatINR(balance)}</p>
+ <p class="balance">Outstanding Balance: ${formatINR(balance, { maximumFractionDigits: 2 })}</p>
 <table><thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Balance</th></tr></thead>
 <tbody>${rows}</tbody></table>
 </body></html>`;
@@ -195,9 +189,9 @@ function TransactionRow({ tx, withBorder }: { tx: Transaction; withBorder: boole
         <View className="items-end">
           <Text className={`text-card-title font-inter-bold ${amountColorClass}`}>
             {isPayment ? "+" : ""}
-            {formatINR(tx.amount)}
+            {formatINR(tx.amount, { maximumFractionDigits: 2 })}
           </Text>
-          <Text className="mt-0.5 text-caption text-textMuted dark:text-textMuted-dark">Bal: {formatINR(tx.runningBalance)}</Text>
+          <Text className="mt-0.5 text-caption text-textMuted dark:text-textMuted-dark">Bal: {formatINR(tx.runningBalance, { maximumFractionDigits: 2 })}</Text>
         </View>
       </View>
     </View>
@@ -313,8 +307,7 @@ export default function CustomerDetailScreen() {
     }
 
     const biz = profile?.business_name || "our store";
-    const bal = customer.outstandingBalance.toLocaleString("en-IN");
-    const msg = `Dear ${customer.name}, your outstanding balance with ${biz} is ₹${bal}. Please arrange payment. Thank you.`;
+    const msg = `Dear ${customer.name}, your outstanding balance with ${biz} is ${formatINR(customer.outstandingBalance)}. Please arrange payment. Thank you.`;
     const url = `https://wa.me/91${customer.phone}?text=${encodeURIComponent(msg)}`;
 
     Linking.openURL(url)
@@ -445,7 +438,7 @@ export default function CustomerDetailScreen() {
           </Text>
 
           <Text className="mt-1 text-customer-hero-text" style={typography.heroAmount}>
-            {formatINR(Math.abs(customer.outstandingBalance))}
+            {formatINR(Math.abs(customer.outstandingBalance), { maximumFractionDigits: 2 })}
           </Text>
 
           <View className="mt-3 flex-row items-center justify-between gap-2">
