@@ -96,5 +96,5 @@ Minimum quality gates for any non-trivial change:
 
 ## Current State
 
-- Last completed: 3.6 (public ledger share link)
-- Next: 3.7 (entry note field)
+- Last completed: 3.7 (entry note field)
+- Next: 3.8 (collect shortcut on dashboard hero)
