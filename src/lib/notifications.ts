@@ -1,6 +1,5 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
-import { colors } from "../utils/theme";
 
 export type OverdueReminder = {
   customerId: string;
@@ -42,7 +41,7 @@ export async function configureNotificationChannels() {
     importance: Notifications.AndroidImportance.DEFAULT,
     sound: undefined,
     vibrationPattern: [0, 250, 100, 250],
-    lightColor: colors.primary,
+    lightColor: "#2563EB",
   });
 }
 
@@ -53,8 +52,8 @@ export async function scheduleOverdueReminder(
   return Notifications.scheduleNotificationAsync({
     identifier: `overdue-${reminder.customerId}`,
     content: {
-      title: `Payment pending: ${reminder.customerName}`,
-      body: `₹${Math.round(reminder.balance).toLocaleString("en-IN")} overdue for ${reminder.daysSince} days`,
+      title: `📋 ${reminder.customerName} owes ₹${Math.round(reminder.balance).toLocaleString("en-IN")}`,
+      body: `${reminder.daysSince} day${reminder.daysSince === 1 ? "" : "s"} overdue`,
       data: { type: "overdue", customerId: reminder.customerId },
       sound: false,
     },

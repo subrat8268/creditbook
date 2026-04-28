@@ -4,6 +4,7 @@ import OfflineToastListener from "@/src/components/feedback/OfflineToastListener
 import { SyncStatusBanner } from "@/src/components/ui/SyncStatusBanner";
 import { useAuth } from "@/src/hooks/useAuth";
 import { useFontsLoader } from "@/src/hooks/useFontsLoader";
+import { useOverdueReminders } from "@/src/hooks/useOverdueReminders";
 import { ThemeProvider } from "@/src/utils/ThemeProvider";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient } from "@tanstack/react-query";
@@ -14,14 +15,12 @@ import { initializeSyncQueue } from "@/src/lib/syncQueue";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as WebBrowser from "expo-web-browser";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { AppState, AppStateStatus } from "react-native";
 import { StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import {
-  configureNotificationChannels,
-  ensureNotificationPermission,
-} from "@/src/lib/notifications";
+import { configureNotificationChannels, ensureNotificationPermission } from "@/src/lib/notifications";
 import "../global.css";
 import "../src/i18n";
 import { useAuthStore } from "../src/store/authStore";
@@ -46,14 +45,12 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Cache queries for 5 minutes (stale-while-revalidate pattern)
-      gcTime: 1000 * 60 * 60 * 24, // 24 hours (formerly cacheTime)
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 60 * 24,
+      staleTime: 1000 * 60 * 5,
     },
   },
 });
 
-// Create MMKV persister for React Query cache
 const mmkvPersister = createMMKVPersister();
 
 function RootLayout() {
@@ -63,6 +60,7 @@ function RootLayout() {
     useAuthStore();
   const loadLanguage = useLanguageStore((s) => s.loadLanguage);
   const colorMode = usePreferencesStore((s) => s.colorMode);
+  const overdueRemindersEnabled = usePreferencesStore((s) => s.overdueRemindersEnabled);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
   const [ready, setReady] = useState(false);
@@ -70,6 +68,8 @@ function RootLayout() {
   const fontsLoaded = useFontsLoader();
   const router = useRouter();
   const segments = useSegments();
+
+  const { syncReminders, refetch } = useOverdueReminders();
 
   useEffect(() => {
     const init = async () => {
@@ -79,7 +79,7 @@ function RootLayout() {
         });
         const [seen] = await Promise.all([
           AsyncStorage.getItem("hasSeenWelcome"),
-          loadLanguage(), // restore persisted language before first render
+          loadLanguage(),
           syncKeyPromise,
         ]);
         setShowWelcome(!seen);
@@ -97,26 +97,35 @@ function RootLayout() {
       await configureNotificationChannels();
       await ensureNotificationPermission();
     };
-
     setupNotifications();
   }, []);
 
   useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState: AppStateStatus) => {
+      if (nextState === "active" && overdueRemindersEnabled && profile?.id) {
+        refetch().then(() => syncReminders());
+      }
+    });
+    return () => subscription.remove();
+  }, [overdueRemindersEnabled, profile?.id, syncReminders, refetch]);
+
+  useEffect(() => {
     if (fontsLoaded && !loading) {
-      SplashScreen.hideAsync().catch(() => {
-        // Ignore race where splash is already hidden.
-      });
+      SplashScreen.hideAsync().catch(() => {});
       setReady(true);
     }
   }, [fontsLoaded, loading]);
 
+  useEffect(() => {
+    if (overdueRemindersEnabled && profile?.id) {
+      refetch().then(() => syncReminders());
+    }
+  }, [overdueRemindersEnabled, profile?.id, syncReminders, refetch]);
+
   const activeColors = getThemeTokens(colorMode).colors;
 
-  // Single Source of Truth for Routing
   useEffect(() => {
     if (!ready || !isInitialized) return;
-
-    // If we are actively fetching the profile, do nothing (Loader will show)
     if (user && isFetchingProfile && !profile) return;
 
     if (isRecoveryMode) {
@@ -126,10 +135,8 @@ function RootLayout() {
     } else if (!profile) {
       router.replace("/profile-error" as any);
     } else if (!profile.phone) {
-      // NEW: Enforce phone collection after login
       router.replace("/(auth)/phone-setup" as any);
     } else if (!profile.onboarding_complete) {
-      // Only redirect if NOT already in onboarding folder
       const inOnboarding = segments[0] === "(auth)" && segments[1] === "onboarding";
       if (!inOnboarding) {
         router.replace("/(auth)/onboarding/business" as any);
@@ -149,7 +156,6 @@ function RootLayout() {
     router,
   ]);
 
-  // Show loader until fonts, welcome check, AND initial auth check are done
   if (
     !fontsLoaded ||
     loading ||
@@ -170,14 +176,13 @@ function RootLayout() {
             <BottomSheetModalProvider>
               <ToastProvider>
                 <OfflineToastListener />
-                {/* Global Sync Status Banner */}
                 <SyncStatusBanner />
-                
+
                 <Stack screenOptions={{ headerShown: false }}>
                   <Stack.Screen name="index" />
                   <Stack.Screen name="(auth)" />
                   <Stack.Screen name="(main)" />
-                  <Stack.Screen name="l/[token]" options={{ presentation: 'modal' }} />
+                  <Stack.Screen name="l/[token]" options={{ presentation: "modal" }} />
                   <Stack.Screen name="profile-error" />
                 </Stack>
                 <StatusBar

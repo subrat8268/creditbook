@@ -1,6 +1,7 @@
 import { Stack, useRouter } from "expo-router";
 import {
   ArrowLeft,
+  Bell,
   Building2,
   ChevronRight,
   CreditCard,
@@ -10,8 +11,8 @@ import {
   Info,
   Languages,
   LogOut,
-  Receipt,
   Moon,
+  Receipt,
   Smartphone,
   Store,
 } from "lucide-react-native";
@@ -107,6 +108,8 @@ export default function ProfileScreen() {
   const { language, setLanguage } = useLanguageStore();
   const colorMode = usePreferencesStore((s) => s.colorMode);
   const toggleColorMode = usePreferencesStore((s) => s.toggleColorMode);
+  const overdueRemindersEnabled = usePreferencesStore((s) => s.overdueRemindersEnabled);
+  const setOverdueRemindersEnabled = usePreferencesStore((s) => s.setOverdueRemindersEnabled);
   const { colors, spacing, typography } = useTheme();
   const router = useRouter();
 
@@ -270,6 +273,21 @@ export default function ProfileScreen() {
               onValueChange={toggleColorMode}
               trackColor={{ false: colors.border, true: colors.primaryLight }}
               thumbColor={colorMode === "dark" ? colors.primary : colors.surface}
+            />
+          </View>
+
+          <View className="mb-2 mt-1 flex-row items-center justify-between py-2">
+            <View className="flex-row items-center gap-3">
+              <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary-light dark:bg-primary-soft-dark">
+                <Bell size={20} color={colors.primary} strokeWidth={2} />
+              </View>
+              <Text className="dark:text-textPrimary-dark" style={typography.body}>Overdue reminders</Text>
+            </View>
+            <Switch
+              value={overdueRemindersEnabled}
+              onValueChange={setOverdueRemindersEnabled}
+              trackColor={{ false: colors.border, true: colors.primaryLight }}
+              thumbColor={overdueRemindersEnabled ? colors.primary : colors.surface}
             />
           </View>
         </SectionCard>
