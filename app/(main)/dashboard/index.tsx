@@ -15,9 +15,9 @@ import { formatINR } from "@/src/utils/format";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { ArrowDownCircle, TrendingUp, Users } from "lucide-react-native";
+import { ArrowDownCircle, ChevronRight, TrendingUp, Users } from "lucide-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, StatusBar, Text, View } from "react-native";
+import { Animated, Easing, Pressable, ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type PaymentContext = {
@@ -36,9 +36,11 @@ export default function DashboardScreen() {
   const {
     toReceive,
     overdueCustomers: overduePeople,
+    overdueCustomersAll: overduePeopleAll,
     overdueTotalCount,
     weekDelta,
     isLoading,
+    isFetching,
     refreshDashboard,
   } = useDashboard(profile?.id);
 
@@ -60,6 +62,44 @@ export default function DashboardScreen() {
 
     return unique.slice(0, 3);
   }, [overduePeople]);
+
+  const topOverdueCustomer = useMemo(() => {
+    const list = overduePeopleAll ?? [];
+    if (list.length === 0) return null;
+
+    const sorted = list.slice().sort((a: any, b: any) => {
+      const aBal = Number(a.balance ?? 0);
+      const bBal = Number(b.balance ?? 0);
+      if (bBal !== aBal) return bBal - aBal;
+
+      const aDue = a.due_date ?? a.dueDate;
+      const bDue = b.due_date ?? b.dueDate;
+      const aTime = aDue ? new Date(aDue).getTime() : Number.POSITIVE_INFINITY;
+      const bTime = bDue ? new Date(bDue).getTime() : Number.POSITIVE_INFINITY;
+      return aTime - bTime;
+    });
+
+    return sorted[0] ?? null;
+  }, [overduePeopleAll]);
+
+  const collectScale = useRef(new Animated.Value(1)).current;
+  const onCollectPressIn = useCallback(() => {
+    Animated.timing(collectScale, {
+      toValue: 0.97,
+      duration: 150,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  }, [collectScale]);
+
+  const onCollectPressOut = useCallback(() => {
+    Animated.timing(collectScale, {
+      toValue: 1,
+      duration: 150,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  }, [collectScale]);
 
   const heroSupportText = useMemo(() => {
     if (collectedThisWeek > 0) {
@@ -182,6 +222,58 @@ export default function DashboardScreen() {
               </Text>
             </View>
           </LinearGradient>
+
+          {isFetching ? (
+            <View
+              className="mb-4 overflow-hidden rounded-2xl border border-soft bg-surface dark:border-border-soft-dark dark:bg-surface-dark"
+              style={{ height: 72, opacity: 0.6 }}
+            />
+          ) : topOverdueCustomer ? (
+            <Animated.View style={{ transform: [{ scale: collectScale }] }}>
+              <Pressable
+                className="mb-4 overflow-hidden rounded-2xl border border-soft bg-surface dark:border-border-soft-dark dark:bg-surface-dark"
+                onPressIn={onCollectPressIn}
+                onPressOut={onCollectPressOut}
+                onPress={() => openCustomer(topOverdueCustomer.id)}
+              >
+                <View className="px-5 py-3">
+                  <Text
+                    className="text-dashboard-hero-text-muted opacity-75"
+                    style={[typography.overline, { color: colors.textSecondary }]}
+                  >
+                    COLLECT NOW
+                  </Text>
+
+                  <View className="mt-1 flex-row items-center justify-between">
+                    <View className="flex-1 pr-3">
+                      <Text
+                        className="text-section-title text-textPrimary dark:text-textPrimary-dark"
+                        numberOfLines={1}
+                      >
+                        {topOverdueCustomer.name}
+                      </Text>
+                      <Text
+                        className="mt-0.5 text-caption text-textSecondary dark:text-textSecondary-dark"
+                        numberOfLines={1}
+                      >
+                        {topOverdueCustomer.daysSince} days overdue
+                      </Text>
+                    </View>
+
+                    <View className="items-end">
+                      <Text
+                        className="text-body font-inter-bold"
+                        style={{ color: colors.overdue.text }}
+                      >
+                        {formatINR(topOverdueCustomer.balance)}
+                      </Text>
+                      <ChevronRight size={18} color={colors.textSecondary} strokeWidth={2.2} />
+                    </View>
+                  </View>
+                </View>
+              </Pressable>
+            </Animated.View>
+          ) : null}
 
           <View className="mb-5 flex-row gap-3">
             <Pressable

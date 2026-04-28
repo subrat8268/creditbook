@@ -96,5 +96,5 @@ Minimum quality gates for any non-trivial change:
 
 ## Current State
 
-- Last completed: 3.3 (whatsapp share message polish)
-- Next: 3.8 (collect shortcut on dashboard hero)
+- Last completed: 3.8 (collect shortcut on dashboard hero)
+- Next: 3.9 (offline sync indicator)
