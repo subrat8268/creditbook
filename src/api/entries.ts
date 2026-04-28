@@ -32,6 +32,7 @@ export interface Order {
   total_amount: number;
   amount_paid: number;
   balance_due: number;
+  note: string | null;
   previous_balance: number;
   loading_charge: number;
   tax_percent: number;
@@ -143,7 +144,7 @@ export async function fetchOrderDetail(
     .from("orders")
     .select(
       `
-      id, vendor_id, customer_id, bill_number, total_amount, amount_paid, 
+      id, vendor_id, customer_id, bill_number, total_amount, amount_paid, note,
       previous_balance, loading_charge, tax_percent, status, edited_at, edit_count, created_at,
        parties ( id, name, phone, address ),
       order_items ( id, product_id, variant_id, product_name, variant_name, price, quantity, created_at )
@@ -317,6 +318,7 @@ export async function createOrder(
   items: OrderItemInput[],
   amountPaid: number,
   paymentMode?: PaymentMode,
+  note?: string | null,
   loadingCharge: number = 0,
   taxPercent: number = 0,
   billNumberPrefix: string = "INV",
@@ -339,6 +341,15 @@ export async function createOrder(
       if (error) throw toApiError(error);
       if (!data?.order_id) throw new Error("Failed to create order");
 
+      if (note && note.trim()) {
+        const { error: noteErr } = await supabase
+          .from("orders")
+          .update({ note: note.trim() })
+          .eq("id", data.order_id)
+          .eq("vendor_id", vendorId);
+        if (noteErr) throw toApiError(noteErr);
+      }
+
       // Fetch and return the fully detailed order
       const orderDetail = await fetchOrderDetail(data.order_id);
       if (!orderDetail) throw new Error("Failed to fetch created order details");
@@ -353,6 +364,7 @@ export async function createOrder(
         items,
         amountPaid,
         paymentMode,
+        note,
         loadingCharge,
         taxPercent,
         billNumberPrefix,
@@ -371,6 +383,7 @@ export async function updateOrder(
   loadingCharge: number,
   taxPercent: number,
   quickAmount: number,
+  note?: string | null,
 ): Promise<OrderDetail> {
   // Wrap mutation with offline queue fallback
   return executeWithOfflineQueue(
@@ -540,6 +553,16 @@ export async function updateOrder(
           }
           throw toApiError(orderErr);
         }
+      }
+
+      if (note !== undefined) {
+        const normalizedNote = note?.trim() ? note.trim() : null;
+        const { error: noteErr } = await supabase
+          .from("orders")
+          .update({ note: normalizedNote })
+          .eq("id", orderId)
+          .eq("vendor_id", vendorId);
+        if (noteErr) throw toApiError(noteErr);
       }
 
       const updated = await fetchOrderDetail(orderId);

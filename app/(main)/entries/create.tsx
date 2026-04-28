@@ -81,6 +81,8 @@ export default function CreateOrderScreen() {
   // Phase 1: quick entry states (amount-first)
   const [quickAmount, setQuickAmount] = useState<string>("");
   const [note, setNote] = useState<string>("");
+  const [orderNote, setOrderNote] = useState<string>("");
+  const [orderNoteExpanded, setOrderNoteExpanded] = useState(false);
   const [entryType, setEntryType] = useState<"bill" | "payment">("bill");
 
   const fetchPreviousBalance = useCallback(
@@ -166,15 +168,16 @@ export default function CreateOrderScreen() {
         },
       ];
 
-      const savedOrder = await createOrderMutation.mutateAsync({
-        customerId: selectedCustomerId!,
-        vendorId: vendorId!,
-        items: orderItems,
-        amountPaid: 0,
-        loadingCharge: 0,
-        taxPercent: 0,
-        billNumberPrefix: profile?.bill_number_prefix || "INV",
-      });
+        const savedOrder = await createOrderMutation.mutateAsync({
+          customerId: selectedCustomerId!,
+          vendorId: vendorId!,
+          items: orderItems,
+          amountPaid: 0,
+          loadingCharge: 0,
+          taxPercent: 0,
+          billNumberPrefix: profile?.bill_number_prefix || "INV",
+          note: orderNote.trim() ? orderNote.trim() : null,
+        });
 
       // Generate Native Shareable PDF
       const pdfItems: BillItem[] = [
@@ -228,6 +231,8 @@ export default function CreateOrderScreen() {
       clearOrder();
       setQuickAmount("");
       setNote("");
+      setOrderNote("");
+      setOrderNoteExpanded(false);
       showToast({
         message: `Entry created for ${selectedCustomerMeta?.name ?? "customer"}`,
         type: "success",
@@ -456,6 +461,34 @@ export default function CreateOrderScreen() {
                   inputStyle={styles.noteInput}
                 />
               </View>
+            </View>
+
+            {/* ENTRY NOTE (collapsible) */}
+            <View>
+              {!orderNoteExpanded && !orderNote.trim() ? (
+                <TouchableOpacity onPress={() => setOrderNoteExpanded(true)}>
+                  <Text className="text-[13px] font-semibold text-primary">+ Add note</Text>
+                </TouchableOpacity>
+              ) : (
+                <View>
+                  <Text className="mb-2 text-[11px] font-bold tracking-widest text-textSecondary dark:text-textSecondary-dark">
+                    ADD NOTE (OPTIONAL)
+                  </Text>
+                  <View className="rounded-2xl border border-border bg-surface px-4 py-3 dark:border-border-dark dark:bg-surface-dark">
+                    <Input
+                      placeholder="Optional note (e.g. delivery address, PO number…)"
+                      value={orderNote}
+                      onChangeText={setOrderNote}
+                      variant="white"
+                      multiline
+                      numberOfLines={3}
+                      maxLength={280}
+                      containerStyle={styles.noteInputContainer}
+                      inputStyle={styles.noteInput}
+                    />
+                  </View>
+                </View>
+              )}
             </View>
 
             {/* SUMMARY (Always visible) */}

@@ -27,6 +27,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -79,6 +80,8 @@ export default function EditOrderScreen() {
   // Quick entry mode (amount-first)
   const [quickAmount, setQuickAmount] = useState("");
   const [itemsExpanded, setItemsExpanded] = useState(false);
+  const [orderNote, setOrderNote] = useState("");
+  const [orderNoteExpanded, setOrderNoteExpanded] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -112,6 +115,14 @@ export default function EditOrderScreen() {
 
     setLoadingCharge(Number(order.loading_charge || 0));
     setGst(Number(order.tax_percent || 0));
+
+    if (order.note && order.note.trim()) {
+      setOrderNote(order.note);
+      setOrderNoteExpanded(true);
+    } else {
+      setOrderNote("");
+      setOrderNoteExpanded(false);
+    }
   }, [order, setCustomer, setItems, clearOrder, setLoadingCharge, setGst]);
 
   // Calculate totals
@@ -226,6 +237,7 @@ export default function EditOrderScreen() {
           taxPercent,
           quickAmount: Number(quickAmount || 0),
           customerId: order.customer?.id ?? null,
+          note: orderNote.trim() ? orderNote.trim() : null,
         });
 
         if (shouldShare) {
@@ -444,6 +456,60 @@ export default function EditOrderScreen() {
               </View>
             </View>
           )}
+
+          {/* Entry Note (optional) */}
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              padding: 16,
+              marginBottom: 8,
+            }}
+          >
+            {!orderNoteExpanded && !orderNote.trim() ? (
+              <TouchableOpacity onPress={() => setOrderNoteExpanded(true)}>
+                <Text style={{ fontSize: 13, color: colors.primary, fontWeight: "600" }}>
+                  + Add note
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: colors.textSecondary,
+                    marginBottom: 8,
+                  }}
+                >
+                  Add note (optional)
+                </Text>
+                <View
+                  style={{
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 12,
+                    backgroundColor: colors.surface,
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                  }}
+                >
+                  <TextInput
+                    value={orderNote}
+                    onChangeText={setOrderNote}
+                    placeholder="Optional note (e.g. delivery address, PO number…)"
+                    placeholderTextColor={colors.textSecondary}
+                    multiline
+                    maxLength={280}
+                    style={{
+                      color: colors.textPrimary,
+                      fontSize: 14,
+                      minHeight: 72,
+                      textAlignVertical: "top",
+                    }}
+                  />
+                </View>
+              </>
+            )}
+          </View>
 
           {/* Items Section */}
           <View style={{ backgroundColor: colors.surface, marginBottom: 8 }}>

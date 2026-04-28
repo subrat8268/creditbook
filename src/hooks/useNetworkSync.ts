@@ -76,6 +76,7 @@ async function replayMutation(
         payload.items,
         payload.amountPaid || payload.amount_paid || 0,
         payload.paymentMode || payload.payment_mode,
+        payload.note,
         payload.loadingCharge || payload.loading_charge || 0,
         payload.taxPercent || payload.tax_percent || 0,
         payload.billNumberPrefix || payload.bill_number_prefix || "INV",

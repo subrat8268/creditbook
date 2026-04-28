@@ -134,6 +134,7 @@ export type Database = {
           edited_at: string | null
           id: string
           loading_charge: number
+          note: string | null
           previous_balance: number
           status: string
           tax_percent: number
@@ -151,6 +152,7 @@ export type Database = {
           edited_at?: string | null
           id?: string
           loading_charge?: number
+          note?: string | null
           previous_balance?: number
           status?: string
           tax_percent?: number
@@ -168,6 +170,7 @@ export type Database = {
           edited_at?: string | null
           id?: string
           loading_charge?: number
+          note?: string | null
           previous_balance?: number
           status?: string
           tax_percent?: number

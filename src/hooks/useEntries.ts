@@ -79,11 +79,12 @@ export function useUpdateOrder(vendorId: string) {
       loadingCharge: number;
       taxPercent: number;
       quickAmount: number;
+      note?: string | null;
       customerId?: string | null;
     },
     { previousOrder?: OrderDetail | null }
   >({
-    mutationFn: ({ orderId, items, loadingCharge, taxPercent, quickAmount }) =>
+    mutationFn: ({ orderId, items, loadingCharge, taxPercent, quickAmount, note }) =>
       updateOrder(
         orderId,
         vendorId,
@@ -91,6 +92,7 @@ export function useUpdateOrder(vendorId: string) {
         loadingCharge,
         taxPercent,
         quickAmount,
+        note,
       ),
     onMutate: async (variables) => {
       await queryClient.cancelQueries({
@@ -159,6 +161,7 @@ export function useUpdateOrder(vendorId: string) {
             tax_percent: hasItems ? safeTax : 0,
             balance_due: balanceDue,
             status,
+            note: variables.note ?? old.note,
             items: normalizedItems.map((item, idx) => ({
               id: old.items?.[idx]?.id ?? `temp-${idx}`,
               order_id: old.id,
@@ -215,6 +218,7 @@ export function useCreateOrder(vendorId: string) {
       loadingCharge?: number;
       taxPercent?: number;
       billNumberPrefix?: string;
+      note?: string | null;
     }
   >({
     mutationFn: ({
@@ -222,6 +226,7 @@ export function useCreateOrder(vendorId: string) {
       items,
       amountPaid,
       paymentMode,
+      note,
       loadingCharge,
       taxPercent,
       billNumberPrefix,
@@ -232,6 +237,7 @@ export function useCreateOrder(vendorId: string) {
         items,
         amountPaid,
         paymentMode,
+        note,
         loadingCharge,
         taxPercent,
         billNumberPrefix,
@@ -281,6 +287,7 @@ export function useCreateOrder(vendorId: string) {
         total_amount: totalAmount,
         amount_paid: variables.amountPaid,
         balance_due: balanceDue,
+        note: variables.note ?? null,
         previous_balance: 0,
         loading_charge: variables.loadingCharge || 0,
         tax_percent: variables.taxPercent || 0,

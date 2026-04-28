@@ -605,6 +605,17 @@ export default function OrderDetailScreen() {
             }}
           />
 
+          {order.note && order.note.trim() ? (
+            <View style={{ marginBottom: spacing.sm }}>
+              <Text style={{ ...typography.caption, color: colors.textSecondary }}>
+                Note
+              </Text>
+              <Text style={{ ...typography.body, color: colors.textPrimary, marginTop: spacing.xs }}>
+                {order.note}
+              </Text>
+            </View>
+          ) : null}
+
           {/* Subtotal row */}
           <View
             style={{
