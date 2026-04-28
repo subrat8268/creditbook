@@ -1,4 +1,4 @@
-import EmptyState from "@/src/components/feedback/EmptyState";
+import EmptyState from "@/src/components/ui/EmptyState";
 import Loader from "@/src/components/feedback/Loader";
 import SyncStatus from "@/src/components/feedback/SyncStatus";
 import { useToast } from "@/src/components/feedback/Toast";
@@ -25,7 +25,6 @@ import {
   MessageCircle,
   Phone,
   Plus,
-  Receipt,
   Share2,
 } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -407,7 +406,16 @@ export default function CustomerDetailScreen() {
   };
 
   if (isLoading) return <Loader />;
-  if (isError || !customer) return <EmptyState message="Customer not found" />;
+  if (isError || !customer)
+    return (
+      <EmptyState
+        illustration="person"
+        headingEn="Customer not found"
+        headingHi="ग्राहक नहीं मिला"
+        bodyEn="This customer could not be loaded"
+        bodyHi="यह ग्राहक लोड नहीं हो पाया"
+      />
+    );
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={["top", "left", "right"]}>
@@ -579,39 +587,21 @@ export default function CustomerDetailScreen() {
           </View>
 
           {listItems.length === 0 ? (
-            <View className="items-center px-4 pb-4 pt-5">
-              <View className="h-20 w-20 items-center justify-center rounded-2xl border-2 border-dashed border-success bg-success-bg dark:bg-success-bg-dark">
-                <Receipt size={30} color={colors.primary} strokeWidth={1.8} />
-              </View>
-
-              <Text className="mt-4 text-section-title text-textPrimary dark:text-textPrimary-dark">No transactions yet</Text>
-              <Text className="mt-1 text-center text-body text-textSecondary dark:text-textSecondary-dark">
-                Add an entry or record a payment to start this customer ledger.
-              </Text>
-
-              <View className="mt-5 flex-row gap-3">
-                <Pressable
-                  className="flex-1 rounded-xl border border-primary py-3"
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(main)/entries/create",
-                      params: { customer: JSON.stringify(customer) },
-                    })
-                  }
-                >
-                  <Text className="text-center text-body font-inter-bold text-primary">Add Entry</Text>
-                </Pressable>
-
-                <Pressable
-                  className={`flex-1 rounded-xl py-3 ${hasPendingPayment ? "bg-primary" : "bg-border dark:bg-border-dark"}`}
-                  onPress={() => openPaymentFlow(customer.pendingOrderBalance ?? 0)}
-                  disabled={!hasPendingPayment}
-                >
-                  <Text className={`text-center text-body font-inter-bold ${hasPendingPayment ? "text-surface" : "text-textSecondary dark:text-textSecondary-dark"}`}>
-                    Record Payment
-                  </Text>
-                </Pressable>
-              </View>
+            <View style={{ paddingHorizontal: 16, paddingVertical: 24 }}>
+              <EmptyState
+                illustration="clipboard"
+                headingEn="No entries yet"
+                headingHi="कोई एंट्री नहीं"
+                bodyEn="Record the first entry for this customer"
+                bodyHi="इस ग्राहक की पहली एंट्री दर्ज करें"
+                ctaLabel="Add Entry"
+                onCta={() =>
+                  router.push({
+                    pathname: "/(main)/entries/create",
+                    params: { customer: JSON.stringify(customer) },
+                  } as never)
+                }
+              />
             </View>
           ) : (
             <View className="pb-2">

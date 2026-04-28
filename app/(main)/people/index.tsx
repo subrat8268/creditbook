@@ -1,4 +1,4 @@
-import EmptyState from "@/src/components/feedback/EmptyState";
+import EmptyState from "@/src/components/ui/EmptyState";
 import ErrorState from "@/src/components/feedback/ErrorState";
 import Loader from "@/src/components/feedback/Loader";
 import { useToast } from "@/src/components/feedback/Toast";
@@ -18,7 +18,6 @@ import type { Person } from "@/src/types/customer";
 import { useTheme } from "@/src/utils/ThemeProvider";
 import { formatRelativeActivity } from "@/src/utils/helper";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { UserPlus } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FlatList,
@@ -296,19 +295,25 @@ export default function CustomersScreen() {
             isFetchingNextPage ? <Loader message="Loading more customers..." /> : null
           }
           ListEmptyComponent={
-            <EmptyState
-              title="Your customer list is empty"
-              description="Add your first customer to start tracking entries"
-              icon={
-                <View style={styles.emptyIconWrap}>
-                  <UserPlus size={30} color={colors.primary} strokeWidth={2} />
-                </View>
-              }
-              iconBgColor={colors.successBg}
-              iconSize={90}
-              cta="Add Customer"
-              onCta={() => setIsModalOpen(true)}
-            />
+            search.trim() ? (
+              <EmptyState
+                illustration="search"
+                headingEn="No results found"
+                headingHi="कोई परिणाम नहीं"
+                bodyEn="Try a different name or number"
+                bodyHi="कोई दूसरा नाम या नंबर आज़माएं"
+              />
+            ) : (
+              <EmptyState
+                illustration="person"
+                headingEn="No customers yet"
+                headingHi="कोई ग्राहक नहीं"
+                bodyEn="Tap + to add your first customer"
+                bodyHi="+ दबाएं और पहला ग्राहक जोड़ें"
+                ctaLabel="Add Customer"
+                onCta={() => setIsModalOpen(true)}
+              />
+            )
           }
         />
       )}
@@ -403,13 +408,5 @@ const createStyles = (
       ...typography.small,
       color: colors.textSecondary,
       fontWeight: "600",
-    },
-    emptyIconWrap: {
-      width: 52,
-      height: 52,
-      borderRadius: 26,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: colors.surface,
     },
   });

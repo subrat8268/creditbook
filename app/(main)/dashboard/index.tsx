@@ -4,6 +4,7 @@ import { useToast } from "@/src/components/feedback/Toast";
 import RecordCustomerPaymentModal from "@/src/components/people/RecordCustomerPaymentModal";
 import BottomSheetPicker from "@/src/components/picker/BottomSheetPicker";
 import Avatar from "@/src/components/ui/Avatar";
+import EmptyState from "@/src/components/ui/EmptyState";
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import MoneyAmount from "@/src/components/ui/MoneyAmount";
 import { fetchPersonDetail } from "@/src/api/people";
@@ -37,12 +38,18 @@ export default function DashboardScreen() {
     toReceive,
     overdueCustomers: overduePeople,
     overdueCustomersAll: overduePeopleAll,
+    data: dashboardData,
     overdueTotalCount,
     weekDelta,
     isLoading,
     isFetching,
     refreshDashboard,
   } = useDashboard(profile?.id);
+
+  const totalCustomersCount =
+    (dashboardData as any)?.totalCustomersCount ??
+    (dashboardData as any)?.total_customers_count ??
+    0;
 
   const totalOutstanding = useMemo(() => toReceive ?? 0, [toReceive]);
   const collectedThisWeek = weekDelta > 0 ? weekDelta : 0;
@@ -180,6 +187,36 @@ export default function DashboardScreen() {
       <View className="items-center justify-center bg-background dark:bg-background-dark" style={{ flex: 1 }}>
         <Loader message="Loading dashboard..." />
       </View>
+    );
+  }
+
+  if (totalCustomersCount === 0) {
+    return (
+      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={["top"]}>
+        <StatusBar
+          barStyle={statusBarStyle}
+          backgroundColor={colors.background}
+          translucent={false}
+        />
+        <View style={{ flex: 1 }}>
+          <DashboardHeader
+            overdueCount={0}
+            showNotification
+            onPressNotifications={() => router.push("/(main)/people" as never)}
+          />
+          <EmptyState
+            illustration="ledger"
+            headingEn="Your ledger is empty"
+            headingHi="आपका खाता खाली है"
+            bodyEn="Add your first customer to start tracking"
+            bodyHi="पहला ग्राहक जोड़ें और शुरुआत करें"
+            ctaLabel="Add Customer"
+            onCta={() =>
+              router.push({ pathname: "/(main)/people", params: { action: "add" } } as never)
+            }
+          />
+        </View>
+      </SafeAreaView>
     );
   }
 

@@ -1,6 +1,6 @@
 import FloatingActionButton from "@/src/components/ui/FloatingActionButton";
 import SearchBar from "@/src/components/ui/SearchBar";
-import Button from "@/src/components/ui/Button";
+import EmptyState from "@/src/components/ui/EmptyState";
 import Header from "@/src/components/layer2/Header";
 import ListItem from "@/src/components/layer2/ListItem";
 import ScreenLayout from "@/src/components/layer2/ScreenLayout";
@@ -211,31 +211,31 @@ export default function OrdersScreen() {
             ) : null
           }
           ListEmptyComponent={
-            <View className="flex-1 items-center justify-center px-8 pt-20">
-              <View
-                className="items-center justify-center rounded-full mb-5"
-                style={{
-                  width: 80,
-                  height: 80,
-                  backgroundColor: colors.successBg,
-                }}
-              >
-                <Text style={{ fontSize: 36 }}>📋</Text>
-              </View>
-                <Text className="text-textPrimary dark:text-textPrimary-dark text-[18px] font-bold mb-2 text-center">
-                  {isConnected ? "No entries yet" : "You’re offline"}
+            !isConnected ? (
+              <View className="flex-1 items-center justify-center px-8 pt-20">
+                <Text className="text-textSecondary dark:text-textSecondary-dark text-[14px] text-center">
+                  Connect to the internet to load entries.
                 </Text>
-              <Text className="text-textSecondary dark:text-textSecondary-dark text-[14px] text-center leading-6">
-                {isConnected
-                  ? "Add your first entry to start tracking."
-                  : "Connect to the internet to load entries."}
-              </Text>
-                {isConnected ? (
-                  <View style={{ marginTop: spacing.lg, width: 180 }}>
-                    <Button title="Add Entry" onPress={handleCreateEntry} />
-                  </View>
-                ) : null}
-            </View>
+              </View>
+            ) : search.trim() ? (
+              <EmptyState
+                illustration="search"
+                headingEn="No results found"
+                headingHi="कोई परिणाम नहीं"
+                bodyEn="Try a different name or number"
+                bodyHi="कोई दूसरा नाम या नंबर आज़माएं"
+              />
+            ) : (
+              <EmptyState
+                illustration="clipboard"
+                headingEn="No entries yet"
+                headingHi="कोई एंट्री नहीं"
+                bodyEn="Record your first entry to start tracking"
+                bodyHi="अपनी पहली एंट्री दर्ज करें और शुरुआत करें"
+                ctaLabel="Add Entry"
+                onCta={handleCreateEntry}
+              />
+            )
           }
         />
       )}
