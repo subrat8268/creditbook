@@ -10,6 +10,22 @@ If any repo instruction conflicts, `SYSTEM_CONTEXT.md` wins.
 - Database/schema: don't guess; use Supabase MCP and put DDL in `supabase/migrations/`.
 - Any code change that affects behavior, flows, setup, or developer workflow must update related docs in `docs/` and/or `README.md` in the same task.
 
+## MCP Rules
+
+- **Notion MCP**: ignore — not used in this project. Never read/write Notion.
+- **Supabase MCP**: use for all DB introspection, RLS checks, and migrations. Never guess schema; always call the MCP first.
+- **Context7 MCP**: use for all library/SDK/API/framework docs (see instructions below). Covers Expo, React Native, Supabase JS, NativeWind, TanStack Query, Zustand, etc.
+- **Stitch MCP**: disabled — ignore.
+
+## Context Budget Rules
+
+- Never read `package-lock.json` — it is noise, skip it entirely.
+- Never read full `schema.sql` to inspect one table — use Supabase MCP `list_tables` or `execute_sql` instead.
+- For any component change: read only the target file + its direct imports, not the entire `src/` tree.
+- `docs/STATUS.md` is the task tracker — read only the current phase section, not the full file.
+- `.agents/skills/` — load only the skill(s) relevant to the current task, not all 26 at once.
+- `src/utils/theme.ts` is authoritative for all token values — read it once per session, don't re-read on every subtask.
+
 ## How To Run
 
 - Package manager is npm (repo has `package-lock.json`): `npm ci`.
