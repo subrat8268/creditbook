@@ -7,8 +7,8 @@ If any other instruction contradicts this file, **this file wins**.
 ## Current State (update after each task)
 
 - **Phase:** 3 — Polish & Features
-- **Last completed:** Task 3.3 — Export screen (PDF/CSV ledger via expo-print + expo-sharing)
-- **Next:** Task 3.4 — Overdue push notifications (expo-notifications, AppState, preferencesStore toggle)
+- **Last completed:** Task 3.10 — Offline banner (global top overlay with reconnect sync confirmation)
+- **Next:** Task 4.1 — Plan AI architecture (Edge Function boundary, guardrails, rate limits)
 - **Roadmap:** `docs/STATUS.md` — read only the Phase 3 section for current context
 
 ## Product contract (strict single-mode)
@@ -96,5 +96,5 @@ Minimum quality gates for any non-trivial change:
 
 ## Current State
 
-- Last completed: 3.9 (empty state illustrations)
-- Next: 3.10 (offline sync indicator)
+- Last completed: 3.10 (offline banner)
+- Next: 4.1 (plan AI architecture)

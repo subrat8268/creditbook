@@ -108,7 +108,7 @@
 | 3.7 | Entry note field — optional short text per Entry | ✅ Done | P1 | `/build` | `project-planner`, `supabase`, `react-native-skills` |
 | 3.8 | Collect shortcut on Dashboard hero — deep-link to top overdue Customer | ✅ Done | P2 | `/build` | `react-native-skills`, `project-planner`, `code-reviewer` |
 | 3.9 | Empty state illustrations — warm empty states with CTA | ✅ Done | P2 | `/build` | `react-native-skills`, `project-planner` |
-| 3.10 | Offline sync indicator — green (synced) / amber (pending) dot in header | ⏳ Not Started | P2 | `/build` | `react-native-skills`, `building-native-ui` |
+| 3.10 | Offline banner — top overlay with offline/online sync confirmation states | ✅ Done | P2 | `/build` | `react-native-skills`, `project-planner` |
 | 3.11 | Customer search improvements — speed + relevance | ⏳ Not Started | P2 | `/build` | `react-native-skills`, `project-planner` |
 | 3.12 | Entries + People filters | ⏳ Not Started | P2 | `/plan` | `project-planner`, `writing-plans` |
 | 3.13 | Export hardening — validate CSV totals, locale-safe formatting | ⏳ Not Started | P2 | `/audit` | `supabase`, `code-reviewer` |

@@ -1,7 +1,7 @@
 import Loader from "@/src/components/feedback/Loader";
 import { ToastProvider } from "@/src/components/feedback/Toast";
 import OfflineToastListener from "@/src/components/feedback/OfflineToastListener";
-import { SyncStatusBanner } from "@/src/components/ui/SyncStatusBanner";
+import OfflineBanner from "@/src/components/ui/OfflineBanner";
 import { useAuth } from "@/src/hooks/useAuth";
 import { useFontsLoader } from "@/src/hooks/useFontsLoader";
 import { useOverdueNotifications } from "@/src/hooks/useOverdueNotifications";
@@ -183,7 +183,7 @@ function RootLayout() {
             <BottomSheetModalProvider>
               <ToastProvider>
                 <OfflineToastListener />
-                <SyncStatusBanner />
+                <OfflineBanner />
 
                 <Stack screenOptions={{ headerShown: false }}>
                   <Stack.Screen name="index" />
