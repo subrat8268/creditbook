@@ -598,7 +598,10 @@ export default function CustomerDetailScreen() {
                 onCta={() =>
                   router.push({
                     pathname: "/(main)/entries/create",
-                    params: { customer: JSON.stringify(customer) },
+                    params: {
+                      customer: JSON.stringify(customer),
+                      customerId: customer.id,
+                    },
                   } as never)
                 }
               />

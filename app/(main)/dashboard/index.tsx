@@ -211,9 +211,7 @@ export default function DashboardScreen() {
             bodyEn="Add your first customer to start tracking"
             bodyHi="पहला ग्राहक जोड़ें और शुरुआत करें"
             ctaLabel="Add Customer"
-            onCta={() =>
-              router.push({ pathname: "/(main)/people", params: { action: "add" } } as never)
-            }
+            onCta={() => router.push("/(main)/people/create" as never)}
           />
         </View>
       </SafeAreaView>

@@ -1,20 +1,13 @@
 import { useAuthStore } from "@/src/store/authStore";
+import { supabase } from "@/src/services/supabase";
 import { AlertTriangle } from "lucide-react-native";
 import { useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
-/**
- * AuthProfileErrorScreen
- *
- * Rendered when: user session is valid BUT profile fetch returned null
- * and profileLoading is false (i.e. the fetch completed with no data).
- *
- * This prevents the blank-screen dead state in the root layout's
- * conditional Stack.Screen guard.
- */
 export default function AuthProfileErrorScreen() {
   const { fetchProfile, logout, user } = useAuthStore();
   const [retrying, setRetrying] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const handleRetry = async () => {
     if (!user?.id) return;
@@ -23,6 +16,19 @@ export default function AuthProfileErrorScreen() {
       await fetchProfile(user.id);
     } finally {
       setRetrying(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await supabase.auth.signOut();
+      logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+      logout();
+    } finally {
+      setLoggingOut(false);
     }
   };
 
@@ -47,7 +53,7 @@ export default function AuthProfileErrorScreen() {
       {/* Retry button */}
       <TouchableOpacity
         onPress={handleRetry}
-        disabled={retrying}
+        disabled={retrying || loggingOut}
         className="w-full bg-primary rounded-xl py-4 items-center mb-4"
         style={{ opacity: retrying ? 0.7 : 1 }}
       >
@@ -60,14 +66,18 @@ export default function AuthProfileErrorScreen() {
 
       {/* Logout button */}
       <TouchableOpacity
-        onPress={logout}
-        disabled={retrying}
+        onPress={handleLogout}
+        disabled={retrying || loggingOut}
         className="w-full border border-border rounded-xl py-4 items-center"
-        style={{ opacity: retrying ? 0.5 : 1 }}
+        style={{ opacity: loggingOut ? 0.5 : 1 }}
       >
-        <Text className="text-textPrimary font-semibold text-base">
-          Log out
-        </Text>
+        {loggingOut ? (
+          <ActivityIndicator color="#000000" />
+        ) : (
+          <Text className="text-textPrimary font-semibold text-base">
+            Log out
+          </Text>
+        )}
       </TouchableOpacity>
     </View>
   );

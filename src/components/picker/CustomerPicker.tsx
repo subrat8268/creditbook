@@ -34,9 +34,9 @@ export default function CustomerPicker({
     isFetchingNextPage,
   } = usePeople(vendorId, search);
 
-  // ✅ Flatten paginated data
+  // ✅ Flatten paginated data (use deduped people from hook)
   const people = useMemo(
-    () => peopleData?.pages.flatMap((page) => page) ?? [],
+    () => peopleData?.people ?? [],
     [peopleData],
   );
 

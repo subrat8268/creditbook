@@ -15,7 +15,7 @@ import { initializeSyncQueue } from "@/src/lib/syncQueue";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as WebBrowser from "expo-web-browser";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
@@ -62,6 +62,7 @@ function RootLayout() {
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
   const [ready, setReady] = useState(false);
+  const lastUserId = useRef<string | null>(null);
 
   const fontsLoaded = useFontsLoader();
   const router = useRouter();
@@ -110,32 +111,56 @@ function RootLayout() {
     if (!ready || !isInitialized) return;
     if (user && isFetchingProfile && !profile) return;
 
+    const currentPath = segments[0];
+    const isOnMain = currentPath === "(main)";
+    const isOnAuth = currentPath === "(auth)";
+    const isOnRoot = !currentPath || currentPath === "";
+    const isOnDashboard = segments[1] === "dashboard";
+    const isOnOnboarding = isOnAuth && segments[1] === "onboarding";
+    const isOnPhoneSetup = isOnAuth && segments[1] === "phone-setup";
+    const isNewLogin = user && lastUserId.current !== user.id;
+
+    const shouldRedirect = isNewLogin;
+    if (shouldRedirect) {
+      lastUserId.current = user?.id ?? null;
+    }
+
+    // ✅ Only redirect on new login (user ID changed), not on every state change
+    if (!shouldRedirect) return;
+
     if (isRecoveryMode) {
-      router.replace("/(auth)/set-new-password" as any);
+      if (!isOnAuth) router.replace("/(auth)/set-new-password" as any);
     } else if (!user) {
-      router.replace(showWelcome ? "/" : ("/(auth)/login" as any));
-    } else if (!profile) {
-      router.replace("/profile-error" as any);
-    } else if (!profile.phone) {
-      router.replace("/(auth)/phone-setup" as any);
-    } else if (!profile.onboarding_complete) {
-      const inOnboarding = segments[0] === "(auth)" && segments[1] === "onboarding";
-      if (!inOnboarding) {
+      if (isOnMain) router.replace(showWelcome ? "/" : ("/(auth)/login" as any));
+    } else if (user && (isOnAuth || isOnRoot)) {
+      if (!profile) {
+        router.replace("/profile-error" as any);
+      } else if (!profile.phone && !isOnPhoneSetup) {
+        router.replace("/(auth)/phone-setup" as any);
+      } else if (!profile.onboarding_complete && !isOnOnboarding) {
         router.replace("/(auth)/onboarding/business" as any);
+      } else {
+        router.replace("/(main)/dashboard" as any);
       }
-    } else {
+    } else if (!profile) {
+      if (isOnMain) router.replace("/profile-error" as any);
+    } else if (!profile.phone) {
+      if (isOnMain) router.replace("/(auth)/phone-setup" as any);
+    } else if (!profile.onboarding_complete) {
+      if (isOnMain) router.replace("/(auth)/onboarding/business" as any);
+    } else if (!isOnDashboard && isOnMain) {
       router.replace("/(main)/dashboard" as any);
     }
   }, [
     ready,
     isInitialized,
     isRecoveryMode,
+    router,
     user,
     profile,
     isFetchingProfile,
     showWelcome,
     segments,
-    router,
   ]);
 
   if (

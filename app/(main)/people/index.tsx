@@ -311,7 +311,7 @@ export default function CustomersScreen() {
                 bodyEn="Tap + to add your first customer"
                 bodyHi="+ दबाएं और पहला ग्राहक जोड़ें"
                 ctaLabel="Add Customer"
-                onCta={() => setIsModalOpen(true)}
+                onCta={() => router.push("/(main)/people/create" as never)}
               />
             )
           }
